@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <meta http-equiv="refresh" content="3.6" />
+    <style>
+      body,
+      html {
+        height: 100vh;
+      }
+      .page_wrapper {
+        height: 100vh;
+        align-content: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+      .description {
+        font-family: monospace;
+        font-size: 20px;
+      }
+
+      /* =================  CSS LOADER START   ========================== */
+      .fluct {
+        width: 80px;
+        height: 80px;
+        background-color: #333;
+        margin: 100px auto;
+        animation: sk-rotateplane 1.2s infinite ease-in-out;
+      }
+
+      @keyframes sk-rotateplane {
+        0% {
+          transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+        }
+        50% {
+          transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+        }
+        100% {
+          transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+        }
+      }
+      /* =================  CSS LOADER END   ========================== */
+    </style>
+  </head>
+  <body>
+    <div class="page_wrapper">
+      <div class="fluct"></div>
+      <div class="description">
+        Initializing Server
+      </div>
+    </div>
+  </body>
+</html>

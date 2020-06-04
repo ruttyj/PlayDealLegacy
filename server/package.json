@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "stop": "node server.stop.js",
+    "dev": "nodemon ./bin/dev_www"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "debug": "~2.6.9",
+    "express": "~4.16.1",
+    "express-http-proxy": "^1.6.0",
+    "http-errors": "~1.6.3",
+    "jade": "~1.11.0",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
+    "morgan": "~1.9.1",
+    "pluralize": "^8.0.0",
+    "request": "^2.88.0",
+    "rxjs": "^6.5.5",
+    "socket.io": "^2.3.0",
+    "url": "^0.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.4"
+  }
+}

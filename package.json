@@ -1,0 +1,32 @@
+{
+  "name": "base",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd client && npm run build",
+    "start": "cd server && npm start",
+    "serverDev": "cd server && npm run dev",
+    "clientDev": "cd client && npm run dev",
+    "dev": "concurrently \"npm run serverDev\" \"npm run clientDev\"",
+    "stop": "taskkill -F -IM node.exe",
+    "serverInstall": "cd server && npm install",
+    "clientInstall": "cd client && npm install",
+    "testInstall": "cd tests && npm install",
+    "install": "concurrently \"npm run serverInstall\" \"npm run clientInstall\" \"npm run testInstall\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruttyj/ReactBase.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ruttyj/ReactBase/issues"
+  },
+  "dependencies": {
+    "concurrently": "latest",
+    "dotenv": "^8.2.0"
+  },
+  "homepage": "https://github.com/ruttyj/ReactBase#readme"
+}
