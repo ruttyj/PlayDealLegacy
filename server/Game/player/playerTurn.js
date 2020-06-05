@@ -5,7 +5,11 @@ function PlayerTurn(gameRef, playerKey = null) {
   let mPlayerKey;
   let mCanDrawTurnStartingCards = true;
   const mState = {};
-  const { get: getPhaseData, set: setPhaseData, remove: removePhaseData } = makeVar(mState, "phaseData", null);
+  const {
+    get: getPhaseData,
+    set: setPhaseData,
+    remove: removePhaseData,
+  } = makeVar(mState, "phaseData", null);
   const mActionLimit = 3;
   const mCardsPlayed = [];
   const mActionsPreformed = [];
@@ -153,13 +157,15 @@ function PlayerTurn(gameRef, playerKey = null) {
       phase: getCurrentPhase(),
       phaseData: getPhaseData(),
       actionCount: getActionCount(),
-      actionLimit: getActionLimit()
+      actionLimit: getActionLimit(),
       //cardsPlayed: getCardsPlayed(),
       //actionsPreformed: getActionsPreformed()
     };
   }
 
-  function destroy() {}
+  function destroy() {
+    mTurnRequestManager.destroy();
+  }
 
   if (isDef(playerKey)) setPlayerKey(playerKey);
 
@@ -195,10 +201,10 @@ function PlayerTurn(gameRef, playerKey = null) {
     getCardsPlayed, // deprecated
 
     events: {
-      phaseChange: mPhaseChangeEvent
+      phaseChange: mPhaseChangeEvent,
     },
 
-    serialize
+    serialize,
   };
 
   function getPublic() {

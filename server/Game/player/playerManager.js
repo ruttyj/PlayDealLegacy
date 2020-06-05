@@ -1,4 +1,13 @@
-const { isDef, els, isNum, isObj, makeVar, makeMap, makeList, getKeyFromProp } = require("../utils.js");
+const {
+  isDef,
+  els,
+  isNum,
+  isObj,
+  makeVar,
+  makeMap,
+  makeList,
+  getKeyFromProp,
+} = require("../utils.js");
 const PlayerTurn = require("./playerTurn.js");
 const CollectionManager = require("../collection/collectionManager.js");
 
@@ -45,8 +54,10 @@ function PlayerManager(gameRef = null) {
     if (isDef(player)) {
       let allPlayerCollectionIds = player.getAllCollectionIds();
       let foundCollection = null;
-      allPlayerCollectionIds.forEach(collectionId => {
-        let collection = mGameRef.getCollectionManager().getCollection(collectionId);
+      allPlayerCollectionIds.forEach((collectionId) => {
+        let collection = mGameRef
+          .getCollectionManager()
+          .getCollection(collectionId);
         if (collection.getPropertySetKey() === uselessSetKey) {
           foundCollection = collection;
         }
@@ -73,14 +84,16 @@ function PlayerManager(gameRef = null) {
   function getAllCollectionsForPlayer(playerKey) {
     if (hasPlayer(playerKey)) {
       let collectionIds = getAllCollectionIdsForPlayer(playerKey);
-      if (isDef(collectionIds)) return getCollectionManager().getCollections(collectionIds);
+      if (isDef(collectionIds))
+        return getCollectionManager().getCollections(collectionIds);
     }
     return null;
   }
 
   function getCollection(collectionOrId) {
     let collectionId = getKeyFromProp(collectionOrId, "getId()");
-    if (isDef(collectionId)) return getCollectionManager().getCollection(collectionId);
+    if (isDef(collectionId))
+      return getCollectionManager().getCollection(collectionId);
     return null;
   }
 
@@ -190,6 +203,9 @@ function PlayerManager(gameRef = null) {
   }
 
   function initializePlayerTurn() {
+    if (isDef(mCurrentTurn)) {
+      mCurrentTurn.destroy();
+    }
     let playerKeys = getAllPlayerKeys();
     if (playerKeys.length > 0) {
       mCurrentTurn = PlayerTurn(mGameRef, playerKeys[mCurrentTurnPlayerIndex]);
@@ -219,8 +235,15 @@ function PlayerManager(gameRef = null) {
     return mGameRef;
   }
 
+  function destory() {
+    if (isDef(mCurrentTurn)) {
+      mCurrentTurn.destroy();
+    }
+  }
+
   const publicInterface = {
     getGameRef,
+    destory,
 
     createPlayer,
     getPlayer,
@@ -247,7 +270,7 @@ function PlayerManager(gameRef = null) {
     getOrCreateUselessCollectionForPlayer,
     getAllCollectionsForPlayer,
     getAllCollectionIdsForPlayer,
-    transferCollectionOwnership
+    transferCollectionOwnership,
   };
 
   function getPublic() {

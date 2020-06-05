@@ -20,7 +20,7 @@
 
 const pluralize = require("pluralize");
 const constants = require("./config/constants.js");
-const { SHOULD } = constants;
+const { CONFIG } = constants;
 const {
   log,
   els,
@@ -34,41 +34,16 @@ const {
   reduceToKeyed,
 } = require("./utils.js");
 const CardContainer = require("./card/cardContainer.js");
-const CurrencySystem = require("./currencySystem.js");
 const PlayerManager = require("./player/playerManager.js");
 const CardManager = require("./card/cardManager.js");
 
-let PlayDealGame = () => {
+let GameManager = () => {
   let mConfig = {
     shuffleDeck: false,
     canWinBySetsOfSameColor: false,
     alterSetCostAction: false,
     testMode: false,
   };
-
-  let mRef = {};
-  const { get: getOnNextTurn, set: setOnNextTurn } = makeVar(
-    mRef,
-    "OnNextTurnFn",
-    emptyFunction
-  );
-  const { get: getOnGameStart, set: setOnGameStart } = makeVar(
-    mRef,
-    "OnGameStartFn",
-    emptyFunction
-  );
-  const { get: getOnGameOver, set: setOnGameOver } = makeVar(
-    mRef,
-    "OnGameOverFn",
-    emptyFunction
-  );
-  //const { get: getOnHandChange, set: setOnHandChange } = makeVar(mRef, "OnHandChange", emptyFunction);
-  //const { get: getOnCollectionChange, set: setOnCollectionChange } = makeVar(mRef, "OnCollectionChange", emptyFunction);
-  //const { get: getOnBankChange, set: setOnBankChange } = makeVar(mRef, "OnBankChange", emptyFunction);
-  //const { get: getOnRequest, set: setOnRequest } = makeVar(mRef, "OnRequest", emptyFunction);
-  //const { get: getOnRequestAccept, set: setOnRequestAccept } = makeVar(mRef, "OnRequestAccept", emptyFunction);
-  //const { get: getOnRequestCounter, set: setOnRequestCounter } = makeVar(mRef, "OnRequestCounter", emptyFunction);
-  //const { get: getOnRequestDecline, set: setOnRequestDecline } = makeVar(mRef, "OnRequestDecline", emptyFunction);
 
   const mMaxPlayerCount = 5;
   const mMinPlayerCount = 2;
@@ -82,7 +57,6 @@ let PlayDealGame = () => {
   let mActivePile;
   let mDiscardPile;
   let mDeck;
-  let mCurrencySystem;
   const mCurrency = {
     TEN: 10,
     FIVE: 5,
@@ -91,8 +65,6 @@ let PlayDealGame = () => {
     TWO: 2,
     ONE: 1,
   };
-
-  const mDebugger = [];
 
   //--------------------------------
 
@@ -119,16 +91,6 @@ let PlayDealGame = () => {
     initDiscardPile();
     mCardManager = CardManager(getPublic());
     mPlayerManager = PlayerManager(getPublic());
-
-    mCurrencySystem = CurrencySystem();
-    mCurrencySystem.setUnitKeyGetter((c) => c.value);
-    mCurrencySystem.addUnit(mCurrency.ONE, 1);
-    mCurrencySystem.addUnit(mCurrency.TWO, 2);
-    mCurrencySystem.addUnit(mCurrency.THREE, 3);
-    mCurrencySystem.addUnit(mCurrency.FOUR, 4);
-    mCurrencySystem.addUnit(mCurrency.FIVE, 5);
-    mCurrencySystem.addUnit(mCurrency.TEN, 10);
-
     mCardManager.generateCards();
 
     mDeck = CardContainer(getPublic());
@@ -137,22 +99,22 @@ let PlayDealGame = () => {
 
   function setConfigShuffledDeck(val = true) {
     updateConfig({
-      [SHOULD.SHUFFLE_DECK]: val,
+      [CONFIG.SHUFFLE_DECK]: val,
     });
   }
 
   function getConfigShuffledDeck() {
-    return mConfig[SHOULD.SHUFFLE_DECK];
+    return mConfig[CONFIG.SHUFFLE_DECK];
   }
 
   function updateConfig(config) {
-    if (isDef(config[SHOULD.SHUFFLE_DECK])) {
-      mConfig[SHOULD.SHUFFLE_DECK] = Boolean(config[SHOULD.SHUFFLE_DECK]);
+    if (isDef(config[CONFIG.SHUFFLE_DECK])) {
+      mConfig[CONFIG.SHUFFLE_DECK] = Boolean(config[CONFIG.SHUFFLE_DECK]);
     }
 
-    if (isDef(config[SHOULD.ALTER_SET_COST_ACTION])) {
-      mConfig[SHOULD.ALTER_SET_COST_ACTION] = Boolean(
-        config[SHOULD.ALTER_SET_COST_ACTION]
+    if (isDef(config[CONFIG.ALTER_SET_COST_ACTION])) {
+      mConfig[CONFIG.ALTER_SET_COST_ACTION] = Boolean(
+        config[CONFIG.ALTER_SET_COST_ACTION]
       );
     }
   }
@@ -175,7 +137,6 @@ let PlayDealGame = () => {
   }
   function gameOver() {
     mIsGameOver = true;
-    getOnGameOver()(getPublic());
   }
   function getMinPlayerCount() {
     return mMinPlayerCount;
@@ -206,7 +167,6 @@ let PlayDealGame = () => {
     mIsGameStarted = true;
     if (getConfigShuffledDeck()) mDeck.shuffle();
     if (dealCards) dealInitialCards();
-    getOnGameStart()(getPublic());
   }
 
   function isGameStarted() {
@@ -226,9 +186,7 @@ let PlayDealGame = () => {
   function nextPlayerTurn() {
     let playerManager = getPlayerManager();
     if (isDef(playerManager)) {
-      let nextPlayerKey = playerManager.nextPlayerTurn();
-      getOnNextTurn()(getPublic());
-      return nextPlayerKey;
+      return playerManager.nextPlayerTurn();
     }
     return null;
   }
@@ -340,18 +298,6 @@ let PlayDealGame = () => {
 
   function getSetDetailsByKey(setKey) {
     return getPropertySet(setKey);
-  }
-
-  //--------------------------------
-
-  //          Internal debugging
-
-  //--------------------------------
-  function pushDebugger(data) {
-    mDebugger.push(data);
-  }
-  function getDebugger() {
-    return mDebugger;
   }
 
   //--------------------------------
@@ -603,18 +549,6 @@ let PlayDealGame = () => {
     let player = getPlayer(playerKey);
     if (isDef(player)) return player.bank;
     return null;
-  }
-
-  function calculateChangeFromPlayerBank(playerKey, amountDue) {
-    let playerBank = getPlayerBank(playerKey);
-    let playersCards = playerBank.getCards();
-
-    mCurrencySystem.setUnitKeyGetter((c) => c.value);
-    return mCurrencySystem.findGreedyChange(
-      playersCards,
-      amountDue,
-      (c) => c.value
-    );
   }
 
   //--------------------------------
@@ -1046,10 +980,6 @@ let PlayDealGame = () => {
     return null;
   }
 
-  function playCardPreformAction() {}
-
-  function playCardPreformResponse() {}
-
   function isMyTurn(playerKey) {
     return playerKey === getCurrentTurn().getPlayerKey();
   }
@@ -1191,30 +1121,43 @@ let PlayDealGame = () => {
   }
 
   const publicInterface = {
+    //====================================
     getPlayerManager,
+    getRequestManager,
     getCollectionManager,
 
-    // Life cycle
-    newGame,
-    updateConfig,
-    getConfig,
-    startGame,
-    canStartGame,
-    isGameOver,
-    getWinningCondition,
-    getMinPlayerCount,
-    getMaxPlayerCount,
-    isAcceptablePlayerCount,
-    getCurrentTurn,
-    nextPlayerTurn,
-    isMyTurn,
-    isGameStarted,
-    checkWinConditionForPlayer,
+    //====================================
 
     // Config
+    updateConfig,
+    getConfig,
     setConfigShuffledDeck,
     getConfigShuffledDeck,
     getConfigAlteringSetCostAction,
+    getMinPlayerCount,
+    getWinningCondition,
+    getMaxPlayerCount,
+
+    isAcceptablePlayerCount,
+    isGameStarted,
+    isGameOver,
+
+    //====================================
+
+    // Life cycle
+    canStartGame,
+    newGame,
+    startGame,
+
+    //====================================
+
+    // Turn
+    isMyTurn,
+    getCurrentTurn,
+    nextPlayerTurn,
+    checkWinConditionForPlayer,
+
+    //====================================
 
     // Filtering
     filterForTag,
@@ -1227,9 +1170,16 @@ let PlayDealGame = () => {
     isCardSetAugment,
     isCardRentAugment,
     isRequestCard,
-
-    // DEV ONLY
-    getDebugger,
+    lookUpCardById,
+    updateCardSet,
+    getSetChoicesForCard,
+    getCard,
+    getCards,
+    getAllCardsKeyed,
+    getAllCardIds,
+    card: {
+      getActionAugment: getCardActionAugment,
+    },
 
     // Deck
     getDeck,
@@ -1237,29 +1187,42 @@ let PlayDealGame = () => {
     getActivePile,
     getDiscardPile,
 
-    // Descriptive methods
+    // Properties
     getPropertySets,
     getPropertySet,
     getAllPropertySetKeys,
-    lookUpCardById,
-    getCard,
-    getCards,
-    updateCardSet,
-    getSetChoicesForCard,
-    getAllCardsKeyed,
-    getAllCardIds,
+
+    //====================================
 
     // Collections
-    getUselessCollectionForPlayer,
-    getUselessPropertySetKey,
-    getRentValueOfCollection,
-    isCollectionComplete,
-    cleanUpFromCollection,
+
+    getCollectionThatHasCard,
     canApplyAugmentToSet,
     canAddCardToCollection,
+    cleanUpFromCollection,
+
+    // Distinct collections
+    getUselessCollectionForPlayer,
+    getUselessPropertySetKey,
+
+    isCollectionComplete,
+    getRentValueOfCollection,
+    playCardToExistingCollection,
+
+    // Request Cards
     applyActionValueAugment,
     canApplyRequestAugment,
-    getCollectionThatHasCard,
+
+    //====================================
+
+    // Play
+    canPreformActionById,
+    playCardById,
+    playCardAddToBank,
+    playCardFromHandToNewCollection,
+    drawNCards,
+
+    //====================================
 
     // Player
     canAddPlayer,
@@ -1268,25 +1231,8 @@ let PlayDealGame = () => {
     getPlayer,
     getPlayerHand,
     getPlayerBank,
-    calculateChangeFromPlayerBank,
     playerTurnStartingDraw,
     getHandMaxCardCount,
-
-    // Play
-    canPreformActionById,
-    playCardById,
-    playCardAddToBank,
-    playCardFromHandToNewCollection,
-    playCardToExistingCollection,
-    drawNCards,
-
-    //Cards
-    card: {
-      getActionAugment: getCardActionAugment,
-    },
-
-    // Requests
-    getRequestManager,
   };
 
   function getPublic() {
@@ -1296,4 +1242,4 @@ let PlayDealGame = () => {
   return getPublic();
 };
 
-module.exports = PlayDealGame;
+module.exports = GameManager;

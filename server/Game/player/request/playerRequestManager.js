@@ -1,8 +1,16 @@
 const PlayerRequest = require("./playerRequest.js");
-const { makeVar, isDef, isObj, makeListener, makeMap, emptyFunc, jsonLog } = require("../../utils.js");
+const {
+  makeVar,
+  isDef,
+  isObj,
+  makeListener,
+  makeMap,
+  emptyFunc,
+  jsonLog,
+} = require("../../utils.js");
 const Transaction = require("./transfer/Transaction.js");
 
-const PlayerRequestManager = function() {
+const PlayerRequestManager = function () {
   const mState = {};
   const mRequests = makeMap(mState, "requests");
   const mAuthorRequests = makeMap(mState, "authorRequests");
@@ -33,7 +41,7 @@ const PlayerRequestManager = function() {
     onDeclineCallback = null,
     onAccept = null,
     onDecline = null,
-    onCounter = emptyFunc
+    onCounter = emptyFunc,
   }) {
     incTopId();
     let topId = getTopId();
@@ -49,8 +57,10 @@ const PlayerRequestManager = function() {
     if (isDef(parentId)) playerRequest.setParentId(parentId);
     if (isDef(description)) playerRequest.setDescription(description);
 
-    if (isDef(onAcceptCallback)) playerRequest.setOnAcceptCallback(onAcceptCallback);
-    if (isDef(onDeclineCallback)) playerRequest.setOnDeclineCallback(onDeclineCallback);
+    if (isDef(onAcceptCallback))
+      playerRequest.setOnAcceptCallback(onAcceptCallback);
+    if (isDef(onDeclineCallback))
+      playerRequest.setOnDeclineCallback(onDeclineCallback);
 
     // add to maps
     if (!mAuthorRequests.has(authorKey)) mAuthorRequests.set(authorKey, []);
@@ -69,7 +79,7 @@ const PlayerRequestManager = function() {
       let payload = null;
       if (isDef(serialized.payload) && isObj(serialized.payload)) {
         payload = {};
-        Object.keys(serialized.payload).forEach(key => {
+        Object.keys(serialized.payload).forEach((key) => {
           let val = serialized.payload[key];
           if (isObj(val) && isDef(val.is) && val.is === "Transaction") {
             let transaction = Transaction();
@@ -96,12 +106,19 @@ const PlayerRequestManager = function() {
       .confirm("done");
   }
 
-  function _reconstructRequest(thisRequest, { affected, affectedIds, checkpoints }) {
+  function _reconstructRequest(
+    thisRequest,
+    { affected, affectedIds, checkpoints }
+  ) {
     // sure it did go away.... but its baccccck
     let reconstruct = thisRequest.getPayload("reconstruct");
     let newRequest = loadRequest(reconstruct);
-    newRequest.setOnAcceptCallback(thisRequest.getPayload("reconstructOnAccept"));
-    newRequest.setOnDeclineCallback(thisRequest.getPayload("reconstructOnDecline"));
+    newRequest.setOnAcceptCallback(
+      thisRequest.getPayload("reconstructOnAccept")
+    );
+    newRequest.setOnDeclineCallback(
+      thisRequest.getPayload("reconstructOnDecline")
+    );
 
     affected.requests = true;
     affectedIds.requests.push(newRequest.getId());
@@ -113,7 +130,10 @@ const PlayerRequestManager = function() {
     affectedIds.requests.push(thisRequest.getId());
   }
 
-  function _justSayNoTransitive(thisRequest, { cardId, affected, affectedIds, checkpoints }) {
+  function _justSayNoTransitive(
+    thisRequest,
+    { cardId, affected, affectedIds, checkpoints }
+  ) {
     let counterJustSayNo = makeJustSayNo(thisRequest, cardId);
 
     affectedIds.requests.push(thisRequest.getId());
@@ -126,13 +146,10 @@ const PlayerRequestManager = function() {
 
   function makeJustSayNo(request, cardId) {
     let transaction = Transaction();
-    transaction
-      .getOrCreate("done")
-      .getOrCreate("done")
-      .add("done");
+    transaction.getOrCreate("done").getOrCreate("done").add("done");
 
     let payload = {
-      actionCardId: cardId
+      actionCardId: cardId,
     };
     let handleOnAccept = _justSayNoClose;
     let handleOnDecline = _justSayNoTransitive;
@@ -179,11 +196,11 @@ const PlayerRequestManager = function() {
       payload: {
         // store data to reconstruct original request
         ...payload,
-        transaction
+        transaction,
       },
       description: `No!`,
       onAccept: doHandleOnAccept,
-      onDecline: doHandleOnDecline
+      onDecline: doHandleOnDecline,
     });
     return sayNoRequest;
   }
@@ -243,14 +260,14 @@ const PlayerRequestManager = function() {
 
     let requestsForAuthor = getRequestsForAuthor(playerKey);
     if (isDef(requestsForAuthor)) {
-      requestsForAuthor.forEach(val => {
+      requestsForAuthor.forEach((val) => {
         result.push(val);
       });
     }
 
     let requestsForTarget = getRequestsForTarget(playerKey);
     if (isDef(requestsForTarget)) {
-      requestsForTarget.forEach(val => {
+      requestsForTarget.forEach((val) => {
         result.push(val);
       });
     }
@@ -262,160 +279,17 @@ const PlayerRequestManager = function() {
     let targetRequests = mTargetRequests.get(targetKey);
     if (isDef(targetRequests)) {
       let clone = [...targetRequests].reverse();
-      return clone.find(req => !req.isClosed());
+      return clone.find((req) => !req.isClosed());
     }
     return null;
   }
 
   function serializeAllRequests() {
     let result = [];
-    mRequests.forEach(req => {
+    mRequests.forEach((req) => {
       result.push(req.serialize());
     });
     return result;
-  }
-
-  function handleOnCounter(parentReq, couterCard) {
-    let mdg = getGameInstance();
-    let managerRef = parentReq.getManagerRef();
-    let targetPlayerKey = parentReq.getTargetKey();
-    let targetPlayerHand = mdg.getPlayerHand(parentReq.getTargetKey());
-
-    let isValidCounter = false;
-    if (isDef(couterCard)) {
-      if (mdg.doesCardHaveTag(couterCard, "justSayNo")) {
-        isValidCounter = true;
-        // Play on pile
-        mdg.getActivePile().addCard(targetPlayerHand.giveCard(couterCard));
-
-        // Allow other player to accept or counter with another "just say no"
-        managerRef.createRequest({
-          type: "justSayNo",
-          parentId: parentReq.getId(),
-          authorKey: targetPlayerKey,
-          targetKey: parentReq.getAuthorKey(),
-          description: `(${targetPlayerKey} response with "justSayNo" to (${parentReq.getDescription()}))`,
-          onCounter: handleOnCounter,
-          onAccept(justSayNoReq) {
-            let parent = justSayNoReq.getParent();
-            if (isDef(parent)) {
-              parent.decline();
-            }
-          },
-          onDecline(justSayNoReq) {
-            //Add a request here if an offer other than the original is to be offered
-            /*
-            // Double negative, repeat initial request
-            managerRef.createRequest({
-              type: parentReq.getType(),
-              parentId: justSayNoReq.getId(),
-              authorKey: parentReq.getAuthorKey(),
-              targetKey: parentReq.getTargetKey(),
-              payload: parentReq.getPayload(),
-              description: `(${parentReq.getAuthorKey()} repeats request ${parentReq.getDescription()})`,
-              onAccept(thisReq) {
-                // Accept original request
-                let parent = thisReq.getParent();
-                if (isDef(parent)) {
-                  //Close original request
-                  parent.accept();
-                }
-              },
-              onDecline(thisReq) {
-                let parent = thisReq.getParent();
-                if (isDef(parent)) {
-                  //Close original request
-                  parent.decline();
-                }
-              },
-              onCounter: handleOnCounter
-            });
-            //*/
-          }
-        });
-      }
-    }
-
-    if (!isValidCounter) {
-      parentReq.accept();
-    }
-  }
-
-  function makeFundRequest({ authorKey, value, targetKey }) {
-    // Request funds
-    let req = createRequest({
-      type: "collectFunds",
-      parentId: null,
-      authorKey: authorKey,
-      targetKey: targetKey,
-      payload: {
-        value: value,
-        paid: 0
-      },
-      description: `(Player ${authorKey} request ${value}M from Player ${targetKey})`,
-      onAccept: handleOnAcceptCollectFunds,
-      onCounter: handleOnCounter
-    });
-    return req;
-  }
-
-  function makePropertyValueRequest({ authorKey, value, targetKey, description = null, parentId = null }) {
-    return createRequest({
-      type: "collectValueOfProperty",
-      parentId: parentId,
-      authorKey: authorKey,
-      targetKey: targetKey,
-      payload: {
-        value: value
-      },
-      description: description,
-      onCounter: handleOnCounter,
-      onAccept(propReq) {
-        let propertyReqPayload = propReq.getPayload();
-        let transferProperty = propertyReqPayload.cards;
-        //get selected property
-        //transfer property
-        //@TODO transfer property
-      }
-    });
-  }
-
-  function handleOnAcceptCollectFunds(fundReq) {
-    let game = getGameInstance();
-    let managerRef = fundReq.getManagerRef();
-    let targetPlayerKey = fundReq.getTargetKey();
-    let authorPlayerKey = fundReq.getAuthorKey();
-
-    let collectAmount = fundReq.getPayload().value;
-    let targetPlayerBank = game.getPlayerBank(targetPlayerKey);
-    let authorPlayerBank = game.getPlayerBank(authorPlayerKey);
-
-    // Get cards from bank to pay with
-    let seperatedCards = game.calculateChangeFromPlayerBank(targetPlayerKey, collectAmount);
-
-    let giveCards = seperatedCards.giveCards;
-    let remainder = seperatedCards.remainder;
-
-    // Pay the cards
-    authorPlayerBank.addCards(targetPlayerBank.giveCards(giveCards));
-
-    // If not enough request property
-    if (remainder > 0) {
-      makePropertyValueRequest({
-        parentId: fundReq.getId(),
-        authorKey: authorPlayerKey,
-        value: remainder,
-        targetKey: targetPlayerKey,
-        requestManager: managerRef,
-        description: `(${fundReq.getDescription()} not enough, request property from ${targetPlayerKey})`
-      });
-    }
-  }
-
-  function checkIfAllRequestsSatisfied() {
-    if (isAllRequestsSatisfied()) {
-      mAllRequestSatisfiedEvent.emit(getPublic());
-    }
   }
 
   function destroy() {}
@@ -423,7 +297,7 @@ const PlayerRequestManager = function() {
   function serialize() {
     let serializedResultItems = {};
     let requestIds = getAllRequestIds();
-    requestIds.forEach(requestId => {
+    requestIds.forEach((requestId) => {
       let request = getRequestById(requestId);
       if (isDef(request)) {
         serializedResultItems[request.getId()] = request.serialize();
@@ -432,8 +306,8 @@ const PlayerRequestManager = function() {
 
     let result = {
       requests: {
-        items: serializedResultItems
-      }
+        items: serializedResultItems,
+      },
     };
 
     return result;
@@ -459,16 +333,10 @@ const PlayerRequestManager = function() {
     serialize,
 
     events: {
-      allRequestSatisfied: mAllRequestSatisfiedEvent
+      allRequestSatisfied: mAllRequestSatisfiedEvent,
     },
 
     destroy,
-
-    //------------
-    makeFundRequest,
-    handleOnCounter,
-    makePropertyValueRequest,
-    handleOnAcceptCollectFunds
   };
 
   function getPublic() {

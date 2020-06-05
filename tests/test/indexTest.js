@@ -3,7 +3,7 @@ const serverFolder = `${rootFolder}/server`;
 const socketFolder = `${serverFolder}/sockets`;
 const clientFolder = `${rootFolder}/client`;
 const utilsFolder = `${serverFolder}/utils`;
-const playDealFolder = `${serverFolder}/PlayDealGame`;
+const playDealFolder = `${serverFolder}/Game`;
 
 const assert = require("chai").assert;
 const {
@@ -15,7 +15,7 @@ const {
   jsonLog,
 } = require(`${utilsFolder}`);
 const gameConstants = require(`${playDealFolder}/config/constants.js`);
-const { SHOULD } = gameConstants;
+const { CONFIG } = gameConstants;
 const checks = require(`../checks/`);
 const FakeHost = require(`${socketFolder}/FakeHost.js`);
 const attachServerSideHandlers = require(`${socketFolder}/serverSocketHandlers.js`);
@@ -501,8 +501,8 @@ describe("App", async function () {
 
       // Set desired game config ------------------------------
       let desiredConfig = {
-        [SHOULD.SHUFFLE_DECK]: false,
-        [SHOULD.ALTER_SET_COST_ACTION]: false,
+        [CONFIG.SHUFFLE_DECK]: false,
+        [CONFIG.ALTER_SET_COST_ACTION]: false,
       };
       responses = await player1Con.emitSingleRequest(
         "GAME",
