@@ -1,4 +1,11 @@
-const { isDef, makeVar, makeMap, makeList, stateSerialize, getKeyFromProp } = require("../utils.js");
+const {
+  isDef,
+  makeVar,
+  makeMap,
+  makeList,
+  stateSerialize,
+  getKeyFromProp,
+} = require("../utils.js");
 const { INCLUDE_DEBUG_DATA } = require("../config/constants.js");
 
 function Collection(gameRef = null) {
@@ -8,11 +15,24 @@ function Collection(gameRef = null) {
 
   const { get: getId, set: setId, has: hasId } = makeVar(mState, "id");
 
-  const { get: getPlayerKey, set: setPlayerKey, has: hasPlayerKey } = makeVar(mState, "playerKey", null);
+  const { get: getPlayerKey, set: setPlayerKey, has: hasPlayerKey } = makeVar(
+    mState,
+    "playerKey",
+    null
+  );
 
-  const { get: getPropertySetKey, set: setPropertySetKey, has: hasPropertySetKey, remove: removePropertySetKey } = makeVar(mState, "propertySetKey", null);
+  const {
+    get: getPropertySetKey,
+    set: setPropertySetKey,
+    has: hasPropertySetKey,
+    remove: removePropertySetKey,
+  } = makeVar(mState, "propertySetKey", null);
 
-  const { get: propertyCount, inc: _incPropertyCount, dec: _decPropertyCount } = makeVar(mState, "propertyCount", 0);
+  const {
+    get: propertyCount,
+    inc: _incPropertyCount,
+    dec: _decPropertyCount,
+  } = makeVar(mState, "propertyCount", 0);
 
   const mPropertyAugmentCount = makeVar(mState, "augmentCount", 0);
   const mCardIds = makeList(mState, "cardIds", []);
@@ -108,7 +128,7 @@ function Collection(gameRef = null) {
   function filterCardsKeyed(fn) {
     let result = {};
     let selfRef = getPublic();
-    mCardIds.forEach(cardId => {
+    mCardIds.forEach((cardId) => {
       let card = getCard(cardId);
       if (fn(card, cardId, selfRef)) {
         result[cardId] = card;
@@ -120,7 +140,7 @@ function Collection(gameRef = null) {
   function filterCards(fn) {
     let result = [];
     let selfRef = getPublic();
-    mCardIds.forEach(cardId => {
+    mCardIds.forEach((cardId) => {
       let card = getCard(cardId);
       if (fn(card, cardId, selfRef)) {
         result.push(card);
@@ -131,7 +151,7 @@ function Collection(gameRef = null) {
 
   function findCard(fn) {
     let result = null;
-    mCardIds.forEach(cardId => {
+    mCardIds.forEach((cardId) => {
       let card = getCard(cardId);
       if (fn(card, cardId, getPublic())) {
         result = card;
@@ -140,9 +160,9 @@ function Collection(gameRef = null) {
     return result;
   }
 
-  function mapCards(fn = v => v) {
+  function mapCards(fn = (v) => v) {
     let selfRef = getPublic();
-    return mCardIds.map(cardId => fn(getCard(cardId), cardId, selfRef));
+    return mCardIds.map((cardId) => fn(getCard(cardId), cardId, selfRef));
   }
 
   function allCards() {
@@ -158,14 +178,16 @@ function Collection(gameRef = null) {
   }
 
   function getAllPropertyCards() {
-    return filterCards(card => card.type === "property");
+    return filterCards((card) => card.type === "property");
   }
 
   function getAllAugmentCards() {
-    return filterCards(card => card.type === "action" && card.class === "setAugment");
+    return filterCards(
+      (card) => card.type === "action" && card.class === "setAugment"
+    );
   }
 
-  const publicInterface = {
+  const publicScope = {
     getId,
     setId,
     hasId,
@@ -202,11 +224,11 @@ function Collection(gameRef = null) {
     cardCount: mCardIds.count,
     augmentCount: mPropertyAugmentCount.get,
 
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

@@ -6,7 +6,7 @@ const {
   makeVar,
   makeMap,
   makeListener,
-  getKeyFromProp
+  getKeyFromProp,
 } = require("../utils.js");
 
 const Person = require("./person.js");
@@ -47,9 +47,9 @@ function PersonManager() {
     forEach: forEachPerson,
     find: findPerson,
     count: getPersonCount,
-    serialize: serializePeople
+    serialize: serializePeople,
   } = makeMap(mRef, "people", [], {
-    keyMutator: v => String(v)
+    keyMutator: (v) => String(v),
   });
 
   // Dictonary mapping {clientId : personId}
@@ -60,9 +60,9 @@ function PersonManager() {
     map: mapClientIdPersonIdMap,
     remove: removeClientIdPersonIdMap,
     count: getConnectedPeopleCount,
-    serialize: serializeClientIds
+    serialize: serializeClientIds,
   } = makeMap(mRef, "clientToPersonMapping", [], {
-    keyMutator: v => String(v)
+    keyMutator: (v) => String(v),
   });
 
   // keep track of taken names
@@ -80,7 +80,7 @@ function PersonManager() {
     set: initPlayerObserverList,
     get: getPlayerObserverList,
     has: hasPlayerObserverList,
-    forEach: forEachPlayerObserver
+    forEach: forEachPlayerObserver,
   } = makeMap(mRef, "observers");
 
   function addPlayerObserver(playerId, observer) {
@@ -90,13 +90,13 @@ function PersonManager() {
 
   function removePlayerObservers(playerId) {
     if (hasPlayerObserverList(playerId))
-      getPlayerObserverList(playerId).forEach(observer =>
+      getPlayerObserverList(playerId).forEach((observer) =>
         observer.unsubscribe()
       );
   }
 
   function removeAllPlayerObservers() {
-    forEachPlayerObserver(observer => {
+    forEachPlayerObserver((observer) => {
       if (isDef(observer) && isFunc(observer.unsubscribe))
         observer.unsubscribe();
     });
@@ -111,7 +111,7 @@ function PersonManager() {
   const {
     get: getClientManager,
     set: setClientManager,
-    has: hasClientManager
+    has: hasClientManager,
   } = makeVar(mRef, "clientManagerRef", null);
 
   //==================================================
@@ -174,7 +174,7 @@ function PersonManager() {
     // emit createPerson event
     mCreatePersonEvent.emit({
       personManager: getPublic(),
-      person
+      person,
     });
 
     return person;
@@ -183,7 +183,7 @@ function PersonManager() {
   function emitOnPlayerDisconnect(player) {
     let payload = {
       playerManager: getPublic(),
-      player: player
+      player: player,
     };
     mPersonDisconnectEvent.emit(payload);
     person.disconnect();
@@ -224,16 +224,16 @@ function PersonManager() {
   function getOtherConnectedPeople(me) {
     let myId = isNum(me) ? me : me.getId();
     return filterPeople(
-      person => person.getId() !== myId && person.isConnected()
+      (person) => person.getId() !== myId && person.isConnected()
     );
   }
 
   function getConnectedPeople() {
-    return filterPeople(person => person.isConnected());
+    return filterPeople((person) => person.isConnected());
   }
 
   function emitAll(eventName, payload) {
-    getAllPeople().forEach(otherPerson => {
+    getAllPeople().forEach((otherPerson) => {
       if (otherPerson.isConnected())
         otherPerson.getClient().emit(eventName, payload);
     });
@@ -244,7 +244,7 @@ function PersonManager() {
   }
 
   function emitOther(clientId, eventName, payload) {
-    getAllPeople().forEach(otherPerson => {
+    getAllPeople().forEach((otherPerson) => {
       if (otherPerson.getClientId() !== clientId && otherPerson.isConnected())
         otherPerson.getClient().emit(eventName, payload);
     });
@@ -256,7 +256,7 @@ function PersonManager() {
 
   function doesAllPlayersHaveTheSameStatus(status) {
     let everyoneHasStatus = true;
-    forEachPerson(person => {
+    forEachPerson((person) => {
       if (person.isConnected() && person.getStatus() !== status)
         everyoneHasStatus = false;
     });
@@ -304,10 +304,10 @@ function PersonManager() {
 
     // Serialize everything except the external references
     let excludeKeys = [...mPrivateVars, ...mExternalRefs];
-    let keys = Object.keys(mRef).filter(key => !excludeKeys.includes(key));
+    let keys = Object.keys(mRef).filter((key) => !excludeKeys.includes(key));
 
     // Serialize each if possible, leave primitives as is
-    keys.forEach(key => {
+    keys.forEach((key) => {
       result[key] = isDef(mRef[key].serialize)
         ? mRef[key].serialize()
         : mRef[key];
@@ -320,7 +320,7 @@ function PersonManager() {
   //                    Export
 
   //==================================================
-  const publicInterface = {
+  const publicScope = {
     createPerson,
     generateNameVariant,
 
@@ -354,15 +354,15 @@ function PersonManager() {
     events: {
       createPerson: mCreatePersonEvent,
       removePerson: mRemovePersonEvent,
-      personDisconnect: mPersonDisconnectEvent
+      personDisconnect: mPersonDisconnectEvent,
     },
 
     destroy,
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

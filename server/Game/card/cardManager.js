@@ -1,4 +1,4 @@
-const deckTemplate = require("./deckTemplate");
+const deckTemplate = require("./deckTemplate_testDeck");
 const {
   els,
   isDef,
@@ -45,7 +45,7 @@ function CardManager() {
       let canBePrevented = data.canBePrevented || false;
       let set = data.set || null;
       let sets = isArr(data.sets) ? data.sets : [];
-      if (isDef(set) && sets.includes(set)) {
+      if (isDef(set) && !sets.includes(set)) {
         sets.push(set);
       }
       let value = data.value || 0;
@@ -97,8 +97,8 @@ function CardManager() {
       let value = data.value || 0;
       let tags = data.tags || [];
 
-      let set = isDef(data.sets[0]) ? data.sets[0] : null;
       let sets = data.sets;
+      let set = data.set || sets[0];
       if (data.class === "wildPropertyAll") {
         set = AMBIGUOUS_SET_KEY;
         sets = [...data.sets, AMBIGUOUS_SET_KEY];

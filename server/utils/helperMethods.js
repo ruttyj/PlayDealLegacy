@@ -600,7 +600,7 @@ const makeMap = function (
     }
   }
 
-  const publicInterface = {
+  const publicScope = {
     is,
     value: mMap,
     has,
@@ -633,7 +633,7 @@ const makeMap = function (
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   ref[field] = getPublic();
@@ -775,7 +775,7 @@ const makeList = function (
     });
   }
 
-  const publicInterface = {
+  const publicScope = {
     is,
     value: mList,
     has,
@@ -810,7 +810,7 @@ const makeList = function (
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   ref[field] = getPublic();
@@ -963,7 +963,7 @@ const makeSet = function (ref, field = "value", defaultValue = []) {
     });
   }
 
-  const publicInterface = {
+  const publicScope = {
     is,
     value: mList,
     has,
@@ -998,7 +998,7 @@ const makeSet = function (ref, field = "value", defaultValue = []) {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   ref[field] = getPublic();
@@ -1055,7 +1055,7 @@ const makeListener = function () {
     mOnceObserverArr = [];
   }
 
-  const publicInterface = {
+  const publicScope = {
     value: {
       mOnObserverArr,
       mOnceObserverArr,
@@ -1067,7 +1067,7 @@ const makeListener = function () {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();
@@ -1143,7 +1143,7 @@ const makeListenerMap = function () {
     return result;
   }
 
-  const publicInterface = {
+  const publicScope = {
     addEvent,
     on,
     once,
@@ -1153,7 +1153,7 @@ const makeListenerMap = function () {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

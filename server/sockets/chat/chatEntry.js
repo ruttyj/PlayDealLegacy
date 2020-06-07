@@ -46,10 +46,10 @@ function ChatEntry({ id, personKey, type, value }) {
   function serialize() {
     let result = {};
     // Serialize everything except the external references
-    let keys = Object.keys(mRef).filter(key => !mExternalRefs.includes(key));
+    let keys = Object.keys(mRef).filter((key) => !mExternalRefs.includes(key));
 
     // Serialize each if possible, leave primitives as is
-    keys.forEach(key => {
+    keys.forEach((key) => {
       result[key] = isDef(mRef[key].serialize)
         ? mRef[key].serialize()
         : mRef[key];
@@ -63,7 +63,7 @@ function ChatEntry({ id, personKey, type, value }) {
   if (isDef(type)) setType(type);
   if (isDef(value)) setValue(value);
 
-  const publicInterface = {
+  const publicScope = {
     getId,
     setId,
     setPersonKey,
@@ -75,11 +75,11 @@ function ChatEntry({ id, personKey, type, value }) {
     getValue,
     setValue,
     hasValue,
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return publicInterface;
+    return publicScope;
   }
 
   return getPublic();

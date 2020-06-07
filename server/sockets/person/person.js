@@ -9,7 +9,7 @@ const {
   makeList,
   makeMap,
   makeListener,
-  prettyLog
+  prettyLog,
 } = require("../utils.js");
 
 function Person() {
@@ -23,7 +23,7 @@ function Person() {
 
   // Status
   const { get: getStatus, set: _setStatus } = makeVar(mRef, "status", 0, {
-    mutator: v => String(v).toLowerCase()
+    mutator: (v) => String(v).toLowerCase(),
   });
 
   // Tags
@@ -31,7 +31,7 @@ function Person() {
     toArray: getTagList,
     push: addTag,
     includes: hasTag,
-    removeByValue: removeTag
+    removeByValue: removeTag,
   } = makeList(mRef, "tags");
 
   //==================================================
@@ -43,7 +43,7 @@ function Person() {
     "clientRef",
     "managerRef",
     "onSetClient",
-    "onRemoveClient"
+    "onRemoveClient",
   ];
   // Manager Ref
   const { get: getManager, set: setManager } = makeVar(
@@ -57,7 +57,7 @@ function Person() {
     get: getClient,
     set: setClientRef,
     has: hasClient,
-    remove: removeClientRef
+    remove: removeClientRef,
   } = makeVar(mRef, "clientRef", null);
 
   //==================================================
@@ -79,7 +79,7 @@ function Person() {
     return {
       person: getPublic(),
       newValue: newValue,
-      oldValue
+      oldValue,
     };
   }
 
@@ -110,7 +110,7 @@ function Person() {
   function makeEventClientPayload(client) {
     return {
       person: getPublic(),
-      client
+      client,
     };
   }
 
@@ -139,14 +139,14 @@ function Person() {
   //==================================================
   function serialize() {
     let result = {
-      clientId: getClientId()
+      clientId: getClientId(),
     };
 
     // Serialize everything except the external references
-    let keys = Object.keys(mRef).filter(key => !mExternalRefs.includes(key));
+    let keys = Object.keys(mRef).filter((key) => !mExternalRefs.includes(key));
 
     // Serialize each if possible, leave primitives as is
-    keys.forEach(key => {
+    keys.forEach((key) => {
       result[key] = isDef(mRef[key].serialize)
         ? mRef[key].serialize()
         : mRef[key];
@@ -166,7 +166,7 @@ function Person() {
   //                    Export
 
   //==================================================
-  const publicInterface = {
+  const publicScope = {
     getId,
     setId,
     getName,
@@ -210,14 +210,14 @@ function Person() {
       connect: mConnectEvent,
       disconnect: mDisconnectEvent,
       nameChange: mNameChangeEvent,
-      statusChange: mStatusChangeEvent
+      statusChange: mStatusChangeEvent,
     },
 
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return publicInterface;
+    return publicScope;
   }
 
   return getPublic();

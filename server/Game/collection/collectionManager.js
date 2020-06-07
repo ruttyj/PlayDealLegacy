@@ -1,11 +1,19 @@
-const { isDef, makeVar, makeMap, stateSerialize, getKeyFromProp } = require("../utils.js");
+const {
+  isDef,
+  makeVar,
+  makeMap,
+  stateSerialize,
+  getKeyFromProp,
+} = require("../utils.js");
 const Collection = require("./collection.js");
 
 function CollectionManager(gameRef) {
   const mState = {};
   let mGameRef = gameRef;
   const mTopId = makeVar(mState, "topId", 0);
-  const mCollections = makeMap(mState, "collections", [], { keyMutator: v => parseInt(v, 10) });
+  const mCollections = makeMap(mState, "collections", [], {
+    keyMutator: (v) => parseInt(v, 10),
+  });
 
   // Create Collection
   function createCollection() {
@@ -18,12 +26,12 @@ function CollectionManager(gameRef) {
 
   // Filter for garbage collection
   function filterUnassignedCollections() {
-    return mCollections.filter(collection => !collection.hasPlayerKey());
+    return mCollections.filter((collection) => !collection.hasPlayerKey());
   }
 
   // Get all collection IDS
   function getAllCollectionIds() {
-    return mCollections.map(collection => collection.getId());
+    return mCollections.map((collection) => collection.getId());
   }
 
   // Get 1 collection
@@ -37,7 +45,7 @@ function CollectionManager(gameRef) {
 
   function getCollections(collectionsOrIds) {
     let results = [];
-    getAllCollectionIds().forEach(collectionOrId => {
+    getAllCollectionIds().forEach((collectionOrId) => {
       let collection = getCollection(collectionOrId);
       if (isDef(collection)) {
         results.push(collection);
@@ -63,7 +71,7 @@ function CollectionManager(gameRef) {
     return null;
   }
 
-  const publicInterface = {
+  const publicScope = {
     createCollection,
     getCollection,
     getCollections,
@@ -72,11 +80,11 @@ function CollectionManager(gameRef) {
     getAllCollectionIds,
     hasCollection: mCollections.has,
     removeCollection: mCollections.remove,
-    filterUnassignedCollections
+    filterUnassignedCollections,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

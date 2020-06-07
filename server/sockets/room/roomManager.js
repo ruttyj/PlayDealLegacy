@@ -2,6 +2,9 @@ const {
   isUndef,
   els,
   isDef,
+  isStr,
+  isNum,
+  isObj,
   isTrue,
   isFalse,
   emptyFunction,
@@ -184,11 +187,8 @@ function RoomManager() {
   }
 
   function removeRoomById(roomId) {
-    let room = getRoomById(getRoomById);
+    let room = getRoomById(roomId);
     let roomCode = room.getCode();
-
-    if (isRoomEmpty(room)) {
-    }
 
     room.destroy();
 
@@ -202,6 +202,20 @@ function RoomManager() {
     if (isDef(room)) {
       let roomId = room.getId();
       removeRoomById(roomId);
+    }
+  }
+
+  function deleteRoom(roomOrIdOrCode) {
+    if (isDef(roomOrIdOrCode)) {
+      if (isNum(roomOrIdOrCode)) {
+        deleteRoomById(roomOrIdOrCode);
+      } else if (isStr(roomOrIdOrCode)) {
+        deleteRoomById(roomOrIdOrCode);
+      } else {
+        if (isObj(roomOrIdOrCode)) {
+          removeRoomByCode(roomOrIdOrCode.getCode());
+        }
+      }
     }
   }
 
@@ -239,7 +253,7 @@ function RoomManager() {
   //                    Export
 
   //==================================================
-  const publicInterface = {
+  const publicScope = {
     createRoom,
     getClientManager,
     setClientManager,
@@ -250,6 +264,7 @@ function RoomManager() {
     getRoomByCode,
     getRoomById,
 
+    deleteRoom,
     deleteRoomById,
     deleteRoomByCode,
 
@@ -257,7 +272,7 @@ function RoomManager() {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

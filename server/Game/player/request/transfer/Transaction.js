@@ -1,4 +1,11 @@
-const { isObj, isDef, isArr, arrSum, makeVar, makeMap } = require("../../../utils.js");
+const {
+  isObj,
+  isDef,
+  isArr,
+  arrSum,
+  makeVar,
+  makeMap,
+} = require("../../../utils.js");
 
 const MultiTransfer = require("./MultiTransfer.js");
 
@@ -32,14 +39,14 @@ function Transaction() {
   }
 
   function isComplete() {
-    let items = mWealthTransfers.map(transfer => {
+    let items = mWealthTransfers.map((transfer) => {
       return transfer.isComplete() ? 1 : 0;
     });
     return arrSum(items) === items.length && items.length > 0;
   }
 
   function isEmpty() {
-    let items = mWealthTransfers.map(transfer => {
+    let items = mWealthTransfers.map((transfer) => {
       return transfer.isEmpty() ? 1 : 0;
     });
     return arrSum(items) === items.length;
@@ -61,14 +68,14 @@ function Transaction() {
       is: "Transaction",
       isComplete: isComplete(),
       isEmpty: isEmpty(),
-      items
+      items,
     };
     return result;
   }
 
   function clone() {
     let cloned = Transaction();
-    getKeys().forEach(key => {
+    getKeys().forEach((key) => {
       let item = get(key);
       if (isDef(item)) {
         cloned.set(key, item.clone());
@@ -81,7 +88,7 @@ function Transaction() {
   function load(serialized) {
     if (isDef(serialized)) {
       if (isObj(serialized.items)) {
-        Object.keys(serialized.items).forEach(key => {
+        Object.keys(serialized.items).forEach((key) => {
           let value = serialized.items[key];
           getOrCreate(key).load(value);
         });
@@ -89,7 +96,7 @@ function Transaction() {
     }
   }
 
-  const publicInterface = {
+  const publicScope = {
     clone,
     has,
     set,
@@ -100,11 +107,11 @@ function Transaction() {
     getKeys,
     isComplete,
     isEmpty,
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

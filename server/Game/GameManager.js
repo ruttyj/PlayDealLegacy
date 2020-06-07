@@ -1120,7 +1120,7 @@ let GameManager = () => {
     return getCollectionManager().getCollectionThatHasCard(cardOrId);
   }
 
-  const publicInterface = {
+  const publicScope = {
     //====================================
     getPlayerManager,
     getRequestManager,
@@ -1236,7 +1236,7 @@ let GameManager = () => {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

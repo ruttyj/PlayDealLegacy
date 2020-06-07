@@ -36,7 +36,7 @@ function ReduxBuffer(_initialState = {}) {
     return getNestedValue(currentState, path, fallback);
   }
 
-  const publicInterface = {
+  const publicScope = {
     dispatch,
     flush,
     get,
@@ -44,7 +44,7 @@ function ReduxBuffer(_initialState = {}) {
   };
 
   function getPublic() {
-    return publicInterface;
+    return publicScope;
   }
 
   return getPublic();

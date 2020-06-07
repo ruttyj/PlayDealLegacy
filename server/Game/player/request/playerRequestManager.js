@@ -313,7 +313,7 @@ const PlayerRequestManager = function () {
     return result;
   }
 
-  const publicInterface = {
+  const publicScope = {
     createRequest,
     loadRequest,
     makeJustSayNo,
@@ -340,7 +340,7 @@ const PlayerRequestManager = function () {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
   return getPublic();
 };

@@ -132,7 +132,7 @@ export default function StateBuffer(_initialState = {}) {
     return getNestedValue(mCurrentState, path, fallback);
   }
 
-  const publicInterface = {
+  const publicScope = {
     is,
     inc,
     dec,
@@ -148,7 +148,7 @@ export default function StateBuffer(_initialState = {}) {
   };
 
   function getPublic() {
-    return publicInterface;
+    return publicScope;
   }
 
   return getPublic();

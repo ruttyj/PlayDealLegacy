@@ -1524,7 +1524,7 @@ function Game(ref) {
   }
 
   //respondToPropertyTransfer
-  const publicInterface = {
+  const publicScope = {
     customUi: {
       get: getCustomUi,
       set: setCustomUi,
@@ -2215,7 +2215,7 @@ function Game(ref) {
   };
 
   function getPublic() {
-    return publicInterface;
+    return publicScope;
   }
 
   return getPublic();

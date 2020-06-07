@@ -4,13 +4,13 @@ const Collection = require("../collection/collection.js");
 
 function makePlayerHand(gameRef) {
   return {
-    ...CardContainer(gameRef)
+    ...CardContainer(gameRef),
   };
 }
 
 function makePlayerBank(gameRef) {
   return {
-    ...CardContainer(gameRef)
+    ...CardContainer(gameRef),
   };
 }
 
@@ -20,13 +20,15 @@ function makePlayerBank(gameRef) {
 function Player(playerManagerRef) {
   const mState = {
     hand: makePlayerHand(playerManagerRef.getGameRef()),
-    bank: makePlayerBank(playerManagerRef.getGameRef())
+    bank: makePlayerBank(playerManagerRef.getGameRef()),
   };
 
   const playerKey = makeVar(mState, "playerKey", null);
   const playerManager = makeVar(mState, "playerManager", playerManagerRef);
 
-  const mCollectionIds = makeList(mState, "collections", [], { mutator: v => parseInt(v, 10) });
+  const mCollectionIds = makeList(mState, "collections", [], {
+    mutator: (v) => parseInt(v, 10),
+  });
 
   function getHand() {
     return mState.hand;
@@ -36,7 +38,7 @@ function Player(playerManagerRef) {
     return mState.bank;
   }
 
-  const publicInterface = {
+  const publicScope = {
     ...mState,
     setPlayerManager: playerManager.set,
     getAllCollectionIds: mCollectionIds.toArray,
@@ -48,11 +50,11 @@ function Player(playerManagerRef) {
     hasKey: playerKey.has,
     removeKey: playerKey.remove,
     getBank,
-    getHand
+    getHand,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

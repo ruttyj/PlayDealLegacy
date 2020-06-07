@@ -1,5 +1,5 @@
 const { makeVar, makeMap, isDef, isArr } = require("../../../utils.js");
-const sterilize = v => parseInt(v, 10);
+const sterilize = (v) => parseInt(v, 10);
 
 // Transfer of a single category
 function Transfer() {
@@ -15,7 +15,7 @@ function Transfer() {
 
   function add(mxd) {
     if (isArr(mxd)) {
-      mxd.forEach(id => {
+      mxd.forEach((id) => {
         _addItem(id);
       });
     } else {
@@ -33,7 +33,7 @@ function Transfer() {
 
   function confirm(mxd) {
     if (isArr(mxd)) {
-      mxd.forEach(id => {
+      mxd.forEach((id) => {
         _confirmItem(id);
       });
     } else {
@@ -90,7 +90,7 @@ function Transfer() {
 
   function clone() {
     let cloned = Transfer();
-    getFullList().forEach(item => {
+    getFullList().forEach((item) => {
       cloned.add(item);
       if (isConfirmed(item)) {
         confirm(item);
@@ -102,13 +102,13 @@ function Transfer() {
   function load(serialized) {
     if (isDef(serialized)) {
       if (isArr(serialized.items)) {
-        serialized.items.forEach(item => {
+        serialized.items.forEach((item) => {
           add(item);
         });
       }
 
       if (isArr(serialized.transfered)) {
-        serialized.transfered.forEach(item => {
+        serialized.transfered.forEach((item) => {
           confirm(item);
         });
       }
@@ -121,13 +121,13 @@ function Transfer() {
       isEmpty: isEmpty(),
       isComplete: isComplete,
       items: getFullList(),
-      transfered: getTransferedList()
+      transfered: getTransferedList(),
     };
 
     return result;
   }
 
-  const publicInterface = {
+  const publicScope = {
     load,
 
     add,
@@ -143,11 +143,11 @@ function Transfer() {
     isComplete,
     isEmpty,
 
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

@@ -14,7 +14,7 @@ const makeGetters = (state) => {
   const cachedState = state;
   const storeState = gameBuffer.getState();
 
-  //publicInterface
+  //publicScope
   const pi = {
     getCustomUi(path = [], fallback = null) {
       return getNestedValue(storeState.uiCustomize, path, fallback);

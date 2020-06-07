@@ -1,25 +1,43 @@
-const { isDef, els, isNum, isObj, isArr, jsonLog, makeVar, makeList, getKeyFromProp, reduceArrayToMap } = require("../utils.js");
+const {
+  isDef,
+  els,
+  isNum,
+  isObj,
+  isArr,
+  jsonLog,
+  makeVar,
+  makeList,
+  getKeyFromProp,
+  reduceArrayToMap,
+} = require("../utils.js");
 const utils = require("./cardUtils.js");
 const { INCLUDE_DEBUG_DATA } = require("../config/constants.js");
 
-const CardContainer = function(gameRef) {
+const CardContainer = function (gameRef) {
   let mState = {};
 
   let mGameRef = gameRef;
 
-  const { inc: incTotalValue, dec: decTotalValue, get: getTotalValue } = makeVar(mState, "totalValue", 0);
+  const {
+    inc: incTotalValue,
+    dec: decTotalValue,
+    get: getTotalValue,
+  } = makeVar(mState, "totalValue", 0);
 
   const mCardOrder = makeList(mState, "cardOrder", []);
 
   function _shuffleCards(cards) {
     let temp = [...cards];
 
-    let doShuffle = temp => {
+    let doShuffle = (temp) => {
       let lastIndex, selectedIndex;
       lastIndex = temp.length - 1;
       while (lastIndex > 0) {
         selectedIndex = utils.randomRange(0, lastIndex);
-        [temp[lastIndex], temp[selectedIndex]] = [temp[selectedIndex], temp[lastIndex]];
+        [temp[lastIndex], temp[selectedIndex]] = [
+          temp[selectedIndex],
+          temp[lastIndex],
+        ];
         --lastIndex;
       }
     };
@@ -45,7 +63,7 @@ const CardContainer = function(gameRef) {
 
   function addCards(cardOrCards) {
     if (isArr(cardOrCards))
-      cardOrCards.forEach(card => {
+      cardOrCards.forEach((card) => {
         addCard(card);
       });
     else addCard(cardOrCards);
@@ -59,7 +77,7 @@ const CardContainer = function(gameRef) {
 
   function getAllCards() {
     let result = [];
-    getAllCardIds().forEach(cardId => {
+    getAllCardIds().forEach((cardId) => {
       let card = getCard(cardId);
       if (isDef(card)) result.push(card);
     });
@@ -74,7 +92,7 @@ const CardContainer = function(gameRef) {
       return getAllCardIds();
     } else if (isArr(cardIds)) {
       let lookup = reduceArrayToMap(cardIds);
-      mCardOrder.forEach(cardId => {
+      mCardOrder.forEach((cardId) => {
         if (isDef(lookup[cardId])) {
           let card = getCard(cardId);
           if (isDef(card)) result.push(card);
@@ -85,22 +103,22 @@ const CardContainer = function(gameRef) {
   }
 
   function getAllCardIds() {
-    return mCardOrder.map(v => v);
+    return mCardOrder.map((v) => v);
   }
 
   function hasCard(cardOrId) {
     let cardId = getKeyFromProp(cardOrId, "id");
-    return isDef(mCardOrder.find(cid => String(cid) === String(cardId)));
+    return isDef(mCardOrder.find((cid) => String(cid) === String(cardId)));
   }
 
   // returns a card if exists but does not remove
   function getCardById(cardId) {
     // return card else null
-    return findCard(card => String(card.id) === String(cardId));
+    return findCard((card) => String(card.id) === String(cardId));
   }
 
   function giveCardsById(arrCardId) {
-    return arrCardId.map(cardId => giveCardById(cardId));
+    return arrCardId.map((cardId) => giveCardById(cardId));
   }
 
   function removeCard(cardOrId) {
@@ -126,7 +144,7 @@ const CardContainer = function(gameRef) {
   }
 
   function giveCards(cardsOrIds) {
-    return cardsOrIds.map(cardOrId => {
+    return cardsOrIds.map((cardOrId) => {
       let cardId = getKeyFromProp(cardOrId, "id");
       return giveCard(cardId);
     });
@@ -184,7 +202,7 @@ const CardContainer = function(gameRef) {
     let result = {
       totalValue: getTotalValue(),
       count: mCardOrder.count(),
-      cardIds: [...mCardOrder.getAll()]
+      cardIds: [...mCardOrder.getAll()],
     };
 
     if (INCLUDE_DEBUG_DATA) {
@@ -197,7 +215,7 @@ const CardContainer = function(gameRef) {
   function findCard(fn) {
     let selfRef = getPublic();
     let result = null;
-    mCardOrder.forEach(cardId => {
+    mCardOrder.forEach((cardId) => {
       if (!isDef(result)) {
         let card = getCard(cardId);
         if (isDef(card) && fn(card, cardId, selfRef)) {
@@ -209,7 +227,7 @@ const CardContainer = function(gameRef) {
     return result;
   }
 
-  const publicInterface = {
+  const publicScope = {
     getCards,
     getAllCards,
     getAllCardIds,
@@ -240,11 +258,11 @@ const CardContainer = function(gameRef) {
 
     replaceAllCards,
 
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

@@ -8,7 +8,7 @@ function WealthTransfer() {
   let mTransferMap = makeMap(mState, "transferMap");
 
   function isComplete() {
-    let items = mTransferMap.map(transfer => {
+    let items = mTransferMap.map((transfer) => {
       return transfer.isComplete() ? 1 : 0;
     });
     return arrSum(items) === items.length && items.length > 0;
@@ -16,7 +16,7 @@ function WealthTransfer() {
 
   function isEmpty() {
     //@TODO can be optimized
-    let items = mTransferMap.map(transfer => {
+    let items = mTransferMap.map((transfer) => {
       return transfer.isEmpty() ? 1 : 0;
     });
     return arrSum(items) === items.length;
@@ -65,21 +65,21 @@ function WealthTransfer() {
   }
 
   function serialize() {
-    let items = mTransferMap.mapKeyed(transfer => {
+    let items = mTransferMap.mapKeyed((transfer) => {
       return transfer.serialize();
     });
 
     const result = {
       is: "MultiTransfer",
       isComplete: isComplete(),
-      items
+      items,
     };
     return result;
   }
 
   function clone() {
     let cloned = WealthTransfer();
-    getKeys().forEach(key => {
+    getKeys().forEach((key) => {
       let transfer = get(key);
       if (isDef(transfer)) {
         cloned.set(key, transfer.clone());
@@ -90,7 +90,7 @@ function WealthTransfer() {
   function load(serialized) {
     if (isDef(serialized)) {
       if (isObj(serialized.items)) {
-        Object.keys(serialized.items).forEach(key => {
+        Object.keys(serialized.items).forEach((key) => {
           let value = serialized.items[key];
           getOrCreate(key).load(value);
         });
@@ -98,7 +98,7 @@ function WealthTransfer() {
     }
   }
 
-  const publicInterface = {
+  const publicScope = {
     isComplete,
     isEmpty,
     clone,
@@ -111,11 +111,11 @@ function WealthTransfer() {
     getKeys,
     has,
     remove,
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

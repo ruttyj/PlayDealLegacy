@@ -105,7 +105,7 @@ function makeKeyedResponse(keyedRequest) {
   return socketResponses;
 }
 
-function getAllKeyedResponse(SUBJECTS, keyedRequest) {
+function getAllKeyedResponse(PUBLIC_SUBJECTS, keyedRequest) {
   var subject, action, props, propName, getAllKeys;
   subject = keyedRequest.getSubject();
   action = keyedRequest.getAction();
@@ -124,7 +124,10 @@ function getAllKeyedResponse(SUBJECTS, keyedRequest) {
     ...props,
   };
   getProps[propName] = getAllKeys();
-  socketResponses.addToBucket("default", SUBJECTS[subject].GET_KEYED(getProps));
+  socketResponses.addToBucket(
+    "default",
+    PUBLIC_SUBJECTS[subject].GET_KEYED(getProps)
+  );
 
   return socketResponses;
 }
@@ -307,7 +310,18 @@ function attachSocketHandlers(thisClient) {
   const mThisClientId = thisClient.id;
   const mStrThisClientId = String(mThisClientId);
 
-  const SUBJECTS = {
+  // Declare
+  const PRIVATE_SUBJECTS = {};
+  const PUBLIC_SUBJECTS = {};
+
+  Object.assign(PRIVATE_SUBJECTS, {
+    CLIENT: {
+      CONNECT: (props) => {},
+      DISCONNECT: (props) => {},
+    },
+  });
+
+  Object.assign(PUBLIC_SUBJECTS, {
     ROOM: {
       // Create a room
       CREATE: (props) => {
@@ -431,7 +445,7 @@ function attachSocketHandlers(thisClient) {
         let roomCodes = roomManager.listAllRoomCodes();
         socketResponses.addToBucket(
           "default",
-          SUBJECTS.ROOM.GET_KEYED({
+          PUBLIC_SUBJECTS.ROOM.GET_KEYED({
             roomCodes: roomCodes,
           })
         );
@@ -465,13 +479,13 @@ function attachSocketHandlers(thisClient) {
               // send room data
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.ROOM.GET_CURRENT({ roomCode })
+                PUBLIC_SUBJECTS.ROOM.GET_CURRENT({ roomCode })
               );
 
               // Get the full player list for myself
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.PEOPLE.GET_ALL_KEYED({
+                PUBLIC_SUBJECTS.PEOPLE.GET_ALL_KEYED({
                   roomCode,
                 })
               );
@@ -479,7 +493,7 @@ function attachSocketHandlers(thisClient) {
               // Let everyone else know the new users has joined
               socketResponses.addToBucket(
                 "everyoneElse",
-                SUBJECTS.PEOPLE.GET_KEYED({
+                PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                   personId,
                   roomCode,
                 })
@@ -488,7 +502,7 @@ function attachSocketHandlers(thisClient) {
               if (personManager.getConnectedPeopleCount() === 1) {
                 socketResponses.addToBucket(
                   "default",
-                  SUBJECTS.PEOPLE.SET_HOST({
+                  PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
                     roomCode,
                     personId,
                   })
@@ -497,14 +511,14 @@ function attachSocketHandlers(thisClient) {
 
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.PEOPLE.GET_HOST({
+                PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
                   roomCode,
                 })
               );
 
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.PEOPLE.ME({
+                PUBLIC_SUBJECTS.PEOPLE.ME({
                   roomCode,
                 })
               );
@@ -560,7 +574,7 @@ function attachSocketHandlers(thisClient) {
                 if (isDef(otherPeople[0])) {
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS.PEOPLE.SET_HOST({
+                    PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
                       roomCode,
                       personId: otherPeople[0].getId(),
                     })
@@ -572,7 +586,7 @@ function attachSocketHandlers(thisClient) {
 
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.PEOPLE.REMOVE({
+                PUBLIC_SUBJECTS.PEOPLE.REMOVE({
                   roomCode,
                   personId: thisPerson.getId(),
                 })
@@ -605,7 +619,7 @@ function attachSocketHandlers(thisClient) {
                 thisPerson.setName(username);
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS.PEOPLE.GET_KEYED({
+                  PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                     personId: thisPersonId,
                     roomCode,
                   })
@@ -720,7 +734,7 @@ function attachSocketHandlers(thisClient) {
 
             socketResponses.addToBucket(
               "default",
-              SUBJECTS.PEOPLE.GET_HOST({
+              PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
                 roomCode,
               })
             );
@@ -748,7 +762,7 @@ function attachSocketHandlers(thisClient) {
 
           socketResponses.addToBucket(
             "default",
-            SUBJECTS.PEOPLE.GET_KEYED({
+            PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
               peopleIds,
               roomCode,
             })
@@ -863,7 +877,7 @@ function attachSocketHandlers(thisClient) {
               if (isDef(nextHost)) {
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS.PEOPLE.SET_HOST({
+                  PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
                     roomCode,
                     personId: nextHost.getId(),
                   })
@@ -899,7 +913,7 @@ function attachSocketHandlers(thisClient) {
 
             socketResponses.addToBucket(
               "everyone",
-              SUBJECTS.PEOPLE.GET_KEYED({
+              PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                 personId: thisPersonId,
                 roomCode,
               })
@@ -907,7 +921,7 @@ function attachSocketHandlers(thisClient) {
 
             socketResponses.addToBucket(
               "default",
-              SUBJECTS.GAME.CAN_START({ roomCode })
+              PUBLIC_SUBJECTS.GAME.CAN_START({ roomCode })
             );
             return socketResponses;
           },
@@ -946,7 +960,7 @@ function attachSocketHandlers(thisClient) {
               // Let people know --------------------------------------------------------
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
+                PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
                   roomCode,
                   personId: thisPersonId,
                   cardIds: cardIdsDelta,
@@ -955,14 +969,14 @@ function attachSocketHandlers(thisClient) {
 
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS["DRAW_PILE"].GET({ roomCode })
+                PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
               );
 
               // Update everyone with my new hand
               let allPlayerIds = getAllPlayerIds({ game, personManager });
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                   roomCode,
                   personId: thisPersonId,
                   receivingPeopleIds: allPlayerIds,
@@ -983,7 +997,7 @@ function attachSocketHandlers(thisClient) {
               // Update current turn state
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
               );
               //___________________________________________________________________________
             }
@@ -1049,7 +1063,7 @@ function attachSocketHandlers(thisClient) {
 
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS["COLLECTIONS"].GET_KEYED({
+                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                             roomCode,
                             collectionId: collection.getId(),
                           })
@@ -1066,7 +1080,7 @@ function attachSocketHandlers(thisClient) {
             if (status === "success") {
               socketResponses.addToBucket(
                 scope,
-                SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
+                PUBLIC_SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
               );
             }
 
@@ -1081,7 +1095,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
             return socketResponses; // <----- REMEMBER THIS!!!!
@@ -1127,7 +1141,7 @@ function attachSocketHandlers(thisClient) {
                     let allPlayerIds = getAllPlayerIds({ game, personManager });
                     socketResponses.addToBucket(
                       "default",
-                      SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                         roomCode,
                         personId: thisPersonId,
                         receivingPeopleIds: allPlayerIds,
@@ -1136,7 +1150,7 @@ function attachSocketHandlers(thisClient) {
                     //PLAYER_BANKS
                     socketResponses.addToBucket(
                       "default",
-                      SUBJECTS["PLAYER_BANKS"].GET_KEYED({
+                      PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED({
                         roomCode,
                         personId: thisPersonId,
                         receivingPeopleIds: allPlayerIds,
@@ -1147,14 +1161,14 @@ function attachSocketHandlers(thisClient) {
                     // Update current turn state
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                     );
 
                     // Wildcard could be any set, let other know
                     if (isWildCard) {
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
+                        PUBLIC_SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
                       );
                     }
 
@@ -1171,7 +1185,7 @@ function attachSocketHandlers(thisClient) {
                     if (game.checkWinConditionForPlayer(thisPersonId)) {
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS.GAME.STATUS({ roomCode })
+                        PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                       );
                     }
                   } else {
@@ -1239,7 +1253,7 @@ function attachSocketHandlers(thisClient) {
                   //Update collection contents
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS["COLLECTIONS"].GET_KEYED({
+                    PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                       roomCode,
                       collectionId: collection.getId(),
                     })
@@ -1248,7 +1262,7 @@ function attachSocketHandlers(thisClient) {
                   // Update who has what collection
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
+                    PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                       roomCode,
                       personId: thisPersonId,
                     })
@@ -1257,21 +1271,21 @@ function attachSocketHandlers(thisClient) {
                   if (isWildCard) {
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
+                      PUBLIC_SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
                     );
                   }
 
                   // Emit updated player turn
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                    PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                   );
 
                   // Update everyone with my new hand
                   let allPlayerIds = getAllPlayerIds({ game, personManager });
                   socketResponses.addToBucket(
                     "default",
-                    SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                       roomCode,
                       personId: thisPersonId,
                       receivingPeopleIds: allPlayerIds,
@@ -1284,7 +1298,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -1300,7 +1314,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
             return socketResponses;
@@ -1381,20 +1395,23 @@ function attachSocketHandlers(thisClient) {
                             if (isWildCard) {
                               socketResponses.addToBucket(
                                 "everyone",
-                                SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
+                                PUBLIC_SUBJECTS.CARDS.GET_KEYED({
+                                  roomCode,
+                                  cardId,
+                                })
                               );
                             }
 
                             // Emit updated player turn
                             socketResponses.addToBucket(
                               "everyone",
-                              SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                              PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                             );
 
                             //Update collection contents
                             socketResponses.addToBucket(
                               "everyone",
-                              SUBJECTS["COLLECTIONS"].GET_KEYED({
+                              PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                                 roomCode,
                                 collectionId: collection.getId(),
                               })
@@ -1407,7 +1424,7 @@ function attachSocketHandlers(thisClient) {
                             });
                             socketResponses.addToBucket(
                               "default",
-                              SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                                 roomCode,
                                 personId: thisPersonId,
                                 receivingPeopleIds: allPlayerIds,
@@ -1426,7 +1443,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -1442,7 +1459,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
             return socketResponses;
@@ -1502,13 +1519,13 @@ function attachSocketHandlers(thisClient) {
                         // Emit updated player turn
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                          PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                         );
 
                         //Update collection contents
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS["COLLECTIONS"].GET_KEYED({
+                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                             roomCode,
                             collectionId: collection.getId(),
                           })
@@ -1521,7 +1538,7 @@ function attachSocketHandlers(thisClient) {
                         });
                         socketResponses.addToBucket(
                           "default",
-                          SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                          PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                             roomCode,
                             personId: thisPersonId,
                             receivingPeopleIds: allPlayerIds,
@@ -1545,7 +1562,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -1609,13 +1626,13 @@ function attachSocketHandlers(thisClient) {
                   // updated card piles
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS["GAME"].GET_UPDATED_PILES({ roomCode })
+                    PUBLIC_SUBJECTS["GAME"].GET_UPDATED_PILES({ roomCode })
                   );
 
                   // Cards Drawn
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
+                    PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
                       roomCode,
                       personId: thisPersonId,
                       cardIds: cardIdsDelta,
@@ -1629,7 +1646,7 @@ function attachSocketHandlers(thisClient) {
                   });
                   socketResponses.addToBucket(
                     "default",
-                    SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                       roomCode,
                       personId: thisPersonId,
                       receivingPeopleIds: allPlayerIds,
@@ -1644,13 +1661,13 @@ function attachSocketHandlers(thisClient) {
                   // update player turn - must be last
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                    PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                   );
 
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS.GAME.STATUS({ roomCode })
+                      PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                     );
                   }
 
@@ -1866,7 +1883,7 @@ function attachSocketHandlers(thisClient) {
         }
 
         return handleCollectionBasedRequestCreation(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "MY_TURN",
           "CHARGE_RENT",
           props,
@@ -1931,7 +1948,7 @@ function attachSocketHandlers(thisClient) {
         }
 
         return handleRequestCreation(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "MY_TURN",
           "VALUE_COLLECTION",
           props,
@@ -2075,7 +2092,7 @@ function attachSocketHandlers(thisClient) {
         }
 
         return handleRequestCreation(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "MY_TURN",
           "SWAP_PROPERTY",
           props,
@@ -2177,7 +2194,7 @@ function attachSocketHandlers(thisClient) {
         }
 
         return handleRequestCreation(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "MY_TURN",
           "STEAL_PROPERTY",
           props,
@@ -2260,7 +2277,7 @@ function attachSocketHandlers(thisClient) {
         }
 
         return handleRequestCreation(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "MY_TURN",
           "STEAL_COLLECTION",
           props,
@@ -2314,11 +2331,13 @@ function attachSocketHandlers(thisClient) {
             if (currentTurn.getCurrentPhase() === "done") {
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
+                  makeProps(consumerData)
+                )
               );
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
               );
               game.nextPlayerTurn();
               status = "success";
@@ -2335,7 +2354,7 @@ function attachSocketHandlers(thisClient) {
             // Emit updated player turn
             socketResponses.addToBucket(
               "everyone",
-              SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+              PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
             );
 
             // If additional data required let player know
@@ -2356,7 +2375,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -2431,7 +2450,10 @@ function attachSocketHandlers(thisClient) {
             if (hasWildCard) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId: wildCardIds })
+                PUBLIC_SUBJECTS.CARDS.GET_KEYED({
+                  roomCode,
+                  cardId: wildCardIds,
+                })
               );
             }
 
@@ -2439,7 +2461,7 @@ function attachSocketHandlers(thisClient) {
             let allPlayerIds = getAllPlayerIds({ game, personManager });
             socketResponses.addToBucket(
               "default",
-              SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                 roomCode,
                 personId: thisPersonId,
                 receivingPeopleIds: allPlayerIds,
@@ -2451,17 +2473,17 @@ function attachSocketHandlers(thisClient) {
             );
             socketResponses.addToBucket(
               "everyone",
-              SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+              PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
             );
             socketResponses.addToBucket(
               "everyone",
-              SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+              PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -2549,7 +2571,7 @@ function attachSocketHandlers(thisClient) {
 
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
+                  PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                     roomCode,
                     personId: thisPersonId,
                   })
@@ -2557,7 +2579,7 @@ function attachSocketHandlers(thisClient) {
 
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["COLLECTIONS"].GET_KEYED({
+                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                     roomCode,
                     collectionIds: playerManager.getAllCollectionIdsForPlayer(
                       thisPersonId
@@ -2566,7 +2588,7 @@ function attachSocketHandlers(thisClient) {
                 );
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                  PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                 );
               }
             }
@@ -2574,7 +2596,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -2590,7 +2612,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
             return socketResponses;
@@ -2714,7 +2736,7 @@ function attachSocketHandlers(thisClient) {
                 if (removedCollectionIds.length > 0) {
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
+                    PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
                       roomCode,
                       personId: thisPersonId,
                       collectionIds: removedCollectionIds,
@@ -2724,7 +2746,7 @@ function attachSocketHandlers(thisClient) {
 
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
+                  PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                     roomCode,
                     personId: thisPersonId,
                   })
@@ -2732,7 +2754,7 @@ function attachSocketHandlers(thisClient) {
 
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["COLLECTIONS"].GET_KEYED({
+                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                     roomCode,
                     collectionIds: playerManager.getAllCollectionIdsForPlayer(
                       thisPersonId
@@ -2742,7 +2764,7 @@ function attachSocketHandlers(thisClient) {
 
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                  PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                 );
               }
             }
@@ -2750,7 +2772,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -2763,7 +2785,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
             return socketResponses;
@@ -2862,7 +2884,7 @@ function attachSocketHandlers(thisClient) {
                         if (removedCollectionIds.length > 0) {
                           socketResponses.addToBucket(
                             "everyone",
-                            SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
+                            PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
                               roomCode,
                               personId: thisPersonId,
                               collectionIds: removedCollectionIds,
@@ -2872,7 +2894,7 @@ function attachSocketHandlers(thisClient) {
 
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
+                          PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                             roomCode,
                             personId: thisPersonId,
                           })
@@ -2880,7 +2902,7 @@ function attachSocketHandlers(thisClient) {
 
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS["COLLECTIONS"].GET_KEYED({
+                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                             roomCode,
                             collectionIds: playerManager.getAllCollectionIdsForPlayer(
                               thisPersonId
@@ -2890,7 +2912,7 @@ function attachSocketHandlers(thisClient) {
 
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                          PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                         );
                       }
                     }
@@ -2910,7 +2932,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
             return socketResponses;
@@ -3000,7 +3022,7 @@ function attachSocketHandlers(thisClient) {
                       if (removedCollectionIds.length > 0) {
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
+                          PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
                             roomCode,
                             personId: thisPersonId,
                             collectionIds: removedCollectionIds,
@@ -3010,7 +3032,7 @@ function attachSocketHandlers(thisClient) {
 
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
+                        PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                           roomCode,
                           personId: thisPersonId,
                         })
@@ -3018,7 +3040,7 @@ function attachSocketHandlers(thisClient) {
 
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS["COLLECTIONS"].GET_KEYED({
+                        PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                           roomCode,
                           collectionIds: playerManager.getAllCollectionIdsForPlayer(
                             thisPersonId
@@ -3028,7 +3050,7 @@ function attachSocketHandlers(thisClient) {
 
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                        PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                       );
                     }
                   }
@@ -3047,7 +3069,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -3126,7 +3148,7 @@ function attachSocketHandlers(thisClient) {
                     if (removedCollectionIds.length > 0) {
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
+                        PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
                           roomCode,
                           personId: thisPersonId,
                           collectionIds: removedCollectionIds,
@@ -3145,7 +3167,7 @@ function attachSocketHandlers(thisClient) {
                     };
                     socketResponses.addToBucket(
                       "default",
-                      SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                         specificPropsForEveryone
                       )
                     );
@@ -3153,7 +3175,7 @@ function attachSocketHandlers(thisClient) {
                     // Notify player collections
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
+                      PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                         roomCode,
                         personId: thisPersonId,
                       })
@@ -3162,7 +3184,7 @@ function attachSocketHandlers(thisClient) {
                     // Notift collection contents
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS["COLLECTIONS"].GET_KEYED({
+                      PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                         roomCode,
                         collectionIds: playerManager.getAllCollectionIdsForPlayer(
                           thisPersonId
@@ -3172,7 +3194,7 @@ function attachSocketHandlers(thisClient) {
 
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                     );
                   }
                 }
@@ -3190,7 +3212,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -3395,7 +3417,7 @@ function attachSocketHandlers(thisClient) {
                               );
                               socketResponses.addToBucket(
                                 "default",
-                                SUBJECTS["PLAYER_BANKS"].GET_KEYED(
+                                PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
                                   makeProps(consumerData, {
                                     peopleIds: thisPersonId,
                                     receivingPeopleIds: peopleIds,
@@ -3427,7 +3449,7 @@ function attachSocketHandlers(thisClient) {
                               if (collectionChanges.updated.length > 0) {
                                 socketResponses.addToBucket(
                                   "everyone",
-                                  SUBJECTS["COLLECTIONS"].GET_KEYED(
+                                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                                     makeProps(consumerData, {
                                       personId: thisPersonId,
                                       collectionIds: collectionChanges.updated,
@@ -3440,7 +3462,7 @@ function attachSocketHandlers(thisClient) {
                               if (collectionChanges.removed.length > 0) {
                                 socketResponses.addToBucket(
                                   "everyone",
-                                  SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
+                                  PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
                                     makeProps(consumerData, {
                                       personId: thisPersonId,
                                       collectionIds: collectionChanges.removed,
@@ -3452,7 +3474,7 @@ function attachSocketHandlers(thisClient) {
 
                             socketResponses.addToBucket(
                               "everyone",
-                              SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                              PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                                 makeProps(consumerData, {
                                   personId: thisPersonId,
                                 })
@@ -3460,7 +3482,7 @@ function attachSocketHandlers(thisClient) {
                             );
                             socketResponses.addToBucket(
                               "everyone",
-                              SUBJECTS.REQUESTS.GET_KEYED(
+                              PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                                 makeProps(consumerData, {
                                   requestId: request.getId(),
                                 })
@@ -3468,7 +3490,9 @@ function attachSocketHandlers(thisClient) {
                             );
                             socketResponses.addToBucket(
                               "everyone",
-                              SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
+                              PUBLIC_SUBJECTS.PLAYER_TURN.GET(
+                                makeProps(consumerData)
+                              )
                             );
                           } // end accept
                           else if (responseKey === "decline") {
@@ -3565,7 +3589,7 @@ function attachSocketHandlers(thisClient) {
                                 });
                                 socketResponses.addToBucket(
                                   "default",
-                                  SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                                  PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                                     makeProps(consumerData, {
                                       personId: thisPersonId,
                                       receivingPeopleIds: allPlayerIds,
@@ -3575,7 +3599,7 @@ function attachSocketHandlers(thisClient) {
                                 if (affected.activePile) {
                                   socketResponses.addToBucket(
                                     "everyone",
-                                    SUBJECTS.ACTIVE_PILE.GET(
+                                    PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
                                       makeProps(consumerData)
                                     )
                                   );
@@ -3588,7 +3612,7 @@ function attachSocketHandlers(thisClient) {
                                   });
                                   socketResponses.addToBucket(
                                     "default",
-                                    SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                                       makeProps(consumerData, {
                                         personId: thisPersonId,
                                         receivingPeopleIds: allPlayerIds,
@@ -3602,7 +3626,7 @@ function attachSocketHandlers(thisClient) {
                                 ) {
                                   socketResponses.addToBucket(
                                     "everyone",
-                                    SUBJECTS["COLLECTIONS"].GET_KEYED(
+                                    PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                                       makeProps(consumerData, {
                                         collectionIds: affectedIds.collections,
                                       })
@@ -3617,7 +3641,9 @@ function attachSocketHandlers(thisClient) {
                                   // Update who has what collection
                                   socketResponses.addToBucket(
                                     "everyone",
-                                    SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
+                                    PUBLIC_SUBJECTS[
+                                      "PLAYER_COLLECTIONS"
+                                    ].GET_KEYED(
                                       makeProps(consumerData, {
                                         peopleIds:
                                           affectedIds.playerCollections,
@@ -3632,7 +3658,7 @@ function attachSocketHandlers(thisClient) {
                                 ) {
                                   socketResponses.addToBucket(
                                     "everyone",
-                                    SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                                    PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                                       makeProps(consumerData, {
                                         peopleIds: affectedIds.playerRequests,
                                       })
@@ -3640,7 +3666,7 @@ function attachSocketHandlers(thisClient) {
                                   );
                                   socketResponses.addToBucket(
                                     "everyone",
-                                    SUBJECTS.REQUESTS.GET_KEYED(
+                                    PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                                       makeProps(consumerData, {
                                         requestIds: affectedIds.requests,
                                       })
@@ -3649,7 +3675,7 @@ function attachSocketHandlers(thisClient) {
                                 }
                                 socketResponses.addToBucket(
                                   "everyone",
-                                  SUBJECTS.PLAYER_TURN.GET(
+                                  PUBLIC_SUBJECTS.PLAYER_TURN.GET(
                                     makeProps(consumerData)
                                   )
                                 );
@@ -3675,7 +3701,7 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
@@ -3712,13 +3738,13 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
           }
         };
         return handleTransferResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "COLLECT_CARD_TO_BANK_AUTO",
           props,
@@ -3734,7 +3760,7 @@ function attachSocketHandlers(thisClient) {
         };
 
         return handleTransactionResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "ACKNOWLEDGE_COLLECT_NOTHING",
           props,
@@ -3762,7 +3788,7 @@ function attachSocketHandlers(thisClient) {
         };
 
         return handleTransferResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "COLLECT_CARD_TO_BANK",
           props,
@@ -3858,7 +3884,7 @@ function attachSocketHandlers(thisClient) {
                 if (game.checkWinConditionForPlayer(thisPersonId)) {
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS.GAME.STATUS({ roomCode })
+                    PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                   );
                 }
               }
@@ -3867,7 +3893,7 @@ function attachSocketHandlers(thisClient) {
         };
 
         let result = handleTransferResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "COLLECT_CARD_TO_COLLECTION",
           props,
@@ -3927,14 +3953,14 @@ function attachSocketHandlers(thisClient) {
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
           }
         };
 
         let result = handleTransferResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "COLLECT_COLLECTION",
           props,
@@ -4129,7 +4155,7 @@ function attachSocketHandlers(thisClient) {
         };
 
         let result = handleTransactionResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "RESPOND_TO_PROPERTY_SWAP",
           props,
@@ -4246,7 +4272,7 @@ function attachSocketHandlers(thisClient) {
         };
 
         let result = handleTransactionResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "RESPOND_TO_JUST_SAY_NO",
           props,
@@ -4398,7 +4424,7 @@ function attachSocketHandlers(thisClient) {
         };
 
         let result = handleTransactionResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "RESPOND_TO_STEAL_PROPERTY",
           props,
@@ -4550,7 +4576,7 @@ function attachSocketHandlers(thisClient) {
         };
 
         let result = handleTransactionResponse(
-          SUBJECTS,
+          PUBLIC_SUBJECTS,
           "RESPONSES",
           "RESPOND_TO_STEAL_COLLECTION",
           props,
@@ -4570,17 +4596,17 @@ function attachSocketHandlers(thisClient) {
         if (isDef(roomCode)) {
           socketResponses.addToBucket(
             "default",
-            SUBJECTS["DRAW_PILE"].GET({ roomCode })
+            PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
           );
 
           socketResponses.addToBucket(
             "default",
-            SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+            PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
           );
 
           socketResponses.addToBucket(
             "default",
-            SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
+            PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
           );
         }
         return socketResponses;
@@ -4630,7 +4656,7 @@ function attachSocketHandlers(thisClient) {
             }
             socketResponses.addToBucket(
               "default",
-              SUBJECTS.GAME.GET_CONFIG({ roomCode })
+              PUBLIC_SUBJECTS.GAME.GET_CONFIG({ roomCode })
             );
             socketResponses.addToBucket(
               "default",
@@ -4732,55 +4758,59 @@ function attachSocketHandlers(thisClient) {
               };
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["PROPERTY_SETS"].GET_ALL_KEYED({ roomCode })
+                PUBLIC_SUBJECTS["PROPERTY_SETS"].GET_ALL_KEYED({ roomCode })
               );
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["PLAYERS"].GET({ roomCode })
+                PUBLIC_SUBJECTS["PLAYERS"].GET({ roomCode })
               );
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["CARDS"].GET_ALL_KEYED({ roomCode })
+                PUBLIC_SUBJECTS["CARDS"].GET_ALL_KEYED({ roomCode })
               );
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS["PLAYER_HANDS"].GET_KEYED(specificPropsForEveryone)
+                PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                  specificPropsForEveryone
+                )
               );
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS["PLAYER_BANKS"].GET_KEYED(specificPropsForEveryone)
+                PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
+                  specificPropsForEveryone
+                )
               );
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["COLLECTIONS"].GET_ALL_KEYED({
+                PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED({
                   roomCode,
                   peopleIds: peopleIds,
                 })
               );
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED({
+                PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED({
                   roomCode,
                   peopleIds: peopleIds,
                 })
               );
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["DRAW_PILE"].GET({ roomCode })
+                PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
               );
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
-              );
-
-              socketResponses.addToBucket(
-                "everyone",
-                SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+                PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
               );
 
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["GAME"].STATUS({ roomCode })
+                PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+              );
+
+              socketResponses.addToBucket(
+                "everyone",
+                PUBLIC_SUBJECTS["GAME"].STATUS({ roomCode })
               );
 
               socketResponses.addToBucket(
@@ -4794,7 +4824,7 @@ function attachSocketHandlers(thisClient) {
               );
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
               );
             }
             return socketResponses;
@@ -4882,7 +4912,7 @@ function attachSocketHandlers(thisClient) {
             // Get data
             socketResponses.addToBucket(
               "default",
-              getAllKeyedResponse(SUBJECTS, myKeyedRequest)
+              getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
             );
 
             return socketResponses;
@@ -4942,7 +4972,7 @@ function attachSocketHandlers(thisClient) {
             // Get data
             socketResponses.addToBucket(
               "default",
-              getAllKeyedResponse(SUBJECTS, myKeyedRequest)
+              getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
             );
 
             // Confirm
@@ -5129,8 +5159,8 @@ function attachSocketHandlers(thisClient) {
               makeResponse({ subject, action, status: "success", payload })
             );
 
-            //socketResponses.addToBucket("default", SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData)));
-            //socketResponses.addToBucket("default", SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData)));
+            //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData)));
+            //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData)));
 
             return socketResponses;
           },
@@ -5204,7 +5234,7 @@ function attachSocketHandlers(thisClient) {
 
             socketResponses.addToBucket(
               "default",
-              SUBJECTS[subject].GET_KEYED({
+              PUBLIC_SUBJECTS[subject].GET_KEYED({
                 ...props2,
                 peopleIds,
               })
@@ -5280,7 +5310,7 @@ function attachSocketHandlers(thisClient) {
             );
             socketResponses.addToBucket(
               "default",
-              SUBJECTS[subject].GET_KEYED({
+              PUBLIC_SUBJECTS[subject].GET_KEYED({
                 ...props,
                 peopleIds,
               })
@@ -5355,6 +5385,7 @@ function attachSocketHandlers(thisClient) {
     REQUESTS: {
       // Make
       ...makeRegularGetKeyed({
+        SUBJECTS: PUBLIC_SUBJECTS,
         subject: "REQUESTS",
         singularKey: "requestId",
         pluralKey: "requestIds",
@@ -5485,7 +5516,7 @@ function attachSocketHandlers(thisClient) {
             // Get data
             socketResponses.addToBucket(
               "default",
-              getAllKeyedResponse(SUBJECTS, myKeyedRequest)
+              getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
             );
 
             return socketResponses;
@@ -5500,6 +5531,7 @@ function attachSocketHandlers(thisClient) {
       // GET_ALL_KEYED
       // GET_ALL_MY_KEYED
       ...makeRegularGetKeyed({
+        SUBJECTS: PUBLIC_SUBJECTS,
         subject: "COLLECTIONS",
         singularKey: "collectionId",
         pluralKey: "collectionIds",
@@ -5536,13 +5568,13 @@ function attachSocketHandlers(thisClient) {
               //Reset game
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.GAME.RESET(makeProps(props))
+                PUBLIC_SUBJECTS.GAME.RESET(makeProps(props))
               );
               createGameInstance(room);
 
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS.GAME.UPDATE_CONFIG(
+                PUBLIC_SUBJECTS.GAME.UPDATE_CONFIG(
                   makeProps(consumerData, {
                     config: {
                       [CONFIG.SHUFFLE_DECK]: false,
@@ -5553,7 +5585,7 @@ function attachSocketHandlers(thisClient) {
               );
 
               // @TODO
-              //socketResponses.addToBucket("default", SUBJECTS.GAME.START(makeProps(consumerData)));
+              //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.GAME.START(makeProps(consumerData)));
 
               status = "success";
             } else {
@@ -5572,7 +5604,7 @@ function attachSocketHandlers(thisClient) {
         );
       },
     },
-  };
+  });
 
   //==================================================
 
@@ -5835,7 +5867,7 @@ function attachSocketHandlers(thisClient) {
   }
 
   function handleTransactionResponse(
-    SUBJECTS,
+    PUBLIC_SUBJECTS,
     subject,
     action,
     props,
@@ -5940,7 +5972,7 @@ function attachSocketHandlers(thisClient) {
                   });
                   socketResponses.addToBucket(
                     "default",
-                    SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                       makeProps(consumerData, {
                         personId: thisPersonId,
                         receivingPeopleIds: allPlayerIds,
@@ -5969,7 +6001,7 @@ function attachSocketHandlers(thisClient) {
                   if (updatedCollectionIds.length > 0) {
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS["COLLECTIONS"].GET_KEYED(
+                      PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                         makeProps(consumerData, {
                           collectionIds: updatedCollectionIds,
                         })
@@ -5980,7 +6012,7 @@ function attachSocketHandlers(thisClient) {
                   if (removedCollectionIds.length > 0) {
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
+                      PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
                         makeProps(consumerData, {
                           collectionIds: removedCollectionIds,
                         })
@@ -5996,7 +6028,7 @@ function attachSocketHandlers(thisClient) {
                   // Update who has what collection
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
+                    PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                       makeProps(consumerData, {
                         peopleIds: affectedIds.playerCollections,
                       })
@@ -6008,7 +6040,7 @@ function attachSocketHandlers(thisClient) {
                 if (affected.requests && isDef(affectedIds.requests)) {
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS.REQUESTS.GET_KEYED(
+                    PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                       makeProps(consumerData, {
                         requestIds: affectedIds.requests,
                       })
@@ -6019,7 +6051,7 @@ function attachSocketHandlers(thisClient) {
                 if (affectedIds.playerRequests.length > 0) {
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                    PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                       makeProps(consumerData, {
                         peopleIds: affectedIds.playerRequests,
                       })
@@ -6038,7 +6070,7 @@ function attachSocketHandlers(thisClient) {
                   );
                   socketResponses.addToBucket(
                     "default",
-                    SUBJECTS["PLAYER_BANKS"].GET_KEYED(
+                    PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
                       makeProps(consumerData, {
                         peopleIds: thisPersonId,
                         receivingPeopleIds: peopleIds,
@@ -6051,7 +6083,7 @@ function attachSocketHandlers(thisClient) {
                 if (affected.turn) {
                   socketResponses.addToBucket(
                     "everyone",
-                    SUBJECTS.PLAYER_TURN.GET({ roomCode })
+                    PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
                   );
                 }
               }
@@ -6073,7 +6105,13 @@ function attachSocketHandlers(thisClient) {
     );
   }
 
-  function handleTransferResponse(SUBJECTS, subject, action, props, theThing) {
+  function handleTransferResponse(
+    PUBLIC_SUBJECTS,
+    subject,
+    action,
+    props,
+    theThing
+  ) {
     let socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
@@ -6183,7 +6221,7 @@ function attachSocketHandlers(thisClient) {
                     });
                     socketResponses.addToBucket(
                       "default",
-                      SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                         makeProps(consumerData, {
                           personId: thisPersonId,
                           receivingPeopleIds: allPlayerIds,
@@ -6212,7 +6250,7 @@ function attachSocketHandlers(thisClient) {
                     if (updatedCollectionIds.length > 0) {
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS["COLLECTIONS"].GET_KEYED(
+                        PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                           makeProps(consumerData, {
                             collectionIds: updatedCollectionIds,
                           })
@@ -6223,7 +6261,7 @@ function attachSocketHandlers(thisClient) {
                     if (removedCollectionIds.length > 0) {
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
+                        PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
                           makeProps(consumerData, {
                             collectionIds: removedCollectionIds,
                           })
@@ -6239,7 +6277,7 @@ function attachSocketHandlers(thisClient) {
                     // Update who has what collection
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
+                      PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                         makeProps(consumerData, {
                           peopleIds: affectedIds.playerCollections,
                         })
@@ -6251,7 +6289,7 @@ function attachSocketHandlers(thisClient) {
                   if (affected.requests && isDef(affectedIds.requests)) {
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS.REQUESTS.GET_KEYED(
+                      PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                         makeProps(consumerData, {
                           requestIds: affectedIds.requests,
                         })
@@ -6259,7 +6297,7 @@ function attachSocketHandlers(thisClient) {
                     );
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                      PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                         makeProps(consumerData, { personId: thisPersonId })
                       )
                     ); // maybe have to include other people
@@ -6276,7 +6314,7 @@ function attachSocketHandlers(thisClient) {
                     );
                     socketResponses.addToBucket(
                       "default",
-                      SUBJECTS["PLAYER_BANKS"].GET_KEYED(
+                      PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
                         makeProps(consumerData, {
                           peopleIds: thisPersonId,
                           receivingPeopleIds: peopleIds,
@@ -6289,7 +6327,7 @@ function attachSocketHandlers(thisClient) {
                   if (affected.turn) {
                     socketResponses.addToBucket(
                       "everyone",
-                      SUBJECTS.PLAYER_TURN.GET({ roomCode })
+                      PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
                     );
                   }
                 }
@@ -6312,7 +6350,13 @@ function attachSocketHandlers(thisClient) {
     );
   }
 
-  function handleRequestCreation(SUBJECTS, subject, action, props, doTheThing) {
+  function handleRequestCreation(
+    PUBLIC_SUBJECTS,
+    subject,
+    action,
+    props,
+    doTheThing
+  ) {
     let socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
@@ -6396,7 +6440,7 @@ function attachSocketHandlers(thisClient) {
               let allPlayerIds = getAllPlayerIds({ game, personManager });
               socketResponses.addToBucket(
                 "default",
-                SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                   makeProps(consumerData, {
                     personId: thisPersonId,
                     receivingPeopleIds: allPlayerIds,
@@ -6406,14 +6450,14 @@ function attachSocketHandlers(thisClient) {
               if (affected.activePile) {
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
+                  PUBLIC_SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
                 );
               }
 
               if (affected.collections && affectedIds.collections.length > 0) {
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["COLLECTIONS"].GET_KEYED(
+                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                     makeProps(consumerData, {
                       collectionIds: affectedIds.collections,
                     })
@@ -6428,7 +6472,7 @@ function attachSocketHandlers(thisClient) {
                 // Update who has what collection
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
+                  PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                     makeProps(consumerData, {
                       peopleIds: affectedIds.playerCollections,
                     })
@@ -6439,13 +6483,13 @@ function attachSocketHandlers(thisClient) {
               if (affected.requests && affectedIds.requests.length > 0) {
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                  PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                     makeProps(consumerData, { peopleIds: targetPeopleIds })
                   )
                 );
                 socketResponses.addToBucket(
                   "everyone",
-                  SUBJECTS.REQUESTS.GET_KEYED(
+                  PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                     makeProps(consumerData, {
                       requestIds: affectedIds.requests,
                     })
@@ -6454,7 +6498,7 @@ function attachSocketHandlers(thisClient) {
               }
               socketResponses.addToBucket(
                 "everyone",
-                SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
+                PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
               );
             }
           }
@@ -6474,7 +6518,7 @@ function attachSocketHandlers(thisClient) {
   }
 
   function handleCollectionBasedRequestCreation(
-    SUBJECTS,
+    PUBLIC_SUBJECTS,
     subject,
     action,
     props,
@@ -6654,7 +6698,7 @@ function attachSocketHandlers(thisClient) {
                       });
                       socketResponses.addToBucket(
                         "default",
-                        SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                        PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                           makeProps(consumerData, {
                             personId: thisPersonId,
                             receivingPeopleIds: allPlayerIds,
@@ -6664,7 +6708,9 @@ function attachSocketHandlers(thisClient) {
                       if (affected.activePile) {
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
+                          PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
+                            makeProps(consumerData)
+                          )
                         );
                       }
 
@@ -6674,7 +6720,7 @@ function attachSocketHandlers(thisClient) {
                       ) {
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                          PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                             makeProps(consumerData, {
                               peopleIds: targetPeopleIds,
                             })
@@ -6682,7 +6728,7 @@ function attachSocketHandlers(thisClient) {
                         );
                         socketResponses.addToBucket(
                           "everyone",
-                          SUBJECTS.REQUESTS.GET_KEYED(
+                          PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                             makeProps(consumerData, {
                               requestIds: affectedIds.requests,
                             })
@@ -6691,7 +6737,7 @@ function attachSocketHandlers(thisClient) {
                       }
                       socketResponses.addToBucket(
                         "everyone",
-                        SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
+                        PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
                       );
                     }
                   }
@@ -6725,6 +6771,7 @@ function attachSocketHandlers(thisClient) {
   }
 
   function makeRegularGetKeyed({
+    SUBJECTS,
     subject,
     singularKey,
     pluralKey,
@@ -6871,7 +6918,7 @@ function attachSocketHandlers(thisClient) {
     };
   }
 
-  function handleClientRequests(encodedData) {
+  const makeIOHandle = (subjectMap) => (encodedData) => {
     let socketResponses = SocketResponseBuckets();
     let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
     let clientPersonMapping = {};
@@ -6884,11 +6931,11 @@ function attachSocketHandlers(thisClient) {
         let action = request.action;
         let props = els(request.props, {});
 
-        if (isDef(SUBJECTS[subject])) {
-          if (isDef(SUBJECTS[subject][action])) {
+        if (isDef(subjectMap[subject])) {
+          if (isDef(subjectMap[subject][action])) {
             // @TODO add a way of limiting the props which can be passed to method from the client
             // We may want to push data to clients but not allow it to be abused
-            let actionResult = SUBJECTS[subject][action](props);
+            let actionResult = subjectMap[subject][action](props);
 
             requestResponses.addToBucket("default", actionResult);
           }
@@ -6927,15 +6974,16 @@ function attachSocketHandlers(thisClient) {
         }
       }
     });
-  }
+  };
 
   function handleClientDisconnect() {
     let clientId = thisClient.id;
     let rooms = roomManager.getRoomsForClientId(clientId);
 
     if (isDef(rooms)) {
+      let handleIo = makeIOHandle(PUBLIC_SUBJECTS);
       rooms.forEach((room) => {
-        handleRequests(
+        handleIo(
           JSON.stringify([
             {
               subject: "ROOM",
@@ -6944,6 +6992,11 @@ function attachSocketHandlers(thisClient) {
             },
           ])
         );
+        // Handle leave room since the above handler requires the room to exist to notify people
+        let roomPersonManager = room.getPersonManager();
+        if (roomPersonManager.getConnectedPeopleCount() === 0) {
+          roomManager.deleteRoom(room.getId());
+        }
       });
     }
     clientManager.removeClient(thisClient);
@@ -6958,7 +7011,7 @@ function attachSocketHandlers(thisClient) {
   //==================================================
   handleConnect();
   thisClient.on("test", () => console.log("TESTING"));
-  thisClient.on("request", handleClientRequests);
+  thisClient.on("request", makeIOHandle(PUBLIC_SUBJECTS));
   thisClient.on("disconnect", handleClientDisconnect);
 }
 

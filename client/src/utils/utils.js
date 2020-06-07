@@ -516,7 +516,7 @@ const makeMap = function (
     }
   }
 
-  const publicInterface = {
+  const publicScope = {
     is,
     value: mMap,
     has,
@@ -544,7 +544,7 @@ const makeMap = function (
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   ref[field] = getPublic();
@@ -611,7 +611,7 @@ const makeTree = function (
     }
   }
 
-  const publicInterface = {
+  const publicScope = {
     is,
     value: mObj,
     has,
@@ -625,7 +625,7 @@ const makeTree = function (
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   ref[field] = getPublic();
@@ -747,7 +747,7 @@ const makeList = function (ref, field = "value", defaultValue = []) {
     return removeByFn(mList, (item) => item === value);
   }
 
-  const publicInterface = {
+  const publicScope = {
     is,
     value: mList,
     has,
@@ -780,7 +780,7 @@ const makeList = function (ref, field = "value", defaultValue = []) {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   ref[field] = getPublic();
@@ -837,7 +837,7 @@ const makeListener = function () {
     mOnceObserverArr = [];
   }
 
-  const publicInterface = {
+  const publicScope = {
     value: {
       mOnObserverArr,
       mOnceObserverArr,
@@ -849,7 +849,7 @@ const makeListener = function () {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();
@@ -925,7 +925,7 @@ const makeListenerMap = function () {
     return result;
   }
 
-  const publicInterface = {
+  const publicScope = {
     addEvent,
     on,
     once,
@@ -935,7 +935,7 @@ const makeListenerMap = function () {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

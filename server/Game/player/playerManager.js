@@ -1,20 +1,19 @@
-const {
-  isDef,
-  els,
-  isNum,
-  isObj,
-  makeVar,
-  makeMap,
-  makeList,
-  getKeyFromProp,
-} = require("../utils.js");
+const { isDef, makeMap, getKeyFromProp } = require("../utils.js");
 const PlayerTurn = require("./playerTurn.js");
 const CollectionManager = require("../collection/collectionManager.js");
-
 const Player = require("./player.js");
-
 const constants = require("../config/constants.js");
 
+//==================================================
+
+//                Player Manager
+
+//==================================================
+/**
+ * Manages game specific person related data.
+ *
+ * @param {*} gameRef reference to game instance
+ */
 function PlayerManager(gameRef = null) {
   let mGameRef = gameRef;
 
@@ -241,7 +240,7 @@ function PlayerManager(gameRef = null) {
     }
   }
 
-  const publicInterface = {
+  const publicScope = {
     getGameRef,
     destory,
 
@@ -274,7 +273,7 @@ function PlayerManager(gameRef = null) {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

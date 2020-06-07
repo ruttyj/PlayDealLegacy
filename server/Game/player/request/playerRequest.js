@@ -1,6 +1,14 @@
-const { makeVar, emptyFunction, isDef, isFunc, isArr, recursiveBuild, getNestedValue } = require("../../utils.js");
+const {
+  makeVar,
+  emptyFunction,
+  isDef,
+  isFunc,
+  isArr,
+  recursiveBuild,
+  getNestedValue,
+} = require("../../utils.js");
 
-const PlayerRequest = function(
+const PlayerRequest = function (
   id,
   requestType,
   actionNum = 0,
@@ -17,42 +25,102 @@ const PlayerRequest = function(
 
   const { get: getId, set: setId } = makeVar(mRef, "id", null);
 
-  const { get: getParentId, set: setParentId } = makeVar(mRef, "parentId", null);
+  const { get: getParentId, set: setParentId } = makeVar(
+    mRef,
+    "parentId",
+    null
+  );
 
   const { get: getRootId, set: setRootId } = makeVar(mRef, "rootId", null);
 
-  const { get: getManagerRef, set: setManagerRef } = makeVar(mRef, "managerRef", null);
+  const { get: getManagerRef, set: setManagerRef } = makeVar(
+    mRef,
+    "managerRef",
+    null
+  );
 
-  const { get: getAuthorKey, set: setAuthorKey } = makeVar(mRef, "authorKey", null);
+  const { get: getAuthorKey, set: setAuthorKey } = makeVar(
+    mRef,
+    "authorKey",
+    null
+  );
 
-  const { get: getTargetKey, set: setTargetKey } = makeVar(mRef, "targetKey", null);
+  const { get: getTargetKey, set: setTargetKey } = makeVar(
+    mRef,
+    "targetKey",
+    null
+  );
 
-  const { get: getActionNum, set: setActionNum } = makeVar(mRef, "actionNum", actionNum);
+  const { get: getActionNum, set: setActionNum } = makeVar(
+    mRef,
+    "actionNum",
+    actionNum
+  );
 
   const { get: getType, set: setType } = makeVar(mRef, "type", null);
 
-  const { get: getDescription, set: setDescription } = makeVar(mRef, "description", description);
+  const { get: getDescription, set: setDescription } = makeVar(
+    mRef,
+    "description",
+    description
+  );
 
   const { get: isClosed, set: setIsClosed } = makeVar(mRef, "isClosed", false);
 
-  const { get: hasResponse, set: setHasResponse } = makeVar(mRef, "hasResponse", false);
+  const { get: hasResponse, set: setHasResponse } = makeVar(
+    mRef,
+    "hasResponse",
+    false
+  );
 
   const { get: getStatus, set: setStatus } = makeVar(mRef, "status", "open");
 
-  const { get: getTargetSatisfied, set: setTargetSatisfied } = makeVar(mRef, "hasTargetSatisfied", false);
+  const { get: getTargetSatisfied, set: setTargetSatisfied } = makeVar(
+    mRef,
+    "hasTargetSatisfied",
+    false
+  );
 
-  const { get: _getPayload, set: setPayload, has: hasPayload } = makeVar(mRef, "payload", null);
+  const { get: _getPayload, set: setPayload, has: hasPayload } = makeVar(
+    mRef,
+    "payload",
+    null
+  );
   //const { get: _getHiddenPayload, set: setHiddenPayload, has: hasHiddenPayload } = makeVar(mRef, "hiddenPayload", null);
 
   //Methods called - crutial to the core operation
-  const { get: getOnAcceptFn, set: setOnAcceptFn, has: hasOnAcceptFn } = makeVar(mRef, "onAccept", onAccept);
-  const { get: getOnDeclineFn, set: setOnDeclineFn, has: hasOnDeclineFn } = makeVar(mRef, "onDecline", onDecline);
-  const { get: getOnCloseFn, set: setOnCloseFn } = makeVar(mRef, "onClose", onClose);
-  const { get: getOnCounterFn, set: setOnCounterFn } = makeVar(mRef, "onCounter", onCounter);
+  const {
+    get: getOnAcceptFn,
+    set: setOnAcceptFn,
+    has: hasOnAcceptFn,
+  } = makeVar(mRef, "onAccept", onAccept);
+  const {
+    get: getOnDeclineFn,
+    set: setOnDeclineFn,
+    has: hasOnDeclineFn,
+  } = makeVar(mRef, "onDecline", onDecline);
+  const { get: getOnCloseFn, set: setOnCloseFn } = makeVar(
+    mRef,
+    "onClose",
+    onClose
+  );
+  const { get: getOnCounterFn, set: setOnCounterFn } = makeVar(
+    mRef,
+    "onCounter",
+    onCounter
+  );
 
   // These will only get executed at the end of the request chain IE:  Request Property: SayNo -> SayNo -> SayNo -> accept
-  const { get: getOnAcceptCallback, set: setOnAcceptCallback, has: hasOnAcceptCallback } = makeVar(mRef, "onAcceptCallback", onAcceptCallback);
-  const { get: getOnDeclineCallback, set: setOnDeclineCallback, has: hasOnDeclineCallback } = makeVar(mRef, "onDeclineCallback", onDeclineCallback);
+  const {
+    get: getOnAcceptCallback,
+    set: setOnAcceptCallback,
+    has: hasOnAcceptCallback,
+  } = makeVar(mRef, "onAcceptCallback", onAcceptCallback);
+  const {
+    get: getOnDeclineCallback,
+    set: setOnDeclineCallback,
+    has: hasOnDeclineCallback,
+  } = makeVar(mRef, "onDeclineCallback", onDeclineCallback);
 
   setId(id);
   setType(requestType);
@@ -95,13 +163,16 @@ const PlayerRequest = function(
 
   function serialize() {
     // Recursivly iterate over an object if has serialize value then substitiute the serialized values
-    let serializePayload = recursiveBuild(getPayload(), (recurse, value, path) => {
-      if (isDef(value) && isFunc(value.serialize)) {
-        return value.serialize();
-      } else if (!isFunc(value)) {
-        return recurse(value, path);
+    let serializePayload = recursiveBuild(
+      getPayload(),
+      (recurse, value, path) => {
+        if (isDef(value) && isFunc(value.serialize)) {
+          return value.serialize();
+        } else if (!isFunc(value)) {
+          return recurse(value, path);
+        }
       }
-    });
+    );
 
     return {
       id: getId(),
@@ -119,7 +190,7 @@ const PlayerRequest = function(
       hasOnDeclineFn,
       hasOnCounterFn: getOnCounterFn() !== emptyFunction,
       hasOnCloseFn: getOnCloseFn() !== emptyFunction,
-      payload: serializePayload
+      payload: serializePayload,
     };
   }
 
@@ -132,7 +203,7 @@ const PlayerRequest = function(
     return null;
   }
 
-  const publicInterface = {
+  const publicScope = {
     getId,
 
     getParentId,
@@ -189,13 +260,13 @@ const PlayerRequest = function(
     counter,
     close,
 
-    serialize
+    serialize,
   };
   function getPublic() {
     // do not allow the modification of the interface
-    return { ...publicInterface };
+    return { ...publicScope };
   }
-  return publicInterface;
+  return publicScope;
 };
 
 module.exports = PlayerRequest;

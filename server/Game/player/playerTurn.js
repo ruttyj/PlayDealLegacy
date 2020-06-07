@@ -169,7 +169,7 @@ function PlayerTurn(gameRef, playerKey = null) {
 
   if (isDef(playerKey)) setPlayerKey(playerKey);
 
-  const publicInterface = {
+  const publicScope = {
     getRequestManager,
     destroy,
 
@@ -208,7 +208,7 @@ function PlayerTurn(gameRef, playerKey = null) {
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   // Set intial phase

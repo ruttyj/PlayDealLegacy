@@ -1,13 +1,4 @@
-const {
-  isUndef,
-  isDef,
-  isTrue,
-  isFalse,
-  identityMutator,
-  emptyFunction,
-  makeVar,
-  makeMap,
-} = require("../utils.js");
+const { isDef, makeVar, makeMap } = require("../utils.js");
 const Chat = require("../chat/chat.js");
 const PersonManager = require("../person/personManager.js");
 
@@ -147,7 +138,7 @@ function Room() {
   //                    Export
 
   //==================================================
-  const publicInterface = {
+  const publicScope = {
     getId,
     setId,
     getCode,
@@ -183,7 +174,7 @@ function Room() {
   };
 
   function getPublic() {
-    return publicInterface;
+    return publicScope;
   }
 
   return getPublic();

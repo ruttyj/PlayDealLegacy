@@ -1,4 +1,14 @@
-const { isUndef, isDef, isFunc, isTrue, isFalse, emptyFunction, makeVar, makeMap, makeListener } = require("../utils.js");
+const {
+  isUndef,
+  isDef,
+  isFunc,
+  isTrue,
+  isFalse,
+  emptyFunction,
+  makeVar,
+  makeMap,
+  makeListener,
+} = require("../utils.js");
 
 //##################################################
 
@@ -14,9 +24,19 @@ function ClientManager() {
 
   //==================================================
   const mPrivateVars = ["clients"];
-  const { set: setClientInMap, get: getClientInMap, has: hasClientInMap, remove: removeClientInMap, map: mapClients } = makeMap(mRef, "clients");
+  const {
+    set: setClientInMap,
+    get: getClientInMap,
+    has: hasClientInMap,
+    remove: removeClientInMap,
+    map: mapClients,
+  } = makeMap(mRef, "clients");
 
-  const { set: onClientDisconnect, get: getOnClientDisconnect } = makeVar(mRef, "onClientDisconnect", emptyFunction);
+  const { set: onClientDisconnect, get: getOnClientDisconnect } = makeVar(
+    mRef,
+    "onClientDisconnect",
+    emptyFunction
+  );
   const emitOnClientDisconnect = (...args) => getOnClientDisconnect()(...args);
   //==================================================
 
@@ -41,7 +61,7 @@ function ClientManager() {
   function makeEventPayload(client) {
     return {
       clientManager: getPublic(),
-      client
+      client,
     };
   }
 
@@ -53,7 +73,7 @@ function ClientManager() {
     // clientSockets use .id as the priamry way to get the id
     if (isDef(client) && isDef(client.id)) {
       client.events = {
-        disconnect: makeListener()
+        disconnect: makeListener(),
       };
 
       setClientInMap(client.id, client);
@@ -101,15 +121,17 @@ function ClientManager() {
 
     // Serialize everything except the external references
     let excludeKeys = [...mPrivateVars, ...mExternalRefs];
-    let keys = Object.keys(mRef).filter(key => !excludeKeys.includes(key));
+    let keys = Object.keys(mRef).filter((key) => !excludeKeys.includes(key));
 
     // Serialize each if possible, leave primitives as is
-    keys.forEach(key => {
-      result[key] = isDef(mRef[key].serialize) ? mRef[key].serialize() : mRef[key];
+    keys.forEach((key) => {
+      result[key] = isDef(mRef[key].serialize)
+        ? mRef[key].serialize()
+        : mRef[key];
     });
 
-    result.clients = mapClients(client => ({
-      id: client.id
+    result.clients = mapClients((client) => ({
+      id: client.id,
     }));
     return result;
   }
@@ -119,7 +141,7 @@ function ClientManager() {
   //                    Export
 
   //==================================================
-  const publicInterface = {
+  const publicScope = {
     addClient,
     getClient,
     removeClient,
@@ -128,16 +150,16 @@ function ClientManager() {
 
     events: {
       connect: mConnectEvent,
-      disconnect: mDisconnectEvent
+      disconnect: mDisconnectEvent,
     },
 
     // deprecated
     connectEvent: mConnectEvent,
-    disconnectEvent: mDisconnectEvent
+    disconnectEvent: mDisconnectEvent,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();

@@ -4,7 +4,7 @@ import {
   isFunc,
   getNestedValue,
   setImmutableValue,
-  identity
+  identity,
 } from "./utils"; //==========================================
 /**
  * Methods required for setting to a React class based state object
@@ -27,7 +27,7 @@ function makeClassMethods(mRef, path, initialValue = null) {
     },
     allGetter(fallbackValue) {
       return getNestedValue(mRef.state, path, fallbackValue);
-    }
+    },
   };
 }
 
@@ -40,11 +40,11 @@ function makeHookMethods(_useState, initialValue = []) {
     },
     allGetter() {
       return value;
-    }
+    },
   };
 }
 
-const setMutator = values => Array.from(new Set(values));
+const setMutator = (values) => Array.from(new Set(values));
 
 // Core getter, setter, mutator, normalize
 function AbstractCore() {
@@ -101,7 +101,7 @@ function AbstractCore() {
     allGetter,
     allSetter,
     allMutator,
-    normalize
+    normalize,
   };
 }
 
@@ -125,7 +125,7 @@ function AbstractImmutableList() {
   function removeValue(value) {
     let oldArray = core.allGetter([]);
     let newArray = oldArray.filter(
-      val => core.normalize(val) !== core.normalize(value)
+      (val) => core.normalize(val) !== core.normalize(value)
     );
     core.allSetter(newArray);
   }
@@ -211,7 +211,7 @@ function AbstractImmutableList() {
     return getAll();
   }
 
-  const publicInterface = {
+  const publicScope = {
     ...core,
     has,
     add,
@@ -231,11 +231,11 @@ function AbstractImmutableList() {
     findIndex,
     find,
     map,
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
 
   return getPublic();
@@ -270,7 +270,7 @@ function AbstractImmutableObject() {
   function forEach(fn) {
     let keys = getAllKeys();
     let selfRef = getPublic();
-    keys.forEach(key => {
+    keys.forEach((key) => {
       let item = get(key);
       fn(item, key, selfRef);
     });
@@ -283,7 +283,7 @@ function AbstractImmutableObject() {
     let returnKey = expect === "key";
 
     let result = [];
-    keys.forEach(key => {
+    keys.forEach((key) => {
       let item = get(key);
       let fnResult = true;
 
@@ -305,7 +305,7 @@ function AbstractImmutableObject() {
     let selfRef = getPublic();
 
     let result = {};
-    keys.forEach(key => {
+    keys.forEach((key) => {
       let item = get(key);
       if (fn(item, key, selfRef)) {
         result[key] = item;
@@ -316,7 +316,7 @@ function AbstractImmutableObject() {
 
   function map(fn) {
     let selfRef = getPublic();
-    return getAllKeys().map(key => fn(get(key), key, selfRef));
+    return getAllKeys().map((key) => fn(get(key), key, selfRef));
   }
 
   function firstKey() {
@@ -345,7 +345,7 @@ function AbstractImmutableObject() {
     let values = getAllValues();
     if (isDef(values)) {
       return isDef(
-        values.find(v => core.normalize(v) === core.normalize(value))
+        values.find((v) => core.normalize(v) === core.normalize(value))
       );
     }
     return false;
@@ -397,7 +397,7 @@ function AbstractImmutableObject() {
         if (breakOnFirst) break;
       }
     }
-    foundKeys.forEach(key => {
+    foundKeys.forEach((key) => {
       delete clonedData[key];
     });
     core.allSetter(clonedData);
@@ -411,7 +411,7 @@ function AbstractImmutableObject() {
     return core.allGetter({});
   }
 
-  const publicInterface = {
+  const publicScope = {
     ...core,
     setAll,
     getAll,
@@ -431,11 +431,11 @@ function AbstractImmutableObject() {
     filter,
     filterKeyed,
     map,
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return { ...publicInterface };
+    return { ...publicScope };
   }
   return getPublic();
 }
@@ -502,5 +502,5 @@ export {
   ImmutableHookBasedList,
   ImmutableClassBasedList,
   ImmutableHookBasedObject,
-  ImmutableClassBasedObject
+  ImmutableClassBasedObject,
 };

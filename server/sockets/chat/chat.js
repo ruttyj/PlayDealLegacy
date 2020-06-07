@@ -3,7 +3,7 @@ const {
   emptyFunction,
   identity,
   makeVar,
-  makeList
+  makeList,
 } = require("../utils.js");
 
 //##################################################
@@ -29,17 +29,17 @@ function Chat() {
     push: pushEntry,
     get: getEntryAtIndex,
     getCount: getEntryCount,
-    shallowClone: getAllEntries
+    shallowClone: getAllEntries,
   } = makeList(mRef, "entries", []);
 
   function serialize() {
     let result = {};
     // Serialize everything except the external references
     let excludeKeys = [...mPrivateVars, ...mExternalRefs];
-    let keys = Object.keys(mRef).filter(key => !excludeKeys.includes(key));
+    let keys = Object.keys(mRef).filter((key) => !excludeKeys.includes(key));
 
     // Serialize each if possible, leave primitives as is
-    keys.forEach(key => {
+    keys.forEach((key) => {
       result[key] = isDef(mRef[key].serialize)
         ? mRef[key].serialize()
         : mRef[key];
@@ -62,16 +62,16 @@ function Chat() {
     return results;
   }
 
-  const publicInterface = {
+  const publicScope = {
     addEntry,
     getAllEntries,
     getEntryCount,
     getEntriesAfter,
-    serialize
+    serialize,
   };
 
   function getPublic() {
-    return publicInterface;
+    return publicScope;
   }
 
   return getPublic();
