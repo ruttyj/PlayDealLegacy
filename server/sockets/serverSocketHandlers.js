@@ -466,7 +466,7 @@ function attachSocketHandlers(thisClient) {
 
         let { roomCode, username } = props;
         username = els(username, "Player");
-        return roomConsumer(
+        return handleRoom(
           props,
           ({ room, personManager }) => {
             let person = personManager.createPerson(thisClient, username);
@@ -549,7 +549,7 @@ function attachSocketHandlers(thisClient) {
         let socketResponses = SocketResponseBuckets();
 
         let status = "failure";
-        return roomConsumer(
+        return handleRoom(
           props,
           ({ roomCode, room, personManager, thisPerson }) => {
             if (isDef(thisPerson)) {
@@ -604,7 +604,7 @@ function attachSocketHandlers(thisClient) {
         // roomCode
         let [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
             let { roomCode, thisPersonId, thisPerson, username } = props2;
@@ -641,7 +641,7 @@ function attachSocketHandlers(thisClient) {
         // roomCode
         let [subject, action] = ["PEOPLE", "ME"];
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
             let { thisPersonId, thisPerson } = props2;
@@ -664,7 +664,7 @@ function attachSocketHandlers(thisClient) {
         // roomCode
         let [subject, action] = ["PEOPLE", "GET_HOST"];
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
             let { personManager } = props2;
@@ -696,7 +696,7 @@ function attachSocketHandlers(thisClient) {
         // roomCode, personId
         let [subject, action] = ["PEOPLE", "SET_HOST"];
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
             let { personId } = props;
@@ -788,7 +788,7 @@ function attachSocketHandlers(thisClient) {
           order: [],
         };
 
-        return roomConsumer(
+        return handleRoom(
           props,
           ({ room, personManager }) => {
             let personFoundCount = 0;
@@ -817,7 +817,7 @@ function attachSocketHandlers(thisClient) {
         let [subject, action] = ["PEOPLE", "REMOVE"];
         let message = "Failed to remove people.";
 
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
             let status = "failure";
@@ -895,7 +895,7 @@ function attachSocketHandlers(thisClient) {
         let socketResponses = SocketResponseBuckets();
         let payload = null;
         let requestStatus = "failure";
-        return personConsumer(
+        return handlePerson(
           props,
           ({ roomCode, room, personManager, person, thisPersonId }) => {
             let { status } = props;
@@ -934,7 +934,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "MY_TURN";
         let action = "TURN_STARTING_DRAW";
         let socketResponses = SocketResponseBuckets();
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (props2) => {
             let { roomCode, game, personManager, thisPersonId } = props2;
@@ -1014,7 +1014,7 @@ function attachSocketHandlers(thisClient) {
         let socketResponses = SocketResponseBuckets();
         let status = "failure";
         let payload = null;
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (consumerData, checkpoints) => {
             let { cardId, chosenSetKey, collectionId } = consumerData;
@@ -2290,7 +2290,7 @@ function attachSocketHandlers(thisClient) {
         let action = "FINISH_TURN";
         let socketResponses = SocketResponseBuckets();
 
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (consumerData) => {
             let {
@@ -2388,7 +2388,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "MY_TURN";
         let action = "DISCARD_REMAINING";
         let socketResponses = SocketResponseBuckets();
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (props2) => {
             let status = "failure";
@@ -2499,7 +2499,7 @@ function attachSocketHandlers(thisClient) {
         let action = "TRANSFER_PROPERTY_TO_NEW_COLLECTION_FROM_COLLECTION";
         let socketResponses = SocketResponseBuckets();
         let status = "failure";
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (consumerData, checkpoints) => {
             //Defind checkpoints which must be reached
@@ -2626,7 +2626,7 @@ function attachSocketHandlers(thisClient) {
         let action = "TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION";
         let socketResponses = SocketResponseBuckets();
         let status = "failure";
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (consumerData, checkpoints) => {
             //Defind checkpoints which must be reached
@@ -2800,7 +2800,7 @@ function attachSocketHandlers(thisClient) {
           "TRANSFER_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_COLLECTION";
         let socketResponses = SocketResponseBuckets();
         let status = "failure";
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (consumerData, checkpoints) => {
             //Defind checkpoints which must be reached
@@ -2946,7 +2946,7 @@ function attachSocketHandlers(thisClient) {
         let action = "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION";
         let socketResponses = SocketResponseBuckets();
         let status = "failure";
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (consumerData, checkpoints) => {
             //Defind checkpoints which must be reached
@@ -3084,7 +3084,7 @@ function attachSocketHandlers(thisClient) {
         let action = "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND";
         let socketResponses = SocketResponseBuckets();
         let status = "failure";
-        return myTurnConsumerGood(
+        return handleMyTurn(
           props,
           (consumerData, checkpoints) => {
             //Defind checkpoints which must be reached
@@ -3226,7 +3226,7 @@ function attachSocketHandlers(thisClient) {
       RESPOND_TO_COLLECT_VALUE: (props) => {
         let [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData, checkpoints) => {
             let {
@@ -4167,7 +4167,7 @@ function attachSocketHandlers(thisClient) {
       TEST_NO: (props) => {
         let [subject, action] = ["RESPONSES", "TEST_NO"];
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData, checkpoints) => {
             let {
@@ -4615,7 +4615,7 @@ function attachSocketHandlers(thisClient) {
       RESET: (props) => {
         let [subject, action] = ["GAME", "RESET"];
         let socketResponses = SocketResponseBuckets();
-        return roomConsumer(
+        return handleRoom(
           props,
           ({ room }) => {
             let status = "success";
@@ -4639,11 +4639,13 @@ function attachSocketHandlers(thisClient) {
         let payload = null;
         let status = "failure";
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (consumerData, checkpoints) => {
             const { config } = consumerData;
-            const { roomCode, game } = consumerData;
+            const { roomCode, room } = consumerData;
+
+            const game = room.getGame();
 
             // Only alter config before the game has started
             checkpoints.set("gameHasNotYetStarted", false);
@@ -4674,14 +4676,16 @@ function attachSocketHandlers(thisClient) {
         let payload = null;
         let status = "failure";
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (consumerData) => {
-            const { game } = consumerData;
+            const { room } = consumerData;
+
+            const game = room.getGame();
 
             status = "success";
             payload = {
-              updatedConfig: game.getConfig(),
+              updatedConfig: isDef(game) ? game.getConfig() : null,
             };
 
             socketResponses.addToBucket(
@@ -4699,14 +4703,18 @@ function attachSocketHandlers(thisClient) {
         // roomCode
         let [subject, action] = ["GAME", "STATUS"];
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
-            let { game } = props2;
-            let isGameStarted = game.isGameStarted();
-            let isGameOver = game.isGameOver();
+            let { room } = props2;
+
+            const game = room.getGame();
+            let isGameStarted = isDef(game) ? game.isGameStarted() : false;
+            let isGameOver = isDef(game) ? game.isGameOver() : false;
             let isInProgress = isGameStarted && !isGameOver;
-            let winningCondition = game.getWinningCondition();
+            let winningCondition = isDef(game)
+              ? game.getWinningCondition()
+              : null;
 
             let status = "success";
             let payload = {
@@ -4728,10 +4736,11 @@ function attachSocketHandlers(thisClient) {
       START: (props) => {
         let [subject, action] = ["GAME", "START"];
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
-            let { roomCode, personManager, thisPerson, game } = props2;
+            let { roomCode, personManager, thisPerson, room } = props2;
+            let game = room.getGame();
             let canStart = canGameStart(game, personManager);
             if (thisPerson.hasTag("host") && canStart) {
               // Find the people in the room who are ready
@@ -4836,11 +4845,12 @@ function attachSocketHandlers(thisClient) {
         // roomCode
         let [subject, action] = ["GAME", "CAN_START"];
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
-            let { game, personManager } = props2;
+            let { room, personManager } = props2;
 
+            let game = room.getGame();
             let canStart = canGameStart(game, personManager);
             let host = personManager.findPerson((person) =>
               person.hasTag("host")
@@ -4866,7 +4876,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PROPERTY_SETS";
         let action = "GET_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             let { game } = consumerData;
@@ -4895,7 +4905,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PROPERTY_SETS";
         let action = "GET_ALL_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             // Config
@@ -4926,7 +4936,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "CARDS";
         let action = "GET_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             // Config
@@ -4955,7 +4965,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "CARDS";
         let action = "GET_ALL_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             // Config
@@ -4998,7 +5008,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "DISCARD_PILE";
         let action = "GET";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (props2) => {
             let { game } = props2;
@@ -5020,7 +5030,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "ACTIVE_PILE";
         let action = "GET";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (props2) => {
             let { game } = props2;
@@ -5042,7 +5052,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "DRAW_PILE";
         let action = "GET";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           ({ game }) => {
             // Takes no action
@@ -5066,7 +5076,7 @@ function attachSocketHandlers(thisClient) {
       GET: (props) => {
         let [subject, action] = ["PLAYERS", "GET"];
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             let { game } = consumerData;
@@ -5098,7 +5108,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYERS";
         let action = "PERSON_DREW_CARDS_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           ({ cardIds, game, personId }) => {
             // Takes no action
@@ -5135,7 +5145,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_TURN";
         let action = "GET";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             let { game, thisPersonId } = consumerData;
@@ -5182,7 +5192,7 @@ function attachSocketHandlers(thisClient) {
         let [subject, action] = ["PLAYER_HANDS", "GET_KEYED"];
         let socketResponses = SocketResponseBuckets();
 
-        return personConsumer(
+        return handleGame(
           props,
           (props2) => {
             let { game } = props2;
@@ -5223,7 +5233,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_HANDS";
         let action = "GET_ALL_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
             let { personManager, game } = props2;
@@ -5262,7 +5272,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_BANKS";
         let action = "GET_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handleGame(
           props,
           (props2) => {
             let { game } = props2;
@@ -5290,7 +5300,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_BANKS";
         let action = "GET_ALL_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return personConsumer(
+        return handlePerson(
           props,
           (props2) => {
             let { personManager, game } = props2;
@@ -5329,7 +5339,7 @@ function attachSocketHandlers(thisClient) {
         let action = "GET_KEYED";
         let socketResponses = SocketResponseBuckets();
 
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             let { game } = consumerData;
@@ -5363,7 +5373,7 @@ function attachSocketHandlers(thisClient) {
         let status = "failure";
         let payload = null;
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             let { game } = consumerData;
@@ -5428,7 +5438,7 @@ function attachSocketHandlers(thisClient) {
         let status = "failure";
         let payload = null;
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             let { game } = consumerData;
@@ -5453,7 +5463,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_COLLECTIONS";
         let action = "GET_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             let { game } = consumerData;
@@ -5486,7 +5496,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_COLLECTIONS";
         let action = "GET_ALL_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData) => {
             // Config
@@ -5558,7 +5568,7 @@ function attachSocketHandlers(thisClient) {
         let socketResponses = SocketResponseBuckets();
         let status = "failure";
         let payload = null;
-        return roomConsumer(
+        return handleRoom(
           props,
           (consumerData, checkpoints) => {
             // If in testing mode
@@ -5613,13 +5623,16 @@ function attachSocketHandlers(thisClient) {
   //==================================================
   // #region CONSUMERS
   // ensured the data required for a room is presant
-  function roomConsumer(props, fn, fallback = undefined) {
+  function handleRoom(props, fn, fallback = undefined) {
     let { roomCode } = props;
     // define which points were reached before failure
     let checkpoints = new Map();
     checkpoints.set("roomCode", false);
     checkpoints.set("room", false);
     checkpoints.set("personManager", false);
+
+    let reducedResponses = SocketResponseBuckets();
+    let responses = null;
 
     if (isDef(roomCode)) {
       checkpoints.set("roomCode", true);
@@ -5629,75 +5642,53 @@ function attachSocketHandlers(thisClient) {
         let personManager = room.getPersonManager();
         if (isDef(personManager)) {
           checkpoints.set("personManager", true);
-          let person = personManager.getPersonByClientId(mStrThisClientId);
+
+          let myClientId = mStrThisClientId;
+          let person = personManager.getPersonByClientId(myClientId);
           let game = room.getGame();
-          return fn(
-            {
-              ...props,
-              game,
-              roomCode,
-              thisRoomCode: roomCode,
-              room,
-              thisRoom: room,
+
+          let newProps = {
+            ...props,
+            //game,
+            roomCode,
+            thisRoomCode: roomCode,
+            room,
+            thisRoom: room,
+            personManager,
+          };
+          if (isDef(person)) {
+            Object.assign(newProps, {
               person,
+              thisPersonId: person.getId(),
               thisPerson: person,
-              personManager,
-            },
-            checkpoints
-          );
-        }
-      }
-    }
-    if (isFunc(fallback)) return fallback(checkpoints);
-    return fallback;
-  }
+            });
+          }
 
-  function gameConsumer(props, fn, fallback = undefined) {
-    let { roomCode } = props;
-    // define which points were reached before failure
-    let checkpoints = new Map();
-    checkpoints.set("roomCode", false);
-    checkpoints.set("room", false);
-    checkpoints.set("personManager", false);
-    checkpoints.set("game", false);
+          responses = fn(newProps, checkpoints);
 
-    if (isDef(roomCode)) {
-      checkpoints.set("roomCode", true);
-      let room = roomManager.getRoomByCode(roomCode);
-      if (isDef(room)) {
-        checkpoints.set("room", true);
-        let personManager = room.getPersonManager();
-        if (isDef(personManager)) {
-          checkpoints.set("personManager", true);
-          let person = personManager.getPersonByClientId(mStrThisClientId);
-          let game = room.getGame();
-          if (isDef(game)) {
-            checkpoints.set("game", true);
-            return fn(
-              {
-                ...props,
-                game,
-                roomCode,
-                thisRoomCode: roomCode,
-                room,
-                thisRoom: room,
-                person,
-                thisPersonId: person.getId(),
-                thisPerson: person,
-                personManager,
-              },
-              checkpoints
+          if (isDef(responses)) {
+            let clientPersonMapping = {};
+            personManager.getConnectedPeople().forEach((person) => {
+              clientPersonMapping[String(person.getClientId())] = true;
+            });
+            let clientIds = Object.keys(clientPersonMapping);
+
+            reducedResponses.addToBucket(
+              responses.reduce(myClientId, clientIds)
             );
           }
+          return responses;
         }
       }
     }
-    if (isFunc(fallback)) return fallback(checkpoints);
+    if (!isDef(responses) && isFunc(fallback)) {
+      return fallback(checkpoints);
+    }
     return fallback;
   }
 
-  function personConsumer(props, fn, fallback = undefined) {
-    return roomConsumer(
+  function handlePerson(props, fn, fallback = undefined) {
+    return handleRoom(
       props,
       (props2, checkpoints) => {
         // default
@@ -5721,8 +5712,38 @@ function attachSocketHandlers(thisClient) {
     );
   }
 
-  function myTurnConsumerBase(props, fn, fallback = undefined) {
-    return personConsumer(
+  function handleGame(props, fn, fallback = undefined) {
+    // define which points were reached before failure
+    let checkpoints = new Map();
+
+    // define which points were reached before failure
+    return handlePerson(
+      props,
+      (props2, checkpoints) => {
+        let { room } = props2;
+        let game = room.getGame();
+        if (isDef(game)) {
+          checkpoints.set("game", true);
+          return fn(
+            {
+              ...props2,
+              game,
+            },
+            checkpoints
+          );
+        }
+        if (isFunc(fallback2)) return fallback2(checkpoints);
+        return fallback2;
+      },
+      fallback
+    );
+
+    if (isFunc(fallback)) return fallback(checkpoints);
+    return fallback;
+  }
+
+  function _myTurnConsumerBase(props, fn, fallback = undefined) {
+    return handleGame(
       props,
       (props2, checkpoints) => {
         checkpoints.set("iHaveAHand", false);
@@ -5754,7 +5775,7 @@ function attachSocketHandlers(thisClient) {
     );
   }
 
-  function myTurnConsumerGood(props, fn, fallback = undefined) {
+  function handleMyTurn(props, fn, fallback = undefined) {
     let consumerCheck = (
       consumerData,
       checkpoints,
@@ -5777,7 +5798,13 @@ function attachSocketHandlers(thisClient) {
 
       setFailed(boolFailed);
     };
-    return makeConsumer(consumerCheck, myTurnConsumerBase, props, fn, fallback);
+    return makeConsumer(
+      consumerCheck,
+      _myTurnConsumerBase,
+      props,
+      fn,
+      fallback
+    );
   }
 
   function handCardConsumer(props, fn, fallback = undefined) {
@@ -5820,7 +5847,13 @@ function attachSocketHandlers(thisClient) {
 
       setFailed(boolFailed);
     };
-    return makeConsumer(consumerCheck, myTurnConsumerBase, props, fn, fallback);
+    return makeConsumer(
+      consumerCheck,
+      _myTurnConsumerBase,
+      props,
+      fn,
+      fallback
+    );
   }
 
   function makeConsumer(
@@ -5876,7 +5909,7 @@ function attachSocketHandlers(thisClient) {
     let socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
-    return gameConsumer(
+    return handleGame(
       props,
       (consumerData, checkpoints) => {
         let { requestId } = consumerData;
@@ -6115,7 +6148,7 @@ function attachSocketHandlers(thisClient) {
     let socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
-    return gameConsumer(
+    return handleGame(
       props,
       (consumerData, checkpoints) => {
         let { requestId } = consumerData;
@@ -6784,7 +6817,7 @@ function attachSocketHandlers(thisClient) {
         //props: { roomCode, (collectionIds|collectionId)}
         let action = "GET_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData, checkpoints) => {
             let upgradedData = { ...consumerData, subject, action };
@@ -6811,7 +6844,7 @@ function attachSocketHandlers(thisClient) {
         //props: {roomCode}
         let action = "GET_ALL_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData, checkpoints) => {
             let upgradedData = { ...consumerData, subject, action };
@@ -6850,7 +6883,7 @@ function attachSocketHandlers(thisClient) {
       GET_ALL_MY_KEYED: (props) => {
         let action = "GET_ALL_MY_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData, checkpoints) => {
             let upgradedData = { ...consumerData, subject, action };
@@ -6890,7 +6923,7 @@ function attachSocketHandlers(thisClient) {
         //props: { roomCode, (collectionIds|collectionId)}
         let action = "REMOVE_KEYED";
         let socketResponses = SocketResponseBuckets();
-        return gameConsumer(
+        return handleGame(
           props,
           (consumerData, checkpoints) => {
             let status = "success";
@@ -6944,7 +6977,7 @@ function attachSocketHandlers(thisClient) {
         // Collect person Ids
         let clientIdsMap = {};
         clientIdsMap[mStrThisClientId] = true;
-        roomConsumer(props, ({ personManager }) => {
+        handleRoom(props, ({ personManager }) => {
           personManager.getConnectedPeople().forEach((person) => {
             clientIdsMap[String(person.getClientId())] = true;
             clientPersonMapping[String(person.getClientId())] = person;

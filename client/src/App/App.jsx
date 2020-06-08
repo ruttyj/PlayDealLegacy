@@ -4,7 +4,8 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { isDef } from "../utils";
 
 import HomePage from "../pages/HomePage";
-//import Room from "../pages/Room";
+import Browse from "../pages/Browse";
+
 import Dev from "../pages/Dev";
 import Dev2 from "../pages/Dev2";
 import DevImmutable from "../pages/DevImmutable";
@@ -33,10 +34,6 @@ class App extends Component {
       rooms: null,
       room: null,
       roomsChatHistory: {},
-    };
-
-    this.getClientSocket = () => {
-      return this.state.clientSocket;
     };
 
     this.doMount = async () => {
@@ -71,6 +68,10 @@ class App extends Component {
     connection.destroy();
   }
 
+  onRouteChanged(...props) {
+    console.log("ROUTE CHANGED", [...props]);
+  }
+
   render() {
     return (
       <Provider store={store}>
@@ -92,7 +93,16 @@ class App extends Component {
                 exact
                 path="/"
                 render={(props) => {
-                  return <HomePage clientSocket={this.getClientSocket()} />;
+                  return <HomePage />;
+                }}
+              />
+
+              <Route
+                key="browse"
+                exact
+                path="/browse"
+                render={(props) => {
+                  return <Browse />;
                 }}
               />
 
@@ -101,9 +111,7 @@ class App extends Component {
                 exact
                 path="/dev3"
                 render={(props) => {
-                  return (
-                    <Dev3 room="AAAA" clientSocket={this.getClientSocket()} />
-                  );
+                  return <Dev3 room="AAAA" />;
                 }}
               />
               <Route
@@ -139,12 +147,7 @@ class App extends Component {
                     roomCode = "AAAA";
                   }
 
-                  return (
-                    <Dev2
-                      room={roomCode}
-                      clientSocket={this.getClientSocket()}
-                    />
-                  );
+                  return <Dev2 room={roomCode} />;
                 }}
               />
 
@@ -154,12 +157,7 @@ class App extends Component {
                 path="/dev2/*"
                 render={(props) => {
                   let roomCode = String(props.match.params[0]).replace("/", "");
-                  return (
-                    <Dev2
-                      room={roomCode}
-                      clientSocket={this.getClientSocket()}
-                    />
-                  );
+                  return <Dev2 room={roomCode} />;
                 }}
               />
             </Switch>

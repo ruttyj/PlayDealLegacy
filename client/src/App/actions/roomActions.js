@@ -60,6 +60,15 @@ const createRoom = (con, roomCode = null) => async (dispatch) => {
   return findResponse(responses, "ROOM", "CREATE");
 };
 
+const leaveRoom = (con, roomCode) => async (dispatch) => {
+  let responses = await con.emitSingleRequest("ROOM", "LEAVE", {
+    props: {
+      roomCode,
+    },
+  });
+  return responses;
+};
+
 const joinRoom = (con, roomCode) => async (dispatch) => {
   let responses = await con.emitSingleRequest("ROOM", "JOIN", {
     props: {
@@ -72,6 +81,7 @@ const joinRoom = (con, roomCode) => async (dispatch) => {
 export default {
   listAllRooms,
   joinRoom,
+  leaveRoom,
   createRoom,
   existsRoom,
   attachRoomListeners,

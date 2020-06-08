@@ -27,6 +27,7 @@ import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 
 import { ImmutableClassBasedObject } from "../utils/ReactStateTools";
+import createSocketConnection from "../utils/clientSocket";
 
 // Structure
 import Grid from "@material-ui/core/Grid";
@@ -177,7 +178,12 @@ class GameUI extends React.Component {
   constructor(props, context) {
     super(props, context);
 
-    this.connection = props.clientSocket;
+    this.connection = createSocketConnection(
+      io.connect(process.env.CONNECT, {
+        secure: true,
+        rejectUnauthorized: false,
+      })
+    );
     this.initialized = false;
 
     // Store a list of valeus if the value changes the card will shake
@@ -223,6 +229,8 @@ class GameUI extends React.Component {
       "getConnection",
       "onReady",
 
+      "leaveRoom",
+
       // render specifc
       "renderPerson",
       "renderReadyButton",
@@ -261,6 +269,19 @@ class GameUI extends React.Component {
 
   UNSAFE_componentWillMount() {}
 
+  leaveRoom() {
+    console.log("leaveRoom");
+    let connection = this.getConnection();
+    this.props.leaveRoom(connection, this.props.room);
+  }
+
+  componentWillUnmount() {
+    console.log("componentWilUnmount");
+    let connection = this.getConnection();
+    this.leaveRoom();
+    connection.destroy();
+  }
+
   componentDidMount() {
     this.onReady();
   }
@@ -289,11 +310,6 @@ class GameUI extends React.Component {
         //@DEVONLY
       })();
     }
-  }
-
-  componentWilUnmount() {
-    let connection = this.getConnection();
-    connection.destroy();
   }
 
   getConnection() {
@@ -671,6 +687,139 @@ class GameUI extends React.Component {
     game.handleAskForValueConfirm({ cardId: game.getActionCardId() });
   }
 
+  makeCardCheck({
+    personId,
+    isMyHand = false,
+    isCollection = false,
+    collectionId = 0,
+    isBank = false,
+    canSelectCardFromUser = true,
+  }) {
+    let displayMode = game.getDisplayData("mode");
+    let actionCardId = game.getDisplayData(["actionCardId"], 0);
+
+    let isDonePhase = game.phase.isMyDonePhase();
+
+    let collection = null;
+    let isCollectionSelectable = false;
+    if (isCollection) {
+      collection = game.collection.get(collectionId);
+      if (isDef(collection)) {
+        isCollectionSelectable = game.selection.collections.selectable.has(
+          collectionId
+        );
+      }
+    }
+
+    function isCardSelected(cardId) {
+      if (isMyHand) {
+        //if (isDonePhase) {
+        //  return true;
+        //}
+        if (actionCardId === cardId) {
+          return true;
+        }
+      }
+      if (isCollection) {
+        if (isCollectionSelectable) {
+          return false;
+        }
+      }
+      return game.isCardSelected(cardId);
+    }
+
+    function isSelectionEnabled(cardId) {
+      let actionCardId = game.getDisplayData(["actionCardId"], 0);
+      if (cardId === actionCardId) {
+        return true;
+      }
+      if (isCollection) {
+        if (isCollectionSelectable) {
+          return false;
+        }
+      }
+      return game.isCardSelectionEnabled();
+    }
+
+    function canSelectCard(cardId) {
+      if (isMyHand) {
+        //if (isDonePhase) {
+        //  return true;
+        //}
+        if (actionCardId === cardId) {
+          return true;
+        }
+      }
+      if (isCollection) {
+        if (isCollectionSelectable) {
+          return false;
+        }
+      }
+      if (isCardSelected(cardId)) return true;
+
+      if (canSelectCardFromUser) return game.canSelectCard(cardId);
+      return false;
+    }
+
+    function isCardNotApplicable(cardId) {
+      if (isMyHand) {
+        //if (isDonePhase) {
+        //  return true;
+        //}
+        if (actionCardId === cardId) {
+          return false;
+        }
+      }
+      if (isCollection) {
+        if (isCollectionSelectable) {
+          return false;
+        }
+      }
+      return game.isCardNotApplicable(cardId);
+    }
+
+    function getSelectionType(cardId) {
+      if (isMyHand) {
+        if (actionCardId === cardId) {
+          return "remove";
+        }
+      }
+      return game.selection.cards.getType();
+    }
+
+    function makeOnSelectCard(cardId) {
+      return async () => {
+        console.log("makeOnSelectCard");
+        let actionCardId = game.getDisplayData(["actionCardId"], 0);
+        console.log("actionCardId", actionCardId, cardId);
+        if (actionCardId === cardId) {
+          console.log("action card clicked");
+          await game.resetUi();
+        } else if (isCollection) {
+          if (!isCollectionSelectable) {
+            game.toggleCardSelected(cardId);
+          }
+        } else {
+          console.log("default action");
+          game.toggleCardSelected(cardId);
+        }
+      };
+    }
+    return {
+      isCardSelected,
+      isSelectionEnabled,
+      canSelectCard,
+      isCardNotApplicable,
+      getSelectionType,
+      makeOnSelectCard,
+    };
+  }
+
+  //########################################
+
+  //               RENDER
+
+  //########################################
   updateRender(customFn, mode) {
     const self = this;
     function setDrawInitialCardsButton() {
@@ -1344,134 +1493,6 @@ class GameUI extends React.Component {
       <RelLayer>{game.getRenderData("mainContent")}</RelLayer>
     );
     game.updateRenderData("turnNotice", this.renderDiscardCardsNotice());
-  }
-
-  makeCardCheck({
-    personId,
-    isMyHand = false,
-    isCollection = false,
-    collectionId = 0,
-    isBank = false,
-    canSelectCardFromUser = true,
-  }) {
-    let displayMode = game.getDisplayData("mode");
-    let actionCardId = game.getDisplayData(["actionCardId"], 0);
-
-    let isDonePhase = game.phase.isMyDonePhase();
-
-    let collection = null;
-    let isCollectionSelectable = false;
-    if (isCollection) {
-      collection = game.collection.get(collectionId);
-      if (isDef(collection)) {
-        isCollectionSelectable = game.selection.collections.selectable.has(
-          collectionId
-        );
-      }
-    }
-
-    function isCardSelected(cardId) {
-      if (isMyHand) {
-        //if (isDonePhase) {
-        //  return true;
-        //}
-        if (actionCardId === cardId) {
-          return true;
-        }
-      }
-      if (isCollection) {
-        if (isCollectionSelectable) {
-          return false;
-        }
-      }
-      return game.isCardSelected(cardId);
-    }
-
-    function isSelectionEnabled(cardId) {
-      let actionCardId = game.getDisplayData(["actionCardId"], 0);
-      if (cardId === actionCardId) {
-        return true;
-      }
-      if (isCollection) {
-        if (isCollectionSelectable) {
-          return false;
-        }
-      }
-      return game.isCardSelectionEnabled();
-    }
-
-    function canSelectCard(cardId) {
-      if (isMyHand) {
-        //if (isDonePhase) {
-        //  return true;
-        //}
-        if (actionCardId === cardId) {
-          return true;
-        }
-      }
-      if (isCollection) {
-        if (isCollectionSelectable) {
-          return false;
-        }
-      }
-      if (isCardSelected(cardId)) return true;
-
-      if (canSelectCardFromUser) return game.canSelectCard(cardId);
-      return false;
-    }
-
-    function isCardNotApplicable(cardId) {
-      if (isMyHand) {
-        //if (isDonePhase) {
-        //  return true;
-        //}
-        if (actionCardId === cardId) {
-          return false;
-        }
-      }
-      if (isCollection) {
-        if (isCollectionSelectable) {
-          return false;
-        }
-      }
-      return game.isCardNotApplicable(cardId);
-    }
-
-    function getSelectionType(cardId) {
-      if (isMyHand) {
-        if (actionCardId === cardId) {
-          return "remove";
-        }
-      }
-      return game.selection.cards.getType();
-    }
-
-    function makeOnSelectCard(cardId) {
-      return async () => {
-        console.log("makeOnSelectCard");
-        let actionCardId = game.getDisplayData(["actionCardId"], 0);
-        console.log("actionCardId", actionCardId, cardId);
-        if (actionCardId === cardId) {
-          console.log("action card clicked");
-          await game.resetUi();
-        } else if (isCollection) {
-          if (!isCollectionSelectable) {
-            game.toggleCardSelected(cardId);
-          }
-        } else {
-          console.log("default action");
-          game.toggleCardSelected(cardId);
-        }
-      };
-    }
-    return {
-      isCardSelected,
-      isSelectionEnabled,
-      canSelectCard,
-      isCardNotApplicable,
-      getSelectionType,
-      makeOnSelectCard,
-    };
   }
 
   //########################################
@@ -2313,7 +2334,10 @@ class GameUI extends React.Component {
           <FillHeader>
             <AppBar position="static">
               <Toolbar>
-                <h5 style={{ padding: "12px" }}>
+                <h5
+                  style={{ padding: "12px" }}
+                  onClick={() => this.leaveRoom()}
+                >
                   Room <strong>{this.props.getRoomCode()}</strong>
                 </h5>
               </Toolbar>

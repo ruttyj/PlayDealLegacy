@@ -73,6 +73,7 @@ import "react-splitter-layout/lib/index.css";
 const uiConfig = {};
 
 import MainFeaturedPost from "../components/FeaturedPost";
+import createSocketConnection from "../utils/clientSocket";
 
 const FullFlexGrow = ({ children, style = {} }) => {
   return (
@@ -128,7 +129,12 @@ class HomePage extends BaseComponent {
     super(props, context);
 
     // Get Socket
-    this.io = props.clientSocket;
+    this.io = createSocketConnection(
+      io.connect(process.env.CONNECT, {
+        secure: true,
+        rejectUnauthorized: false,
+      })
+    );
 
     this.history = this.props.history;
 
@@ -141,7 +147,13 @@ class HomePage extends BaseComponent {
   }
 
   async init() {
-    this.set("mode", "choose");
+    this.set("count", 1);
+    this.set("mode", "browse");
+    let response = await this.props.listAllRooms(this.io);
+    if (isDef(response) && response.status === "success") {
+      let payload = response.payload;
+      this.set("room", payload);
+    }
   }
 
   render() {
@@ -151,55 +163,9 @@ class HomePage extends BaseComponent {
       self.history.push(`/room/${roomCode}`);
     }
 
-    function handleCreateRoom() {
-      let roomCode = self.get(["customRoomCode", "value"], "");
-      if (isDef(roomCode) && roomCode.length > 1) {
-        goToRoom(roomCode);
-      }
-    }
-
-    let chooseOptionContent = "";
-    if (self.is("mode", "choose")) {
-      chooseOptionContent = (
-        <FullFlexRowCenter>
-          <FancyButton
-            variant="secondary"
-            onClick={() => {
-              this.history.push("/browse");
-            }}
-          >
-            Browse Room
-          </FancyButton>
-          <FancyButton onClick={() => self.set("mode", "create")}>
-            Create Room
-          </FancyButton>
-        </FullFlexRowCenter>
-      );
-    }
-
     const transition = {
       duration: 0.15,
       ease: [0.43, 0.13, 0.23, 0.96],
-    };
-
-    const imageVariants = {
-      exit: { y: "50%", opacity: 0, transition },
-      enter: {
-        y: "0%",
-        opacity: 1,
-        transition,
-      },
-    };
-
-    const loaderVariants = {
-      exit: { opacity: 1, transition },
-      enter: {
-        opacity: 1,
-        transition: {
-          duration: 0.05,
-          ease: [0.43, 0.13, 0.23, 0.96],
-        },
-      },
     };
 
     const loaderWrapperVariants = {
@@ -219,156 +185,101 @@ class HomePage extends BaseComponent {
     };
 
     // Room Lists
-    let browseRoomContent = "";
-    if (self.is("mode", "browse")) {
-      browseRoomContent = (
+    let browseRoomContent = (
+      <FullFlexColumnCenter style={{ width: "100%" }}>
         <FullFlexColumnCenter style={{ width: "100%" }}>
-          <FullFlexColumnCenter style={{ width: "100%" }}>
-            <RelLayer style={{ width: "100%", height: "100%" }}>
-              <AbsLayer>
-                <motion.div
-                  variants={loaderWrapperVariants}
-                  style={{
-                    height: "100%",
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  initial="exit"
-                  animate="enter"
-                  exit="exit"
-                >
-                  <CircularProgress />
-                </motion.div>
-              </AbsLayer>
-              <FullFlexColumnCenter style={{ width: "100%" }}>
-                <HeaderTitle>Browse Rooms</HeaderTitle>
-                {self.map(["room", "order"], (code) => {
-                  let room = self.get(["room", "items", code]);
-                  return (
+          <RelLayer style={{ width: "100%", height: "100%" }}>
+            <AbsLayer>
+              <motion.div
+                variants={loaderWrapperVariants}
+                style={{
+                  height: "100%",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                initial="exit"
+                animate="enter"
+                exit="exit"
+              >
+                <CircularProgress />
+              </motion.div>
+            </AbsLayer>
+            <FullFlexColumnCenter style={{ width: "100%" }}>
+              <HeaderTitle>Browse Rooms</HeaderTitle>
+              {self.map(["room", "order"], (code) => {
+                let room = self.get(["room", "items", code]);
+                return (
+                  <motion.div
+                    key={code}
+                    variants={backVariants}
+                    style={{ color: "white", width: "100%" }}
+                    initial="exit"
+                    animate="enter"
+                    exit="exit"
+                  >
                     <motion.div
-                      key={code}
-                      variants={backVariants}
-                      style={{ color: "white", width: "100%" }}
-                      initial="exit"
-                      animate="enter"
-                      exit="exit"
+                      style={{
+                        transition: "all 150ms linear",
+                        ...(self.is(["itemHover", code])
+                          ? { transform: "scale(1)" }
+                          : { transform: "scale(0.97)" }),
+                      }}
+                      onHoverStart={() => {
+                        self.set(["itemHover", code], true);
+                      }}
+                      onHoverEnd={() => {
+                        self.set(["itemHover", code], false);
+                      }}
                     >
-                      <motion.div
+                      <FlexRow
                         style={{
-                          transition: "all 150ms linear",
-                          ...(self.is(["itemHover", code])
-                            ? { transform: "scale(1)" }
-                            : { transform: "scale(0.97)" }),
-                        }}
-                        onHoverStart={() => {
-                          self.set(["itemHover", code], true);
-                        }}
-                        onHoverEnd={() => {
-                          self.set(["itemHover", code], false);
+                          border: "2px solid #dcdada",
+                          backgroundColor: "white",
+                          colo: "white",
+                          color: "black",
+                          borderRadius: "20px",
+                          margin: "10px",
+                          padding: "20px",
                         }}
                       >
-                        <FlexRow
-                          style={{
-                            border: "2px solid #dcdada",
-                            backgroundColor: "white",
-                            colo: "white",
-                            color: "black",
-                            borderRadius: "20px",
-                            margin: "10px",
-                            padding: "20px",
-                          }}
+                        <FlexCenter
+                          style={{ fontSize: "30px", padding: "20px" }}
                         >
-                          <FlexCenter
-                            style={{ fontSize: "30px", padding: "20px" }}
-                          >
-                            {code}
-                          </FlexCenter>
-                          <Flex style={{ flexGrow: 1 }}>
-                            <pre>
-                              <xmp>{JSON.stringify(room, null, 2)}</xmp>
-                            </pre>
-                          </Flex>
-                          <FlexCenter>
-                            <FancyButton onClick={() => goToRoom(code)}>
-                              Join
-                            </FancyButton>
-                          </FlexCenter>
-                        </FlexRow>
-                      </motion.div>
+                          {code}
+                        </FlexCenter>
+                        <Flex style={{ flexGrow: 1 }}>
+                          <pre style={{ display: "none" }}>
+                            <xmp>{JSON.stringify(room, null, 2)}</xmp>
+                          </pre>
+                        </Flex>
+                        <FlexCenter>
+                          <FancyButton onClick={() => goToRoom(code)}>
+                            Join
+                          </FancyButton>
+                        </FlexCenter>
+                      </FlexRow>
                     </motion.div>
-                  );
-                })}
-              </FullFlexColumnCenter>
-            </RelLayer>
-          </FullFlexColumnCenter>
-
-          <FullFlexRowCenter>
-            <FancyButton
-              variant="secondary"
-              onClick={() => self.set("mode", "choose")}
-            >
-              Back
-            </FancyButton>
-          </FullFlexRowCenter>
+                  </motion.div>
+                );
+              })}
+            </FullFlexColumnCenter>
+          </RelLayer>
         </FullFlexColumnCenter>
-      );
-    }
 
-    // Create room
-    let createRoomContent = "";
-    if (self.is("mode", "create")) {
-      let field = "customRoomCode";
-      createRoomContent = (
-        <FullFlexGrow>
-          <HeaderTitle>Create Room</HeaderTitle>
-          <FullFlexRowCenter>
-            <TextField
-              label="Code"
-              variant="outlined"
-              error={self.get([field, "hasError"], false)}
-              helperText={self.get([field, "errorMessage"], null)}
-              value={self.get([field, "value"], "")}
-              onChange={(event) => {
-                let value = String(event.target.value)
-                  .trim()
-                  .replace(/[^A-Za-z0-9_]/g, "")
-                  .toUpperCase();
-                let hasError = false;
-                let errorMessage = "";
-                if (value.length > 10) {
-                  value = value.substring(0, 10);
-                  hasError = true;
-                  errorMessage = "Must be under 10 chars long.";
-                }
-                self.set([field, "hasError"], hasError);
-                if (hasError) {
-                  self.set([field, "errorMessage"], errorMessage);
-                } else {
-                  self.set([field, "errorMessage"], null);
-                }
-                self.set([field, "value"], value);
-              }}
-              onKeyPress={(event) => {
-                if (event.key === "Enter") {
-                  handleCreateRoom();
-                }
-              }}
-            />
-          </FullFlexRowCenter>
-          <FullFlexRowCenter>
-            <FancyButton
-              variant="secondary"
-              onClick={() => self.set("mode", "choose")}
-            >
-              Back
-            </FancyButton>
-            <FancyButton onClick={handleCreateRoom}>Create</FancyButton>
-          </FullFlexRowCenter>
-        </FullFlexGrow>
-      );
-    }
+        <FullFlexRowCenter>
+          <FancyButton
+            variant="secondary"
+            onClick={() => {
+              self.history.push(`/`);
+            }}
+          >
+            Back
+          </FancyButton>
+        </FullFlexRowCenter>
+      </FullFlexColumnCenter>
+    );
 
     return (
       <div>
@@ -427,9 +338,7 @@ class HomePage extends BaseComponent {
                     >
                       <motion.div invertScale>
                         <FullFlexColumnCenter style={{ width: "100%" }}>
-                          {chooseOptionContent}
                           {browseRoomContent}
-                          {createRoomContent}
                         </FullFlexColumnCenter>
                       </motion.div>
                     </motion.div>

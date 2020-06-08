@@ -28,7 +28,7 @@ const defaultProps = (roomCode, props = {}) => ({
 console.clear();
 describe("App", async function () {
   // TOGGLE EXECUTION
-  let executeUnill = 2000;
+  let executeUnill = 150;
   let testNumber = 0;
   const host = FakeHost(attachServerSideHandlers);
 
