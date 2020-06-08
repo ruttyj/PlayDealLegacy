@@ -55,7 +55,7 @@ app.use("/users", usersRouter);
 app.use("/testAPI", testAPIRouter);
 
 app.get("*", (req, res) => {
-  res.sendfile("client/build/index.html", { root: "../" });
+  res.sendfile(path.join(__dirname, "../client/build/index.html"));
 });
 
 // catch 404 and forward to error handler
