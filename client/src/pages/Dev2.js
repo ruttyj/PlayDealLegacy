@@ -2232,15 +2232,11 @@ class GameUI extends React.Component {
 
   renderDebugData() {
     let dumpData = {
-      displayData: this.props.getDisplayData(),
-      actionData: game.getActionData([], null),
-      actionButtonRenderData: game.getRenderData(),
-
-      a_personSelection_getAll: this.props.personSelection_getAll(),
-      a_cardSelection_getAll: this.props.cardSelection_getAll(),
-      a_collectionSelection_getAll: this.props.collectionSelection_getAll(),
-
       state: this.state,
+
+      personSelection: this.props.personSelection_getAll(),
+      cardSelection: this.props.cardSelection_getAll(),
+      collectionSelection: this.props.collectionSelection_getAll(),
 
       cards: this.props.cards,
       people: this.props.getAllPeople(),

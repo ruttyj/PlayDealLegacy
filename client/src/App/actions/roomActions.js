@@ -78,11 +78,21 @@ const joinRoom = (con, roomCode) => async (dispatch) => {
   return responses;
 };
 
+const getOnlineStats = (con, roomCode) => async (dispatch) => {
+  let responses = await con.emitSingleRequest("CLIENTS", "GET_ONLINE_STATS", {
+    props: {
+      roomCode,
+    },
+  });
+  return responses;
+};
+
 export default {
   listAllRooms,
   joinRoom,
   leaveRoom,
   createRoom,
   existsRoom,
+  getOnlineStats,
   attachRoomListeners,
 };

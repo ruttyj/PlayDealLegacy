@@ -16,7 +16,7 @@ const {
 
 //##################################################
 function ClientManager() {
-  let mRef = {};
+  let mState = {};
 
   //==================================================
 
@@ -30,10 +30,12 @@ function ClientManager() {
     has: hasClientInMap,
     remove: removeClientInMap,
     map: mapClients,
-  } = makeMap(mRef, "clients");
+  } = makeMap(mState, "clients");
+
+  const mClientCount = makeVar(mState, "clientCount", 0);
 
   const { set: onClientDisconnect, get: getOnClientDisconnect } = makeVar(
-    mRef,
+    mState,
     "onClientDisconnect",
     emptyFunction
   );
@@ -77,6 +79,7 @@ function ClientManager() {
       };
 
       setClientInMap(client.id, client);
+      mClientCount.inc();
       mConnectEvent.emit(makeEventPayload(client));
       return client;
     }
@@ -107,6 +110,7 @@ function ClientManager() {
       if (hasClientInMap(clientId)) {
         emitOnClientDisconnect(client);
         removeClientInMap(clientId);
+        mClientCount.dec();
       }
     }
   }
@@ -121,13 +125,13 @@ function ClientManager() {
 
     // Serialize everything except the external references
     let excludeKeys = [...mPrivateVars, ...mExternalRefs];
-    let keys = Object.keys(mRef).filter((key) => !excludeKeys.includes(key));
+    let keys = Object.keys(mState).filter((key) => !excludeKeys.includes(key));
 
     // Serialize each if possible, leave primitives as is
     keys.forEach((key) => {
-      result[key] = isDef(mRef[key].serialize)
-        ? mRef[key].serialize()
-        : mRef[key];
+      result[key] = isDef(mState[key].serialize)
+        ? mState[key].serialize()
+        : mState[key];
     });
 
     result.clients = mapClients((client) => ({
@@ -147,6 +151,7 @@ function ClientManager() {
     removeClient,
     onClientDisconnect,
     serialize,
+    count: mClientCount.get,
 
     events: {
       connect: mConnectEvent,

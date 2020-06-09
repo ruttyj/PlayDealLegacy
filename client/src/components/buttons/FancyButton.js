@@ -48,7 +48,18 @@ export default function FancyButton(props) {
     }
   }
 
-  const combinedStyle = {};
+  const combinedStyle = {
+    height: "48px",
+    margin: "5px",
+    outline: "none",
+    padding: "0 30px",
+    cursor: "pointer",
+    transform: "none",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textTransform: "uppercase",
+  };
 
   if (variant === "primary") {
     Object.assign(combinedStyle, {
@@ -75,17 +86,17 @@ export default function FancyButton(props) {
   }
 
   return (
-    <motion.button
+    <motion.div
       style={combinedStyle}
       className={classes.root}
       onClick={handleOnClick}
-      initial={{ scale: 0.9 }}
-      whileHover={{ scale: 1 }}
+      initial={{ scale: 1 }}
+      whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {children}
-    </motion.button>
+    </motion.div>
   );
 }

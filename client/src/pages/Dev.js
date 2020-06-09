@@ -142,6 +142,12 @@ export default () => {
         <button onClick={() => sounds.notification.play(1)}>
           Notification
         </button>
+        <button onClick={() => sounds.introMusic.play(1)}>
+          introMusic start
+        </button>
+        <button onClick={() => sounds.introMusic.stop()}>
+          introMusic stop
+        </button>
         <button onClick={() => sounds.swipe.play(1)}>swipe</button>
         <button onClick={() => sounds.shuffle.play()}>shuffle</button>
         <button onClick={() => sounds.evilLaugh.play()}>evilLaugh</button>

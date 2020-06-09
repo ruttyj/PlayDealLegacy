@@ -7,10 +7,12 @@ import IconButton from "@material-ui/core/IconButton";
 import SearchIcon from "@material-ui/icons/Search";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
+import classNames from "classNames";
+import { isDef } from "../utils/utils";
 
 const useStyles = makeStyles((theme) => ({
   toolbar: {
-    borderBottom: `1px solid ${theme.palette.divider}`,
+    borderBottom: `0px solid ${theme.palette.divider}`,
   },
   toolbarTitle: {
     flex: 1,
@@ -27,16 +29,24 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Header(props) {
   const classes = useStyles();
-  const { title } = props;
+  const { title, subHeader } = props;
 
   return (
     <React.Fragment>
-      <Toolbar className={classes.toolbar} style={{ padding: "10px" }}>
+      <Toolbar
+        className={classNames("no_select", classes.toolbar)}
+        style={{ padding: "10px", flexDirection: "column" }}
+      >
         <img
           src="/img/logo_white.png"
-          style={{ margin: "auto", height: "10vh" }}
+          style={{ filter: "invert(1)", margin: "auto", height: "10vh" }}
           alt="logo"
         />
+        {isDef(subHeader) ? (
+          <h3 style={{ color: "#FFFFFF50" }}>{subHeader}</h3>
+        ) : (
+          ""
+        )}
       </Toolbar>
     </React.Fragment>
   );

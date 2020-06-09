@@ -81,7 +81,7 @@ function makeKeyedResponse(keyedRequest) {
   fallback = keyedRequest.getFallback();
 
   fallback = els(fallback, undefined);
-  let socketResponses = SocketResponseBuckets();
+  const socketResponses = SocketResponseBuckets();
 
   let keys = getArrFromProp(props, nomenclature, fallback);
 
@@ -113,7 +113,7 @@ function getAllKeyedResponse(PUBLIC_SUBJECTS, keyedRequest) {
   propName = keyedRequest.getPluralKey();
   getAllKeys = keyedRequest.getAllKeysFn();
 
-  let socketResponses = SocketResponseBuckets();
+  const socketResponses = SocketResponseBuckets();
   socketResponses.addToSpecific(
     "default",
     makeResponse({ subject, action, status: "success", payload: null })
@@ -205,7 +205,7 @@ function makePersonSpecificResponses({
   getOtherData,
 }) {
   let { personManager, thisPersonId } = props;
-  let socketResponses = SocketResponseBuckets();
+  const socketResponses = SocketResponseBuckets();
 
   // People who will receive the information
   let receivingPeopleIds = getArrFromProp(
@@ -322,11 +322,33 @@ function attachSocketHandlers(thisClient) {
   });
 
   Object.assign(PUBLIC_SUBJECTS, {
+    CLIENTS: {
+      GET_ONLINE_STATS: () => {
+        const socketResponses = SocketResponseBuckets();
+        const subject = "CLIENTS";
+        const action = "GET_ONLINE_STATS";
+        const status = "success";
+        const payload = {
+          peopleOnlineCount: clientManager.count(),
+        };
+
+        socketResponses.addToBucket(
+          "default",
+          makeResponse({ subject, action, status, payload })
+        );
+
+        const reducedResponses = SocketResponseBuckets();
+        reducedResponses.addToBucket(
+          socketResponses.reduce(mStrThisClientId, [mStrThisClientId])
+        );
+        return reducedResponses;
+      },
+    },
     ROOM: {
       // Create a room
       CREATE: (props) => {
-        let [subject, action] = ["ROOM", "CREATE"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["ROOM", "CREATE"];
+        const socketResponses = SocketResponseBuckets();
         let { roomCode } = props;
         roomCode = els(roomCode, "AAAA");
 
@@ -349,8 +371,8 @@ function attachSocketHandlers(thisClient) {
       },
       // Check if room exists
       EXISTS: (props) => {
-        let socketResponses = SocketResponseBuckets();
-        let [subject, action] = ["ROOM", "EXISTS"];
+        const socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["ROOM", "EXISTS"];
         let roomCodes = getArrFromProp(props, {
           plural: "roomCodes",
           singular: "roomCode",
@@ -373,8 +395,8 @@ function attachSocketHandlers(thisClient) {
         return socketResponses;
       },
       GET_CURRENT: (props) => {
-        let [subject, action] = ["ROOM", "GET_CURRENT"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["ROOM", "GET_CURRENT"];
+        const socketResponses = SocketResponseBuckets();
         let payload = null;
 
         let { roomCode } = props;
@@ -400,8 +422,8 @@ function attachSocketHandlers(thisClient) {
       },
 
       GET_KEYED: (props) => {
-        let [subject, action] = ["ROOM", "GET_KEYED"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["ROOM", "GET_KEYED"];
+        const socketResponses = SocketResponseBuckets();
         let payload = {
           items: {},
           order: [],
@@ -441,7 +463,7 @@ function attachSocketHandlers(thisClient) {
         let action = "GET_ALL_KEYED";
         let status = "success";
 
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let roomCodes = roomManager.listAllRoomCodes();
         socketResponses.addToBucket(
           "default",
@@ -461,8 +483,8 @@ function attachSocketHandlers(thisClient) {
       },
       // roomCode, username
       JOIN: (props) => {
-        let [subject, action] = ["ROOM", "JOIN"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["ROOM", "JOIN"];
+        const socketResponses = SocketResponseBuckets();
 
         let { roomCode, username } = props;
         username = els(username, "Player");
@@ -545,8 +567,8 @@ function attachSocketHandlers(thisClient) {
       },
       UPDATE: (props) => {},
       LEAVE: (props) => {
-        let [subject, action] = ["ROOM", "LEAVE"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["ROOM", "LEAVE"];
+        const socketResponses = SocketResponseBuckets();
 
         let status = "failure";
         return handleRoom(
@@ -602,8 +624,8 @@ function attachSocketHandlers(thisClient) {
     PEOPLE: {
       UPDATE_MY_NAME: (props) => {
         // roomCode
-        let [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -639,8 +661,8 @@ function attachSocketHandlers(thisClient) {
       },
       ME: (props) => {
         // roomCode
-        let [subject, action] = ["PEOPLE", "ME"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "ME"];
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -662,8 +684,8 @@ function attachSocketHandlers(thisClient) {
       },
       GET_HOST: (props) => {
         // roomCode
-        let [subject, action] = ["PEOPLE", "GET_HOST"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "GET_HOST"];
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -694,8 +716,8 @@ function attachSocketHandlers(thisClient) {
       },
       SET_HOST: (props) => {
         // roomCode, personId
-        let [subject, action] = ["PEOPLE", "SET_HOST"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "SET_HOST"];
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -750,7 +772,7 @@ function attachSocketHandlers(thisClient) {
         let status = "failure";
 
         let payload = null;
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let { roomCode } = props;
         let room = roomManager.getRoomByCode(roomCode);
         if (isDef(room)) {
@@ -776,8 +798,8 @@ function attachSocketHandlers(thisClient) {
         return socketResponses;
       },
       GET_KEYED: (props) => {
-        let socketResponses = SocketResponseBuckets();
-        let [subject, action] = ["PEOPLE", "GET_KEYED"];
+        const socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "GET_KEYED"];
         let peopleIds = getArrFromProp(props, {
           plural: "peopleIds",
           singular: "personId",
@@ -813,8 +835,8 @@ function attachSocketHandlers(thisClient) {
         );
       },
       REMOVE: (props) => {
-        let socketResponses = SocketResponseBuckets();
-        let [subject, action] = ["PEOPLE", "REMOVE"];
+        const socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "REMOVE"];
         let message = "Failed to remove people.";
 
         return handlePerson(
@@ -891,8 +913,8 @@ function attachSocketHandlers(thisClient) {
         );
       },
       UPDATE_MY_STATUS: (props) => {
-        let [subject, action] = ["PEOPLE", "UPDATE_MY_STATUS"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "UPDATE_MY_STATUS"];
+        const socketResponses = SocketResponseBuckets();
         let payload = null;
         let requestStatus = "failure";
         return handlePerson(
@@ -933,7 +955,7 @@ function attachSocketHandlers(thisClient) {
       TURN_STARTING_DRAW: (props) => {
         let subject = "MY_TURN";
         let action = "TURN_STARTING_DRAW";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleMyTurn(
           props,
           (props2) => {
@@ -1011,7 +1033,7 @@ function attachSocketHandlers(thisClient) {
       CHANGE_CARD_ACTIVE_SET: (props) => {
         let subject = "MY_TURN";
         let action = "CHANGE_CARD_ACTIVE_SET";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         let payload = null;
         return handleMyTurn(
@@ -1106,7 +1128,7 @@ function attachSocketHandlers(thisClient) {
       ADD_CARD_TO_MY_BANK_FROM_HAND: (props) => {
         let subject = "MY_TURN";
         let action = "ADD_CARD_TO_MY_BANK_FROM_HAND";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,
@@ -1203,7 +1225,7 @@ function attachSocketHandlers(thisClient) {
       ADD_PROPERTY_TO_NEW_COLLECTION_FROM_HAND: (props) => {
         let subject = "MY_TURN";
         let action = "ADD_PROPERTY_TO_NEW_COLLECTION_FROM_HAND";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,
@@ -1325,7 +1347,7 @@ function attachSocketHandlers(thisClient) {
       ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND: (props) => {
         let subject = "MY_TURN";
         let action = "ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,
@@ -1470,7 +1492,7 @@ function attachSocketHandlers(thisClient) {
       ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND: (props) => {
         let subject = "MY_TURN";
         let action = "ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,
@@ -1574,7 +1596,7 @@ function attachSocketHandlers(thisClient) {
       PLAY_PASS_GO: (props) => {
         let subject = "MY_TURN";
         let action = "PLAY_PASS_GO";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         let payload = null;
         return handCardConsumer(
@@ -2288,7 +2310,7 @@ function attachSocketHandlers(thisClient) {
       FINISH_TURN: (props) => {
         let subject = "MY_TURN";
         let action = "FINISH_TURN";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
 
         return handleMyTurn(
           props,
@@ -2387,7 +2409,7 @@ function attachSocketHandlers(thisClient) {
       DISCARD_REMAINING: (props) => {
         let subject = "MY_TURN";
         let action = "DISCARD_REMAINING";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleMyTurn(
           props,
           (props2) => {
@@ -2497,7 +2519,7 @@ function attachSocketHandlers(thisClient) {
       TRANSFER_PROPERTY_TO_NEW_COLLECTION_FROM_COLLECTION: (props) => {
         let subject = "MY_TURN";
         let action = "TRANSFER_PROPERTY_TO_NEW_COLLECTION_FROM_COLLECTION";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handleMyTurn(
           props,
@@ -2624,7 +2646,7 @@ function attachSocketHandlers(thisClient) {
       TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION: (props) => {
         let subject = "MY_TURN";
         let action = "TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handleMyTurn(
           props,
@@ -2798,7 +2820,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "MY_TURN";
         let action =
           "TRANSFER_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_COLLECTION";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handleMyTurn(
           props,
@@ -2944,7 +2966,7 @@ function attachSocketHandlers(thisClient) {
       TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION: (props) => {
         let subject = "MY_TURN";
         let action = "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handleMyTurn(
           props,
@@ -3082,7 +3104,7 @@ function attachSocketHandlers(thisClient) {
       TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND: (props) => {
         let subject = "MY_TURN";
         let action = "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         return handleMyTurn(
           props,
@@ -3224,8 +3246,8 @@ function attachSocketHandlers(thisClient) {
     },
     RESPONSES: {
       RESPOND_TO_COLLECT_VALUE: (props) => {
-        let [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData, checkpoints) => {
@@ -4165,8 +4187,8 @@ function attachSocketHandlers(thisClient) {
       },
 
       TEST_NO: (props) => {
-        let [subject, action] = ["RESPONSES", "TEST_NO"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["RESPONSES", "TEST_NO"];
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData, checkpoints) => {
@@ -4592,7 +4614,7 @@ function attachSocketHandlers(thisClient) {
       GET_UPDATED_PILES: (props) => {
         const { roomCode } = props;
 
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         if (isDef(roomCode)) {
           socketResponses.addToBucket(
             "default",
@@ -4613,8 +4635,8 @@ function attachSocketHandlers(thisClient) {
       },
 
       RESET: (props) => {
-        let [subject, action] = ["GAME", "RESET"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["GAME", "RESET"];
+        const socketResponses = SocketResponseBuckets();
         return handleRoom(
           props,
           ({ room }) => {
@@ -4635,10 +4657,10 @@ function attachSocketHandlers(thisClient) {
       },
 
       UPDATE_CONFIG: (props) => {
-        let [subject, action] = ["GAME", "UPDATE_CONFIG"];
+        const [subject, action] = ["GAME", "UPDATE_CONFIG"];
         let payload = null;
         let status = "failure";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (consumerData, checkpoints) => {
@@ -4672,10 +4694,10 @@ function attachSocketHandlers(thisClient) {
       },
 
       GET_CONFIG: (props) => {
-        let [subject, action] = ["GAME", "GET_CONFIG"];
+        const [subject, action] = ["GAME", "GET_CONFIG"];
         let payload = null;
         let status = "failure";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (consumerData) => {
@@ -4701,8 +4723,8 @@ function attachSocketHandlers(thisClient) {
 
       STATUS: (props) => {
         // roomCode
-        let [subject, action] = ["GAME", "STATUS"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["GAME", "STATUS"];
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -4734,8 +4756,8 @@ function attachSocketHandlers(thisClient) {
       },
 
       START: (props) => {
-        let [subject, action] = ["GAME", "START"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["GAME", "START"];
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -4843,8 +4865,8 @@ function attachSocketHandlers(thisClient) {
       },
       CAN_START: (props) => {
         // roomCode
-        let [subject, action] = ["GAME", "CAN_START"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["GAME", "CAN_START"];
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -4875,7 +4897,7 @@ function attachSocketHandlers(thisClient) {
       GET_KEYED: (props) => {
         let subject = "PROPERTY_SETS";
         let action = "GET_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -4904,7 +4926,7 @@ function attachSocketHandlers(thisClient) {
       GET_ALL_KEYED: (props) => {
         let subject = "PROPERTY_SETS";
         let action = "GET_ALL_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -4935,7 +4957,7 @@ function attachSocketHandlers(thisClient) {
       GET_KEYED: (props) => {
         let subject = "CARDS";
         let action = "GET_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -4964,7 +4986,7 @@ function attachSocketHandlers(thisClient) {
       GET_ALL_KEYED: (props) => {
         let subject = "CARDS";
         let action = "GET_ALL_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -5007,7 +5029,7 @@ function attachSocketHandlers(thisClient) {
       GET: (props) => {
         let subject = "DISCARD_PILE";
         let action = "GET";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (props2) => {
@@ -5029,7 +5051,7 @@ function attachSocketHandlers(thisClient) {
       GET: (props) => {
         let subject = "ACTIVE_PILE";
         let action = "GET";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (props2) => {
@@ -5051,7 +5073,7 @@ function attachSocketHandlers(thisClient) {
       GET: (props) => {
         let subject = "DRAW_PILE";
         let action = "GET";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           ({ game }) => {
@@ -5074,8 +5096,8 @@ function attachSocketHandlers(thisClient) {
     },
     PLAYERS: {
       GET: (props) => {
-        let [subject, action] = ["PLAYERS", "GET"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PLAYERS", "GET"];
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -5107,7 +5129,7 @@ function attachSocketHandlers(thisClient) {
       PERSON_DREW_CARDS_KEYED: (props) => {
         let subject = "PLAYERS";
         let action = "PERSON_DREW_CARDS_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           ({ cardIds, game, personId }) => {
@@ -5144,7 +5166,7 @@ function attachSocketHandlers(thisClient) {
       GET: (props) => {
         let subject = "PLAYER_TURN";
         let action = "GET";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -5189,8 +5211,8 @@ function attachSocketHandlers(thisClient) {
        */
       // props = {roomCode, personId, (receivingPeopleIds|receivingPersonId), (peopleIds|personId)}
       GET_KEYED: (props) => {
-        let [subject, action] = ["PLAYER_HANDS", "GET_KEYED"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PLAYER_HANDS", "GET_KEYED"];
+        const socketResponses = SocketResponseBuckets();
 
         return handleGame(
           props,
@@ -5232,7 +5254,7 @@ function attachSocketHandlers(thisClient) {
       GET_ALL_KEYED: (props) => {
         let subject = "PLAYER_HANDS";
         let action = "GET_ALL_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -5271,7 +5293,7 @@ function attachSocketHandlers(thisClient) {
       GET_KEYED: (props) => {
         let subject = "PLAYER_BANKS";
         let action = "GET_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (props2) => {
@@ -5299,7 +5321,7 @@ function attachSocketHandlers(thisClient) {
       GET_ALL_KEYED: (props) => {
         let subject = "PLAYER_BANKS";
         let action = "GET_ALL_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
           (props2) => {
@@ -5337,7 +5359,7 @@ function attachSocketHandlers(thisClient) {
         //props: { roomCode, (peopleIds|personId)}
         let subject = "PLAYER_REQUESTS";
         let action = "GET_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
 
         return handleGame(
           props,
@@ -5372,7 +5394,7 @@ function attachSocketHandlers(thisClient) {
         let action = "PLAYER_REQUESTS";
         let status = "failure";
         let payload = null;
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -5437,7 +5459,7 @@ function attachSocketHandlers(thisClient) {
         let action = "REMOVE_ALL";
         let status = "failure";
         let payload = null;
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -5462,7 +5484,7 @@ function attachSocketHandlers(thisClient) {
         //props: { roomCode, (peopleIds|personId)}
         let subject = "PLAYER_COLLECTIONS";
         let action = "GET_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -5495,7 +5517,7 @@ function attachSocketHandlers(thisClient) {
         //props: {roomCode}
         let subject = "PLAYER_COLLECTIONS";
         let action = "GET_ALL_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData) => {
@@ -5564,8 +5586,8 @@ function attachSocketHandlers(thisClient) {
     },
     CHEAT: {
       FORCE_STATE: (props) => {
-        let [subject, action] = ["CHEAT", "FORCE_STATE"];
-        let socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["CHEAT", "FORCE_STATE"];
+        const socketResponses = SocketResponseBuckets();
         let status = "failure";
         let payload = null;
         return handleRoom(
@@ -5863,7 +5885,7 @@ function attachSocketHandlers(thisClient) {
     fn,
     fallback = undefined
   ) {
-    let socketResponses = SocketResponseBuckets();
+    const socketResponses = SocketResponseBuckets();
     return parentConsumer(
       props,
       (consumerData, checkpoints) => {
@@ -5906,7 +5928,7 @@ function attachSocketHandlers(thisClient) {
     props,
     theThing
   ) {
-    let socketResponses = SocketResponseBuckets();
+    const socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
     return handleGame(
@@ -6145,7 +6167,7 @@ function attachSocketHandlers(thisClient) {
     props,
     theThing
   ) {
-    let socketResponses = SocketResponseBuckets();
+    const socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
     return handleGame(
@@ -6390,7 +6412,7 @@ function attachSocketHandlers(thisClient) {
     props,
     doTheThing
   ) {
-    let socketResponses = SocketResponseBuckets();
+    const socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
     return handCardConsumer(
@@ -6557,7 +6579,7 @@ function attachSocketHandlers(thisClient) {
     props,
     doTheThing
   ) {
-    let socketResponses = SocketResponseBuckets();
+    const socketResponses = SocketResponseBuckets();
     let status = "failure";
     let payload = null;
     return handCardConsumer(
@@ -6816,7 +6838,7 @@ function attachSocketHandlers(thisClient) {
       GET_KEYED: (props) => {
         //props: { roomCode, (collectionIds|collectionId)}
         let action = "GET_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData, checkpoints) => {
@@ -6843,7 +6865,7 @@ function attachSocketHandlers(thisClient) {
       GET_ALL_KEYED: (props) => {
         //props: {roomCode}
         let action = "GET_ALL_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData, checkpoints) => {
@@ -6882,7 +6904,7 @@ function attachSocketHandlers(thisClient) {
       },
       GET_ALL_MY_KEYED: (props) => {
         let action = "GET_ALL_MY_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData, checkpoints) => {
@@ -6922,7 +6944,7 @@ function attachSocketHandlers(thisClient) {
       REMOVE_KEYED: (props) => {
         //props: { roomCode, (collectionIds|collectionId)}
         let action = "REMOVE_KEYED";
-        let socketResponses = SocketResponseBuckets();
+        const socketResponses = SocketResponseBuckets();
         return handleGame(
           props,
           (consumerData, checkpoints) => {
@@ -6952,7 +6974,7 @@ function attachSocketHandlers(thisClient) {
   }
 
   const makeIOHandle = (subjectMap) => (encodedData) => {
-    let socketResponses = SocketResponseBuckets();
+    const socketResponses = SocketResponseBuckets();
     let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
     let clientPersonMapping = {};
 

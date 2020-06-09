@@ -48,6 +48,7 @@ function createSocketConnection(socket) {
   const PLAYER_TURN = makeMap(mRetreived, "PLAYER_TURN");
   const MY_TURN = makeMap(mRetreived, "MY_TURN");
   const CHEAT = makeMap(mRetreived, "CHEAT");
+  const CLIENTS = makeMap(mRetreived, "CLIENTS");
 
   const listnerTree = makeListnerTree();
 
@@ -174,12 +175,16 @@ function createSocketConnection(socket) {
       PLAYER_TURN: PLAYER_TURN.serialize(),
       MY_TURN: MY_TURN.serialize(),
       CHEAT: CHEAT.serialize(),
+
+      CLIENTS: CLIENTS.serialize(),
     };
   }
 
   function destroy() {
     //@TODO handle properly
     listnerTree.destroy();
+    socket.disconnect();
+    socket.emit("disconnect");
   }
 
   attachSocketHandlers(socket);

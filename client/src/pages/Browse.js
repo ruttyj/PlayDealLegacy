@@ -19,7 +19,7 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import MiniDrawer from "../components/drawers/MiniDrawer";
 import FancyButton from "../components/buttons/FancyButton";
-import UserOptions from "./Home/UserOptions";
+import UserOptions from "./HomePage/UserOptions";
 import { motion } from "framer-motion";
 import RelLayer from "../components/layers/RelLayer";
 import AbsLayer from "../components/layers/AbsLayer";

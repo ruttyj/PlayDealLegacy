@@ -5,6 +5,7 @@ function Sound({
   src,
   rate = 1,
   overlap = 50,
+  loop = false,
   volume = 0.5,
   sprite = null,
   fade = [],
@@ -16,6 +17,7 @@ function Sound({
 
   mSettings.set("rate", rate);
   mSettings.set("overlap", overlap);
+  mSettings.set("loop", loop);
   mSettings.set("limit", 1);
   mSettings.set("count", 0);
   mSettings.set("volume", volume);
@@ -32,6 +34,7 @@ function Sound({
       rate: rate,
       sprite: mSettings.get("sprite"),
       volume: mSettings.get("volume"),
+      loop: mSettings.get("loop"),
       preload: true,
       onplay() {
         const duration = mSound._duration;
@@ -59,6 +62,14 @@ function Sound({
     }
   }
 
+  function _stop() {
+    mSound.stop();
+  }
+
+  function stop() {
+    _stop();
+  }
+
   function play(num = 1, spriteKey = null) {
     mSettings.set("count", 0);
     mSettings.set("limit", num);
@@ -69,6 +80,7 @@ function Sound({
   const mPublicInterface = {
     serialize,
     play,
+    stop,
   };
 
   function getPublic() {
@@ -291,6 +303,13 @@ let sounds = {
     src: "/audio/join_room.mp3",
     rate: 1,
     overlap: 50,
+    volume: 0.5,
+  }),
+  introMusic: Sound({
+    src: "/audio/music/kids-in-club.mp3",
+    rate: 1,
+    loop: true,
+    overlap: 100,
     volume: 0.5,
   }),
 };

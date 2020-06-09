@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Switch, Redirect, Link } from "react-router-dom";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { isDef } from "../utils";
 
-import HomePage from "../pages/HomePage";
+import HomePage from "../pages/HomePage/";
 import Browse from "../pages/Browse";
 
 import Dev from "../pages/Dev";
@@ -11,8 +11,6 @@ import Dev2 from "../pages/Dev2";
 import DevImmutable from "../pages/DevImmutable";
 import Dev3 from "../pages/Dev3";
 import Dev4 from "../pages/Dev4";
-
-import createSocketConnection from "../utils/clientSocket";
 
 import { Provider } from "react-redux";
 import store from "./store";
@@ -25,12 +23,7 @@ class App extends Component {
       user: null,
       isMounted: false,
       isRegisterInProcess: false,
-      clientSocket: createSocketConnection(
-        io.connect(process.env.CONNECT, {
-          secure: true,
-          rejectUnauthorized: false,
-        })
-      ),
+
       rooms: null,
       room: null,
       roomsChatHistory: {},
