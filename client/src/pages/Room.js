@@ -197,6 +197,7 @@ class GameUI extends React.Component {
       "getConnection",
       "onReady",
       "leaveRoom",
+      "resetData",
 
       "handleCloseReqeustScreenIfNoRequests",
       "handleOnHandCardClick",
@@ -238,11 +239,20 @@ class GameUI extends React.Component {
     this.props.leaveRoom(connection, this.props.room);
   }
 
-  componentWillUnmount() {
-    console.log("componentWilUnmount");
-    this.leaveRoom();
+  async resetData() {
+    console.log("resetData start");
+    await this.props.resetGameData();
+    await this.props.resetPeopleData();
+    await this.props.resetRoomData();
+    await this.leaveRoom();
     let connection = this.getConnection();
     connection.socket.destroy();
+    console.log("resetData end");
+  }
+
+  componentWillUnmount() {
+    console.log("componentWilUnmount");
+    this.resetData();
   }
 
   componentDidMount() {
@@ -258,10 +268,6 @@ class GameUI extends React.Component {
       this.initialized = true;
       (async () => {
         let connection = this.getConnection();
-
-        this.props.resetGameData();
-        this.props.resetPeopleData();
-        this.props.resetRoomData();
 
         game.init();
         let roomCode = this.props.room;

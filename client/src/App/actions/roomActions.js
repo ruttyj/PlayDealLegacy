@@ -89,7 +89,7 @@ const getOnlineStats = (con, roomCode) => async (dispatch) => {
 };
 
 const resetRoomData = (value) => (dispatch) => {
-  roomBuffer.dispatch(dispatch, {
+  dispatch({
     type: `RESET`,
     payload: value,
   });

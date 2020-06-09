@@ -760,7 +760,7 @@ const attachGameListeners = (con) => (dispatch) => {
 };
 
 const resetGameData = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  dispatch({
     type: `RESET`,
     payload: value,
   });
