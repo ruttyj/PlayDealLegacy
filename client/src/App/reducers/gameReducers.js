@@ -239,6 +239,8 @@ const reducer = function (state = initialState, action) {
   let subjectName;
   let updatedState;
   switch (action.type) {
+    case "RESET":
+      return JSON.parse(JSON.stringify(initialState));
     case "SET_STATE":
       return action.payload;
     case GET_GAME_PROPERTY_SETS:

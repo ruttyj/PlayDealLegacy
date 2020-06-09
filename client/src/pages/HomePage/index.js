@@ -145,6 +145,12 @@ class HomePage extends BaseComponent {
     this.init();
   }
 
+  componentWillUnmount() {
+    console.log("componentWilUnmount");
+    let connection = this.io;
+    connection.destroy();
+  }
+
   async fetchOnlineStats() {
     const self = this;
     let responses = await self.props.getOnlineStats(self.io);

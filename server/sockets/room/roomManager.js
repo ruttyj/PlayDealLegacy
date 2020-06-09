@@ -188,13 +188,15 @@ function RoomManager() {
 
   function removeRoomById(roomId) {
     let room = getRoomById(roomId);
-    let roomCode = room.getCode();
+    if (isDef(room)) {
+      let roomCode = room.getCode();
 
-    room.destroy();
+      room.destroy();
 
-    // remove from mappings
-    removeRoomCodeToIdMapping(roomCode);
-    removeRoomFromIdMaping(roomId);
+      // remove from mappings
+      removeRoomCodeToIdMapping(roomCode);
+      removeRoomFromIdMaping(roomId);
+    }
   }
 
   function removeRoomByCode(roomCode) {

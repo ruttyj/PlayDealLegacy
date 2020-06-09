@@ -759,8 +759,17 @@ const attachGameListeners = (con) => (dispatch) => {
   });
 };
 
+const resetGameData = (value) => (dispatch) => {
+  gameBuffer.dispatch(dispatch, {
+    type: `RESET`,
+    payload: value,
+  });
+  return Promise.resolve();
+};
+
 export default {
   flush,
+  resetGameData,
 
   //Game life cycle
   resetGame,

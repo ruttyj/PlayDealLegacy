@@ -1,5 +1,6 @@
 import { isDef } from "../../utils/";
 import { SET_CURRENT_ROOM } from "./types";
+import roomBuffer from "../buffers/roomBuffer";
 
 function findResponse(responses, subject, action) {
   return responses.find(
@@ -87,7 +88,16 @@ const getOnlineStats = (con, roomCode) => async (dispatch) => {
   return responses;
 };
 
+const resetRoomData = (value) => (dispatch) => {
+  roomBuffer.dispatch(dispatch, {
+    type: `RESET`,
+    payload: value,
+  });
+  return Promise.resolve();
+};
+
 export default {
+  resetRoomData,
   listAllRooms,
   joinRoom,
   leaveRoom,

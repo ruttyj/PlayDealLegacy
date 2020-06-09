@@ -274,12 +274,16 @@ class GameUI extends React.Component {
     let connection = this.getConnection();
     this.props.leaveRoom(connection, this.props.room);
   }
+  beforeunload(e) {
+    if (true) {
+      console.log("beforeunload");
+      this.leaveRoom();
+    }
+  }
 
   componentWillUnmount() {
     console.log("componentWilUnmount");
-    let connection = this.getConnection();
     this.leaveRoom();
-    connection.destroy();
   }
 
   componentDidMount() {
@@ -295,6 +299,10 @@ class GameUI extends React.Component {
       this.initialized = true;
       (async () => {
         let connection = this.getConnection();
+
+        this.props.resetGameData();
+        this.props.resetPeopleData();
+        this.props.resetRoomData();
 
         game.init();
         let roomCode = this.props.room;
