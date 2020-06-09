@@ -37,6 +37,8 @@ function setCurrentRoom(state, action) {
 
 const reducer = function (state = initialState, action) {
   switch (action.type) {
+    case "RESET":
+      return JSON.parse(JSON.stringify(initialState));
     case GET_ROOMS:
       return getRooms(state, action);
     case CREATE_ROOM:

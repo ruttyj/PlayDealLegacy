@@ -1,3 +1,4 @@
+import peopleBuffer from "../buffers/peopleBuffer";
 import { isDef } from "../../utils/";
 import {
   GET_PEOPLE,
@@ -61,7 +62,16 @@ const updateMyName = (con, roomCode, username) => async (dispatch) => {
   return responses;
 };
 
+const resetPeopleData = (value) => (dispatch) => {
+  peopleBuffer.dispatch(dispatch, {
+    type: `RESET`,
+    payload: value,
+  });
+  return Promise.resolve();
+};
+
 export default {
+  resetPeopleData,
   attachPeopleListeners,
   updateMyStatus,
   updateMyName,

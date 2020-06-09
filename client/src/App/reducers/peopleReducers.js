@@ -74,6 +74,8 @@ function getMyId(state, { payload }) {
 
 const reducer = function (state = initialState, action) {
   switch (action.type) {
+    case "RESET":
+      return JSON.parse(JSON.stringify(initialState));
     case GET_PEOPLE:
       return getPeople(state, action);
     case REMOVE_PEOPLE:
