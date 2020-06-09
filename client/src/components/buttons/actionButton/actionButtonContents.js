@@ -9,7 +9,7 @@ const actionButtonContents = {
       style={{
         width: "50px",
         height: "50px",
-        filter: "invert(1)"
+        filter: "invert(1)",
       }}
     />
   ),
@@ -20,7 +20,7 @@ const actionButtonContents = {
       style={{
         width: "50px",
         height: "50px",
-        filter: "invert(1)"
+        filter: "invert(1)",
       }}
     />
   ),
@@ -31,7 +31,7 @@ const actionButtonContents = {
       style={{
         width: "50px",
         height: "50px",
-        filter: "invert(1)"
+        filter: "invert(1)",
       }}
     />
   ),
@@ -42,7 +42,7 @@ const actionButtonContents = {
       style={{
         width: "50px",
         height: "50px",
-        filter: "invert(1)"
+        filter: "invert(1)",
         //...extraStyle
       }}
     />
@@ -54,7 +54,7 @@ const actionButtonContents = {
       style={{
         width: "50px",
         height: "50px",
-        filter: "invert(1)"
+        filter: "invert(1)",
       }}
     />
   ),
@@ -65,10 +65,10 @@ const actionButtonContents = {
       style={{
         width: "50px",
         height: "50px",
-        filter: "invert(1)"
+        filter: "invert(1)",
       }}
     />
-  )
+  ),
 };
 
 export default actionButtonContents;

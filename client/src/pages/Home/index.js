@@ -10,106 +10,40 @@ import { createMuiTheme } from "@material-ui/core/styles";
 import { ThemeProvider } from "@material-ui/styles";
 import IntroContainer from "../../components/containers/IntroContainer";
 import { withRouter } from "react-router";
+
 import CssBaseline from "@material-ui/core/CssBaseline";
-import Drawer from "@material-ui/core/Drawer";
-import Box from "@material-ui/core/Box";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import List from "@material-ui/core/List";
 import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
 import Badge from "@material-ui/core/Badge";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
-import MenuIcon from "@material-ui/icons/Menu";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import NotificationsIcon from "@material-ui/icons/Notifications";
-import MiniDrawer from "../../components/drawers/MiniDrawer";
+import TextField from "@material-ui/core/TextField";
+
 import FancyButton from "../../components/buttons/FancyButton";
-import UserOptions from "./UserOptions";
 import { motion } from "framer-motion";
 import RelLayer from "../../components/layers/RelLayer";
 import AbsLayer from "../../components/layers/AbsLayer";
 
-import TextField from "@material-ui/core/TextField";
-import CircularProgress from "@material-ui/core/CircularProgress";
-
 import FillContainer from "../../components/fillContainer/FillContainer";
 import FillHeader from "../../components/fillContainer/FillHeader";
 import FillContent from "../../components/fillContainer/FillContent";
-import FillFooter from "../../components/fillContainer/FillFooter";
-import Scene1 from "../../components/3D/Scenes/Scene1";
-
 import BaseComponent from "../../components/base/BaseComponent";
-
+import Scene1 from "../../components/3D/Scenes/Scene1";
 import createSocketConnection from "../../utils/clientSocket";
+import HeaderTitle from "../../components/titles/HeaderTitle";
 
 import {
   Flex,
-  FlexRow,
-  FlexColumn,
-  FlexColumnCenter,
-  FlexRowCenter,
-  FlexCenter,
-  FullFlexCenter,
-  FullFlexColumn,
   FullFlexColumnCenter,
-  FullFlexRow,
   FullFlexRowCenter,
 } from "../../components/Flex";
 
 import Header from "../../components/Header";
-import FeaturedPost from "../../components/FeaturedPost";
-
-import { makeStyles } from "@material-ui/core/styles";
-import pluralize from "pluralize";
-import {
-  els,
-  isFunc,
-  isDef,
-  isDefNested,
-  isArr,
-  getNestedValue,
-} from "../../utils/";
-
-import sounds from "../../assets/sounds";
-import { deepOrange, green, grey } from "@material-ui/core/colors";
+import { els, isDef, getNestedValue } from "../../utils/";
 
 // Socket related
 import { connect } from "react-redux";
 import roomActions from "../../App/actions/roomActions";
-import StateBuffer from "../../App/buffers/StateBuffer";
 import "react-splitter-layout/lib/index.css";
-const uiConfig = {};
-
-const FullFlexGrow = ({ children, style = {} }) => {
-  return (
-    <Flex
-      style={{
-        height: "100%",
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        flexGrow: "1",
-        ...style,
-      }}
-    >
-      {children}
-    </Flex>
-  );
-};
-
-const HeaderTitle = ({ children, style = {}, variant = "h4" }) => (
-  <Typography
-    style={{ textAlign: "center", ...style }}
-    variant={variant}
-    gutterBottom
-  >
-    {children}
-  </Typography>
-);
 
 const theme = createMuiTheme({
   palette: {
@@ -117,8 +51,7 @@ const theme = createMuiTheme({
   },
 });
 
-const stateBuffer = StateBuffer();
-class HomePage extends BaseComponent {
+class Home extends BaseComponent {
   constructor(props, context) {
     super(props, context);
 
@@ -130,13 +63,7 @@ class HomePage extends BaseComponent {
       })
     );
 
-    this.state = {
-      peopleOnlineCount: 0,
-    };
-    this.setState = this.setState.bind(this);
-    stateBuffer.setSetter(this.setState);
     this.history = this.props.history;
-
     let bindFuncs = ["fetchOnlineStats"];
     bindFuncs.forEach((funcName) => {
       this[funcName] = this[funcName].bind(this);
@@ -145,10 +72,14 @@ class HomePage extends BaseComponent {
     this.init();
   }
 
+  async init() {
+    this.set("mode", "choose");
+    this.fetchOnlineStats();
+  }
+
   componentWillUnmount() {
     console.log("componentWilUnmount");
-    let connection = this.io;
-    connection.destroy();
+    this.io.destroy();
   }
 
   async fetchOnlineStats() {
@@ -159,7 +90,7 @@ class HomePage extends BaseComponent {
         (r) => r.subject === "CLIENTS" && r.action === "GET_ONLINE_STATS"
       );
       if (isDef(result)) {
-        stateBuffer.set(
+        this.currentState.set(
           "peopleOnlineCount",
           getNestedValue(result, ["payload", "peopleOnlineCount"], 0)
         );
@@ -167,15 +98,10 @@ class HomePage extends BaseComponent {
     }
   }
 
-  async init() {
-    this.set("mode", "choose");
-    this.fetchOnlineStats();
-  }
-
   render() {
     const self = this;
 
-    let peopleOnlineCount = stateBuffer.get("peopleOnlineCount", 0);
+    let peopleOnlineCount = self.currentState.get("peopleOnlineCount", 0);
 
     function goToRoom(roomCode) {
       self.io.destroy();
@@ -213,8 +139,6 @@ class HomePage extends BaseComponent {
 
     let chooseOptionContent = "";
     if (self.is("mode", "choose")) {
-      let field = "customRoomCode";
-
       chooseOptionContent = (
         <IntroContainer
           content={
@@ -278,7 +202,6 @@ class HomePage extends BaseComponent {
     // Create room
     let createRoomContent = "";
     if (self.is("mode", "create")) {
-      let field = "customRoomCode";
       createRoomContent = (
         <IntroContainer
           content={
@@ -415,6 +338,4 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
   ...roomActions,
 };
-export default withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(HomePage)
-);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Home));

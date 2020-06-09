@@ -125,6 +125,23 @@ const FullFlexRowCenter = ({ children, style = {} }) => {
   );
 };
 
+const FullFlexGrow = ({ children, style = {} }) => {
+  return (
+    <Flex
+      style={{
+        height: "100%",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        flexGrow: "1",
+        ...style,
+      }}
+    >
+      {children}
+    </Flex>
+  );
+};
+
 export {
   Flex,
   FlexRow,
@@ -137,4 +154,5 @@ export {
   FullFlexColumnCenter,
   FullFlexRow,
   FullFlexRowCenter,
+  FullFlexGrow,
 };

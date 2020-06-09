@@ -181,10 +181,11 @@ function createSocketConnection(socket) {
   }
 
   function destroy() {
-    //@TODO handle properly
+    console.log("destroy");
     listnerTree.destroy();
-    socket.disconnect();
     socket.emit("disconnect");
+    socket.disconnect();
+    socket.off();
   }
 
   attachSocketHandlers(socket);

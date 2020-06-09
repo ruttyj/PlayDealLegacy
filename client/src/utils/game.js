@@ -22,9 +22,6 @@ function Game(ref) {
     });
   }
 
-  const defaultActionButtonFn = () => {
-    console.log("action not defined");
-  };
   const placeHolderFunc = () => console.log("not defined");
 
   let renderData = {
