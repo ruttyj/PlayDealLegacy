@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import RelLayer from "../components/layers/RelLayer";
-import AbsLayer from "../components/layers/AbsLayer";
-import sounds from "../assets/sounds";
+import RelLayer from "../../../components/layers/RelLayer";
+import AbsLayer from "../../../components/layers/AbsLayer";
+import sounds from "../../../assets/sounds";
 
 const ActionButton = ({
   children,

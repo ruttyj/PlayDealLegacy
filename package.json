@@ -29,5 +29,5 @@
     "concurrently": "latest",
     "dotenv": "^8.2.0"
   },
-  "homepage": "https://github.com/ruttyj/ReactBase#readme"
+  "Home": "https://github.com/ruttyj/ReactBase#readme"
 }

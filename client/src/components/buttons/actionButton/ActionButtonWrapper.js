@@ -11,7 +11,7 @@ const ActionButtonWrapper = ({ children, style = {} }) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        ...style
+        ...style,
       }}
     >
       {children}

@@ -1,7 +1,6 @@
 import React from "react";
 import BaseDealCard from "./BaseDealCard";
 import PropertyTitle from "./elements/PropertyTitle";
-import { Dump } from "../Dump";
 import MiniPriceDiamond from "./elements/MiniPriceDiamond";
 import RentPrices from "./elements/RentPrices";
 import { els, isDef, getNestedValue } from "../../utils/";

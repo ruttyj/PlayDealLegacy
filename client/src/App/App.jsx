@@ -1,68 +1,18 @@
 import React, { Component } from "react";
-import { BrowserRouter, Route, Switch, Redirect, Link } from "react-router-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import CssBaseline from "@material-ui/core/CssBaseline";
+import store from "./store";
+import { Provider } from "react-redux";
 import { isDef } from "../utils";
 
-import HomePage from "../pages/HomePage/";
-import Browse from "../pages/Browse";
-
+import Home from "../pages/Home/";
 import Dev from "../pages/Dev";
-import Dev2 from "../pages/Dev2";
-import DevImmutable from "../pages/DevImmutable";
-import Dev3 from "../pages/Dev3";
+import Room from "../pages/Room";
 import Dev4 from "../pages/Dev4";
-
-import { Provider } from "react-redux";
-import store from "./store";
 
 class App extends Component {
   constructor(props, context) {
     super(props, context);
-
-    this.state = {
-      user: null,
-      isMounted: false,
-      isRegisterInProcess: false,
-
-      rooms: null,
-      room: null,
-      roomsChatHistory: {},
-    };
-
-    this.doMount = async () => {
-      this.setState({
-        isMounted: true,
-      });
-    };
-
-    this.getRoomPath = (roomName) => {
-      return `/Room/${roomName}`;
-    };
-
-    // Get router props from route
-    // Important: setRouterPropsRef(props) must be called in every route
-    this.routerPropsRef = null;
-    this.setRouterPropsRef = (ref) => {
-      this.routerPropsRef = ref;
-    };
-    this.getRouterPropsRef = () => {
-      return this.routerPropsRef;
-    };
-
-    this.getConnection = this.getConnection.bind(this);
-  }
-
-  getConnection() {
-    return this.state.getConnection();
-  }
-
-  componentWilUnmount() {
-    let connection = this.getConnection();
-    connection.destroy();
-  }
-
-  onRouteChanged(...props) {
-    console.log("ROUTE CHANGED", [...props]);
   }
 
   render() {
@@ -86,42 +36,16 @@ class App extends Component {
                 exact
                 path="/"
                 render={(props) => {
-                  return <HomePage />;
+                  return <Home />;
                 }}
               />
 
-              <Route
-                key="browse"
-                exact
-                path="/browse"
-                render={(props) => {
-                  return <Browse />;
-                }}
-              />
-
-              <Route
-                key="dev3"
-                exact
-                path="/dev3"
-                render={(props) => {
-                  return <Dev3 room="AAAA" />;
-                }}
-              />
               <Route
                 key="dev4"
                 exact
                 path="/dev4"
                 render={(props) => {
                   return <Dev4 />;
-                }}
-              />
-
-              <Route
-                key="DevImmutable"
-                exact
-                path="/DevImmutable"
-                render={(props) => {
-                  return <DevImmutable />;
                 }}
               />
 
@@ -140,17 +64,17 @@ class App extends Component {
                     roomCode = "AAAA";
                   }
 
-                  return <Dev2 room={roomCode} />;
+                  return <Room room={roomCode} />;
                 }}
               />
 
               <Route
-                key="Dev2/"
+                key="room/"
                 exact
-                path="/dev2/*"
+                path="/room/*"
                 render={(props) => {
                   let roomCode = String(props.match.params[0]).replace("/", "");
-                  return <Dev2 room={roomCode} />;
+                  return <Room room={roomCode} />;
                 }}
               />
             </Switch>

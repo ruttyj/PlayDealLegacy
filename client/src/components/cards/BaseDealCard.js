@@ -1,11 +1,9 @@
-import { isDef } from "../../utils/";
-
 import React, { memo } from "react";
+import { isDef } from "../../utils/";
 import { makeStyles } from "@material-ui/core/styles";
 var classNames = require("classnames");
 
 let grey = "grey";
-
 const BaseDealCard = memo(({ children, color = grey, style = {} }) => {
   const styles = makeStyles((theme) => ({
     root: {
@@ -28,7 +26,6 @@ const BaseDealCard = memo(({ children, color = grey, style = {} }) => {
       padding: "7px",
       backgroundSize: "350px 350px",
       backgroundColor: color,
-      backgroundImage: "url(/img/bkgd.png)",
       backgroundRepeat: "repeat",
       backgroundBlendMode: "darken",
       transition: "all 150ms linear",
@@ -71,7 +68,10 @@ const BaseDealCard = memo(({ children, color = grey, style = {} }) => {
   );
   return (
     <div className={classes.root} style={style}>
-      <div className={classes.border}>
+      <div
+        className={classes.border}
+        style={{ backgroundImage: `url(/img/bkgd.png)` }}
+      >
         <div className={classes.cardInnerBkgd}>
           <div className={combinesClases} />
           <div className={classes.childContainer}>{children}</div>
@@ -81,4 +81,4 @@ const BaseDealCard = memo(({ children, color = grey, style = {} }) => {
   );
 });
 
-export default BaseDealCard;
+export default React.memo(BaseDealCard);
