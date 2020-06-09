@@ -51,7 +51,7 @@
     "dev": "webpack-dev-server --mode development --config webpack.dev.config.js --port 3000 --env.NODE_ENV=devLocal",
     "prod": "webpack-dev-server --mode development --config webpack.prod.config.js --port 3000 --env.NODE_ENV=prodLocal",
     "start": "webpack-dev-server --mode development --config webpack.prod.config.js --port 3000 --env.NODE_ENV=prodLocal",
-    "build": "rm -rf build && webpack --mode production --config ./webpack.prod.config.js --env.NODE_ENV=prodLocal"
+    "build": "rm -rf build && node ./node_modules/webpack/bin/webpack.js --mode production --config ./webpack.prod.config.js --env.NODE_ENV=prodLocal"
   },
   "eslintConfig": {
     "extends": "react-app"

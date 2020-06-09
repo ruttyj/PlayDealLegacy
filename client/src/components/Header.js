@@ -7,7 +7,7 @@ import IconButton from "@material-ui/core/IconButton";
 import SearchIcon from "@material-ui/icons/Search";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
-import classNames from "classNames";
+import classNames from "classnames";
 import { isDef } from "../utils/utils";
 
 const useStyles = makeStyles((theme) => ({
