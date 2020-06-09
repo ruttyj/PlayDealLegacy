@@ -26,7 +26,6 @@ export default function StateBuffer(_initialState = {}) {
   }, 50);
 
   function setSetter(f) {
-    console.log("setSetter");
     mSetter = f;
   }
   function setMutator(m) {
