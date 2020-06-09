@@ -62,7 +62,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
-import BlurredBackground from "../components/BlurredBackground";
+import BlurredBackground from "../components/layers/BlurredBackground";
 import Avatar from "@material-ui/core/Avatar";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -95,7 +95,7 @@ import BankWrapper from "../components/panels/playerPanel/BankWrapper";
 import MyHandContainer from "../components/panels/playerPanel/MyHandContainer";
 import Deck3D from "../components/panels/playerPanel/Deck3D";
 import CurrencyText from "../components/cards/elements/CurrencyText";
-import PileCount from "../components/PileCount";
+import PileCount from "../components/gameUi/PileCount";
 
 // Screens
 import SCREENS from "../data/screens";

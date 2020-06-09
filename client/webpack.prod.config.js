@@ -8,6 +8,9 @@ module.exports = (env) => {
     entry: "./src/index.jsx",
     resolve: {
       extensions: [".js", ".jsx"],
+      //alias: {
+      //  "@components": path.resolve(__dirname, "src/components/"),
+      //},
     },
     output: {
       path: path.join(__dirname, "build"),
