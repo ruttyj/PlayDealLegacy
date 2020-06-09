@@ -274,16 +274,12 @@ class GameUI extends React.Component {
     let connection = this.getConnection();
     this.props.leaveRoom(connection, this.props.room);
   }
-  beforeunload(e) {
-    if (true) {
-      console.log("beforeunload");
-      this.leaveRoom();
-    }
-  }
 
   componentWillUnmount() {
     console.log("componentWilUnmount");
     this.leaveRoom();
+    let connection = this.getConnection();
+    connection.socket.destroy();
   }
 
   componentDidMount() {
