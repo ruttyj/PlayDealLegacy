@@ -43,9 +43,11 @@ function attachCookieToResponse(req, res) {
   if (!isDef(token)) {
     token = cookieTokenManager.generateToken();
     res.cookie("token", token);
+    console.log("generate and attach cookie token", token);
   } else if (isDef(token) && !cookieTokenManager.has(token)) {
     // Token exists but not in manager -> create record
     cookieTokenManager.set(token, {});
+    console.log("attach cookie token data", token);
   }
 }
 
