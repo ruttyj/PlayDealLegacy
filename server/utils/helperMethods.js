@@ -211,7 +211,7 @@ const setNestedValue = function (a, b, c, d) {
       } else if (isArr(ref[key])) {
         //proceed to next
       } else {
-        var initValue = isNaN(key) ? {} : [];
+        var initValue = Number.isNaN(key) ? {} : [];
         setter(ref, key, initValue);
       }
       ref = ref[key];
@@ -424,13 +424,13 @@ const makeMap = function (
     "topId",
     0,
     {
-      mutator: (v) => (isNaN(v) ? 0 : parseInt(v, 10)),
+      mutator: (v) => (Number.isNaN(v) ? 0 : parseInt(v, 10)),
     }
   );
 
   const incTopId = function (key) {
     _incTopId();
-    if (!isNaN(key)) _setTopId(key);
+    if (!Number.isNaN(key)) _setTopId(key);
   };
 
   let mMap = new Map();

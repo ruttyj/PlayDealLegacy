@@ -108,7 +108,7 @@ const PayRequestScreen = ({
     let card = getCard(cardId);
     cardsKeyed[cardId] = card;
   });
-  bankCardIds.sort(function (cardIdA, cardIdB) {
+  bankCardIds.sort((cardIdA, cardIdB) => {
     let valueA = getNestedValue(cardsKeyed, [cardIdA, "value"], 0);
     let valueB = getNestedValue(cardsKeyed, [cardIdB, "value"], 0);
     return valueA - valueB;

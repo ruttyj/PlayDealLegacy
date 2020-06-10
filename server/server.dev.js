@@ -9,7 +9,7 @@ const {
   attachCookieToResponse,
   addToApp_after,
 } = require("./server.shared.js");
-
+const portNumber = 3000;
 const app = express();
 
 // Call common logic for before
@@ -20,13 +20,13 @@ app.use("/testAPI", testAPIRouter);
 app.use("/audio", express.static(path.join(__dirname, "../client/src/audio")));
 app.use("/img", express.static(path.join(__dirname, "../client/src/img")));
 app.get(/.*\/main\.js/, (req, res) => {
-  request("http://localhost:3000/main.js")
+  request(`http://localhost:${portNumber}/main.js`)
     .on("error", (err) => res.sendFile("loading.html", { root: __dirname }))
     .pipe(res);
 });
 app.get(/.*/, (req, res) => {
   attachCookieToResponse(req, res);
-  request("http://localhost:3000/")
+  request(`http://localhost:${portNumber}/`)
     .on("error", (err) => res.sendFile("loading.html", { root: __dirname }))
     .pipe(res);
 });

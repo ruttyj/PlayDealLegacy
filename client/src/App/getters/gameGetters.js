@@ -199,7 +199,7 @@ const makeGetters = (state) => {
     // People in game
     getAllPlayers() {
       let playerOrder = pi.getAllPlayerIds();
-      return playerOrder.map(pi.getPerson);
+      return playerOrder.map((...props) => pi.getPerson(...props));
     },
 
     getAllOpponentIds() {

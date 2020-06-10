@@ -1,4 +1,4 @@
-function removeByFn(arr, fn){
+function removeByFn(arr, fn) {
   const index = arr.findIndex(fn);
   if (index > -1) {
     let item = arr[index];
@@ -9,9 +9,9 @@ function removeByFn(arr, fn){
 }
 
 const utils = {
-  sort: function(arr, order = "asc", propertyRetriever = v => v) {
+  sort: function (arr, order = "asc", propertyRetriever = (v) => v) {
     let c = String(order).toLowerCase() === "asc" ? 1 : -1;
-    arr.sort(function(a, b) {
+    arr.sort((a, b) => {
       var valueA = propertyRetriever(a);
       var valueB = propertyRetriever(b);
 
@@ -24,16 +24,16 @@ const utils = {
       }
     });
   },
-  randomRange: function(min, max) {
+  randomRange: function (min, max) {
     return Math.floor(Math.random() * max - min) + min;
   },
-  findIndexOfCardById: function(arr, cardId) {
-    return arr.findIndex(card => card.id === cardId);
+  findIndexOfCardById: function (arr, cardId) {
+    return arr.findIndex((card) => card.id === cardId);
   },
-  removeCardByIndex: function(arr, index) {
+  removeCardByIndex: function (arr, index) {
     arr.splice(index, 1);
   },
-  giveCardByIdFromArray: function(arr, cardId) {
+  giveCardByIdFromArray: function (arr, cardId) {
     const index = utils.findIndexOfCardById(arr, cardId);
     if (index > -1) {
       let card = arr[index];
@@ -41,7 +41,7 @@ const utils = {
       return card;
     }
     return null;
-  }
+  },
 };
 
 module.exports = utils;

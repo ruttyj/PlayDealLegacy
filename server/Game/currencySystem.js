@@ -1,4 +1,4 @@
-const isDef = v => v !== undefined && v !== null;
+const { isDef, getNestedValue, isDefNested } = require("../utils/index");
 
 /**===================================================
  *
@@ -6,24 +6,24 @@ const isDef = v => v !== undefined && v !== null;
  *
  * ===================================================
  **/
-const CurrencySystem = function() {
+const CurrencySystem = function () {
   let ref = {
     unitsOrder: [],
-    unitValueMap: {}
+    unitValueMap: {},
   };
 
   // Utils
   let utils = {
-    convertArrayToMap: function(bills) {
+    convertArrayToMap: function (bills) {
       return bills.reduce((result, billsKey) => {
         // Increment
         result[billsKey] = isDef(result[billsKey]) ? result[billsKey] + 1 : 1;
         return result;
       }, {});
     },
-    sort: function(arr, order = "asc", propertyRetriever = v => v) {
+    sort: function (arr, order = "asc", propertyRetriever = (v) => v) {
       let c = String(order).toLowerCase() === "asc" ? 1 : -1;
-      arr.sort(function(a, b) {
+      arr.sort((a, b) => {
         var valueA = propertyRetriever(a);
         var valueB = propertyRetriever(b);
 
@@ -35,18 +35,18 @@ const CurrencySystem = function() {
           return 0;
         }
       });
-    }
+    },
   };
 
-  let mItemUnitKeyGetter = v => v.value;
+  let mItemUnitKeyGetter = (v) => v.value;
 
   // Ref Getters Setters
   let setUnitValue = (unitKey, v) => (ref.unitValueMap[unitKey] = v);
-  let getUnitValue = unitKey => ref.unitValueMap[unitKey];
+  let getUnitValue = (unitKey) => ref.unitValueMap[unitKey];
   let getAllUnitsOrder = () => ref.unitsOrder;
   let getAllUnitsAscendingOrder = () => getAllUnitsOrder();
   let getUnitsCount = () => ref.unitsOrder.length;
-  let setAllUnitsOrder = v => (ref.unitsOrder = v);
+  let setAllUnitsOrder = (v) => (ref.unitsOrder = v);
 
   // Add unit to map and keep track of order
   let addUnit = (unitKey, value) => {
@@ -57,15 +57,15 @@ const CurrencySystem = function() {
     utils.sort(ref.unitsOrder, "asc", getUnitValue);
   };
 
-  let separateIntoBuckets = function(items, getKey) {
+  let separateIntoBuckets = function (items, getKey) {
     let result = {};
-    items.forEach(card => {
+    items.forEach((card) => {
       let key = getKey(card);
       if (isDef(key))
         if (!isDef(result[key])) {
           result[key] = {
             count: 0,
-            bucket: []
+            bucket: [],
           };
         }
       result[key].count = result[key].count + 1;
@@ -74,25 +74,25 @@ const CurrencySystem = function() {
     return result;
   };
 
-  let setUnitKeyGetter = function(fn) {
+  let setUnitKeyGetter = function (fn) {
     mItemUnitKeyGetter = fn;
   };
 
-  let getCurrencyUnitKey = function(card) {
+  let getCurrencyUnitKey = function (card) {
     return mItemUnitKeyGetter(card);
   };
 
-  let findGreedyChange = function(cards, ask) {
+  let findGreedyChange = function (cards, ask) {
     let unitsAscendingOrder = getAllUnitsOrder();
     //let bankMap = utils.convertArrayToMap(cards);
     let bankMap = {};
-    cards.forEach(card => {
+    cards.forEach((card) => {
       let value = getCurrencyUnitKey(card);
       if (isDef(value))
         bankMap[value] = isDef(bankMap[value]) ? bankMap[value] + 1 : 1;
     });
 
-    let findChange = function(
+    let findChange = function (
       availableUnits,
       amountDue,
       unitsAscendingOrder,
@@ -157,26 +157,28 @@ const CurrencySystem = function() {
         }
 
         // Take solution with the smallest remainder
-        bills = minResult.bills;
-        amountRemaining = minResult.remainder;
+        bills = isDefNested(minResult, "bills") ? minResult.bills : [];
+        amountRemaining = isDefNested(minResult, "remainder")
+          ? minResult.remainder
+          : 0;
       }
 
       // Return best solution
       return {
         bills: bills,
-        remainder: amountRemaining
+        remainder: amountRemaining,
       };
     };
 
     // Map counter methods
-    let minusMaps = function(
+    let minusMaps = function (
       bankMap,
       payBills,
       ascBillKeys,
       keepValues = () => true
     ) {
       let result = {};
-      ascBillKeys.forEach(billKey => {
+      ascBillKeys.forEach((billKey) => {
         let bankQty = isDef(bankMap[billKey]) ? bankMap[billKey] : 0;
         let payQty = isDef(payBills[billKey]) ? payBills[billKey] : 0;
         let resultQty = bankQty - payQty;
@@ -186,18 +188,18 @@ const CurrencySystem = function() {
       });
       return result;
     };
-    let minusFromKey = function(mapping, key, qty = 1) {
+    let minusFromKey = function (mapping, key, qty = 1) {
       if (mapping[key] > qty) {
         mapping[key] = mapping[key] - qty; // will be > 0
       } else {
         delete mapping[key]; // delete 0
       }
     };
-    let addToKey = function(mapping, key, qty = 1) {
+    let addToKey = function (mapping, key, qty = 1) {
       mapping[key] = isDef(mapping[key]) ? mapping[key] + qty : qty;
     };
 
-    let convertToMap = function(bills) {
+    let convertToMap = function (bills) {
       return bills.reduce((result, billsKey) => {
         // Increment
         result[billsKey] = isDef(result[billsKey]) ? result[billsKey] + 1 : 1;
@@ -215,7 +217,7 @@ const CurrencySystem = function() {
       bankMap,
       payBills,
       unitsAscendingOrder,
-      v => v > 0
+      (v) => v > 0
     );
     if (remainder !== 0) {
       for (let i = 0; i < unitsAscendingOrder.length; ++i) {
@@ -236,7 +238,7 @@ const CurrencySystem = function() {
     let keepCards = [];
     let giveCards = [];
     let payBillsRemaining = { ...payBills };
-    cards.forEach(card => {
+    cards.forEach((card) => {
       let cardCurrencyUnit = getCurrencyUnitKey(card);
       if (
         isDef(payBillsRemaining[cardCurrencyUnit]) &&
@@ -255,7 +257,7 @@ const CurrencySystem = function() {
       give: payBills,
       giveCards,
       keepCards,
-      remainder: remainder
+      remainder: remainder,
     };
     return finalResult;
   };
@@ -275,7 +277,7 @@ const CurrencySystem = function() {
 
     // Change -------------
     findGreedyChange,
-    setUnitKeyGetter
+    setUnitKeyGetter,
   };
 }; // END CURRENCY SYSTEM =============================
 
