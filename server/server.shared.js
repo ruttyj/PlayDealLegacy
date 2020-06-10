@@ -38,6 +38,7 @@ function addToApp_before(app) {
 }
 
 function attachCookieToResponse(req, res) {
+  console.log("attachCookieToResponse");
   // Make token and ensure object is associated
   let token = getNestedValue(req, ["cookies", "token"], null);
   if (!isDef(token)) {

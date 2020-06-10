@@ -35,6 +35,7 @@ io.on("connection", (thisClient) => {
   // Associate socket to cookie
   let cookies = cookie.parse(thisClient.request.headers.cookie);
   if (isDef(cookies.token) && isDef(thisClient.id)) {
+    console.log("associateTokenAndClient", cookies.token, thisClient.id);
     cookieTokenManager.associateTokenAndClient(cookies.token, thisClient.id);
   }
 });
