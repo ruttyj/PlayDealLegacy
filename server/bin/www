@@ -7,6 +7,9 @@ var cookie = require("cookie");
 var app = require("../server.prod.js");
 var debug = require("debug")("server:server");
 var http = require("http");
+const { isDef, getNestedValue } = require("../utils/helperMethods");
+const CookieTokenManager = require("../CookieTokenManager");
+const cookieTokenManager = CookieTokenManager.getInstance();
 
 /**
  * Get port from environment and store in Express.
