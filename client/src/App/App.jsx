@@ -58,7 +58,6 @@ class App extends Component {
                     /\//g,
                     ""
                   );
-                  console.log("roomCode", roomCode);
                   if (!isDef(roomCode)) {
                     roomCode = "AAAA";
                   }

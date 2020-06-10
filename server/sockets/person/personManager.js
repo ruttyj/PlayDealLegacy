@@ -203,6 +203,10 @@ function PersonManager() {
     addClientIdPersonIdMap(clientId, id);
   }
 
+  function associateClientIdToPersonId(clientId, personId) {
+    addClientIdPersonIdMap(clientId, personId);
+  }
+
   function removePerson(personOrId) {
     let personId = getKeyFromProp(personOrId, "id");
     if (isDef(personId)) removePersonById(personId);
@@ -331,6 +335,7 @@ function PersonManager() {
     getPersonByClientId,
     getPersonCount,
 
+    associateClientIdToPersonId,
     disconnectedPlayerByClientId,
     getAllPeople,
     getOtherConnectedPeople,

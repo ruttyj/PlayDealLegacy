@@ -4,7 +4,6 @@ const webpack = require("webpack");
 
 module.exports = (env) => {
   let tst = path.resolve(__dirname, "src/components/");
-  console.log("@@@@@@@tst", tst);
   return {
     mode: "development",
     entry: "./src/index.jsx",

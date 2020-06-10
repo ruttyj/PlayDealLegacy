@@ -38,27 +38,14 @@ function addToApp_before(app) {
 }
 
 function attachCookieToResponse(req, res) {
+  // Make token and ensure object is associated
   let token = getNestedValue(req, ["cookies", "token"], null);
-  let clientId = getNestedValue(req, ["cookies", "io"], null);
-  console.log(
-    "fresh baked cookies",
-    JSON.stringify(getNestedValue(res, ["cookies"], null), null, 2)
-  );
-  let tokenData = null;
   if (!isDef(token)) {
-    // Generate token / data
     token = cookieTokenManager.generateToken();
-
     res.cookie("token", token);
-    tokenData = cookieTokenManager.get(token);
   } else if (isDef(token) && !cookieTokenManager.has(token)) {
     // Token exists but not in manager -> create record
     cookieTokenManager.set(token, {});
-    tokenData = cookieTokenManager.get(token);
-  } else {
-    // get token data
-    tokenData = cookieTokenManager.get(token);
-    console.log("token", JSON.stringify({ token, tokenData }));
   }
 }
 

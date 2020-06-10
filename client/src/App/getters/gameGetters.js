@@ -215,7 +215,7 @@ const makeGetters = (state) => {
     getMyHandCardIds() {
       return gameBuffer.get(
         ["playerHands", "items", pi.getMyId(), "cardIds"],
-        {}
+        []
       );
     },
     getPlayerHand(playerId) {
