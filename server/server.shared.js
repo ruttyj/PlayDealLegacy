@@ -7,12 +7,13 @@ const cors = require("cors"); // cross domain
 const request = require("request");
 const url = require("url");
 const proxy = require("express-http-proxy");
+const { isDef, getNestedValue } = require("./utils/helperMethods");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const testAPIRouter = require("./routes/testAPI");
-const CookieManager = require("./CookieManager");
-const cookieManager = CookieManager();
+const CookieTokenManager = require("./CookieTokenManager");
+const cookieTokenManager = CookieTokenManager.getInstance();
 
 function addToApp_before(app) {
   app.use(cors());
@@ -37,8 +38,28 @@ function addToApp_before(app) {
 }
 
 function attachCookieToResponse(req, res) {
-  res.cookie("token", "123456789");
-  //res.clearCookie("cookieName")
+  let token = getNestedValue(req, ["cookies", "token"], null);
+  let clientId = getNestedValue(req, ["cookies", "io"], null);
+  console.log(
+    "fresh baked cookies",
+    JSON.stringify(getNestedValue(res, ["cookies"], null), null, 2)
+  );
+  let tokenData = null;
+  if (!isDef(token)) {
+    // Generate token / data
+    token = cookieTokenManager.generateToken();
+
+    res.cookie("token", token);
+    tokenData = cookieTokenManager.get(token);
+  } else if (isDef(token) && !cookieTokenManager.has(token)) {
+    // Token exists but not in manager -> create record
+    cookieTokenManager.set(token, {});
+    tokenData = cookieTokenManager.get(token);
+  } else {
+    // get token data
+    tokenData = cookieTokenManager.get(token);
+    console.log("token", JSON.stringify({ token, tokenData }));
+  }
 }
 
 function addToApp_after(app) {

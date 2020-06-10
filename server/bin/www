@@ -25,6 +25,8 @@ const attachSocketHandlers = require("../sockets/serverSocketHandlers");
 
 const io = require("socket.io")(server);
 io.on("connection", (thisClient) => {
+  console.log("~~~~~~~~~~~~~~~~~~~~~~~~");
+
   attachSocketHandlers(thisClient);
   //thisClient.on("npmStop", () => {
   //  process.exit(0);

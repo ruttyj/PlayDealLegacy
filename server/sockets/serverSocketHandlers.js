@@ -2,6 +2,7 @@ const rootFolder = `../..`;
 const serverFolder = `${rootFolder}/server`;
 const serverSocketFolder = `${serverFolder}/sockets`;
 const gameFolder = `${serverFolder}/Game`;
+const CookieTokenManager = require("../CookieTokenManager/");
 
 const {
   els,
@@ -11,6 +12,7 @@ const {
   isStr,
   isArr,
   getNestedValue,
+  setNestedValue,
   log,
   jsonLog,
   jsonEncode,
@@ -20,6 +22,7 @@ const {
 const ClientManager = require(`${serverSocketFolder}/client/clientManager.js`);
 const RoomManager = require(`${serverSocketFolder}/room/roomManager.js`);
 const GameManager = require(`${gameFolder}/`);
+const cookieTokenManager = CookieTokenManager.getInstance();
 
 // Import generic logic for indexed game data
 const KeyedRequest = require(`${serverSocketFolder}/container/keyedRequest.js`);
@@ -497,6 +500,29 @@ function attachSocketHandlers(thisClient) {
 
             if (isDef(person)) {
               let personId = person.getId();
+
+              let token = cookieTokenManager.getTokenForClientId(
+                mStrThisClientId
+              );
+              console.log(
+                "cookieTokenManager",
+                mStrThisClientId,
+                token,
+                JSON.stringify(cookieTokenManager.serialize(), null, 2)
+              );
+              if (isDef(token)) {
+                let tokenData = cookieTokenManager.get(token);
+                if (isDef(tokenData)) {
+                  let tokenRoomData = getNestedValue(
+                    tokenData,
+                    ["room", roomCode],
+                    {}
+                  );
+                  tokenRoomData.roomCode = roomCode;
+                  tokenRoomData.personId = personId;
+                  setNestedValue(tokenData, ["room", roomCode], tokenRoomData);
+                }
+              }
 
               // send room data
               socketResponses.addToBucket(
@@ -7034,6 +7060,8 @@ function attachSocketHandlers(thisClient) {
   function handleClientDisconnect() {
     let clientId = thisClient.id;
     let rooms = roomManager.getRoomsForClientId(clientId);
+    console.log("handleClientDisconnect");
+    cookieTokenManager.dissociateClient(clientId);
 
     if (isDef(rooms)) {
       let handleIo = makeIOHandle(PUBLIC_SUBJECTS);
@@ -7047,6 +7075,7 @@ function attachSocketHandlers(thisClient) {
             },
           ])
         );
+
         // Handle leave room since the above handler requires the room to exist to notify people
         let roomPersonManager = room.getPersonManager();
         if (roomPersonManager.getConnectedPeopleCount() === 0) {
