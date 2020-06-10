@@ -63,7 +63,7 @@ const updateMyName = (con, roomCode, username) => async (dispatch) => {
 };
 
 const resetPeopleData = (value) => (dispatch) => {
-  peopleBuffer.dispatch(dispatch, {
+  dispatch({
     type: `RESET`,
     payload: value,
   });

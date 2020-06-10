@@ -1,6 +1,7 @@
 import gameReducers from "../reducers/gameReducers";
 import { getNestedValue } from "../../utils/";
 import _ from "lodash";
+import { isDef } from "../../../../server/utils";
 
 function ReduxBuffer(_initialState = {}) {
   const initialState = _initialState;
@@ -20,11 +21,13 @@ function ReduxBuffer(_initialState = {}) {
   }
 
   function flush(_dispatch) {
-    if (inValidated) {
-      _dispatch({
-        type: "SET_STATE",
-        payload: currentState,
-      });
+    if (isDef(_dispatch)) {
+      if (inValidated) {
+        _dispatch({
+          type: "SET_STATE",
+          payload: currentState,
+        });
+      }
     }
   }
 

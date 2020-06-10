@@ -3,11 +3,15 @@ const path = require("path");
 const webpack = require("webpack");
 
 module.exports = (env) => {
+  let tst = path.resolve(__dirname, "src/components/");
   return {
-    mode: "production",
+    mode: "development",
     entry: "./src/index.jsx",
     resolve: {
       extensions: [".js", ".jsx"],
+      //alias: {
+      //  "@components": path.resolve(__dirname, "src/components/"),
+      //},
     },
     devServer: {
       hot: false,

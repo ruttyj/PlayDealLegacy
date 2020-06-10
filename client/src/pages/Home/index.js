@@ -78,7 +78,6 @@ class Home extends BaseComponent {
   }
 
   componentWillUnmount() {
-    console.log("componentWilUnmount");
     this.io.destroy();
   }
 

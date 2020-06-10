@@ -2,6 +2,7 @@ const rootFolder = `../..`;
 const serverFolder = `${rootFolder}/server`;
 const serverSocketFolder = `${serverFolder}/sockets`;
 const gameFolder = `${serverFolder}/Game`;
+const CookieTokenManager = require("../CookieTokenManager/");
 
 const {
   els,
@@ -11,6 +12,7 @@ const {
   isStr,
   isArr,
   getNestedValue,
+  setNestedValue,
   log,
   jsonLog,
   jsonEncode,
@@ -20,6 +22,7 @@ const {
 const ClientManager = require(`${serverSocketFolder}/client/clientManager.js`);
 const RoomManager = require(`${serverSocketFolder}/room/roomManager.js`);
 const GameManager = require(`${gameFolder}/`);
+const cookieTokenManager = CookieTokenManager.getInstance();
 
 // Import generic logic for indexed game data
 const KeyedRequest = require(`${serverSocketFolder}/container/keyedRequest.js`);
@@ -319,6 +322,50 @@ function attachSocketHandlers(thisClient) {
       CONNECT: (props) => {},
       DISCONNECT: (props) => {},
     },
+    PEOPLE: {
+      DISCONNECT: (props) => {
+        // when game is in progeress and the user loses connection or closes the browser
+        const socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["PEOPLE", "DISCONNECT"];
+        let status = "failure";
+        let payload = {};
+        return handlePerson(
+          props,
+          (props2) => {
+            let { roomCode, personManager, thisPerson, thisPersonId } = props2;
+            let peopleIds = getArrFromProp(
+              props,
+              {
+                plural: "peopleIds",
+                singular: "personId",
+              },
+              thisPersonId
+            );
+
+            // Foreach person beign removed
+            let disconnectedIds = [];
+            peopleIds.forEach((personId) => {
+              let person = personManager.getPerson(personId);
+              if (isDef(person)) {
+                disconnectedIds.push(person.getId());
+                person.disconnect();
+              }
+            });
+
+            socketResponses.addToBucket(
+              "everyone",
+              PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                peopleIds: disconnectedIds,
+                roomCode,
+              })
+            );
+
+            return socketResponses;
+          },
+          makeConsumerFallbackResponse({ subject, action, socketResponses })
+        );
+      },
+    },
   });
 
   Object.assign(PUBLIC_SUBJECTS, {
@@ -490,13 +537,101 @@ function attachSocketHandlers(thisClient) {
         username = els(username, "Player");
         return handleRoom(
           props,
-          ({ room, personManager }) => {
-            let person = personManager.createPerson(thisClient, username);
+          (consumerData) => {
+            let { room, personManager } = consumerData;
+            let token = cookieTokenManager.getTokenForClientId(
+              mStrThisClientId
+            );
+
+            // Check if user can reconnect
+            let person;
+            let hasReconnnected = false;
+            let game = room.getGame();
+            if (isDef(game)) {
+              if (game.isGameStarted() && !game.isGameOver()) {
+                if (isDef(token)) {
+                  let tokenData = cookieTokenManager.get(token);
+                  if (isDef(tokenData)) {
+                    let tokenDataPersonList = getNestedValue(
+                      tokenData,
+                      ["room", roomCode],
+                      null
+                    );
+                    if (
+                      isDef(tokenDataPersonList) &&
+                      isArr(tokenDataPersonList)
+                    ) {
+                      for (let i = 0; i < tokenDataPersonList.length; ++i) {
+                        let data = tokenDataPersonList[i];
+                        let { personId } = data;
+
+                        if (
+                          personManager.hasPerson(personId) &&
+                          !personManager.getPerson(personId).isConnected()
+                        ) {
+                          person = personManager.getPerson(personId);
+                          person.setClient(thisClient);
+                          personManager.associateClientIdToPersonId(
+                            thisClient.id,
+                            person.getId()
+                          );
+                          person.setStatus("ready");
+                          hasReconnnected = true;
+                          break;
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            if (!isDef(person)) {
+              person = personManager.createPerson(thisClient, username);
+            }
+
             let status = "";
             let payload = null;
 
             if (isDef(person)) {
               let personId = person.getId();
+
+              // associate cookie to session
+              if (isDef(token)) {
+                let tokenData = cookieTokenManager.get(token);
+                if (isDef(tokenData)) {
+                  let tokenDataPersonList = getNestedValue(
+                    tokenData,
+                    ["room", roomCode],
+                    []
+                  );
+
+                  let hasDataAlready = tokenDataPersonList.find(
+                    (l) => l.personId === personId
+                  );
+                  if (!isDef(hasDataAlready)) {
+                    tokenDataPersonList.push({
+                      roomCode,
+                      personId,
+                    });
+                    setNestedValue(
+                      tokenData,
+                      ["room", roomCode],
+                      tokenDataPersonList
+                    );
+                  }
+                }
+              }
+
+              if (personManager.getConnectedPeopleCount() === 1) {
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
+                    roomCode,
+                    personId,
+                  })
+                );
+              }
 
               // send room data
               socketResponses.addToBucket(
@@ -520,16 +655,6 @@ function attachSocketHandlers(thisClient) {
                   roomCode,
                 })
               );
-
-              if (personManager.getConnectedPeopleCount() === 1) {
-                socketResponses.addToBucket(
-                  "default",
-                  PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
-                    roomCode,
-                    personId,
-                  })
-                );
-              }
 
               socketResponses.addToBucket(
                 "default",
@@ -559,6 +684,108 @@ function attachSocketHandlers(thisClient) {
                   payload,
                 })
               );
+
+              if (game.isGameStarted() && !game.isGameOver()) {
+                let thisPersonId = person.getId();
+                let allPlayerIds = getAllPlayerIds({ game, personManager });
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS.PROPERTY_SETS.GET_ALL_KEYED({
+                    roomCode,
+                  })
+                );
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS.CARDS.GET_ALL_KEYED({
+                    roomCode,
+                  })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["PLAYERS"].GET({
+                    roomCode,
+                    person,
+                  })
+                );
+
+                // @TODO store client side
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS.GAME.GET_CONFIG({
+                    roomCode,
+                  })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                    roomCode,
+                    person,
+                    peopleIds: allPlayerIds,
+                    receivingPeopleIds: [thisPersonId],
+                  })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS.PLAYER_BANKS.GET_ALL_KEYED({
+                    roomCode,
+                    person,
+                  })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED({
+                    roomCode,
+                    peopleIds: allPlayerIds,
+                  })
+                );
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED({
+                    roomCode,
+                    peopleIds: allPlayerIds,
+                  })
+                );
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
+                );
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["GAME"].STATUS({ roomCode })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["PLAYER_REQUESTS"].GET_KEYED({
+                    roomCode,
+                    peopleIds: allPlayerIds,
+                  })
+                );
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["REQUESTS"].GET_ALL_KEYED({ roomCode })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                );
+              }
             }
             return socketResponses;
           },
@@ -573,7 +800,7 @@ function attachSocketHandlers(thisClient) {
         let status = "failure";
         return handleRoom(
           props,
-          ({ roomCode, room, personManager, thisPerson }) => {
+          ({ roomCode, room, personManager, thisPerson, thisPersonId }) => {
             if (isDef(thisPerson)) {
               status = "success";
               let payload = {
@@ -589,30 +816,59 @@ function attachSocketHandlers(thisClient) {
                 })
               );
 
-              if (thisPerson.hasTag("host")) {
-                let otherPeople = personManager.getOtherConnectedPeople(
-                  thisPerson
-                );
-                if (isDef(otherPeople[0])) {
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
-                      roomCode,
-                      personId: otherPeople[0].getId(),
-                    })
-                  );
-                } else {
-                  //@TODO no one left in room
+              let reconnectAllowed = false;
+
+              let game = room.getGame();
+              if (isDef(game)) {
+                // game is in process
+                if (game.isGameStarted() && !game.isGameOver()) {
+                  reconnectAllowed = true;
                 }
               }
 
-              socketResponses.addToBucket(
-                "everyone",
-                PUBLIC_SUBJECTS.PEOPLE.REMOVE({
-                  roomCode,
-                  personId: thisPerson.getId(),
-                })
-              );
+              if (reconnectAllowed) {
+                socketResponses.addToBucket(
+                  "everyoneElse",
+                  PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                    personId: thisPersonId,
+                    roomCode,
+                  })
+                );
+
+                socketResponses.addToBucket(
+                  "default",
+                  PRIVATE_SUBJECTS.PEOPLE.DISCONNECT({
+                    roomCode,
+                    personId: thisPerson.getId(),
+                  })
+                );
+              } else {
+                if (thisPerson.hasTag("host")) {
+                  let otherPeople = personManager.getOtherConnectedPeople(
+                    thisPerson
+                  );
+                  if (isDef(otherPeople[0])) {
+                    socketResponses.addToBucket(
+                      "everyone",
+                      PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
+                        roomCode,
+                        personId: otherPeople[0].getId(),
+                      })
+                    );
+                  } else {
+                    //@TODO no one left in room
+                  }
+                }
+
+                // Remove person from room
+                socketResponses.addToBucket(
+                  "everyone",
+                  PUBLIC_SUBJECTS.PEOPLE.REMOVE({
+                    roomCode,
+                    personId: thisPerson.getId(),
+                  })
+                );
+              }
             }
 
             return socketResponses;
@@ -834,6 +1090,7 @@ function attachSocketHandlers(thisClient) {
           makeConsumerFallbackResponse({ subject, action, socketResponses })
         );
       },
+
       REMOVE: (props) => {
         const socketResponses = SocketResponseBuckets();
         const [subject, action] = ["PEOPLE", "REMOVE"];
@@ -2351,6 +2608,25 @@ function attachSocketHandlers(thisClient) {
             }
 
             if (currentTurn.getCurrentPhase() === "done") {
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({
+                  subject: "PLAYER_REQUESTS",
+                  action: "REMOVE_ALL",
+                  status: "success",
+                  payload: null,
+                })
+              );
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({
+                  subject: "REQUESTS",
+                  action: "REMOVE_ALL",
+                  status: "success",
+                  payload: null,
+                })
+              );
+
               socketResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
@@ -4793,11 +5069,11 @@ function attachSocketHandlers(thisClient) {
               );
               socketResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS["PLAYERS"].GET({ roomCode })
+                PUBLIC_SUBJECTS["CARDS"].GET_ALL_KEYED({ roomCode })
               );
               socketResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS["CARDS"].GET_ALL_KEYED({ roomCode })
+                PUBLIC_SUBJECTS["PLAYERS"].GET({ roomCode })
               );
               socketResponses.addToBucket(
                 "default",
@@ -5255,7 +5531,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_HANDS";
         let action = "GET_ALL_KEYED";
         const socketResponses = SocketResponseBuckets();
-        return handlePerson(
+        return handleGame(
           props,
           (props2) => {
             let { personManager, game } = props2;
@@ -5299,7 +5575,11 @@ function attachSocketHandlers(thisClient) {
           (props2) => {
             let { game } = props2;
             let getBankData = (ownerPersonId) => {
-              return game.getPlayerBank(ownerPersonId).serialize();
+              const playerBank = game.getPlayerBank(ownerPersonId);
+              if (isDef(playerBank)) {
+                return playerBank.serialize();
+              }
+              return null;
             };
 
             socketResponses.addToBucket(
@@ -5322,7 +5602,7 @@ function attachSocketHandlers(thisClient) {
         let subject = "PLAYER_BANKS";
         let action = "GET_ALL_KEYED";
         const socketResponses = SocketResponseBuckets();
-        return handlePerson(
+        return handleGame(
           props,
           (props2) => {
             let { personManager, game } = props2;
@@ -5441,6 +5721,7 @@ function attachSocketHandlers(thisClient) {
             .getCurrentTurn()
             .getRequestManager()
             .getAllRequestIds();
+          console.log("makeGetAllKeysFn", result);
           return result;
         },
         makeGetAlMyKeysFn: (
@@ -5672,6 +5953,7 @@ function attachSocketHandlers(thisClient) {
           let newProps = {
             ...props,
             //game,
+            //person,
             roomCode,
             thisRoomCode: roomCode,
             room,
@@ -5713,19 +5995,27 @@ function attachSocketHandlers(thisClient) {
     return handleRoom(
       props,
       (props2, checkpoints) => {
-        // default
-        checkpoints.set("person", false);
-        let { person } = props2;
-        if (isDef(person)) {
-          checkpoints.set("person", true);
-          return fn(
-            {
-              personId: person.getId(),
-              thisPersonId: person.getId(),
-              ...props2,
-            },
-            checkpoints
-          );
+        const { room } = props2;
+        let personManager = room.getPersonManager();
+        if (isDef(personManager)) {
+          checkpoints.set("personManager", true);
+          // default
+          checkpoints.set("person", false);
+          let myClientId = mStrThisClientId;
+          let person = personManager.getPersonByClientId(myClientId);
+
+          if (isDef(person)) {
+            checkpoints.set("person", true);
+            return fn(
+              {
+                personId: person.getId(),
+                person,
+                thisPersonId: person.getId(),
+                ...props2,
+              },
+              checkpoints
+            );
+          }
         }
         if (isFunc(fallback)) return fallback(checkpoints);
         return fallback;
@@ -5753,6 +6043,8 @@ function attachSocketHandlers(thisClient) {
             },
             checkpoints
           );
+        } else {
+          console.log("game not defined");
         }
         if (isFunc(fallback2)) return fallback2(checkpoints);
         return fallback2;
@@ -7034,6 +7326,8 @@ function attachSocketHandlers(thisClient) {
   function handleClientDisconnect() {
     let clientId = thisClient.id;
     let rooms = roomManager.getRoomsForClientId(clientId);
+    console.log("handleClientDisconnect");
+    cookieTokenManager.dissociateClient(clientId);
 
     if (isDef(rooms)) {
       let handleIo = makeIOHandle(PUBLIC_SUBJECTS);
@@ -7047,6 +7341,7 @@ function attachSocketHandlers(thisClient) {
             },
           ])
         );
+
         // Handle leave room since the above handler requires the room to exist to notify people
         let roomPersonManager = room.getPersonManager();
         if (roomPersonManager.getConnectedPeopleCount() === 0) {

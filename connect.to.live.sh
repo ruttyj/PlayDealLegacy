@@ -1,4 +1,4 @@
 #!/bin/bash
 
 npm run build;
-pm2 start ./server/bin/www
+node ./server/bin/www

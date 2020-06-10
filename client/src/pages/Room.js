@@ -62,7 +62,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
-import BlurredBackground from "../components/BlurredBackground";
+import BlurredBackground from "../components/layers/BlurredBackground";
 import Avatar from "@material-ui/core/Avatar";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -95,7 +95,7 @@ import BankWrapper from "../components/panels/playerPanel/BankWrapper";
 import MyHandContainer from "../components/panels/playerPanel/MyHandContainer";
 import Deck3D from "../components/panels/playerPanel/Deck3D";
 import CurrencyText from "../components/cards/elements/CurrencyText";
-import PileCount from "../components/PileCount";
+import PileCount from "../components/gameUi/PileCount";
 
 // Screens
 import SCREENS from "../data/screens";
@@ -118,6 +118,7 @@ import IconButton from "@material-ui/core/IconButton";
 import RequestButton from "../components/buttons/RequestButton";
 
 import Game from "../utils/game";
+import { isArray } from "lodash";
 
 const uiConfig = {
   hand: {
@@ -143,6 +144,15 @@ const uiConfig = {
     hover: {
       scalePercent: 45,
     },
+  },
+
+  sidebar: {
+    initialSize: 300,
+    maxSize: 300,
+    minSize: 0,
+  },
+  myArea: {
+    initialSize: 250,
   },
 };
 
@@ -197,6 +207,7 @@ class GameUI extends React.Component {
       "getConnection",
       "onReady",
       "leaveRoom",
+      "resetData",
 
       "handleCloseReqeustScreenIfNoRequests",
       "handleOnHandCardClick",
@@ -233,16 +244,21 @@ class GameUI extends React.Component {
   }
 
   leaveRoom() {
-    console.log("leaveRoom");
     let connection = this.getConnection();
     this.props.leaveRoom(connection, this.props.room);
   }
 
-  componentWillUnmount() {
-    console.log("componentWilUnmount");
-    this.leaveRoom();
+  async resetData() {
+    await this.props.resetGameData();
+    await this.props.resetPeopleData();
+    await this.props.resetRoomData();
+    await this.leaveRoom();
     let connection = this.getConnection();
     connection.socket.destroy();
+  }
+
+  componentWillUnmount() {
+    this.resetData();
   }
 
   componentDidMount() {
@@ -259,10 +275,6 @@ class GameUI extends React.Component {
       (async () => {
         let connection = this.getConnection();
 
-        this.props.resetGameData();
-        this.props.resetPeopleData();
-        this.props.resetRoomData();
-
         game.init();
         let roomCode = this.props.room;
         let roomExists = await this.props.existsRoom(connection, roomCode);
@@ -272,7 +284,7 @@ class GameUI extends React.Component {
         }
 
         await this.props.joinRoom(connection, roomCode);
-        await game.updateMyStatus("ready");
+        //await game.updateMyStatus("ready");
       })();
     }
   }
@@ -1149,8 +1161,11 @@ class GameUI extends React.Component {
 
         let getRequests = () => {
           // show newest requests first
-          let request = game.requests.getAll().slice().reverse();
-          return request;
+          let allRequests = game.requests.getAll();
+          if (isDef(allRequests) && isArr(allRequests)) {
+            return allRequests.slice().reverse();
+          }
+          return [];
         };
 
         game.updateRenderData(
@@ -1300,7 +1315,8 @@ class GameUI extends React.Component {
               if (amIAuthor) {
                 direction = "toAuthor";
                 if (
-                  isDefNested(game.request, [
+                  isDefNested(game, [
+                    "request",
                     "transfer",
                     direction,
                     field,
@@ -1614,7 +1630,7 @@ class GameUI extends React.Component {
       let myHand = game.getMyHand();
       let propertySetsKeyed = game.getAllPropertySetsKeyed();
 
-      if (isDef(myHand.cards) && isArr(myHand.cards)) {
+      if (isDefNested(myHand, "cards") && isArr(myHand.cards)) {
         let cardCheck = this.makeCardCheck({
           personId: game.myId(),
           isMyHand: true,
@@ -1753,6 +1769,15 @@ class GameUI extends React.Component {
           >
           </DropZone>
           */
+
+      let collectionsForPerson;
+      let temp = this.props.getCollectionIdsForPlayer(person.id);
+      if (isDef(temp) && isArr(temp)) {
+        collectionsForPerson = temp.slice().reverse();
+      } else {
+        collectionsForPerson = [];
+      }
+
       return (
         <PlayerPanelWrapper
           key={`player_${person.id}`}
@@ -1803,10 +1828,7 @@ class GameUI extends React.Component {
                 >
                   <PropertySetContainer transparent={true} />
                 </DropZone>
-                {this.props
-                  .getCollectionIdsForPlayer(person.id)
-                  .slice()
-                  .reverse()
+                {collectionsForPerson
                   .map((collectionId) => {
                     let collection = this.props.getCollection(collectionId);
                     let collectionCards = this.props.getCollectionCards(
@@ -2248,8 +2270,8 @@ class GameUI extends React.Component {
       <List
         style={{
           display: "inline-flex",
-          width: "300px",
-          maxWidth: "300px",
+          width: `${uiConfig.sidebar.initialSize}px`,
+          maxWidth: `${uiConfig.sidebar.maxSize}px`,
           flexDirection: "column",
         }}
       >
@@ -2268,15 +2290,6 @@ class GameUI extends React.Component {
     //              GAME BOARD
     //========================================
     this.updateRender();
-
-    let sidebar = {
-      initialSize: 0,
-      maxSize: 300,
-      minSize: 0,
-    };
-    let myArea = {
-      initialSize: 250,
-    };
 
     return (
       <DndProvider backend={Backend}>
@@ -2301,9 +2314,9 @@ class GameUI extends React.Component {
                 customClassName="people_list"
                 primaryIndex={1}
                 primaryMinSize={0}
-                secondaryInitialSize={sidebar.initialSize}
-                secondaryMinSize={sidebar.minSize}
-                secondaryMaxSize={sidebar.maxSize}
+                secondaryInitialSize={uiConfig.sidebar.initialSize}
+                secondaryMinSize={uiConfig.sidebar.minSize}
+                secondaryMaxSize={uiConfig.sidebar.maxSize}
               >
                 {/*-------------- RENDER LIST OF USERS -------------------*/}
                 <div
@@ -2338,7 +2351,7 @@ class GameUI extends React.Component {
                             <SplitterLayout
                               customClassName="game_area"
                               vertical
-                              secondaryInitialSize={myArea.initialSize}
+                              secondaryInitialSize={uiConfig.myArea.initialSize}
                             >
                               {/* Players collections */}
                               <RelLayer>

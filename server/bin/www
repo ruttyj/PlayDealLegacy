@@ -25,10 +25,14 @@ const attachSocketHandlers = require("../sockets/serverSocketHandlers");
 
 const io = require("socket.io")(server);
 io.on("connection", (thisClient) => {
+  // Attach socket handlers
   attachSocketHandlers(thisClient);
-  //thisClient.on("npmStop", () => {
-  //  process.exit(0);
-  //});
+
+  // Associate socket to cookie
+  let cookies = cookie.parse(thisClient.request.headers.cookie);
+  if (isDef(cookies.token) && isDef(thisClient.id)) {
+    cookieTokenManager.associateTokenAndClient(cookies.token, thisClient.id);
+  }
 });
 
 /**
@@ -46,7 +50,7 @@ server.on("listening", onListening);
 function normalizePort(val) {
   var port = parseInt(val, 10);
 
-  if (isNaN(port)) {
+  if (Number.isNaN(port)) {
     // named pipe
     return val;
   }

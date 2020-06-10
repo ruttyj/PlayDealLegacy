@@ -122,9 +122,6 @@ function Game(ref) {
 
       let previousTurnPersonId = props().getPeviousTurnPersonId();
       let currentTurnPersonId = props().getCurrentTurnPersonId();
-      if (previousTurnPersonId !== currentTurnPersonId) {
-        props().completlyResetRequests();
-      }
 
       if (game.isMyTurn()) {
         // If is my turn now

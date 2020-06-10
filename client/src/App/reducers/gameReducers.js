@@ -355,7 +355,6 @@ const reducer = function (state = initialState, action) {
     case COLLECTION_SET_SELECTION_LIMIT:
       return setSelectionProp("collectionSelect", "limit")(state, action);
     case COLLECTION_SET_SELECTABLE:
-      console.log("COLLECTION_SET_SELECTABLE", action);
       return setSelectionValue("collectionSelect", "selectable")(state, action);
     case COLLECTION_ADD_SELECTABLE_VALUE:
       return addSelectionValue("collectionSelect", "selectable")(state, action);

@@ -54,8 +54,10 @@ class App extends Component {
                 exact
                 path="/room/*"
                 render={(props) => {
-                  let roomCode = String(props.match.params[0]).replace("/", "");
-                  console.log("roomCode", roomCode);
+                  let roomCode = String(props.match.params[0]).replace(
+                    /\//g,
+                    ""
+                  );
                   if (!isDef(roomCode)) {
                     roomCode = "AAAA";
                   }
@@ -73,7 +75,10 @@ class App extends Component {
                 exact
                 path="/room/*"
                 render={(props) => {
-                  let roomCode = String(props.match.params[0]).replace("/", "");
+                  let roomCode = String(props.match.params[0]).replace(
+                    /\//g,
+                    ""
+                  );
                   return <Room room={roomCode} />;
                 }}
               />

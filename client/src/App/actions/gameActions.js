@@ -190,7 +190,6 @@ const transferSetAugmentToNewCollection = (
     "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION",
     defaultProps(roomCode, { cardId, fromCollectionId })
   );
-  //console.log(`%c${JSON.stringify(result, null, 2)}`, "color: lime;");
   return result;
 };
 
@@ -397,15 +396,6 @@ const collectCollection = (con, roomCode, { requestId }) => async (
     defaultProps(roomCode, { requestId })
   );
   return result;
-};
-
-const completlyResetRequests = () => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
-    type: `REMOVE_ALL_PLAYER_REQUESTS`,
-    payload: null,
-  });
-  gameBuffer.dispatch(dispatch, { type: `REMOVE_ALL_REQUESTS`, payload: null });
-  return Promise.resolve();
 };
 
 const updateActionData = (value) => (dispatch) => {
@@ -764,6 +754,7 @@ const resetGameData = (value) => (dispatch) => {
     type: `RESET`,
     payload: value,
   });
+  gameBuffer.flush();
   return Promise.resolve();
 };
 
@@ -779,7 +770,6 @@ export default {
 
   // Start turn
   drawTurnStartingCards,
-  completlyResetRequests,
 
   // Property actions
   changeWildPropertySetKey,

@@ -1062,7 +1062,7 @@ const RequestScreen = (props) => {
                         />
                       );
                     });
-                    return <Flex>{renderedCards}</Flex>;
+                    return <Flex key={collectionId}>{renderedCards}</Flex>;
                   })}
                 />
               </FullFlexCenter>
