@@ -450,6 +450,11 @@ class GameUI extends React.Component {
                   cardId,
                   toCollectionId
                 );
+              } else if (
+                card.type === "action" &&
+                game.card.hasTag(card, "rent")
+              ) {
+                game.initAskForRent(cardId, toCollectionId);
               } else {
                 console.error("Card is not a property or set augment");
               }

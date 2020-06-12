@@ -242,7 +242,7 @@ function Game(ref) {
     await updateDisplayData("mode", "respond-pay");
   }
 
-  async function initAskForRent(cardOrId) {
+  async function initAskForRent(cardOrId, collectionId = null) {
     let game = getPublic();
     let card = getCard(cardOrId);
     let propertySetKeysForCard = props().getPropertySetKeysForCard(card.id);
@@ -269,6 +269,9 @@ function Game(ref) {
       await game.selection.collections.selectable.setLimit(1);
       await game.selection.collections.selectable.set(matchingCollectionIds);
       await game.selection.collections.selected.set([]);
+      if (isDef(collectionId) && matchingCollectionIds.includes(collectionId)) {
+        await game.selection.collections.selected.set([collectionId]);
+      }
 
       let allOpponentIds = props().getAllOpponentIds();
       if (card.target === "one") {
