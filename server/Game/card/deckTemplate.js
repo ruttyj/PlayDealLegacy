@@ -427,7 +427,7 @@ const deckTemplate = {
           value: 2,
         },
         {
-          name: "Dominoes",
+          name: "Dominos",
           key: "PROPERTY_RED_3",
           value: 2,
         },
@@ -550,7 +550,7 @@ const deckTemplate = {
     teal: {
       set: "teal",
       tags: ["property", "utility"],
-      colorCode: "teal",
+      colorCode: "#008058",
       rent: {
         "1": 1,
         "2": 2,

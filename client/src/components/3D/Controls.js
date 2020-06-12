@@ -18,7 +18,7 @@ function Controls(props) {
       args={[camera, gl.domElement]}
       enableDamping={true}
       dampingFactor={0.5}
-      autoRotate={true}
+      autoRotate={false}
       autoRotateSpeed={0.5}
       minDistance={100}
       maxDistance={500}

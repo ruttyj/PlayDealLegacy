@@ -566,7 +566,7 @@ const deckTemplate = {
     teal: {
       set: "teal",
       tags: ["property", "utility"],
-      colorCode: "teal",
+      colorCode: "#008058",
       rent: {
         "1": 1,
         "2": 2,
