@@ -81,7 +81,7 @@ function createSocketConnection(socket) {
 
     function handleResponse(encodedData) {
       let responses = decodeResponse(encodedData);
-      if (1) {
+      if (0) {
         console.log(
           `#${responseCount.get()}`,
           clientId,

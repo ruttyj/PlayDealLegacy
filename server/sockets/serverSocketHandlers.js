@@ -2195,30 +2195,32 @@ function attachSocketHandlers(thisClient) {
           let card = game.getCard(cardId);
           if (isDefNested(card, ["action", "collectValue"])) {
             targetPeopleIds.forEach((targetPersonId) => {
-              let transaction = Transaction();
-              transaction.getOrCreate("toAuthor");
-              let value = card.action.collectValue;
-              let request = requestManager.createRequest({
-                type: "collectValue",
-                authorKey: thisPersonId,
-                targetKey: targetPersonId,
-                status: "open",
-                actionNum: actionNum,
-                payload: {
+              if (isDef(targetPersonId)) {
+                let transaction = Transaction();
+                transaction.getOrCreate("toAuthor");
+                let value = card.action.collectValue;
+                let request = requestManager.createRequest({
+                  type: "collectValue",
+                  authorKey: thisPersonId,
+                  targetKey: targetPersonId,
+                  status: "open",
                   actionNum: actionNum,
-                  amountDue: value,
-                  amountRemaining: value,
-                  baseValue: value,
-                  actionCardId: cardId,
-                  transaction: transaction,
-                  augments: augments,
-                },
-                description: `Collect Debt`,
-              });
-              affectedIds.requests.push(request.getId());
-              affected.requests = true;
-              affected.activePile = true;
-              checkpoints.set("success", true);
+                  payload: {
+                    actionNum: actionNum,
+                    amountDue: value,
+                    amountRemaining: value,
+                    baseValue: value,
+                    actionCardId: cardId,
+                    transaction: transaction,
+                    augments: augments,
+                  },
+                  description: `Collect Debt`,
+                });
+                affectedIds.requests.push(request.getId());
+                affected.requests = true;
+                affected.activePile = true;
+                checkpoints.set("success", true);
+              }
             });
           }
 
