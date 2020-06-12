@@ -1,2 +1,2 @@
 #!/bin/bash
-npm run open
+npm run dev
