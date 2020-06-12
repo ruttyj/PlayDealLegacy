@@ -390,7 +390,7 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Collage Dorms",
+          name: "College Dorms",
           key: "PROPERTY_YELLOW_1",
           value: 3,
         },

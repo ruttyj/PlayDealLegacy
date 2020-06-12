@@ -62,7 +62,7 @@ function CookieTokenManager() {
   function dissociateClient(clientId) {
     let tokensKeyed = mClientHasTokensMap.get(clientId, {});
     if (isDef(tokensKeyed)) {
-      console.log("disoociate", clientId);
+      console.log("dissociate", clientId);
       let tokens = Object.keys(tokensKeyed);
       tokens.forEach((token) => {
         let toClients = mTokenHasClientsMap.get(token);

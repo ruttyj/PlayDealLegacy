@@ -390,7 +390,7 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Collage Dorms",
+          name: "College Dorms",
           key: "PROPERTY_YELLOW_1",
           value: 3,
         },
@@ -417,7 +417,7 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "KFC",
+          name: "Papa Fried Chicken",
           key: "PROPERTY_RED_1",
           value: 2,
         },
@@ -427,7 +427,7 @@ const deckTemplate = {
           value: 2,
         },
         {
-          name: "Dominoes",
+          name: "Pizza Place",
           key: "PROPERTY_RED_3",
           value: 2,
         },
@@ -464,7 +464,7 @@ const deckTemplate = {
       set: "black",
       cards: [
         {
-          name: "Metro",
+          name: "Metro Lines",
           key: "PROPERTY_BLACK_1",
           value: 2,
         },
@@ -474,12 +474,12 @@ const deckTemplate = {
           value: 2,
         },
         {
-          name: "Taxi",
+          name: "Taxi Company",
           key: "PROPERTY_BLACK_3",
           value: 2,
         },
         {
-          name: "The Bus",
+          name: "Bus Company",
           key: "PROPERTY_BLACK_4",
           value: 2,
         },
@@ -550,7 +550,7 @@ const deckTemplate = {
     teal: {
       set: "teal",
       tags: ["property", "utility"],
-      colorCode: "teal",
+      colorCode: "#008058",
       rent: {
         "1": 1,
         "2": 2,

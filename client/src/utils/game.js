@@ -78,10 +78,12 @@ function Game(ref) {
       // Play sound when my turn is done
       if (game.phase.isMyDonePhase() && canTrigger.endTurnSound) {
         canTrigger.endTurnSound = false;
-        sounds.endTurn.play();
-        if (game.customUi.get("autoPassTurn", false)) {
-          await game.passTurn();
-        }
+        setTimeout(() => {
+          sounds.endTurn.play();
+          if (game.customUi.get("autoPassTurn", false)) {
+            game.passTurn();
+          }
+        }, 700);
       } else {
         canTrigger.endTurnSound = true;
       }
@@ -268,8 +270,8 @@ function Game(ref) {
       await game.selection.collections.selectable.set(matchingCollectionIds);
       await game.selection.collections.selected.set([]);
 
+      let allOpponentIds = props().getAllOpponentIds();
       if (card.target === "one") {
-        let allOpponentIds = props().getAllOpponentIds();
         await game.selection.people.reset();
         await game.selection.people.setType("add");
         await game.selection.people.selectable.setLimit(1);
@@ -284,6 +286,11 @@ function Game(ref) {
         }
       } else {
         await game.selection.people.reset();
+        await game.selection.people.setType("add");
+        await game.selection.people.selectable.setLimit(allOpponentIds.length);
+        await game.selection.people.selectable.set(allOpponentIds);
+        await game.selection.people.selected.set(allOpponentIds);
+        await game.selection.people.setEnabled(false);
       }
 
       await game.resetDisplayData();
@@ -725,12 +732,19 @@ function Game(ref) {
     await game.updateDisplayData("mode", SCREENS.REQUESTS);
   }
 
+  function getIncompleteCollectionMatchingSet(myPersonId, propertySetKey) {
+    return props().getIncompleteCollectionMatchingSet(
+      myPersonId,
+      propertySetKey
+    );
+  }
+
   function autoAddCardToMyCollection(cardOrId) {
     let card = getCard(cardOrId);
     let cardId = card.id;
     let propertySetKey = card.set;
     let myPersonId = myId();
-    let existingCollectionId = props().getCollectionMatchingSet(
+    let existingCollectionId = getIncompleteCollectionMatchingSet(
       myPersonId,
       propertySetKey
     );
@@ -846,14 +860,14 @@ function Game(ref) {
   function isRequiredCollectionsSelected() {
     return (
       props().collectionSelection_getSelected().length >=
-      props().getDisplayData(["requirements", "collectionSelectionCount"], 0)
+      props().getDisplayData(["requirements", "collectionSelectionCount"], 1)
     );
   }
 
   function isRequiredPeopleSelected() {
     return (
       props().personSelection_getSelected().length >=
-      props().getDisplayData(["requirements", "personSelectionCount"], 0)
+      props().getDisplayData(["requirements", "personSelectionCount"], 1)
     );
   }
 
@@ -861,6 +875,12 @@ function Game(ref) {
   function canChargeRent() {
     let actionCardId = getActionCardId();
     if (isDef(actionCardId)) {
+      console.log({
+        isRequiredCollectionsSelected: isRequiredCollectionsSelected(),
+        isRequiredPeopleSelected: isRequiredPeopleSelected(),
+        collectionSelection_getSelected: props().collectionSelection_getSelected()
+          .length,
+      });
       return (
         isRequiredCollectionsSelected() &&
         isRequiredPeopleSelected() &&
@@ -1588,6 +1608,7 @@ function Game(ref) {
       getCount: getDiscardPileCount,
       getThickness: getDiscardPileCountThickness,
     },
+    getIncompleteCollectionMatchingSet: getIncompleteCollectionMatchingSet,
 
     player: {
       collections: {

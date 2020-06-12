@@ -26,7 +26,7 @@ app.use("/users", usersRouter);
 app.use("/testAPI", testAPIRouter);
 app.get("*", (req, res) => {
   attachCookieToResponse(req, res);
-  res.sendfile(path.join(__dirname, "../client/build/index.html"));
+  res.sendFile(path.join(__dirname, "../client/build/index.html"));
 });
 
 // Call common logic for after

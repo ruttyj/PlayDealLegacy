@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { withRouter } from "react-router";
 import pluralize from "pluralize";
 import {
   els,
@@ -257,12 +258,12 @@ class GameUI extends React.Component {
     connection.socket.destroy();
   }
 
-  componentWillUnmount() {
-    this.resetData();
-  }
-
   componentDidMount() {
     this.onReady();
+  }
+
+  componentWillUnmount() {
+    this.resetData();
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -833,6 +834,7 @@ class GameUI extends React.Component {
     function setStealPropertyButton() {
       let buttonEnabled = game.selection.cards.selected.isLimitSelected();
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
+      game.updateRenderData(["actionButton", "title"], "Confirm Request");
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (buttonEnabled) self.handleStealPropertyClick();
       });
@@ -845,6 +847,7 @@ class GameUI extends React.Component {
     function setStealCollectionButton() {
       let buttonEnabled = game.selection.collections.selected.isLimitSelected();
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
+      game.updateRenderData(["actionButton", "title"], "Confirm Request");
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (buttonEnabled) self.handleStealCollectionClick();
       });
@@ -857,6 +860,7 @@ class GameUI extends React.Component {
     function setAskForPropertySwapButton() {
       let buttonEnabled = game.selection.cards.selected.isLimitSelected();
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
+      game.updateRenderData(["actionButton", "title"], "Confirm Request");
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (buttonEnabled) self.handleSwapPropertyClick();
       });
@@ -869,6 +873,7 @@ class GameUI extends React.Component {
     function setAskForValueButton() {
       let isButtonDisabled = !game.selection.people.selected.isLimitSelected();
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
+      game.updateRenderData(["actionButton", "title"], "Confirm Request");
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (!isButtonDisabled) {
           game.handleAskForValueConfirm({ cardId: actionCardId });
@@ -883,6 +888,7 @@ class GameUI extends React.Component {
     function setNextPhaseButton() {
       let isButtonDisabled = !game.canPassTurn();
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
+      game.updateRenderData(["actionButton", "title"], "Next Phase");
       game.updateRenderData(["actionButton", "onClick"], () => {
         game.passTurn();
       });
@@ -896,6 +902,7 @@ class GameUI extends React.Component {
       let isButtonDisabled = !game.canPassTurn();
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
       game.updateRenderData(["actionButton", "className"], "pulse_white");
+      game.updateRenderData(["actionButton", "title"], "Next Turn");
       game.updateRenderData(["actionButton", "onClick"], () => {
         game.passTurn();
       });
@@ -908,6 +915,7 @@ class GameUI extends React.Component {
     function setStartGameButton() {
       let isButtonDisabled = !game.canStartGame();
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
+      game.updateRenderData(["actionButton", "title"], "Start Game");
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (game.amIHost()) {
           game.start();
@@ -922,6 +930,7 @@ class GameUI extends React.Component {
     function setDefaultButton() {
       game.updateRenderData(["actionButton", "disabled"], true);
       game.updateRenderData(["actionButton", "onClick"], () => {});
+      game.updateRenderData(["actionButton", "title"], "Waiting");
       game.updateRenderData(
         ["actionButton", "contents"],
         actionButtonContents.waiting
@@ -1126,7 +1135,12 @@ class GameUI extends React.Component {
                 if (ids.length > 0) {
                   sounds.playcard.play(ids.length);
                   ids.forEach((id) => {
-                    game.collectCardToCollection(requestId, id);
+                    let card = game.card.get(id);
+                    let collectionId = game.getIncompleteCollectionMatchingSet(
+                      game.myId(),
+                      card.set
+                    );
+                    game.collectCardToCollection(requestId, id, collectionId);
                   });
                 }
                 break;
@@ -2178,6 +2192,7 @@ class GameUI extends React.Component {
                   ["actionButton", "className"],
                   ""
                 )}
+                title={game.getRenderData(["actionButton", "title"], "")}
                 disabled={game.getRenderData(["actionButton", "disabled"])}
                 onClick={game.getRenderData(["actionButton", "onClick"])}
               >
@@ -2398,4 +2413,4 @@ const mapDispatchToProps = {
   ...peopleActions,
   ...gameActions,
 };
-export default connect(mapStateToProps, mapDispatchToProps)(GameUI);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(GameUI));

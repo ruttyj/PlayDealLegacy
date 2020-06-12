@@ -202,23 +202,38 @@ let GameManager = () => {
     playerHand = player.getHand();
 
     // @CHEAT
-    /*
-    let giveCards = ["DEAL_BREAKER", "JUST_SAY_NO", "PROPERTY_ORANGE_1", "SWAP_PROPERTY", "STEAL_PROPERTY"];
-    giveCards = ["DEBT_COLLECTOR", "SWAP_PROPERTY", "SWAP_PROPERTY", "SWAP_PROPERTY", "STEAL_PROPERTY"];
-    giveCards.forEach(cardKey => {
-      playerHand.addCard(mDeck.giveCard(mDeck.findCard(card => card.key === cardKey)));
+    //*
+    giveCards = [
+      "SUPER_RENT",
+      "PROPERTY_TEAL_1",
+      "DOUBLE_THE_RENT",
+      "SWAP_PROPERTY",
+      "STEAL_PROPERTY",
+    ];
+    giveCards.forEach((cardKey) => {
+      playerHand.addCard(
+        mDeck.giveCard(mDeck.findCard((card) => card.key === cardKey))
+      );
     });
 
     player = players[1];
     playerHand = player.getHand();
-    giveCards = ["ITS_MY_BIRTHDAY", "DEAL_BREAKER", "SWAP_PROPERTY", "PROPERTY_TEAL_1", "PROPERTY_TEAL_2"];
-    giveCards.forEach(cardKey => {
-      playerHand.addCard(mDeck.giveCard(mDeck.findCard(card => card.key === cardKey)));
+    giveCards = [
+      "SUPER_RENT",
+      "DEAL_BREAKER",
+      "DOUBLE_THE_RENT",
+      "PROPERTY_RED_1",
+      "PROPERTY_TEAL_2",
+    ];
+    giveCards.forEach((cardKey) => {
+      playerHand.addCard(
+        mDeck.giveCard(mDeck.findCard((card) => card.key === cardKey))
+      );
     });
 
     if (isDef(players)) {
       playerIndex = 0;
-      players.forEach(player => {
+      players.forEach((player) => {
         if (playerIndex > 1) {
           for (let i = 0; i < mInitialCardCount; ++i) {
             playerDrawCard(player.getKey());
@@ -229,7 +244,7 @@ let GameManager = () => {
     }
     /*/
 
-    //*
+    /*
     if (isDef(players)) {
       for (let i = 0; i < mInitialCardCount; ++i) {
         players.forEach((player) => playerDrawCard(player.getKey()));

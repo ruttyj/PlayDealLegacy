@@ -3,10 +3,17 @@
 /**
  * Module dependencies.
  */
-
+var cookie = require("cookie");
 var app = require("../server.prod.js");
 var debug = require("debug")("server:server");
 var http = require("http");
+const {
+  isDef,
+  isDefNested,
+  getNestedValue,
+} = require("../utils/helperMethods");
+const CookieTokenManager = require("../CookieTokenManager");
+const cookieTokenManager = CookieTokenManager.getInstance();
 
 /**
  * Get port from environment and store in Express.
@@ -29,8 +36,10 @@ io.on("connection", (thisClient) => {
   attachSocketHandlers(thisClient);
 
   // Associate socket to cookie
+  console.log("thisClient.id", thisClient.id);
   let cookies = cookie.parse(thisClient.request.headers.cookie);
-  if (isDef(cookies.token) && isDef(thisClient.id)) {
+  if (isDefNested(cookies, "token") && isDefNested(thisClient, "id")) {
+    console.log("associateTokenAndClient", cookies.token, thisClient.id);
     cookieTokenManager.associateTokenAndClient(cookies.token, thisClient.id);
   }
 });

@@ -7,6 +7,7 @@ const ActionButton = ({
   children,
   className = "",
   disabled = false,
+  title = "",
   percent = 0,
   onClick = () => {},
 }) => {
@@ -48,6 +49,7 @@ const ActionButton = ({
       className={className}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      title={title}
       style={{
         width: `${width}px`,
         height: `${height}px`,

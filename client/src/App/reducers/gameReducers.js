@@ -262,6 +262,7 @@ const reducer = function (state = initialState, action) {
     case GET_PLAYER_REQUESTS:
       return makeGetItemized("playerRequests")(state, action);
     case REMOVE_ALL_PLAYER_REQUESTS:
+      console.log("REMOVE_ALL_PLAYER_REQUESTS");
       return setImmutableValue(state, ["playerRequests"], {
         items: {},
       });
@@ -280,6 +281,8 @@ const reducer = function (state = initialState, action) {
       updatedState = makeGetItemized("requests")(updatedState, action);
       return updatedState;
     case REMOVE_ALL_REQUESTS:
+      console.log("REMOVE_ALL_REQUESTS");
+
       updatedState = setImmutableValue(state, ["requests"], {
         items: {},
       });
