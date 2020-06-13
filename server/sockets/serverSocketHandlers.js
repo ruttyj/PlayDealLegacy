@@ -820,9 +820,18 @@ function attachSocketHandlers(thisClient) {
 
               let game = room.getGame();
               if (isDef(game)) {
+                let playerManager = game.getPlayerManager();
                 // game is in process
                 if (game.isGameStarted() && !game.isGameOver()) {
                   reconnectAllowed = true;
+                }
+
+                if (reconnectAllowed) {
+                  if (playerManager.hasPlayer(thisPersonId)) {
+                    reconnectAllowed = true;
+                  } else {
+                    reconnectAllowed = false;
+                  }
                 }
               }
 
