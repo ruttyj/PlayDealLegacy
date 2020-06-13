@@ -47,9 +47,12 @@ const PropertyWildCard = ({
 
   Object.keys(propertySets).forEach((propertySetKey) => {
     let propertySet = propertySets[propertySetKey];
-    let color = propertySet.colorCode;
+    let colorCode = propertySet.colorCode;
+    if (propertySetKey === "black") {
+      colorCode = "#292929";
+    }
     classDefs[`color_${propertySetKey}`] = {
-      backgroundColor: color,
+      backgroundColor: colorCode,
       mixBlendMode: "color",
     };
   });
