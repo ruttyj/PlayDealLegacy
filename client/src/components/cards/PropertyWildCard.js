@@ -77,7 +77,7 @@ const PropertyWildCard = ({
           className={classes.color_block}
           style={{
             backgroundColor: isActive ? "transparent" : thisColor,
-            opacity: isActive ? "1" : "0.8",
+            opacity: isActive ? "1" : "1",
             width: `100%`,
             height: "100%",
             position: "relative",
