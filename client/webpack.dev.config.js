@@ -1,9 +1,11 @@
 var HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
+const { CONNECT } = require("./config");
 
 module.exports = (env) => {
   let tst = path.resolve(__dirname, "src/components/");
+  console.log("@@@@@@@@", CONNECT);
   return {
     mode: "development",
     entry: "./src/index.jsx",
@@ -47,7 +49,7 @@ module.exports = (env) => {
     plugins: [
       new HtmlWebpackPlugin({ template: "./src/index.html", inject: false }),
       new webpack.DefinePlugin({
-        "process.env.CONNECT": `"http://localhost:3001"`,
+        "process.env.CONNECT": JSON.stringify(CONNECT), //`"http://127.0.0.1:3001"`,
       }),
     ],
   };

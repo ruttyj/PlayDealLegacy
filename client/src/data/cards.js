@@ -1115,7 +1115,7 @@ const cards = {
       type: "property",
       class: "concreteProperty",
       value: 3,
-      name: "Collage Dorms",
+      name: "College Dorms",
       tags: ["property"],
       set: "yellow",
     },

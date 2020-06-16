@@ -390,7 +390,7 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Collage Dorms",
+          name: "College Dorms",
           key: "PROPERTY_YELLOW_1",
           value: 3,
         },
@@ -485,7 +485,7 @@ const deckTemplate = {
         },
       ],
       tags: ["transport", "property"],
-      colorCode: "#555",
+      colorCode: "#404040",
       rent: {
         "1": 1,
         "2": 3,
@@ -550,7 +550,7 @@ const deckTemplate = {
     teal: {
       set: "teal",
       tags: ["property", "utility"],
-      colorCode: "#008058",
+      colorCode: "#d27eae",
       rent: {
         "1": 1,
         "2": 2,

@@ -72,6 +72,26 @@ const makeGetters = (state) => {
       return result;
     },
 
+    getIncompleteCollectionMatchingSet(playerId, propertySetKey) {
+      let myCollectionIds = pi.getCollectionIdsForPlayer(playerId);
+
+      for (
+        let collectionIndex = 0;
+        collectionIndex < myCollectionIds.length;
+        ++collectionIndex
+      ) {
+        let collectionId = myCollectionIds[collectionIndex];
+        let collection = pi.getCollection(collectionId);
+        if (
+          !collection.isFullSet &&
+          collection.propertySetKey === propertySetKey
+        ) {
+          return collectionId;
+        }
+      }
+      return null;
+    },
+
     getCollectionMatchingSet(playerId, propertySetKey) {
       let myCollectionIds = pi.getCollectionIdsForPlayer(playerId);
 

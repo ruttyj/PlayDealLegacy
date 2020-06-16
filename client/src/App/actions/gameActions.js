@@ -736,15 +736,13 @@ const attachGameListeners = (con) => (dispatch) => {
     listnerTree.on(eventBranch, (data) => {
       let [subject, action] = eventBranch;
       let { payload } = data;
-      if (isDef(payload)) {
-        gameBuffer.dispatch(dispatch, {
-          type: eventType,
-          payload: payload,
-        });
+      gameBuffer.dispatch(dispatch, {
+        type: eventType,
+        payload: payload,
+      });
 
-        //Check: is this emitted after the thunk store update?
-        listnerTree.emit([subject, `${action}__STORE_UPDATED`], data);
-      }
+      //Check: is this emitted after the thunk store update?
+      listnerTree.emit([subject, `${action}__STORE_UPDATED`], data);
     });
   });
 };

@@ -1,7 +1,7 @@
 var HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
-
+const { CONNECT } = require("./config");
 module.exports = (env) => {
   return {
     mode: "production",
@@ -51,7 +51,7 @@ module.exports = (env) => {
     plugins: [
       new HtmlWebpackPlugin({ template: "./src/index.html", inject: false }),
       new webpack.DefinePlugin({
-        "process.env.CONNECT": `"https://www.playdeal.live/"`,
+        "process.env.CONNECT": `"http://127.0.0.1:3001"`,
       }),
     ],
   };

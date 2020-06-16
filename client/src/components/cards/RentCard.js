@@ -39,6 +39,9 @@ export default ({
     if (isDef(color)) {
       let propertySet = propertySets[color];
       let colorCode = propertySet.colorCode;
+      if (color === "black") {
+        colorCode = "#292929";
+      }
       let result = [colorCode];
       result.push(`${runningInterval}%`);
       runningInterval += interval;

@@ -1,6 +1,9 @@
 import ReactDOM from "react-dom";
 import React, { useState } from "react";
-import { useFrame } from "react-three-fiber";
+import { useFrame, useLoader, useThree } from "react-three-fiber";
+import { ColladaLoader } from "three/examples/jsm/loaders/ColladaLoader";
+
+//import trooperDae from "../../../../src/3D/stormtrooper.dae";
 
 import { Canvas } from "react-three-fiber";
 import Controls from "../Controls";
@@ -94,6 +97,7 @@ function Plane() {
 }
 
 function Scene() {
+  //const collada = useLoader(ColladaLoader, "/3D/stormtrooper.dae");
   const [screenSpacePanning, toggle] = useState(false);
   return (
     <Canvas camera={{ position: [0, 20, 0] }}>

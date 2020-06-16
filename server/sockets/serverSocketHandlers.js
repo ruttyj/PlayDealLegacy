@@ -820,9 +820,18 @@ function attachSocketHandlers(thisClient) {
 
               let game = room.getGame();
               if (isDef(game)) {
+                let playerManager = game.getPlayerManager();
                 // game is in process
                 if (game.isGameStarted() && !game.isGameOver()) {
                   reconnectAllowed = true;
+                }
+
+                if (reconnectAllowed) {
+                  if (playerManager.hasPlayer(thisPersonId)) {
+                    reconnectAllowed = true;
+                  } else {
+                    reconnectAllowed = false;
+                  }
                 }
               }
 
@@ -2195,30 +2204,32 @@ function attachSocketHandlers(thisClient) {
           let card = game.getCard(cardId);
           if (isDefNested(card, ["action", "collectValue"])) {
             targetPeopleIds.forEach((targetPersonId) => {
-              let transaction = Transaction();
-              transaction.getOrCreate("toAuthor");
-              let value = card.action.collectValue;
-              let request = requestManager.createRequest({
-                type: "collectValue",
-                authorKey: thisPersonId,
-                targetKey: targetPersonId,
-                status: "open",
-                actionNum: actionNum,
-                payload: {
+              if (isDef(targetPersonId)) {
+                let transaction = Transaction();
+                transaction.getOrCreate("toAuthor");
+                let value = card.action.collectValue;
+                let request = requestManager.createRequest({
+                  type: "collectValue",
+                  authorKey: thisPersonId,
+                  targetKey: targetPersonId,
+                  status: "open",
                   actionNum: actionNum,
-                  amountDue: value,
-                  amountRemaining: value,
-                  baseValue: value,
-                  actionCardId: cardId,
-                  transaction: transaction,
-                  augments: augments,
-                },
-                description: `Collect Debt`,
-              });
-              affectedIds.requests.push(request.getId());
-              affected.requests = true;
-              affected.activePile = true;
-              checkpoints.set("success", true);
+                  payload: {
+                    actionNum: actionNum,
+                    amountDue: value,
+                    amountRemaining: value,
+                    baseValue: value,
+                    actionCardId: cardId,
+                    transaction: transaction,
+                    augments: augments,
+                  },
+                  description: `Collect Debt`,
+                });
+                affectedIds.requests.push(request.getId());
+                affected.requests = true;
+                affected.activePile = true;
+                checkpoints.set("success", true);
+              }
             });
           }
 
@@ -2609,37 +2620,29 @@ function attachSocketHandlers(thisClient) {
 
             if (currentTurn.getCurrentPhase() === "done") {
               socketResponses.addToBucket(
-                "default",
-                makeResponse({
-                  subject: "PLAYER_REQUESTS",
-                  action: "REMOVE_ALL",
-                  status: "success",
-                  payload: null,
-                })
-              );
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({
-                  subject: "REQUESTS",
-                  action: "REMOVE_ALL",
-                  status: "success",
-                  payload: null,
-                })
-              );
-
-              socketResponses.addToBucket(
-                "default",
+                "everyone",
                 PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
                   makeProps(consumerData)
                 )
               );
               socketResponses.addToBucket(
-                "default",
+                "everyone",
                 PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
               );
               game.nextPlayerTurn();
               status = "success";
             }
+
+            socketResponses.addToBucket(
+              "everyone",
+              PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
+                makeProps(consumerData)
+              )
+            );
+            socketResponses.addToBucket(
+              "everyone",
+              PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+            );
 
             //-------------------------------------------------------
 
@@ -4915,11 +4918,23 @@ function attachSocketHandlers(thisClient) {
         const socketResponses = SocketResponseBuckets();
         return handleRoom(
           props,
-          ({ room }) => {
+          (consumerData) => {
+            const { room } = consumerData;
             let status = "success";
             let payload = null;
 
             createGameInstance(room);
+
+            socketResponses.addToBucket(
+              "everyone",
+              PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
+                makeProps(consumerData)
+              )
+            );
+            socketResponses.addToBucket(
+              "everyone",
+              PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+            );
 
             socketResponses.addToBucket(
               "default",
@@ -5036,8 +5051,8 @@ function attachSocketHandlers(thisClient) {
         const socketResponses = SocketResponseBuckets();
         return handlePerson(
           props,
-          (props2) => {
-            let { roomCode, personManager, thisPerson, room } = props2;
+          (consumerData) => {
+            let { roomCode, personManager, thisPerson, room } = consumerData;
             let game = room.getGame();
             let canStart = canGameStart(game, personManager);
             if (thisPerson.hasTag("host") && canStart) {
@@ -5063,6 +5078,18 @@ function attachSocketHandlers(thisClient) {
                 peopleIds: peopleIds,
                 receivingPeopleIds: peopleIds,
               };
+
+              socketResponses.addToBucket(
+                "everyone",
+                PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
+                  makeProps(consumerData)
+                )
+              );
+              socketResponses.addToBucket(
+                "everyone",
+                PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+              );
+
               socketResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS["PROPERTY_SETS"].GET_ALL_KEYED({ roomCode })
@@ -5678,12 +5705,7 @@ function attachSocketHandlers(thisClient) {
         return handleGame(
           props,
           (consumerData) => {
-            let { game } = consumerData;
-
-            let currentTurn = game.getCurrentTurn();
-            if (currentTurn.getCurrentPhase() === "draw") {
-              status = "success";
-            }
+            status = "success";
             socketResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
@@ -5744,12 +5766,7 @@ function attachSocketHandlers(thisClient) {
         return handleGame(
           props,
           (consumerData) => {
-            let { game } = consumerData;
-
-            let currentTurn = game.getCurrentTurn();
-            if (currentTurn.getCurrentPhase() === "draw") {
-              status = "success";
-            }
+            status = "success";
             socketResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })

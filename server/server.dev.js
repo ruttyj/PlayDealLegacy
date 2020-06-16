@@ -17,6 +17,7 @@ addToApp_before(app);
 
 app.use("/users", usersRouter);
 app.use("/testAPI", testAPIRouter);
+app.use("/3D", express.static(path.join(__dirname, "../client/src/3D")));
 app.use("/audio", express.static(path.join(__dirname, "../client/src/audio")));
 app.use("/img", express.static(path.join(__dirname, "../client/src/img")));
 app.get(/.*\/main\.js/, (req, res) => {

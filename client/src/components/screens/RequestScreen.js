@@ -331,80 +331,6 @@ const RequestScreen = (props) => {
 
   // ==============================================
 
-  //                    MOCK
-
-  // ==============================================
-  /*
-
-  let [isClosedState, setIsClosedState] = useState(false);
-  let [isGoodState, setIsGoodState] = useState(false);
-  let [requestState, setRequestState] = useState("accept");
-  let requestStates = ["open", "accept", "decline"];
-  let toggleRequestState = state => requestStates[(requestStates.findIndex(s => s === state) + 1) % requestStates.length];
-
-  let [canICollectState, setCanICollectState] = useState(false);
-  let [haveICollectedState, setHaveICollectedState] = useState(false);
-  let [canTheyCollectState, setCanTheyCollectState] = useState(false);
-  let [haveTheyCollectedState, setHaveTheyCollectedState] = useState(false);
-  requests = makeMockRequests({
-    thisPersonId,
-    isGood: isGoodState,
-    isClosed: isClosedState,
-    requestState,
-    haveICollectedState,
-    haveTheyCollectedState
-  });
-
-  renderData.set(["buttons", "toggleIsClosedState"], {
-    label: `Closed - ${isClosedState ? "TRUE" : "FALSE"}`,
-    onClick() {
-      setIsClosedState(!isClosedState);
-    }
-  });
-  renderData.set(["buttons", "toggleIsGoodState"], {
-    label: `Good - ${isGoodState ? "TRUE" : "FALSE"}`,
-    onClick() {
-      setIsGoodState(!isGoodState);
-    }
-  });
-  renderData.set(["buttons", "toggleRequestState"], {
-    label: `Request - ${requestState}`,
-    onClick() {
-      setRequestState(toggleRequestState(requestState));
-    }
-  });
-
-  renderData.set(["buttons", "toggleICanCollect"], {
-    label: `canICollectState - ${canICollectState ? "TRUE" : "FALSE"}`,
-    onClick() {
-      setCanICollectState(!canICollectState);
-    }
-  });
-
-  renderData.set(["buttons", "toggleIHaveCollected"], {
-    label: `haveICollectedState - ${haveICollectedState ? "TRUE" : "FALSE"}`,
-    onClick() {
-      setHaveICollectedState(!haveICollectedState);
-    }
-  });
-
-  renderData.set(["buttons", "toggleTheyCanCollect"], {
-    label: `canTheyCollectState - ${canTheyCollectState ? "TRUE" : "FALSE"}`,
-    onClick() {
-      setCanTheyCollectState(!canTheyCollectState);
-    }
-  });
-
-  renderData.set(["buttons", "toggleTheyHaveCollected"], {
-    label: `haveTheyCollectedState - ${haveTheyCollectedState ? "TRUE" : "FALSE"}`,
-    onClick() {
-      setHaveTheyCollectedState(!haveTheyCollectedState);
-    }
-  });
-  //*/
-
-  // ==============================================
-
   //                  BUTTONS
 
   // ==============================================
@@ -1027,8 +953,8 @@ const RequestScreen = (props) => {
                 style={{ flexWrap: "wrap", flexGrow: 1, margin: "0px 20px" }}
               >
                 <PropertySetContainer
-                  selectionEnabled={true}
-                  isSelectable={true}
+                  selectionEnabled={false}
+                  isSelectable={false}
                   transparent={true}
                   cards={givenCollectionIds.map((collectionId) => {
                     let cardIds = getCollectionCardIds(collectionId);
@@ -1455,15 +1381,6 @@ const RequestScreen = (props) => {
           <AutoButton
             details={renderData.get(["buttons", "toggleIsFilteringOpen"])}
           />
-          {/*
-          <AutoButton details={renderData.get(["buttons", "toggleIsGoodState"])} />
-          <AutoButton details={renderData.get(["buttons", "toggleIsClosedState"])} />
-          <AutoButton details={renderData.get(["buttons", "toggleRequestState"])} />
-          <AutoButton details={renderData.get(["buttons", "toggleICanCollect"])} />
-          <AutoButton details={renderData.get(["buttons", "toggleIHaveCollected"])} />
-          <AutoButton details={renderData.get(["buttons", "toggleTheyHaveCollected"])} />
-          <AutoButton details={renderData.get(["buttons", "toggleTheyHaveCollected"])} />
-          */}
         </>
       }
     >

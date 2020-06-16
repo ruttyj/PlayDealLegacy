@@ -9,6 +9,8 @@ import Home from "../pages/Home/";
 import Dev from "../pages/Dev";
 import Room from "../pages/Room";
 import Dev4 from "../pages/Dev4";
+import SceneX from "../components/3D/Scenes/SceneX";
+import Trooper from "../components/3D/Scenes/Trooper";
 
 class App extends Component {
   constructor(props, context) {
@@ -37,6 +39,24 @@ class App extends Component {
                 path="/"
                 render={(props) => {
                   return <Home />;
+                }}
+              />
+
+              <Route
+                key="scene"
+                exact
+                path="/scene_game"
+                render={(props) => {
+                  return <SceneX />;
+                }}
+              />
+
+              <Route
+                key="scene"
+                exact
+                path="/trooper"
+                render={(props) => {
+                  return <Trooper />;
                 }}
               />
 
