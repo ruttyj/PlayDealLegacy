@@ -2,7 +2,7 @@
 
 PlayDeal is an Online multiplayer card game where players attempt to collect X many of a sets inorder to win.
 
-Currently only has 1 room and requires 2 browser instances to play. (More rooms comming soon)
+Updates comming soon!
 
 ![Available cards](https://i.ibb.co/sW0V0m7/PlayDeal.png)
 
