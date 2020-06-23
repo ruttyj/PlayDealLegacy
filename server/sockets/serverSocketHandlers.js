@@ -42,7 +42,7 @@ const {
 
 //==================================================
 let clientManager = ClientManager();
-let roomManager = RoomManager(); // @TODO Still needs to remove rooms
+let roomManager = RoomManager();
 roomManager.setClientManager(clientManager);
 
 //==================================================
