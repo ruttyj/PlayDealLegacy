@@ -1,9 +1,9 @@
-.code_input {
+.code-input {
   width: 90%;
   margin: auto;
 }
 
-.code_input input {
+.code-input input {
   color: white !important;
   padding: 10px 12px 10px;
   font-size: 35px;
@@ -12,7 +12,7 @@
   font-weight: bold;
 }
 
-.code_input input::placeholder {
+.code-input input::placeholder {
   color: white !important;
   font-weight: bold;
   background: linear-gradient(111deg, #5acfff, #fd66ff);
@@ -20,27 +20,12 @@
   -webkit-text-fill-color: transparent;
 }
 
-.card_media {
+.card-media {
   cursor: default;
   position: relative;
 }
-/*
-.card_media:before {
-  content: "";
-  background-image: linear-gradient(
-    45deg,
-    rgb(130, 7, 115),
-    rgb(28, 2, 108) 40%,
-    rgb(0, 127, 152)
-  );
-  filter: blur(10px);
-  display: block;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-*/
-.input_container {
+
+.input-container {
   position: relative;
   border-radius: 10px !important;
 }

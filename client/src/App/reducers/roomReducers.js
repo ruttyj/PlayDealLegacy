@@ -35,7 +35,7 @@ function setCurrentRoom(state, action) {
   return newState;
 }
 
-const reducer = function (state = initialState, action) {
+const reducer = function(state = initialState, action) {
   switch (action.type) {
     case "RESET":
       return JSON.parse(JSON.stringify(initialState));
@@ -50,4 +50,5 @@ const reducer = function (state = initialState, action) {
   }
 };
 
+export { initialState };
 export default reducer;

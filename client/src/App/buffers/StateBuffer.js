@@ -1,4 +1,4 @@
-import { debounce } from "lodash";
+import debounce from "lodash.debounce";
 
 import {
   isDef,
@@ -21,7 +21,7 @@ export default function StateBuffer(_initialState = {}) {
 
   let mSetter = null;
   let mMutator = (v) => v;
-  const _flush = debounce(async function () {
+  const _flush = debounce(async function() {
     flush(mSetter);
   }, 50);
 

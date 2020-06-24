@@ -18,7 +18,7 @@ const cookieTokenManager = CookieTokenManager.getInstance();
 function addToApp_before(app) {
   app.use(cors());
 
-  app.use(function (req, res, next) {
+  app.use(function(req, res, next) {
     //res.header("Access-Control-Allow-Origin", "*");
     res.header(
       "Access-Control-Allow-Headers",
@@ -38,12 +38,10 @@ function addToApp_before(app) {
 }
 
 function attachCookieToResponse(req, res) {
-  console.log("attachCookieToResponse");
   // Make token and ensure object is associated
   let token = getNestedValue(req, ["cookies", "token"], null);
   if (!isDef(token)) {
     token = cookieTokenManager.generateToken();
-    console.log("A", token);
 
     res.cookie("token", token, {
       expires: new Date(Date.now() + 900000),
@@ -54,19 +52,17 @@ function attachCookieToResponse(req, res) {
   } else if (isDef(token) && !cookieTokenManager.has(token)) {
     // Token exists but not in manager -> create record
     cookieTokenManager.set(token, {});
-    console.log("B", token);
-    console.log("attach cookie token data", token);
   }
 }
 
 function addToApp_after(app) {
   // catch 404 and forward to error handler
-  app.use(function (req, res, next) {
+  app.use(function(req, res, next) {
     next(createError(404));
   });
 
   // error handler
-  app.use(function (err, req, res, next) {
+  app.use(function(err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get("env") === "development" ? err : {};

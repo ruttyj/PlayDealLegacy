@@ -1,6 +1,6 @@
 import gameReducers from "../reducers/gameReducers";
 import { getNestedValue } from "../../utils/";
-import _ from "lodash";
+import debounce from "lodash.debounce";
 import { isDef } from "../../../../server/utils";
 
 function ReduxBuffer(_initialState = {}) {
@@ -9,7 +9,7 @@ function ReduxBuffer(_initialState = {}) {
   let currentState = initialState;
 
   let tempDispatch = null;
-  const _flush = _.debounce(async function () {
+  const _flush = debounce(async function() {
     flush(tempDispatch);
   }, 100);
 

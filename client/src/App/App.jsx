@@ -10,6 +10,8 @@ import Dev from "../pages/Dev";
 import Room from "../pages/Room";
 import Dev4 from "../pages/Dev4";
 
+import ReactWindowsExamplePage from "../pages/Windows/";
+
 class App extends Component {
   constructor(props, context) {
     super(props, context);
@@ -41,6 +43,15 @@ class App extends Component {
               />
 
               <Route
+                key="windows"
+                exact
+                path="/windows"
+                render={(props) => {
+                  return <ReactWindowsExamplePage />;
+                }}
+              />
+
+              <Route
                 key="dev4"
                 exact
                 path="/dev4"
@@ -61,7 +72,9 @@ class App extends Component {
                   if (!isDef(roomCode)) {
                     roomCode = "AAAA";
                   }
-                  roomCode = String(roomCode).trim().toUpperCase();
+                  roomCode = String(roomCode)
+                    .trim()
+                    .toUpperCase();
                   if (roomCode.length === 0) {
                     roomCode = "AAAA";
                   }

@@ -22,12 +22,12 @@ function IntroContainer(props) {
   let { content, actions } = props;
   return (
     <Card
-      className="input_container"
+      className="input-container"
       style={{ maxWidth: "400px", pointerEvents: "all" }}
     >
       <CardActionArea>
         <CardMedia
-          className="card_media"
+          className="card-media"
           style={{
             height: "200px",
             backgroundImage:

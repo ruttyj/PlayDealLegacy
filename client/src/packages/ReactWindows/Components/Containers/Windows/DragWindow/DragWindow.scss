@@ -1,0 +1,31 @@
+.disable-pointer-events {
+  pointer-events: none;
+}
+
+.window {
+  opacity: 1;
+  transition: background-color 300ms linear;
+  background-color: #ffffff00;
+}
+
+.window.dragging,
+.window.blurred-bkgd.dragging,
+.window.blurred-bkgd.dragging:before,
+.window.blurred-bkgd.dragging:after {
+  background-color: #f90;
+  background-image: none;
+}
+
+.window.hiding {
+  transition: translateY(-100px);
+  opacity: 0;
+}
+
+.window.hidden {
+  transition: transform 150ms linear, opacity 150ms;
+  max-width: 0px;
+  max-height: 0px;
+  border-width: 0px;
+  transition: translateY(-100px);
+  opacity: 0;
+}
