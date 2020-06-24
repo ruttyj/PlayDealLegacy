@@ -2292,7 +2292,8 @@ function Game(ref) {
         selected: {
           has: (...args) =>
             props().collectionSelection_hasSelectedValue(...args),
-          toggle: (...args) => props().collectionSelection_(...args),
+          toggle: (...args) =>
+            props().collectionSelection_toggleSelected(...args),
           count: () => props().collectionSelection_getSelected().length,
           get: () => props().collectionSelection_getSelected(),
           set: (items) => props().collectionSelection_setSelected(items),
