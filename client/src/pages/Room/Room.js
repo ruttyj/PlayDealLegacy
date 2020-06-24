@@ -1,53 +1,52 @@
 import React, { useState } from "react";
-import { makeStyles } from "@material-ui/core/styles";
 import { withRouter } from "react-router";
 import pluralize from "pluralize";
 import {
   els,
-  isFunc,
   isDef,
   isDefNested,
   isArr,
   getNestedValue,
-} from "../utils/";
+  emptyFunc,
+} from "../../utils/";
 
-import sounds from "../assets/sounds";
+import sounds from "../../assets/sounds";
 
 // Drag and Drop
 import { DndProvider } from "react-dnd";
 import Backend from "react-dnd-html5-backend";
-import DragItem from "../components/dragNDrop/DragItem";
-import DropZone from "../components/dragNDrop/DropZone";
-import VSplitterDragIndicator from "../components/indicators/VSplitterDragIndicator";
-import HSplitterDragIndicator from "../components/indicators/HSplitterDragIndicator";
+import DragItem from "../../components/dragNDrop/DragItem";
+import DropZone from "../../components/dragNDrop/DropZone";
+import VSplitterDragIndicator from "../../components/indicators/VSplitterDragIndicator";
+import HSplitterDragIndicator from "../../components/indicators/HSplitterDragIndicator";
 
 import { deepOrange, green, grey } from "@material-ui/core/colors";
 
 // Socket related
 import { connect } from "react-redux";
-import roomActions from "../App/actions/roomActions";
-import peopleActions from "../App/actions/peopleActions";
-import gameActions from "../App/actions/gameActions";
-import gameGetters from "../App/getters/gameGetters";
+import roomActions from "../../App/actions/roomActions";
+import peopleActions from "../../App/actions/peopleActions";
+import gameActions from "../../App/actions/gameActions";
+import gameGetters from "../../App/getters/gameGetters";
 
 import TextField from "@material-ui/core/TextField";
 import Divider from "@material-ui/core/Divider";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 
-import { ImmutableClassBasedObject } from "../utils/ReactStateTools";
-import createSocketConnection from "../utils/clientSocket";
+import { ImmutableClassBasedObject } from "../../utils/ReactStateTools";
+import createSocketConnection from "../../utils/clientSocket";
 
 // Structure
-import RelLayer from "../components/layers/RelLayer";
-import AbsLayer from "../components/layers/AbsLayer";
-import CheckLayer from "../components/layers/CheckLayer";
-import FillContainer from "../components/fillContainer/FillContainer";
-import FillHeader from "../components/fillContainer/FillHeader";
-import FillContent from "../components/fillContainer/FillContent";
-import FillFooter from "../components/fillContainer/FillFooter";
+import RelLayer from "../../components/layers/RelLayer";
+import AbsLayer from "../../components/layers/AbsLayer";
+import CheckLayer from "../../components/layers/CheckLayer";
+import FillContainer from "../../components/fillContainer/FillContainer";
+import FillHeader from "../../components/fillContainer/FillHeader";
+import FillContent from "../../components/fillContainer/FillContent";
+import FillFooter from "../../components/fillContainer/FillFooter";
 
-import GrowPanel from "../components/panels/GrowPanel";
+import GrowPanel from "../../components/panels/GrowPanel";
 import SplitterLayout from "react-splitter-layout";
 import "react-splitter-layout/lib/index.css";
 import {
@@ -56,14 +55,14 @@ import {
   FlexCenter,
   FullFlexColumnCenter,
   FullFlexRow,
-} from "../components/Flex";
-import ShakeAnimationWrapper from "../components/effects/Shake";
+} from "../../components/Flex";
+import ShakeAnimationWrapper from "../../components/effects/Shake";
 
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
-import BlurredBackground from "../components/layers/BlurredBackground";
+import BlurredBackground from "../../components/layers/BlurredBackground";
 import Avatar from "@material-ui/core/Avatar";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -71,39 +70,39 @@ import ListItemAvatar from "@material-ui/core/ListItemAvatar";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import PulseCheckBox from "../components/buttons/PulseCheckBox.js";
+import PulseCheckBox from "../../components/buttons/PulseCheckBox.js";
 
 // Cards
-import BaseDealCard from "../components/cards/BaseDealCard";
-import RenderCard from "../components/RenderCard";
-import RenderInteractableCard from "../components/RenderInteractableCard";
+import BaseDealCard from "../../components/cards/BaseDealCard";
+import RenderCard from "../../components/RenderCard";
+import RenderInteractableCard from "../../components/RenderInteractableCard";
 
-import PlayerPanelWrapper from "../components/panels/playerPanel/PlayerPanelWrapper";
-import PlayerPanel from "../components/panels/playerPanel/PlayerPanel";
-import PlayerPanelTurnIndicator from "../components/panels/playerPanel/PlayerPanelTurnIndicator";
-import PlayerPanelContent from "../components/panels/playerPanel/PlayerPanelContent";
-import PlayerPanelNameWrapper from "../components/panels/playerPanel/PlayerPanelNameWrapper";
-import PlayerPanelName from "../components/panels/playerPanel/PlayerPanelName";
-import PlayerPanelActionText from "../components/panels/playerPanel/PlayerPanelActionText";
-import PlayerPanelActionNumber from "../components/panels/playerPanel/PlayerPanelActionNumber";
+import PlayerPanelWrapper from "../../components/panels/playerPanel/PlayerPanelWrapper";
+import PlayerPanel from "../../components/panels/playerPanel/PlayerPanel";
+import PlayerPanelTurnIndicator from "../../components/panels/playerPanel/PlayerPanelTurnIndicator";
+import PlayerPanelContent from "../../components/panels/playerPanel/PlayerPanelContent";
+import PlayerPanelNameWrapper from "../../components/panels/playerPanel/PlayerPanelNameWrapper";
+import PlayerPanelName from "../../components/panels/playerPanel/PlayerPanelName";
+import PlayerPanelActionText from "../../components/panels/playerPanel/PlayerPanelActionText";
+import PlayerPanelActionNumber from "../../components/panels/playerPanel/PlayerPanelActionNumber";
 
-import CollectionContainer from "../components/panels/playerPanel/CollectionContainer";
-import PropertySetContainer from "../components/panels/playerPanel/PropertySetContainer";
-import BankCardContainer from "../components/panels/playerPanel/BankCardContainer";
+import CollectionContainer from "../../components/panels/playerPanel/CollectionContainer";
+import PropertySetContainer from "../../components/panels/playerPanel/PropertySetContainer";
+import BankCardContainer from "../../components/panels/playerPanel/BankCardContainer";
 
-import TurnNotice from "../components/TurnNotice";
-import BankWrapper from "../components/panels/playerPanel/BankWrapper";
-import MyHandContainer from "../components/panels/playerPanel/MyHandContainer";
-import Deck3D from "../components/panels/playerPanel/Deck3D";
-import CurrencyText from "../components/cards/elements/CurrencyText";
-import PileCount from "../components/gameUi/PileCount";
+import TurnNotice from "../../components/TurnNotice";
+import BankWrapper from "../../components/panels/playerPanel/BankWrapper";
+import MyHandContainer from "../../components/panels/playerPanel/MyHandContainer";
+import Deck3D from "../../components/panels/playerPanel/Deck3D";
+import CurrencyText from "../../components/cards/elements/CurrencyText";
+import PileCount from "../../components/gameUi/PileCount";
 
 // Screens
-import SCREENS from "../data/screens";
-import PayRequestScreen from "../components/screens/PayRequestScreen";
-import ReceivePaymentScreen from "../components/screens/ReceivePaymentScreen";
-import RequestScreen from "../components/screens/RequestScreen";
-import GameOverScreen from "../components/screens/GameOverScreen";
+import SCREENS from "../../data/screens";
+import PayRequestScreen from "../../components/screens/PayRequestScreen";
+import ReceivePaymentScreen from "../../components/screens/ReceivePaymentScreen";
+import RequestScreen from "../../components/screens/RequestScreen";
+import GameOverScreen from "../../components/screens/GameOverScreen";
 
 // Icons
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
@@ -111,14 +110,15 @@ import StarBorder from "@material-ui/icons/StarBorder";
 
 // Buttons
 import Button from "@material-ui/core/Button";
-import ActionButtonWrapper from "../components/buttons/actionButton/ActionButtonWrapper";
-import ActionButton from "../components/buttons/actionButton/ActionButton";
-import actionButtonContents from "../components/buttons/actionButton/actionButtonContents";
-import AutoPassTurnButton from "../components/buttons/AutoPassTurnButton";
+import ActionButtonWrapper from "../../components/buttons/actionButton/ActionButtonWrapper";
+import ActionButton from "../../components/buttons/actionButton/ActionButton";
+import actionButtonContents from "../../components/buttons/actionButton/actionButtonContents";
+import AutoPassTurnButton from "../../components/buttons/AutoPassTurnButton";
 import IconButton from "@material-ui/core/IconButton";
-import RequestButton from "../components/buttons/RequestButton";
+import RequestButton from "../../components/buttons/RequestButton";
 
-import Game from "../utils/game";
+import Game from "../../utils/game";
+import PersonListItem from "../../components/game/PersonListItem/";
 import { isArray } from "lodash";
 
 const uiConfig = {
@@ -225,7 +225,6 @@ class GameUI extends React.Component {
       "stealProperty",
       "stealCollection",
 
-      "renderPerson",
       "renderReadyButton",
       "updateRender",
       "makeCardCheck",
@@ -1490,117 +1489,6 @@ class GameUI extends React.Component {
 
   //########################################
 
-  // USERS
-  renderPerson(person) {
-    let isMe = game.isMyId(person.id);
-
-    let toggleEditName = () => {
-      let person = game.me();
-      let name = this.state.nameInput;
-      if (isDef(person)) {
-        name = person.name;
-      }
-      this.setState({
-        nameInput: name,
-        isChangingMyName: !this.state.isChangingMyName,
-      });
-    };
-
-    let onNameChangeConfirm = async () => {
-      await game.updateMyName(this.state.nameInput);
-      toggleEditName();
-    };
-
-    let onKeyPressNameInput = (event) => {
-      if (event.key === "Enter") {
-        onNameChangeConfirm();
-      }
-    };
-    let onNameChange = (event) =>
-      this.setState({
-        nameInput: event.target.value,
-      });
-
-    let toggleEditMyName = () => {
-      if (isMe) {
-        toggleEditName();
-      }
-    };
-
-    let nameText = this.state.nameInput;
-    return (
-      <ListItem
-        key={person.id}
-        style={{
-          backgroundColor: isMe ? grey[50] : grey[300],
-        }}
-      >
-        <ListItemAvatar>
-          {isMe ? (
-            <Avatar
-              style={{
-                marginRight: "6px",
-                backgroundColor: game.isPersonReady(person.id)
-                  ? green[700]
-                  : deepOrange[500],
-              }}
-            >
-              <small style={{ fontSize: "0.6em" }}>ME</small>
-            </Avatar>
-          ) : (
-            <Avatar
-              style={{
-                marginRight: "6px",
-                backgroundColor: game.isPersonReady(person.id)
-                  ? green[700]
-                  : deepOrange[500],
-              }}
-            />
-          )}
-        </ListItemAvatar>
-
-        {this.state.isChangingMyName && isMe ? (
-          <ListItemText>
-            <ListItemText>
-              <TextField
-                autoFocus
-                id="standard-basic"
-                label="Username"
-                onKeyPress={onKeyPressNameInput}
-                value={nameText}
-                onChange={onNameChange}
-              />
-            </ListItemText>
-            <ListItemSecondaryAction>
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                onClick={onNameChangeConfirm}
-              >
-                <ArrowForwardIcon />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItemText>
-        ) : (
-          <React.Fragment>
-            <ListItemText
-              onDoubleClick={toggleEditMyName}
-              primary={`${person.name}`}
-              secondary={`${game.getPersonStatusLabel(person.id)}`}
-            />
-            {game.person.isHost(person.id) ? (
-              <ListItemSecondaryAction>
-                <StarBorder />
-              </ListItemSecondaryAction>
-            ) : (
-              ""
-            )}
-          </React.Fragment>
-        )}
-      </ListItem>
-    );
-  }
-
   renderReadyButton() {
     let result;
     if (game.amIHost() && game.isEveryoneReady()) {
@@ -1776,19 +1664,7 @@ class GameUI extends React.Component {
         }
       }
 
-      /*
-      // used for nested drops
-      <DropZone
-            style={{ width: "100%" }}
-            accept={isMe ? "MY_CARD" : "THEIR_CARD"}
-            onDrop={this.handleOnCardDropOnPlayerPanel}
-            dropProps={{
-              is: "player"
-            }}
-          >
-          </DropZone>
-          */
-
+      // Display the collections in reverse order since we are aligning it to the right
       let collectionsForPerson;
       let temp = this.props.getCollectionIdsForPlayer(person.id);
       if (isDef(temp) && isArr(temp)) {
@@ -2297,7 +2173,59 @@ class GameUI extends React.Component {
       >
         <ListSubheader>Users</ListSubheader>
         {game.getLobbyUsers().map((person, i) => {
-          return this.renderPerson(person);
+          let isMe = game.isMyId(person.id);
+          let personNameInput = this.state.nameInput;
+          let isChangingMyName = this.state.isChangingMyName;
+
+          let toggleEditName = () => {
+            let person = game.me();
+            let name = personNameInput;
+            if (isDef(person)) {
+              name = person.name;
+            }
+            this.setState({
+              nameInput: name,
+              isChangingMyName: !isChangingMyName,
+            });
+          };
+
+          let onNameChangeConfirm = async () => {
+            await game.updateMyName(personNameInput);
+            toggleEditName();
+          };
+
+          let onKeyPressNameInput = (event) => {
+            if (event.key === "Enter") {
+              onNameChangeConfirm();
+            }
+          };
+          let onNameChange = (event) =>
+            this.setState({
+              nameInput: event.target.value,
+            });
+
+          let toggleEditMyName = () => {
+            if (isMe) {
+              toggleEditName();
+            }
+          };
+
+          return (
+            <PersonListItem
+              key={person.name}
+              name={person.name}
+              isMe={isMe}
+              isHost={game.person.isHost(person.id)}
+              isReady={game.isPersonReady(person.id)}
+              statusLabel={game.getPersonStatusLabel(person.id)}
+              isEditingName={isMe && isChangingMyName}
+              nameInputValue={personNameInput}
+              onToggleEditName={toggleEditMyName}
+              onNameChangeConfirm={onNameChangeConfirm}
+              onNameKeyPress={onKeyPressNameInput}
+              onNameChange={onNameChange}
+            />
+          );
         })}
         <Divider />
         {this.renderReadyButton()}

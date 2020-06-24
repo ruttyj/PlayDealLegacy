@@ -7,7 +7,7 @@ import { isDef } from "../utils";
 
 import Home from "../pages/Home/";
 import Dev from "../pages/Dev";
-import Room from "../pages/Room";
+import Room from "../pages/Room/";
 import Dev4 from "../pages/Dev4";
 
 import ReactWindowsExamplePage from "../pages/Windows/";
