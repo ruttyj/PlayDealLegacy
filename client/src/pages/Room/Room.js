@@ -118,6 +118,9 @@ import IconButton from "@material-ui/core/IconButton";
 import RequestButton from "../../components/buttons/RequestButton";
 
 import Game from "../../utils/game";
+import Room from "../../utils/room";
+import RoomManager from "../../utils/roomManager";
+
 import PersonListItem from "../../components/game/PersonListItem/";
 import { isArray } from "lodash";
 
@@ -158,6 +161,8 @@ const uiConfig = {
 };
 
 let game;
+let room;
+let roomManager;
 class GameUI extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -181,6 +186,8 @@ class GameUI extends React.Component {
 
     // Create game instance
     game = Game(this);
+    room = Room(this);
+    roomManager = RoomManager(this);
 
     let initialState = {
       nameInput: "",
@@ -207,7 +214,6 @@ class GameUI extends React.Component {
     let bindFuncs = [
       "getConnection",
       "onReady",
-      "leaveRoom",
       "resetData",
 
       "handleCloseReqeustScreenIfNoRequests",
@@ -243,16 +249,10 @@ class GameUI extends React.Component {
     });
   }
 
-  leaveRoom() {
-    let connection = this.getConnection();
-    this.props.leaveRoom(connection, this.props.room);
-  }
-
   async resetData() {
-    await this.props.resetGameData();
-    await this.props.resetPeopleData();
-    await this.props.resetRoomData();
-    await this.leaveRoom();
+    await game.resetState();
+    await room.resetState();
+    await room.leaveRoom();
     let connection = this.getConnection();
     connection.socket.destroy();
   }
@@ -270,21 +270,18 @@ class GameUI extends React.Component {
   }
 
   onReady() {
-    if (!this.initialized && isDef(this.props.room)) {
+    if (!this.initialized && isDef(room.getCode())) {
       this.initialized = true;
       (async () => {
-        let connection = this.getConnection();
-
         game.init();
-        let roomCode = this.props.room;
-        let roomExists = await this.props.existsRoom(connection, roomCode);
+        let roomCode = room.getCode();
+        let roomExists = await roomManager.exists(roomCode);
 
         if (!roomExists) {
-          await this.props.createRoom(connection, roomCode);
+          await roomManager.create(roomCode);
         }
 
-        await this.props.joinRoom(connection, roomCode);
-        //await game.updateMyStatus("ready");
+        await roomManager.join(roomCode);
       })();
     }
   }
@@ -380,7 +377,7 @@ class GameUI extends React.Component {
   handleOnCardDrop({ dragProps, dropProps }) {
     let dropZone = dropProps;
     let item = dragProps;
-    let roomCode = this.props.getRoomCode();
+    let roomCode = room.getCode();
     let connection = this.getConnection();
 
     let personId = getNestedValue(dropProps, "personId", 0);
@@ -463,9 +460,7 @@ class GameUI extends React.Component {
                 // Transfer property to existing collection
                 if (card.type === "property") {
                   sounds.playcard.play();
-                  this.props.transferPropertyToExistingCollection(
-                    connection,
-                    roomCode,
+                  game.transferPropertyToExistingCollection(
                     cardId,
                     fromCollectionId,
                     toCollectionId
@@ -477,9 +472,7 @@ class GameUI extends React.Component {
                   card.class === "setAugment"
                 ) {
                   sounds.build.play();
-                  this.props.transferSetAugmentToExistingCollection(
-                    connection,
-                    roomCode,
+                  game.transferSetAugmentToExistingCollection(
                     cardId,
                     fromCollectionId,
                     toCollectionId
@@ -531,7 +524,7 @@ class GameUI extends React.Component {
     let card = game.card.get(cardId);
 
     if (isDef(dropZone.isBank) && isDef(dropZone.playerId) && isDef(card)) {
-      if (this.props.canAddCardToBank(card)) {
+      if (game.canAddCardToBank(card)) {
         sounds.chaChing.play();
         game.addCardToMyBankFromHand(card.id);
       } else {
@@ -541,8 +534,8 @@ class GameUI extends React.Component {
   }
 
   handleCollectionSelect({ collectionId }) {
-    if (this.props.collectionSelection_hasSelectableValue(collectionId)) {
-      this.props.collectionSelection_toggleSelected(collectionId);
+    if (game.selection.collections.selectable.has(collectionId)) {
+      game.selection.collections.selected.toggle(collectionId);
     }
   }
 
@@ -570,16 +563,12 @@ class GameUI extends React.Component {
   }
 
   async handleOnDiscardCards() {
-    if (this.props.isDiscardPhase()) {
-      let selectedCardIds = this.props.cardSelection_getSelected();
-      if (selectedCardIds.length === this.props.cardSelection_getLimit()) {
+    if (game.phase.isDiscardPhase()) {
+      let selectedCardIds = game.selection.cards.selected.get();
+      if (game.selection.cards.selected.isLimitSelected()) {
         sounds.playcard.play(selectedCardIds.length);
-        await this.props.discardCards(
-          this.getConnection(),
-          this.props.getRoomCode(),
-          selectedCardIds
-        );
-        await this.props.cardSelection_reset();
+        await game.discardCards(selectedCardIds);
+        await game.selection.cards.reset();
       }
     }
   }
@@ -1611,8 +1600,8 @@ class GameUI extends React.Component {
   renderPlayerPanel(person) {
     let propertySetsKeyed = game.getAllPropertySetsKeyed();
     if (isDef(person)) {
-      let isThisPlayersTurn = person.id === this.props.getCurrentTurnPersonId();
-      const isMe = this.props.getMyId() === person.id;
+      let isThisPlayersTurn = person.id === game.turn.getPersonId();
+      const isMe = game.myId() === person.id;
       const myStyle = {
         position: "absolute",
         width: "100%",
@@ -1637,7 +1626,7 @@ class GameUI extends React.Component {
       }
 
       let canSelectCardFromUser = true;
-      if (this.props.getDisplayData(["mode"]) === "askForPropertySwap") {
+      if (game.getDisplayData(["mode"]) === "askForPropertySwap") {
         let seperateCards = game.seperateCards(
           game.selection.cards.selected.get()
         );
@@ -1666,7 +1655,7 @@ class GameUI extends React.Component {
 
       // Display the collections in reverse order since we are aligning it to the right
       let collectionsForPerson;
-      let temp = this.props.getCollectionIdsForPlayer(person.id);
+      let temp = game.getCollectionIdsForPlayer(person.id);
       if (isDef(temp) && isArr(temp)) {
         collectionsForPerson = temp.slice().reverse();
       } else {
@@ -1725,21 +1714,23 @@ class GameUI extends React.Component {
                 </DropZone>
                 {collectionsForPerson
                   .map((collectionId) => {
-                    let collection = this.props.getCollection(collectionId);
-                    let collectionCards = this.props.getCollectionCards(
+                    let collection = game.collection.get(collectionId);
+                    let collectionCards = game.collection.getCards(
                       collectionId
                     );
 
+                    //game.selection.collections.selectable.has()
+
                     let collectionSelection = {
-                      enabled: this.props.collectionSelection_getEnable(),
-                      selectType: this.props.collectionSelection_getType(),
-                      isSelectable: this.props.collectionSelection_hasSelectableValue(
+                      enabled: game.selection.collections.isEnabled(),
+                      selectType: game.selection.collections.getType(),
+                      isSelectable: game.selection.collections.selectable.has(
                         collectionId
                       ),
-                      isSelected: this.props.collectionSelection_hasSelectedValue(
+                      isSelected: game.selection.collections.selected.has(
                         collectionId
                       ),
-                      isFull: this.props.getIsCollectionFull(collectionId),
+                      isFull: game.collection.isComplete(collectionId),
                     };
                     let cardCheck = this.makeCardCheck({
                       personId: person.id,
@@ -1844,7 +1835,7 @@ class GameUI extends React.Component {
               <BankWrapper
                 renderTotal={() => (
                   <CurrencyText>
-                    {this.props.getPlayerBankTotal(person.id)}
+                    {game.player.bank.getTotal(person.id)}
                   </CurrencyText>
                 )}
               >
@@ -1859,47 +1850,43 @@ class GameUI extends React.Component {
                 >
                   <PropertySetContainer
                     transparent={true}
-                    cards={this.props
-                      .getPlayerBankCards(person.id)
-                      .map((card) => {
-                        let cardCheck = this.makeCardCheck({
-                          personId: person.id,
-                          from: "bank",
-                          isBank: true,
-                        });
+                    cards={game.player.bank.getCards(person.id).map((card) => {
+                      let cardCheck = this.makeCardCheck({
+                        personId: person.id,
+                        from: "bank",
+                        isBank: true,
+                      });
 
-                        return (
-                          <RenderInteractableCard
-                            key={card.id}
-                            card={card}
-                            scaledPercent={uiConfig.bank.default.scalePercent}
-                            hoverPercent={uiConfig.bank.default.scalePercent}
-                            clickProps={{
-                              from: "bank",
-                              personId: person.id,
-                              cardId: card.id,
-                            }}
-                            dragProps={{
-                              type: isMe ? "MY_CARD" : "THEIR_CARD",
-                              from: "bank",
-                              cardId: card.id,
-                            }}
-                            onClick={this.handleOnHandCardClick}
-                            selectionEnabled={cardCheck.isSelectionEnabled(
-                              card.id
-                            )}
-                            highlightIsSelectable={true}
-                            isSelectable={cardCheck.canSelectCard(card.id)}
-                            selectType={cardCheck.getSelectionType(card.id)}
-                            isSelected={cardCheck.isCardSelected(card.id)}
-                            onSelected={cardCheck.makeOnSelectCard(card.id)}
-                            notApplicable={cardCheck.isCardNotApplicable(
-                              card.id
-                            )}
-                            propertySetMap={propertySetsKeyed}
-                          />
-                        );
-                      })}
+                      return (
+                        <RenderInteractableCard
+                          key={card.id}
+                          card={card}
+                          scaledPercent={uiConfig.bank.default.scalePercent}
+                          hoverPercent={uiConfig.bank.default.scalePercent}
+                          clickProps={{
+                            from: "bank",
+                            personId: person.id,
+                            cardId: card.id,
+                          }}
+                          dragProps={{
+                            type: isMe ? "MY_CARD" : "THEIR_CARD",
+                            from: "bank",
+                            cardId: card.id,
+                          }}
+                          onClick={this.handleOnHandCardClick}
+                          selectionEnabled={cardCheck.isSelectionEnabled(
+                            card.id
+                          )}
+                          highlightIsSelectable={true}
+                          isSelectable={cardCheck.canSelectCard(card.id)}
+                          selectType={cardCheck.getSelectionType(card.id)}
+                          isSelected={cardCheck.isCardSelected(card.id)}
+                          onSelected={cardCheck.makeOnSelectCard(card.id)}
+                          notApplicable={cardCheck.isCardNotApplicable(card.id)}
+                          propertySetMap={propertySetsKeyed}
+                        />
+                      );
+                    })}
                   />
                 </DropZone>
               </BankWrapper>
@@ -2105,31 +2092,30 @@ class GameUI extends React.Component {
   renderDebugData() {
     let dumpData = {
       state: this.state,
+      //
+      personSelection: game.selection.people.getAll(),
+      cardSelection: game.selection.cards.getAll(),
+      collectionSelection: game.selection.collections.getAll(),
 
-      personSelection: this.props.personSelection_getAll(),
-      cardSelection: this.props.cardSelection_getAll(),
-      collectionSelection: this.props.collectionSelection_getAll(),
-
-      cards: this.props.cards,
-      people: this.props.getAllPeople(),
-      players: this.props.players,
-      gameStatus: this.props.gameStatus,
-      currentRoom: this.props.currentRoom,
-      winningPlayerId: this.props.winningPlayerId,
-      drawPile: this.props.drawPile,
-      activePile: this.props.activePile,
-      discardPile: this.props.discardPile,
-      playerTurn: this.props.playerTurn,
-      propertySets: this.props.propertySets,
+      cards: game.getAllCardData(),
+      people: room.getAllPeopleInRoom(),
+      players: game.getAllPlayers(),
+      gameStatus: game.getGameStatus(),
+      currentRoom: room.get(),
+      drawPile: game.drawPile.get(),
+      activePile: game.activePile.get(),
+      discardPile: game.discardPile.get(),
+      playerTurn: game.turn.get(),
+      propertySets: game.getAllPropertySets(),
       //cards: this.props.cards,
-      playerHands: this.props.playerHands,
-      playerBanks: this.props.playerBanks,
-      playerCollections: this.props.playerCollections,
-      collections: this.props.collections,
+      playerHands: game.getAllPlayerHandData(),
+      playerBanks: game.getAllPlayerBankData(),
+      playerCollections: game.getAllCollectionAssociationData(),
+      collections: game.getAllCollectionData(),
 
-      playerRequests: this.props.playerRequests,
-      requests: this.props.requests,
-      previousRequests: this.props.previousRequests,
+      playerRequests: game.getAllPlayerRequestData(),
+      requests: game.getAllRequestsData(),
+      previousRequests: game.getAllPreviousRequestsData(),
     };
 
     return (
@@ -2156,7 +2142,7 @@ class GameUI extends React.Component {
     return (
       <BlurredBackground
         blur={0}
-        backgroundImage="https://images.unsplash.com/photo-1582761371078-6509f13666b1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80"
+        backgroundImage="https://images.unsplash.com/photo-1586021755075-3da0c78d4881?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2100&q=80"
       />
     );
   }
@@ -2247,9 +2233,9 @@ class GameUI extends React.Component {
               <Toolbar>
                 <h5
                   style={{ padding: "12px" }}
-                  onClick={() => this.leaveRoom()}
+                  onClick={() => room.leaveRoom()}
                 >
-                  Room <strong>{this.props.getRoomCode()}</strong>
+                  Room <strong>{room.getCode()}</strong>
                 </h5>
               </Toolbar>
             </AppBar>

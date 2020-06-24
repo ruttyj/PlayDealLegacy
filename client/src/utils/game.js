@@ -10,6 +10,7 @@ import {
   jsonLog,
 } from "../utils/";
 import SCREENS from "../data/screens";
+import PropertySetContainer from "../components/panels/playerPanel/PropertySetContainer";
 
 function Game(ref) {
   sounds.setVolume(0.5);
@@ -633,6 +634,14 @@ function Game(ref) {
     return isMyTurn() && isDiscardPhase() && getRemainingDiscardCount() === 0;
   }
 
+  async function discardCards(selectedCardIds) {
+    await props().discardCards(
+      connection(),
+      props().getRoomCode(),
+      selectedCardIds
+    );
+  }
+
   async function toggleCardSelected(id) {
     if (
       isCardSelectionEnabled() &&
@@ -1138,8 +1147,16 @@ function Game(ref) {
     return props().getCollectionIdsForPlayer(myId());
   }
 
+  function getCollectionIdsForPlayer(playerId) {
+    return props().getCollectionIdsForPlayer(playerId);
+  }
+
   function getCollectionCardIds(collectionId) {
     return props().getCollectionCardIds(collectionId);
+  }
+
+  function getCollectionCards(collectionId) {
+    return getCards(props().getCollectionCardIds(collectionId));
   }
 
   function getMyBankCardIds() {
@@ -1540,8 +1557,116 @@ function Game(ref) {
     return null;
   }
 
+  async function resetState() {
+    await props().resetGameData();
+  }
+
+  async function transferPropertyToExistingCollection(
+    cardId,
+    fromCollectionId,
+    toCollectionId
+  ) {
+    await props().transferPropertyToExistingCollection(
+      connection(),
+      props().getRoomCode(),
+      cardId,
+      fromCollectionId,
+      toCollectionId
+    );
+  }
+
+  async function transferSetAugmentToExistingCollection(
+    cardId,
+    fromCollectionId,
+    toCollectionId
+  ) {
+    await props().transferSetAugmentToExistingCollection(
+      connection(),
+      props().getRoomCode(),
+      cardId,
+      fromCollectionId,
+      toCollectionId
+    );
+  }
+
+  function canAddCardToBank(card) {
+    return props().canAddCardToBank(card);
+  }
+
+  function isCollectionComplete(collectionId) {
+    return props().getIsCollectionFull(collectionId);
+  }
+
+  function getPlayerBankTotal(playerId) {
+    return props().getPlayerBankTotal(playerId);
+  }
+
+  function getPlayerBankCards(playerId) {
+    return props().getPlayerBankCards(playerId);
+  }
+
+  function getAllCardData() {
+    return props().cards;
+  }
+
+  function getAllPlayers() {
+    return props().players;
+  }
+
+  function getGameStatus() {
+    return props().gameStatus;
+  }
+
+  function getDrawPile() {
+    return props().drawPile;
+  }
+
+  function getAllPropertySets() {
+    return props().propertySets;
+  }
+
+  function getAllPlayerHandData() {
+    return props().playerHands;
+  }
+
+  function getAllPlayerBankData() {
+    return props().playerBanks;
+  }
+  function getAllCollectionAssociationData() {
+    return props().playerCollections;
+  }
+  function getAllCollectionData() {
+    return props().collections;
+  }
+  function getAllPlayerRequestData() {
+    return props().playerRequests;
+  }
+  function getAllRequestsData() {
+    return props().requests;
+  }
+  function getAllPreviousRequestsData() {
+    return props().previousRequests;
+  }
+
   //respondToPropertyTransfer
   const publicScope = {
+    getAllPreviousRequestsData,
+    getAllRequestsData,
+    getAllPlayerRequestData,
+    getAllCollectionData,
+    getAllCollectionAssociationData,
+    getAllPlayerBankData,
+    getAllPlayerHandData,
+    getAllPropertySets,
+    getDrawPile,
+    getGameStatus,
+    getAllPlayers,
+    getAllCardData,
+    discardCards,
+    canAddCardToBank,
+    transferPropertyToExistingCollection,
+    transferSetAugmentToExistingCollection,
+    resetState,
     customUi: {
       get: getCustomUi,
       set: setCustomUi,
@@ -1576,6 +1701,7 @@ function Game(ref) {
     getMyHand,
 
     turn: {
+      get: () => props().playerTurn,
       getPhaseKey: getCurrentPhaseKey,
       getPersonId: () => props().getCurrentTurnPersonId(),
     },
@@ -1591,11 +1717,13 @@ function Game(ref) {
     },
 
     drawPile: {
+      get: getDrawPile,
       getCount: getDrawPileCount,
       getThickness: getDrawPileThickness,
     },
 
     activePile: {
+      get: () => props().activePile,
       getTopCard: getTopCardOnActionPile,
       hasTopCard() {
         return isDef(getTopCardOnActionPile());
@@ -1604,6 +1732,7 @@ function Game(ref) {
     },
 
     discardPile: {
+      get: () => props().discardPile,
       getTopCard: getTopCardOnDiscardPile,
       hasTopCard() {
         return isDef(getTopCardOnDiscardPile());
@@ -1614,6 +1743,10 @@ function Game(ref) {
     getIncompleteCollectionMatchingSet: getIncompleteCollectionMatchingSet,
 
     player: {
+      bank: {
+        getCards: getPlayerBankCards,
+        getTotal: getPlayerBankTotal,
+      },
       collections: {
         getAllIds: getAllPlayerCollectionIds,
       },
@@ -1665,12 +1798,15 @@ function Game(ref) {
     },
 
     collection: {
+      getCards: getCollectionCards,
       getCardIds: getCollectionCardIds,
       get: getCollection,
+      isComplete: isCollectionComplete,
     },
     collections: {
       getMyIds: getMyCollectionIds,
     },
+    getCollectionIdsForPlayer,
     getAllCardIdsForPlayer,
 
     request: {
@@ -2031,6 +2167,8 @@ function Game(ref) {
         setEnabled: (value = true) => props().cardSelection_setEnable(value),
         getType: () => props().cardSelection_getType(),
         setType: async (value) => await props().cardSelection_setType(value),
+        getAll: () => props().cardSelection_getAll(),
+
         selectable: {
           has: (...args) => props().cardSelection_hasSelectableValue(...args),
           toggle: (...args) => props().cardSelection_toggleSelectable(...args),
@@ -2134,6 +2272,8 @@ function Game(ref) {
         getType: () => props().collectionSelection_getType(),
         setType: async (value) =>
           await props().collectionSelection_setType(value),
+        getAll: () => props().collectionSelection_getAll(),
+
         selectable: {
           has: (...args) =>
             props().collectionSelection_hasSelectableValue(...args),
