@@ -2391,11 +2391,6 @@ class GameUI extends React.Component {
                               myArea={this.renderMyArea()}
                             />
                           </RelLayer>
-                          {JSON.stringify(
-                            this.stateBuffer.get(["gameWindow", "size"], {}),
-                            null,
-                            2
-                          )}
                         </AbsLayer>
                       </RelLayer>
                       {/* End Game board ________________________________*/}
