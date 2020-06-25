@@ -339,8 +339,10 @@ class GameUI extends React.Component {
   async handleOnHandCardClick({ cardId, from }) {
     from = els(from, "hand");
     let card = game.card.get(cardId);
-    let actionCardId = game.getDisplayData(["actionCardId"], 0);
-    if (cardId === actionCardId) {
+    let actionCardId = game.getDisplayData("actionCardId", 0);
+    console.log("actionCardId", actionCardId, game.getDisplayData([], 0));
+    console.log(String(cardId) === String(actionCardId));
+    if (String(cardId) === String(actionCardId)) {
       await game.resetUi();
     } else {
       if (!game.isCardSelectionEnabled()) {
@@ -1119,6 +1121,7 @@ class GameUI extends React.Component {
     // -----------------------------------------
     // reset main content
     game.updateRenderData("mainContent", null);
+    let gameOverContents = "";
     if (isGameOver) {
       if (game.amIHost()) {
         setStartGameButton();
@@ -1126,14 +1129,16 @@ class GameUI extends React.Component {
         setDefaultButton();
       }
 
-      game.updateRenderData(
-        "mainContent",
+      gameOverContents = (
         <GameOverScreen
           thisPersonId={game.myId()}
+          game={game}
           winner={game.gameOver.getWinner()}
           winningCondition={game.gameOver.getWinningCondition()}
         />
       );
+
+      game.updateRenderData("mainContent", gameOverContents);
     } else {
       if (isRequestScreenOpen) {
         let getCard = (id) => game.card.get(id);

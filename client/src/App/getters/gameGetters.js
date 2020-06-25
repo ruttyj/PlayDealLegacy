@@ -476,6 +476,9 @@ const makeGetters = (state) => {
         return discardPile.cards[discardPile.count - 1];
       return null;
     },
+    getPreviousRequests() {
+      return gameBuffer.get("previousRequests", {});
+    },
 
     previousRequests: storeState.previousRequests,
     requests: storeState.requests,

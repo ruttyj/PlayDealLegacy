@@ -78,23 +78,23 @@ function addSelectionControlInitialState(state, name) {
 const addToArray = (value, arr) => Array.from(new Set([...arr, value]));
 const removeFromArray = (value, arr) => arr.filter((v) => v !== value);
 function setValue(path) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     return setImmutableValue(state, path, payload);
   };
 }
 function setSelectionProp(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     return setImmutableValue(state, [name, field], payload);
   };
 }
 function setSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     if (isArr(payload)) return setImmutableValue(state, [name, field], payload);
     return state;
   };
 }
 function addSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let updatedState = state;
     let priorValue = getNestedValue(updatedState, [name, field], []);
     let newValue = addToArray(payload, priorValue);
@@ -103,7 +103,7 @@ function addSelectionValue(name, field) {
   };
 }
 function removeSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let updatedState = state;
     let priorValue = getNestedValue(updatedState, [name, field], []);
     let newValue = removeFromArray(payload, priorValue);
@@ -112,7 +112,7 @@ function removeSelectionValue(name, field) {
   };
 }
 function toggleSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let updatedState = state;
     let priorValue = getNestedValue(updatedState, [name, field], []);
     let newValue;
@@ -127,7 +127,7 @@ function toggleSelectionValue(name, field) {
 }
 
 function updateStateData(basePath) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let { path, value } = payload;
 
     let _path = isDef(path) ? (isArr(path) ? path : [path]) : [];
@@ -187,7 +187,7 @@ addSelectionControlInitialState(initialState, "collectionSelect");
 addSelectionControlInitialState(initialState, "personSelect");
 
 function resetSelectionControl(name) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     return setImmutableValue(state, [name], makeSelectionControlInitialState());
   };
 }
@@ -235,7 +235,7 @@ requirements:
 
 */
 
-const reducer = function (state = initialState, action) {
+const reducer = function(state = initialState, action) {
   let subjectName;
   let updatedState;
   switch (action.type) {
@@ -280,6 +280,15 @@ const reducer = function (state = initialState, action) {
       );
       updatedState = makeGetItemized("requests")(updatedState, action);
       return updatedState;
+    case "SET_PREVIOUS_REQUESTS":
+      updatedState = state;
+      updatedState = setImmutableValue(
+        updatedState,
+        ["previousRequests"],
+        action.payload
+      );
+      return updatedState;
+      return;
     case REMOVE_ALL_REQUESTS:
       console.log("REMOVE_ALL_REQUESTS");
 

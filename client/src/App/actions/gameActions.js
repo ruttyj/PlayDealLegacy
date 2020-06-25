@@ -39,6 +39,15 @@ const flush = () => async (dispatch) => {
   return Promise.resolve();
 };
 
+const setPreviousRequests = (idsKeyed) => async (dispatch) => {
+  gameBuffer.dispatch(dispatch, {
+    type: `SET_PREVIOUS_REQUESTS`,
+    payload: idsKeyed,
+  });
+  gameBuffer.flush();
+  return Promise.resolve();
+};
+
 const resetGame = (con, roomCode) => async (dispatch) => {
   let responses = await con.emitSingleRequest(
     "GAME",
@@ -759,6 +768,8 @@ const resetGameData = (value) => (dispatch) => {
 export default {
   flush,
   resetGameData,
+
+  setPreviousRequests,
 
   //Game life cycle
   resetGame,

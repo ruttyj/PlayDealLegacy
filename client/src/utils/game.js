@@ -11,7 +11,6 @@ import {
 } from "../utils/";
 import SCREENS from "../data/screens";
 import PropertySetContainer from "../components/panels/playerPanel/PropertySetContainer";
-
 function Game(ref) {
   sounds.setVolume(0.5);
 
@@ -74,8 +73,10 @@ function Game(ref) {
     // execute after PLAYER_TURN.GET has affected redux
     let canTrigger = {
       endTurnSound: true,
+      requestSound: true,
     };
     on(["PLAYER_TURN", `${"GET"}__STORE_UPDATED`], async () => {
+      const game = getPublic();
       // Play sound when my turn is done
       if (game.phase.isMyDonePhase() && canTrigger.endTurnSound) {
         canTrigger.endTurnSound = false;
@@ -119,8 +120,15 @@ function Game(ref) {
           }
         }
       });
-      if (isDef(playSound) && isFunc(playSound.play)) {
+      if (
+        isDef(playSound) &&
+        isFunc(playSound.play) &&
+        canTrigger.requestSound
+      ) {
         playSound.play();
+        canTrigger.requestSound = false;
+      } else {
+        canTrigger.requestSound = true;
       }
 
       let previousTurnPersonId = props().getPeviousTurnPersonId();
@@ -163,6 +171,13 @@ function Game(ref) {
           await game.resetUi();
         }
       }
+
+      // update previous ids
+      let newPreviousIds = {};
+      game.requests.getAllIds().forEach((id) => {
+        newPreviousIds[id] = true;
+      });
+      props().setPreviousRequests(newPreviousIds);
     });
 
     on(["REQUESTS", `${"GET_KEYED"}__STORE_UPDATED`], async () => {
@@ -395,6 +410,15 @@ function Game(ref) {
     let card = game.card.get(cardOrId);
     await game.resetUi();
 
+    await game.updateDisplayData([], {
+      mode: "stealCollection",
+      actionCardId: card.id,
+    });
+
+    await game.selection.cards.reset();
+    await game.selection.cards.setEnabled(true);
+    await game.selection.cards.setType("add");
+
     let selectableCollectionIds = [];
     game.player.opponents.getAllIds().forEach((personId) => {
       let collectionIds = game.player.collections.getAllIds(personId);
@@ -410,10 +434,7 @@ function Game(ref) {
     await game.selection.collections.selectable.set(selectableCollectionIds);
     await game.selection.collections.selectable.setLimit(1);
 
-    await game.updateDisplayData([], {
-      mode: "stealCollection",
-      actionCardId: card.id,
-    });
+    console.log("actionCardId", game.getDisplayData(["actionCardId"], 0));
 
     return true;
   }
@@ -1029,10 +1050,11 @@ function Game(ref) {
   }
 
   async function updateDisplayData(path, value) {
+    console.log("updateDisplayData", { path, value });
     await props().updateDisplayData({ path, value });
   }
   async function resetDisplayData() {
-    await props().resetDisplayData();
+    await props().updateDisplayData([], {});
   }
 
   async function resetUi() {
@@ -1694,7 +1716,7 @@ function Game(ref) {
     return props().requests;
   }
   function getAllPreviousRequestsData() {
-    return props().previousRequests;
+    return props().getPreviousRequests();
   }
 
   //respondToPropertyTransfer
@@ -1876,7 +1898,7 @@ function Game(ref) {
       existedPreviously: (requestOrId) => {
         let request = getRequest(requestOrId);
         let requestId = request.id;
-        return isDefNested(props(), ["previousRequests", requestId], false);
+        return isDefNested(props().getPreviousRequests, requestId, false);
       },
       transfer: {
         fromAuthor: {
