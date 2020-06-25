@@ -44,7 +44,7 @@ function attachCookieToResponse(req, res) {
     token = cookieTokenManager.generateToken();
 
     res.cookie("token", token, {
-      expires: new Date(Date.now() + 900000),
+      expires: new Date(Date.now() + 88888888), // just over 24 hours
       httpOnly: true,
     });
 

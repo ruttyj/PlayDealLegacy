@@ -8,14 +8,12 @@ import {
 } from "../../utils/";
 import gameBuffer from "../buffers/gameBuffer";
 
-let storeName = "game";
-
 const makeGetters = (state) => {
   const cachedState = state;
   const storeState = gameBuffer.getState();
 
-  //publicScope
-  const pi = {
+  const publicScope = {};
+  Object.assign(publicScope, {
     getCustomUi(path = [], fallback = null) {
       return getNestedValue(storeState.uiCustomize, path, fallback);
     },
@@ -43,18 +41,18 @@ const makeGetters = (state) => {
       );
       let result = { ...collection };
       let collectionCardIds = getNestedValue(result, "cardIds", []);
-      result.cards = pi._mapCardIdsToCardObject(collectionCardIds);
+      result.cards = publicScope._mapCardIdsToCardObject(collectionCardIds);
       return result;
     },
 
     getIsCollectionFull(collectionId) {
-      let collection = pi.getCollection(collectionId);
+      let collection = publicScope.getCollection(collectionId);
       return getNestedValue(collection, "isFullSet", false);
     },
     getCollections(myCollectionIds) {
       let result = [];
       myCollectionIds.forEach((collectionId) => {
-        let collection = pi.getCollection(collectionId);
+        let collection = publicScope.getCollection(collectionId);
         if (isDef(collection)) result.push(collection);
       });
       return result;
@@ -62,9 +60,9 @@ const makeGetters = (state) => {
 
     getCollectionIdsMatchingSets(playerId, propertySetKeys) {
       let result = [];
-      let myCollectionIds = pi.getCollectionIdsForPlayer(playerId);
+      let myCollectionIds = publicScope.getCollectionIdsForPlayer(playerId);
       myCollectionIds.forEach((collectionId) => {
-        let collection = pi.getCollection(collectionId);
+        let collection = publicScope.getCollection(collectionId);
         if (propertySetKeys.includes(collection.propertySetKey)) {
           result.push(collectionId);
         }
@@ -73,7 +71,7 @@ const makeGetters = (state) => {
     },
 
     getIncompleteCollectionMatchingSet(playerId, propertySetKey) {
-      let myCollectionIds = pi.getCollectionIdsForPlayer(playerId);
+      let myCollectionIds = publicScope.getCollectionIdsForPlayer(playerId);
 
       for (
         let collectionIndex = 0;
@@ -81,7 +79,7 @@ const makeGetters = (state) => {
         ++collectionIndex
       ) {
         let collectionId = myCollectionIds[collectionIndex];
-        let collection = pi.getCollection(collectionId);
+        let collection = publicScope.getCollection(collectionId);
         if (
           !collection.isFullSet &&
           collection.propertySetKey === propertySetKey
@@ -93,7 +91,7 @@ const makeGetters = (state) => {
     },
 
     getCollectionMatchingSet(playerId, propertySetKey) {
-      let myCollectionIds = pi.getCollectionIdsForPlayer(playerId);
+      let myCollectionIds = publicScope.getCollectionIdsForPlayer(playerId);
 
       for (
         let collectionIndex = 0;
@@ -102,7 +100,7 @@ const makeGetters = (state) => {
       ) {
         let collectionId = myCollectionIds[collectionIndex];
 
-        let collectionCards = pi.getCollectionCards(collectionId);
+        let collectionCards = publicScope.getCollectionCards(collectionId);
         for (
           let cardIndex = 0;
           cardIndex < collectionCards.length;
@@ -124,7 +122,7 @@ const makeGetters = (state) => {
         ["collections", "items", collectionId, "cardIds"],
         []
       );
-      return pi._mapCardIdsToCardList(collectionCardIds);
+      return publicScope._mapCardIdsToCardList(collectionCardIds);
     },
 
     getCollectionCardIds(collectionId) {
@@ -152,13 +150,13 @@ const makeGetters = (state) => {
     },
 
     isHost(personId = null) {
-      if (!isDef(personId)) personId = pi.getMyId();
-      let hostId = pi.getHostId();
+      if (!isDef(personId)) personId = publicScope.getMyId();
+      let hostId = publicScope.getHostId();
       return isDef(hostId) && String(hostId) === String(personId);
     },
 
     amIHost() {
-      return pi.isMyId(pi.getHostId());
+      return publicScope.isMyId(publicScope.getHostId());
     },
 
     getMyId() {
@@ -166,7 +164,7 @@ const makeGetters = (state) => {
     },
 
     isMyId(personId = null) {
-      let myId = pi.getMyId();
+      let myId = publicScope.getMyId();
       if (!isDef(personId)) return false;
       return isDef(myId) && String(myId) === String(personId);
     },
@@ -178,16 +176,16 @@ const makeGetters = (state) => {
     },
 
     getPersonStatus(personId = null) {
-      if (!isDef(personId)) personId = pi.getMyId();
+      if (!isDef(personId)) personId = publicScope.getMyId();
 
-      let person = pi.getPerson(personId);
+      let person = publicScope.getPerson(personId);
       if (isDef(person)) return person.status;
       return null;
     },
 
     isPersonReady(personId = null) {
-      if (!isDef(personId)) personId = pi.getMyId();
-      let status = pi.getPersonStatus(personId);
+      if (!isDef(personId)) personId = publicScope.getMyId();
+      let status = publicScope.getPersonStatus(personId);
       return status === "ready";
     },
 
@@ -195,7 +193,7 @@ const makeGetters = (state) => {
       let readyCount = 0;
       let personCount = cachedState.people.order.length;
       cachedState.people.order.forEach((personId) => {
-        let person = pi.getPerson(personId);
+        let person = publicScope.getPerson(personId);
         if (person.status === "ready") {
           ++readyCount;
         }
@@ -218,13 +216,15 @@ const makeGetters = (state) => {
 
     // People in game
     getAllPlayers() {
-      let playerOrder = pi.getAllPlayerIds();
-      return playerOrder.map((...props) => pi.getPerson(...props));
+      let playerOrder = publicScope.getAllPlayerIds();
+      return playerOrder.map((...props) => publicScope.getPerson(...props));
     },
 
     getAllOpponentIds() {
-      let myId = pi.getMyId();
-      return pi.getAllPlayerIds().filter((id) => String(id) !== String(myId));
+      let myId = publicScope.getMyId();
+      return publicScope
+        .getAllPlayerIds()
+        .filter((id) => String(id) !== String(myId));
     },
 
     // PLAYER HAND
@@ -234,28 +234,28 @@ const makeGetters = (state) => {
     },
     getMyHandCardIds() {
       return gameBuffer.get(
-        ["playerHands", "items", pi.getMyId(), "cardIds"],
+        ["playerHands", "items", publicScope.getMyId(), "cardIds"],
         []
       );
     },
     getPlayerHand(playerId) {
       let playerHand = gameBuffer.get(["playerHands", "items", playerId], {});
-      return pi._mergeCardDataIntoObject(playerHand);
+      return publicScope._mergeCardDataIntoObject(playerHand);
     },
     getMyHand() {
-      return pi.getPlayerHand(pi.getMyId());
+      return publicScope.getPlayerHand(publicScope.getMyId());
     },
 
     //gameConstants
     getMyCardIdsWithTags(mxd) {
       let tags = isArr(mxd) ? mxd : [mxd];
-      let myHand = pi.getMyHand();
+      let myHand = publicScope.getMyHand();
       let result = [];
       let cardIds = myHand.cardIds;
       if (isArr(cardIds)) {
         cardIds.forEach((cardId) => {
           for (let i = 0; i < tags.length; ++i) {
-            if (pi.doesCardHaveTag(cardId, tags[i])) {
+            if (publicScope.doesCardHaveTag(cardId, tags[i])) {
               result.push(cardId);
               break;
             }
@@ -266,12 +266,12 @@ const makeGetters = (state) => {
     },
 
     getMyCardIdsWithTag(tag) {
-      let myHand = pi.getMyHand();
+      let myHand = publicScope.getMyHand();
       let result = [];
       let cardIds = myHand.cardIds;
       if (isArr(cardIds)) {
         cardIds.forEach((cardId) => {
-          if (pi.doesCardHaveTag(cardId, tag)) {
+          if (publicScope.doesCardHaveTag(cardId, tag)) {
             result.push(cardId);
           }
         });
@@ -284,23 +284,31 @@ const makeGetters = (state) => {
     playerBanks: storeState.playerBanks,
     getMyBankCardIds() {
       return getNestedValue(
-        pi.playerBanks,
-        ["items", pi.getMyId(), "cardIds"],
+        publicScope.playerBanks,
+        ["items", publicScope.getMyId(), "cardIds"],
         []
       );
     },
     getPlayerBankCardIds(playerId) {
-      return getNestedValue(pi.playerBanks, ["items", playerId, "cardIds"], []);
+      return getNestedValue(
+        publicScope.playerBanks,
+        ["items", playerId, "cardIds"],
+        []
+      );
     },
     getPlayerBankCards(playerId) {
-      return pi._mapCardIdsToCardList(
-        getNestedValue(pi.playerBanks, ["items", playerId, "cardIds"], [])
+      return publicScope._mapCardIdsToCardList(
+        getNestedValue(
+          publicScope.playerBanks,
+          ["items", playerId, "cardIds"],
+          []
+        )
       );
     },
 
     getPlayerBankTotal(playerId) {
       return getNestedValue(
-        pi.playerBanks,
+        publicScope.playerBanks,
         ["items", playerId, "totalValue"],
         []
       );
@@ -309,34 +317,35 @@ const makeGetters = (state) => {
     // CARDS
     cards: storeState.cards,
 
-    _mapCardIdsToCardList: function (cardIds) {
-      if (isArr(cardIds)) return cardIds.map((cardId) => pi.getCard(cardId));
+    _mapCardIdsToCardList: function(cardIds) {
+      if (isArr(cardIds))
+        return cardIds.map((cardId) => publicScope.getCard(cardId));
       return [];
     },
-    _mapCardIdsToCardObject: function (cardIds) {
+    _mapCardIdsToCardObject: function(cardIds) {
       if (isArr(cardIds))
         return cardIds.reduce((result, cardId) => {
-          result[cardId] = pi.getCard(cardId);
+          result[cardId] = publicScope.getCard(cardId);
           return result;
         }, {});
       return {};
     },
-    _mergeCardDataIntoObject: function (original) {
+    _mergeCardDataIntoObject: function(original) {
       if (isObj(original)) {
         let result = { ...original };
-        result.cards = pi._mapCardIdsToCardList(
+        result.cards = publicScope._mapCardIdsToCardList(
           getNestedValue(result, "cardIds", [])
         );
         return result;
       }
       return original;
     },
-    getPropertySetKeysForCard: function (cardOrId) {
-      let card = pi.getCard(cardOrId);
+    getPropertySetKeysForCard: function(cardOrId) {
+      let card = publicScope.getCard(cardOrId);
       return getNestedValue(card, "sets", []);
     },
     doesCardHaveTag(cardOrId, tag) {
-      let card = pi.getCard(cardOrId);
+      let card = publicScope.getCard(cardOrId);
       return isArr(card.tags) ? card.tags.includes(tag) : false;
     },
 
@@ -350,18 +359,18 @@ const makeGetters = (state) => {
 
     isCardSetAugment(cardOrId) {
       let cardId = getKeyFromProp(cardOrId, "id");
-      let card = pi.getCard(cardId);
+      let card = publicScope.getCard(cardId);
       return card.type === "action" && card.class === "setAugment";
     },
 
     isCardProperty(cardOrId) {
       let cardId = getKeyFromProp(cardOrId, "id");
-      let card = pi.getCard(cardId);
+      let card = publicScope.getCard(cardId);
       return card.type === "property";
     },
 
     canAddCardToBank(cardOrId) {
-      let card = pi.getCard(cardOrId);
+      let card = publicScope.getCard(cardOrId);
       return card.type === "cash" || card.type === "action";
     },
 
@@ -371,7 +380,7 @@ const makeGetters = (state) => {
       return gameBuffer.get(["playerTurn", "playerKey"], 0);
     },
     isMyTurn() {
-      return pi.getCurrentTurnPersonId() === pi.getMyId();
+      return publicScope.getCurrentTurnPersonId() === publicScope.getMyId();
     },
     getCurrentTurnActionCount() {
       return gameBuffer.get(["playerTurn", "actionCount"], 0);
@@ -380,7 +389,10 @@ const makeGetters = (state) => {
       return gameBuffer.get(["playerTurn", "actionLimit"], 0);
     },
     getCurrentTurnActionsRemaining() {
-      return pi.getCurrentTurnActionLimit() - pi.getCurrentTurnActionCount();
+      return (
+        publicScope.getCurrentTurnActionLimit() -
+        publicScope.getCurrentTurnActionCount()
+      );
     },
     getCurrentTurnPhase() {
       return gameBuffer.get(["playerTurn", "phase"], null);
@@ -423,10 +435,10 @@ const makeGetters = (state) => {
         totalValue: 0,
         cardIds: [],
       });
-      return pi._mergeCardDataIntoObject(activePile);
+      return publicScope._mergeCardDataIntoObject(activePile);
     },
     getTopCardOnActionPile() {
-      let activePile = pi.getActivePile();
+      let activePile = publicScope.getActivePile();
       if (isDef(activePile)) {
         let numCards = activePile.cards.length;
         if (numCards > 0) {
@@ -452,14 +464,14 @@ const makeGetters = (state) => {
         totalValue: 0,
         cardIds: [],
       });
-      return pi._mergeCardDataIntoObject(discardPile);
+      return publicScope._mergeCardDataIntoObject(discardPile);
     },
     getDiscardPileCount() {
       return gameBuffer.get(["discardPile", "count"], 0);
     },
 
     getTopCardOnDiscardPile() {
-      let discardPile = pi.getDiscardPile();
+      let discardPile = publicScope.getDiscardPile();
       if (isDef(discardPile) && discardPile.count > 0)
         return discardPile.cards[discardPile.count - 1];
       return null;
@@ -521,17 +533,19 @@ const makeGetters = (state) => {
       return gameBuffer.get(["cardSelect", "selectable"], []);
     },
     cardSelection_hasSelectableValue(value) {
-      return pi.cardSelection_getSelectable().includes(value);
+      return publicScope.cardSelection_getSelectable().includes(value);
     },
     cardSelection_getSelected() {
       return gameBuffer.get(["cardSelect", "selected"], []);
     },
     cardSelection_hasSelectedValue(value) {
-      return pi.cardSelection_getSelected().includes(value);
+      return publicScope.cardSelection_getSelected().includes(value);
     },
     cardSelection_canSelectMoreValues() {
       return (
-        pi.cardSelection_getLimit() - pi.cardSelection_getSelected().length > 0
+        publicScope.cardSelection_getLimit() -
+          publicScope.cardSelection_getSelected().length >
+        0
       );
     },
 
@@ -551,13 +565,13 @@ const makeGetters = (state) => {
       return gameBuffer.get(["collectionSelect", "selectable"], []);
     },
     collectionSelection_hasSelectableValue(value) {
-      return pi.collectionSelection_getSelectable().includes(value);
+      return publicScope.collectionSelection_getSelectable().includes(value);
     },
     collectionSelection_getSelected() {
       return gameBuffer.get(["collectionSelect", "selected"], []);
     },
     collectionSelection_hasSelectedValue(value) {
-      return pi.collectionSelection_getSelected().includes(value);
+      return publicScope.collectionSelection_getSelected().includes(value);
     },
 
     personSelection_getAll() {
@@ -576,24 +590,24 @@ const makeGetters = (state) => {
       return gameBuffer.get(["personSelect", "selectable"], []);
     },
     personSelection_hasSelectableValue(value) {
-      return pi.personSelection_getSelectable().includes(value);
+      return publicScope.personSelection_getSelectable().includes(value);
     },
     personSelection_getSelected() {
       return gameBuffer.get(["personSelect", "selected"], []);
     },
     personSelection_hasSelectedValue(value) {
-      return pi.personSelection_getSelected().includes(value);
+      return publicScope.personSelection_getSelected().includes(value);
     },
     personSelection_canSelectMoreValues() {
       return (
-        pi.personSelection_getLimit() -
-          pi.personSelection_getSelected().length >
+        publicScope.personSelection_getLimit() -
+          publicScope.personSelection_getSelected().length >
         0
       );
     },
-  };
+  });
 
-  return pi;
+  return publicScope;
 };
 
 export default makeGetters;

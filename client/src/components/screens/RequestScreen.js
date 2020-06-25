@@ -1042,7 +1042,7 @@ const RequestScreen = (props) => {
                 onClickCollect({ requestId, iCanCollect });
               }}
             >
-              {iCanAcknowledgeNothing ? "Acknowledge" : "Collect"}
+              {iCanAcknowledgeNothing ? "Acknowledge" : "Manually-Collect"}
             </MyFullButton>
           );
 
@@ -1061,7 +1061,7 @@ const RequestScreen = (props) => {
                   });
                 }}
               >
-                {"Auto-Collect"}
+                {"Collect"}
               </MyFullButton>
             );
           }

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { withResizeDetector } from "react-resize-detector";
 import { withRouter } from "react-router";
 import pluralize from "pluralize";
+import StateBuffer from "../../utils/StateBuffer";
+import "./Room.scss";
 import {
   els,
   isDef,
@@ -54,6 +57,8 @@ import {
   FlexColumnCenter,
   FlexCenter,
   FullFlexColumnCenter,
+  FlexRow,
+  FlexRowCenter,
   FullFlexRow,
 } from "../../components/Flex";
 import ShakeAnimationWrapper from "../../components/effects/Shake";
@@ -123,6 +128,37 @@ import RoomManager from "../../utils/roomManager";
 
 import PersonListItem from "../../components/game/PersonListItem/";
 import { isArray } from "lodash";
+
+const GameBoard = withResizeDetector(function(props) {
+  const { previousSize, onChangeSize } = props;
+  let { width, height } = props;
+  let prevWidth = getNestedValue(previousSize, "width", 0);
+  let prevHeight = getNestedValue(previousSize, "height", 0);
+  if (height !== prevHeight || width !== prevWidth) {
+    onChangeSize({ width, height });
+  }
+
+  let { gameboard, turnNotice, myArea, uiConfig } = props;
+  return (
+    <SplitterLayout
+      customClassName="game_area"
+      vertical
+      secondaryInitialSize={uiConfig.myArea.initialSize}
+    >
+      {/* Players collections */}
+      <RelLayer>
+        {gameboard}
+        <HSplitterDragIndicator />
+        {turnNotice}
+      </RelLayer>
+
+      {/* My Area */}
+      <RelLayer>
+        <AbsLayer>{myArea}</AbsLayer>
+      </RelLayer>
+    </SplitterLayout>
+  );
+});
 
 const uiConfig = {
   hand: {
@@ -244,6 +280,10 @@ class GameUI extends React.Component {
       "renderListOfUsers",
     ];
     this.state = initialState;
+    this.setState = this.setState.bind(this);
+
+    this.stateBuffer = StateBuffer(this.state);
+    this.stateBuffer.setSetter(this.setState);
     bindFuncs.forEach((funcName) => {
       this[funcName] = this[funcName].bind(this);
     });
@@ -374,7 +414,7 @@ class GameUI extends React.Component {
     }
   }
 
-  handleOnCardDrop({ dragProps, dropProps }) {
+  async handleOnCardDrop({ dragProps, dropProps }) {
     let dropZone = dropProps;
     let item = dragProps;
     let roomCode = room.getCode();
@@ -384,6 +424,8 @@ class GameUI extends React.Component {
     let cardId = item.cardId;
     let card = game.card.get(cardId);
     let myId = game.myId();
+
+    let requestResult = null;
 
     if (personId !== 0 && personId !== myId) {
       if (dropProps.is === "collection") {
@@ -402,13 +444,15 @@ class GameUI extends React.Component {
           if (dropZone.isEmptySet) {
             if (item.from === "hand") {
               sounds.playcard.play();
-              game.addPropertyToNewCollectionFromHand(cardId);
+              requestResult = await game.addPropertyToNewCollectionFromHand(
+                cardId
+              );
             } else if (item.from === "collection") {
               let fromCollectionId = item.collectionId;
               if (isDef(fromCollectionId)) {
                 if (card.type === "property") {
                   sounds.playcard.play();
-                  game.transferPropertyToNewCollection(
+                  requestResult = await game.transferPropertyToNewCollection(
                     cardId,
                     fromCollectionId
                   );
@@ -417,7 +461,7 @@ class GameUI extends React.Component {
                   card.class === "setAugment"
                 ) {
                   sounds.build.play();
-                  game.transferSetAugmentToNewCollection(
+                  requestResult = await game.transferSetAugmentToNewCollection(
                     cardId,
                     fromCollectionId
                   );
@@ -436,13 +480,13 @@ class GameUI extends React.Component {
             if (item.from === "hand") {
               if (game.card.isPropertyCard(card)) {
                 sounds.playcard.play();
-                game.addPropertyToExistingCollectionFromHand(
+                requestResult = await game.addPropertyToExistingCollectionFromHand(
                   cardId,
                   toCollectionId
                 );
               } else if (game.card.isSetAugmentCard(card)) {
                 sounds.build.play();
-                game.addAugmentToExistingCollectionFromHand(
+                requestResult = await game.addAugmentToExistingCollectionFromHand(
                   cardId,
                   toCollectionId
                 );
@@ -450,7 +494,10 @@ class GameUI extends React.Component {
                 card.type === "action" &&
                 game.card.hasTag(card, "rent")
               ) {
-                game.initAskForRent(cardId, toCollectionId);
+                requestResult = await game.initAskForRent(
+                  cardId,
+                  toCollectionId
+                );
               } else {
                 console.error("Card is not a property or set augment");
               }
@@ -460,7 +507,7 @@ class GameUI extends React.Component {
                 // Transfer property to existing collection
                 if (card.type === "property") {
                   sounds.playcard.play();
-                  game.transferPropertyToExistingCollection(
+                  requestResult = await game.transferPropertyToExistingCollection(
                     cardId,
                     fromCollectionId,
                     toCollectionId
@@ -472,7 +519,7 @@ class GameUI extends React.Component {
                   card.class === "setAugment"
                 ) {
                   sounds.build.play();
-                  game.transferSetAugmentToExistingCollection(
+                  requestResult = await game.transferSetAugmentToExistingCollection(
                     cardId,
                     fromCollectionId,
                     toCollectionId
@@ -490,6 +537,7 @@ class GameUI extends React.Component {
         }
       }
     }
+    console.log("requestResult = ", requestResult);
   }
 
   handleOnCardDropOnPlayerPanel({ dragProps, dropProps }) {
@@ -593,7 +641,7 @@ class GameUI extends React.Component {
 
   async handleStealCollectionClick() {
     let ids = game.selection.collections.selected.get();
-    await this.stealCollection(game.getActionCardId(), ids[0]);
+    return await this.stealCollection(game.getActionCardId(), ids[0]);
   }
 
   async handleSwapPropertyClick() {
@@ -782,6 +830,9 @@ class GameUI extends React.Component {
   //########################################
   updateRender(customFn, mode) {
     const self = this;
+
+    // Action button defintions
+
     function setDrawInitialCardsButton() {
       game.updateRenderData(["actionButton", "disabled"], false);
       game.updateRenderData(["actionButton", "onClick"], async () => {
@@ -1672,29 +1723,38 @@ class GameUI extends React.Component {
             <PlayerPanelContent>
               {/* ----------- Name wrapper ------------*/}
               <PlayerPanelNameWrapper>
-                {isMe ? "" : <PlayerPanelName>{person.name}</PlayerPanelName>}
+                <PlayerPanelName>{isMe ? "Me" : person.name}</PlayerPanelName>
 
-                {/* ----------- Current turn details -------------*/}
-                {isThisPlayersTurn ? (
-                  <FlexColumn>
-                    {game.phase.get() === "action" ? (
-                      <>
-                        <PlayerPanelActionText>
-                          Actions Remaining
-                        </PlayerPanelActionText>
-                        <PlayerPanelActionNumber>
-                          {game.getActionCountRemaining()}
-                        </PlayerPanelActionNumber>
-                      </>
-                    ) : (
-                      <FlexCenter style={{ fontSize: "14px" }}>
-                        {String(game.phase.get()).toUpperCase()}
-                      </FlexCenter>
-                    )}
-                  </FlexColumn>
-                ) : (
-                  ""
-                )}
+                <FlexRow style={{ flexGrow: 1 }}>
+                  <FlexColumnCenter style={{ width: "70px" }}>
+                    <PlayerPanelActionText>Cards</PlayerPanelActionText>
+                    <PlayerPanelActionNumber>
+                      {game.player.hand.getCardCount(person.id)}
+                    </PlayerPanelActionNumber>
+                  </FlexColumnCenter>
+
+                  {/* ----------- Current turn details -------------*/}
+                  {isThisPlayersTurn ? (
+                    <FlexColumnCenter style={{ width: "70px" }}>
+                      {game.phase.get() === "action" ? (
+                        <>
+                          <PlayerPanelActionText>
+                            Actions Remaining
+                          </PlayerPanelActionText>
+                          <PlayerPanelActionNumber>
+                            {game.getActionCountRemaining()}
+                          </PlayerPanelActionNumber>
+                        </>
+                      ) : (
+                        <FlexCenter style={{ fontSize: "14px" }}>
+                          {String(game.phase.get()).toUpperCase()}
+                        </FlexCenter>
+                      )}
+                    </FlexColumnCenter>
+                  ) : (
+                    ""
+                  )}
+                </FlexRow>
 
                 {playerSelection}
               </PlayerPanelNameWrapper>
@@ -1763,6 +1823,21 @@ class GameUI extends React.Component {
                             isSelected={collectionSelection.isSelected}
                             onSelected={this.handleCollectionSelect}
                             isFull={collectionSelection.isFull}
+                            appendOverlay={
+                              collectionSelection.isSelectable ? (
+                                <>
+                                  <div className="quote-rent-amount">
+                                    <CurrencyText>
+                                      {game.collection.getRentValue(
+                                        collectionId
+                                      )}
+                                    </CurrencyText>
+                                  </div>
+                                </>
+                              ) : (
+                                <></>
+                              )
+                            }
                             cards={collectionCards.map((card) => {
                               return (
                                 <ShakeAnimationWrapper
@@ -1918,6 +1993,120 @@ class GameUI extends React.Component {
 
     let handStyle = isPlayableCardInHand ? {} : { opacity: 0.5 };
 
+    let gameboardWidth = this.stateBuffer.get(
+      ["gameWindow", "size", "width"],
+      1000
+    );
+    let smallGameBoard = gameboardWidth < 1000;
+
+    // Only render the piles if there is enought space
+    let pileContents = "";
+    if (!smallGameBoard) {
+      pileContents = (
+        <>
+          <FlexColumnCenter>
+            <div style={{ textAlign: "center" }}>Deck</div>
+            <div onClick={game.getRenderData(["deck", "onClick"])}>
+              <Deck3D
+                thickness={game.drawPile.getThickness()}
+                rotateX={40}
+                percent={45}
+              >
+                <CheckLayer
+                  disabled={true}
+                  notApplicable={false}
+                  value={false}
+                  success={true}
+                  onClick={() => {
+                    console.log("clicked");
+                    //handleChange("value", !state.value);
+                  }}
+                >
+                  <DragItem item={{ type: "DECK_CARD" }}>
+                    <RelLayer>
+                      <BaseDealCard />
+                      <AbsLayer>
+                        <PileCount>{game.drawPile.getCount()} </PileCount>
+                      </AbsLayer>
+                    </RelLayer>
+                  </DragItem>
+                </CheckLayer>
+              </Deck3D>
+            </div>
+          </FlexColumnCenter>
+          <FlexColumnCenter>
+            <div style={{ textAlign: "center" }}>Active</div>
+            <Deck3D
+              thickness={game.activePile.getThickness()}
+              rotateX={40}
+              percent={45}
+            >
+              <CheckLayer
+                disabled={true}
+                notApplicable={false}
+                value={false}
+                success={true}
+                onClick={() => {
+                  console.log("clicked");
+                  //handleChange("value", !state.value);
+                }}
+              >
+                <DragItem item={{ type: "ACTIVE_CARD" }}>
+                  <RelLayer>
+                    {game.activePile.hasTopCard() ? (
+                      <RenderCard
+                        card={game.activePile.getTopCard()}
+                        propertySetMap={propertySetsKeyed}
+                      />
+                    ) : (
+                      <BaseDealCard />
+                    )}
+                  </RelLayer>
+                </DragItem>
+              </CheckLayer>
+            </Deck3D>
+          </FlexColumnCenter>
+          <FlexColumnCenter>
+            <div style={{ textAlign: "center" }}>Discard</div>
+            <Deck3D
+              thickness={game.discardPile.getThickness()}
+              rotateX={40}
+              percent={45}
+            >
+              <CheckLayer
+                disabled={true}
+                notApplicable={false}
+                value={false}
+                success={true}
+                onClick={() => {
+                  console.log("clicked");
+                  //handleChange("value", !state.value);
+                }}
+              >
+                <DragItem item={{ type: "DISCARD_CARD" }}>
+                  <RelLayer>
+                    <RelLayer>
+                      {game.discardPile.hasTopCard() ? (
+                        <RenderCard
+                          card={game.discardPile.getTopCard()}
+                          propertySetMap={propertySetsKeyed}
+                        />
+                      ) : (
+                        <BaseDealCard />
+                      )}
+                    </RelLayer>
+                    <AbsLayer>
+                      <PileCount>{game.discardPile.getCount()}</PileCount>
+                    </AbsLayer>
+                  </RelLayer>
+                </DragItem>
+              </CheckLayer>
+            </Deck3D>
+          </FlexColumnCenter>
+        </>
+      );
+    }
+
     let mySection = (
       <RelLayer>
         {/* background for my section*/}
@@ -1941,105 +2130,7 @@ class GameUI extends React.Component {
               height: "calc(100% - 20px)",
             }}
           >
-            <FlexColumnCenter>
-              <div style={{ textAlign: "center" }}>Deck</div>
-              <div onClick={game.getRenderData(["deck", "onClick"])}>
-                <Deck3D
-                  thickness={game.drawPile.getThickness()}
-                  rotateX={40}
-                  percent={45}
-                >
-                  <CheckLayer
-                    disabled={true}
-                    notApplicable={false}
-                    value={false}
-                    success={true}
-                    onClick={() => {
-                      console.log("clicked");
-                      //handleChange("value", !state.value);
-                    }}
-                  >
-                    <DragItem item={{ type: "DECK_CARD" }}>
-                      <RelLayer>
-                        <BaseDealCard />
-                        <AbsLayer>
-                          <PileCount>{game.drawPile.getCount()} </PileCount>
-                        </AbsLayer>
-                      </RelLayer>
-                    </DragItem>
-                  </CheckLayer>
-                </Deck3D>
-              </div>
-            </FlexColumnCenter>
-            <FlexColumnCenter>
-              <div style={{ textAlign: "center" }}>Active</div>
-              <Deck3D
-                thickness={game.activePile.getThickness()}
-                rotateX={40}
-                percent={45}
-              >
-                <CheckLayer
-                  disabled={true}
-                  notApplicable={false}
-                  value={false}
-                  success={true}
-                  onClick={() => {
-                    console.log("clicked");
-                    //handleChange("value", !state.value);
-                  }}
-                >
-                  <DragItem item={{ type: "ACTIVE_CARD" }}>
-                    <RelLayer>
-                      {game.activePile.hasTopCard() ? (
-                        <RenderCard
-                          card={game.activePile.getTopCard()}
-                          propertySetMap={propertySetsKeyed}
-                        />
-                      ) : (
-                        <BaseDealCard />
-                      )}
-                    </RelLayer>
-                  </DragItem>
-                </CheckLayer>
-              </Deck3D>
-            </FlexColumnCenter>
-            <FlexColumnCenter>
-              <div style={{ textAlign: "center" }}>Discard</div>
-              <Deck3D
-                thickness={game.discardPile.getThickness()}
-                rotateX={40}
-                percent={45}
-              >
-                <CheckLayer
-                  disabled={true}
-                  notApplicable={false}
-                  value={false}
-                  success={true}
-                  onClick={() => {
-                    console.log("clicked");
-                    //handleChange("value", !state.value);
-                  }}
-                >
-                  <DragItem item={{ type: "DISCARD_CARD" }}>
-                    <RelLayer>
-                      <RelLayer>
-                        {game.discardPile.hasTopCard() ? (
-                          <RenderCard
-                            card={game.discardPile.getTopCard()}
-                            propertySetMap={propertySetsKeyed}
-                          />
-                        ) : (
-                          <BaseDealCard />
-                        )}
-                      </RelLayer>
-                      <AbsLayer>
-                        <PileCount>{game.discardPile.getCount()}</PileCount>
-                      </AbsLayer>
-                    </RelLayer>
-                  </DragItem>
-                </CheckLayer>
-              </Deck3D>
-            </FlexColumnCenter>
+            {pileContents}
             <MyHandContainer
               hasTooManyCards={game.cards.myHand.hasTooMany()}
               style={handStyle}
@@ -2272,6 +2363,7 @@ class GameUI extends React.Component {
                       secondaryMinSize={0}
                     >
                       {this.renderDebugData()}
+
                       {/*################################################*/}
                       {/*                   GAME BOARD                   */}
                       {/*################################################*/}
@@ -2282,24 +2374,28 @@ class GameUI extends React.Component {
                         {/*----------------------------------------------*/}
                         <AbsLayer style={{ color: "white" }}>
                           <RelLayer>
-                            <SplitterLayout
-                              customClassName="game_area"
-                              vertical
-                              secondaryInitialSize={uiConfig.myArea.initialSize}
-                            >
-                              {/* Players collections */}
-                              <RelLayer>
-                                {game.getRenderData("gameboard")}
-                                <HSplitterDragIndicator />
-                                {game.getRenderData("turnNotice")}
-                              </RelLayer>
-
-                              {/* My Area */}
-                              <RelLayer>
-                                <AbsLayer>{this.renderMyArea()}</AbsLayer>
-                              </RelLayer>
-                            </SplitterLayout>
+                            <GameBoard
+                              previousSize={this.stateBuffer.get(
+                                ["gameWindow", "size"],
+                                {}
+                              )}
+                              onChangeSize={(size) =>
+                                this.stateBuffer.set(
+                                  ["gameWindow", "size"],
+                                  size
+                                )
+                              }
+                              uiConfig={uiConfig}
+                              gameboard={game.getRenderData("gameboard")}
+                              turnNotice={game.getRenderData("turnNotice")}
+                              myArea={this.renderMyArea()}
+                            />
                           </RelLayer>
+                          {JSON.stringify(
+                            this.stateBuffer.get(["gameWindow", "size"], {}),
+                            null,
+                            2
+                          )}
                         </AbsLayer>
                       </RelLayer>
                       {/* End Game board ________________________________*/}

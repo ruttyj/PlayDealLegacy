@@ -777,7 +777,7 @@ function Game(ref) {
   }
 
   async function addPropertyToNewCollectionFromHand(cardId) {
-    await props().addCardEmptySetFromHand(
+    return await props().addCardEmptySetFromHand(
       connection(),
       props().getRoomCode(),
       cardId
@@ -785,7 +785,7 @@ function Game(ref) {
   }
 
   async function transferPropertyToNewCollection(cardId, fromCollectionId) {
-    await props().transferPropertyToNewCollection(
+    return await props().transferPropertyToNewCollection(
       connection(),
       props().getRoomCode(),
       cardId,
@@ -797,7 +797,7 @@ function Game(ref) {
     cardId,
     toCollectionId
   ) {
-    await props().addPropertyToExistingCollectionFromHand(
+    return await props().addPropertyToExistingCollectionFromHand(
       connection(),
       props().getRoomCode(),
       cardId,
@@ -806,7 +806,7 @@ function Game(ref) {
   }
 
   async function transferSetAugmentToNewCollection(cardId, fromCollectionId) {
-    await props().transferSetAugmentToNewCollection(
+    return await props().transferSetAugmentToNewCollection(
       connection(),
       props().getRoomCode(),
       cardId,
@@ -818,7 +818,7 @@ function Game(ref) {
     cardId,
     toCollectionId
   ) {
-    await props().addAugmentToExistingCollectionFromHand(
+    return await props().addAugmentToExistingCollectionFromHand(
       connection(),
       props().getRoomCode(),
       cardId,
@@ -887,12 +887,6 @@ function Game(ref) {
   function canChargeRent() {
     let actionCardId = getActionCardId();
     if (isDef(actionCardId)) {
-      console.log({
-        isRequiredCollectionsSelected: isRequiredCollectionsSelected(),
-        isRequiredPeopleSelected: isRequiredPeopleSelected(),
-        collectionSelection_getSelected: props().collectionSelection_getSelected()
-          .length,
-      });
       return (
         isRequiredCollectionsSelected() &&
         isRequiredPeopleSelected() &&
@@ -1475,6 +1469,61 @@ function Game(ref) {
     return props().getCollection(id);
   }
 
+  function getCollectionRentValue(id) {
+    let baseValue = 0;
+    let incrementAmount = 0;
+    let multiplyAmount = 1;
+
+    const game = getPublic();
+    const collection = game.collection.get(id);
+    let isComplete = false;
+    if (isDef(collection)) {
+      isComplete = collection.isFullSet;
+      let propertyCount = collection.propertyCount;
+      let propertySetKey = collection.propertySetKey;
+      let propertySet = game.property.get(propertySetKey);
+      if (isDefNested(propertySet, ["rent", propertyCount])) {
+        baseValue = propertySet.rent[propertyCount];
+      }
+
+      // Process set augment cards
+      let collectionCards = collection.cardIds;
+      if (collectionCards.length > 0) {
+        collectionCards.forEach((cardId) => {
+          if (game.card.isSetAugmentCard(cardId)) {
+            let effect = getNestedValue(cardId, ["setAugment", "affect"]);
+            if (isDef(effect.inc)) {
+              incrementAmount += effect.inc;
+            }
+            if (isDef(effect.multiply)) {
+              multiplyAmount *= effect.multiply;
+            }
+          }
+        });
+      }
+    }
+
+    // process rent augment cards
+    let selectedCards = game.selection.cards.selected.get();
+    if (selectedCards.length > 0) {
+      selectedCards.forEach((cardId) => {
+        if (game.card.hasTag(cardId, "rentAugment")) {
+          let card = game.card.get(cardId);
+          let effect = getNestedValue(card, ["actionAugment", "affects"], {});
+          if (isDef(effect.inc)) {
+            incrementAmount += effect.inc;
+          }
+          if (isDef(effect.multiply)) {
+            multiplyAmount *= effect.multiply;
+          }
+        }
+      });
+    }
+
+    let finalValue = (baseValue + incrementAmount) * multiplyAmount;
+    return finalValue;
+  }
+
   function getCards(cardIds) {
     let result = [];
     cardIds.forEach((id) => {
@@ -1566,7 +1615,7 @@ function Game(ref) {
     fromCollectionId,
     toCollectionId
   ) {
-    await props().transferPropertyToExistingCollection(
+    return await props().transferPropertyToExistingCollection(
       connection(),
       props().getRoomCode(),
       cardId,
@@ -1580,7 +1629,7 @@ function Game(ref) {
     fromCollectionId,
     toCollectionId
   ) {
-    await props().transferSetAugmentToExistingCollection(
+    return await props().transferSetAugmentToExistingCollection(
       connection(),
       props().getRoomCode(),
       cardId,
@@ -1743,6 +1792,11 @@ function Game(ref) {
     getIncompleteCollectionMatchingSet: getIncompleteCollectionMatchingSet,
 
     player: {
+      hand: {
+        getCardCount(id) {
+          return getNestedValue(props().playerHands, ["items", id, "count"], 0);
+        },
+      },
       bank: {
         getCards: getPlayerBankCards,
         getTotal: getPlayerBankTotal,
@@ -1801,6 +1855,7 @@ function Game(ref) {
       getCards: getCollectionCards,
       getCardIds: getCollectionCardIds,
       get: getCollection,
+      getRentValue: getCollectionRentValue,
       isComplete: isCollectionComplete,
     },
     collections: {

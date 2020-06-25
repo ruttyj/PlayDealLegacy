@@ -181,7 +181,7 @@ const PayRequestScreen = ({
                           marginBottom: "20px",
                         }}
                       >
-                        <div style={{ fontSize: "15px" }}>Amount Remaining</div>
+                        <div style={{ fontSize: "15px" }}>Amount</div>
                         <div>
                           <CurrencyText fontSizeEm={1}>
                             {amountRemaining}

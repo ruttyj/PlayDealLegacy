@@ -4,7 +4,11 @@ export default ({ children }) => {
   return (
     <div
       style={{
-        textAlign: "center"
+        textAlign: "center",
+        height: "30px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
       {children}

@@ -12,7 +12,7 @@ const SetCardWrapper = ({ children, top = 0, right = 0, rotation = 0 }) => {
   let style = {
     position: "absolute",
     display: "flex",
-    transition: "all 150ms linear"
+    transition: "all 150ms linear",
   };
 
   if (isHovering) {
@@ -20,13 +20,13 @@ const SetCardWrapper = ({ children, top = 0, right = 0, rotation = 0 }) => {
       top: `${top}px`,
       right: `${right}px`,
       transform: "scale(2)",
-      zIndex: 2
+      zIndex: 2,
     });
   } else {
     Object.assign(style, {
       top: `${top}px`,
       right: `${right}px`,
-      transform: `rotate(${rotation}deg)`
+      transform: `rotate(${rotation}deg)`,
     });
   }
 
@@ -35,7 +35,7 @@ const SetCardWrapper = ({ children, top = 0, right = 0, rotation = 0 }) => {
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
       style={{
-        ...style
+        ...style,
       }}
     >
       {children}
@@ -57,7 +57,8 @@ export default ({
   isSelected = false,
   clickProps = {},
   maxOffset = 60,
-  onSelected = () => {}
+  appendOverlay,
+  onSelected = () => {},
 }) => {
   let numCards = cards.length;
   let offset = maxOffset / numCards;
@@ -76,7 +77,12 @@ export default ({
 
   let wrappedCards = cards.map((card, i) => {
     return (
-      <SetCardWrapper key={i} rotation={rotation} top={offset * i} right={offset * i + nudge}>
+      <SetCardWrapper
+        key={i}
+        rotation={rotation}
+        top={offset * i}
+        right={offset * i + nudge}
+      >
         {card}
       </SetCardWrapper>
     );
@@ -92,7 +98,7 @@ export default ({
           border: "5px solid white",
           borderStyle: "solid",
           borderRadius: "10px",
-          mixBlendMode: "overlay"
+          mixBlendMode: "overlay",
         }}
       >
         <legend
@@ -102,7 +108,7 @@ export default ({
             padding: "0px 5px",
             color: "white",
             fontSize: "10px",
-            margin: "auto"
+            margin: "auto",
           }}
         >
           Full Set
@@ -116,7 +122,7 @@ export default ({
           border: "1px solid white",
           borderStyle: "solid",
           borderRadius: "10px",
-          opacity: 0.1
+          opacity: 0.1,
         }}
       >
         <legend
@@ -126,7 +132,7 @@ export default ({
             padding: "0px 5px",
             color: "white",
             fontSize: "10px",
-            margin: "auto"
+            margin: "auto",
           }}
         >
           Full Set
@@ -135,7 +141,9 @@ export default ({
     </>
   );
 
-  let backdropStyle = transparent ? {} : { backgroundColor: "#00000026", backdropFilter: "blur(15px)" };
+  let backdropStyle = transparent
+    ? {}
+    : { backgroundColor: "#00000026", backdropFilter: "blur(15px)" };
 
   return (
     <div
@@ -143,7 +151,7 @@ export default ({
         position: "relative",
         width: "fit-content",
         height: "fit-content",
-        ...backdropStyle
+        ...backdropStyle,
       }}
     >
       {isFull ? fullSetIndicator : ""}
@@ -153,9 +161,15 @@ export default ({
         notApplicable={selectionEnabled && !isSelectable}
         value={selectionEnabled && isSelected}
         success={selectType === "add"}
+        appendOverlay={appendOverlay}
         onClick={() => {
           if (selectionEnabled && isSelectable) {
-            onSelected({ ...clickProps, is: "collection", collectionId, isSelected });
+            onSelected({
+              ...clickProps,
+              is: "collection",
+              collectionId,
+              isSelected,
+            });
           }
         }}
       >
@@ -165,7 +179,7 @@ export default ({
             position: "relative",
             height: "120px",
             width: "90px",
-            display: "inline-flex"
+            display: "inline-flex",
           }}
         >
           <RelLayer>
@@ -177,7 +191,7 @@ export default ({
                 content: `${calcWidth}`,
                 width: `${calcWidth}px`,
                 height: `${calcHeight}px`,
-                transform: "translateX(-50%) translateY(-50%)"
+                transform: "translateX(-50%) translateY(-50%)",
               }}
             >
               <RelLayer>{wrappedCards}</RelLayer>
@@ -192,7 +206,7 @@ export default ({
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-evenly",
-                width: "100%"
+                width: "100%",
               }}
             >
               {hasHouse ? <HomeIcon style={{ color: "#00a700" }} /> : ""}

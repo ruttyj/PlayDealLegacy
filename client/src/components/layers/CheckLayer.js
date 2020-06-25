@@ -20,6 +20,7 @@ const CheckLayer = ({
   success = false,
   borderRadius = "10px",
   append = "",
+  appendOverlay = "",
   onClick = () => {},
 }) => {
   let [size, setSize] = useState(20);
@@ -190,6 +191,7 @@ const CheckLayer = ({
         </div>
       </AbsLayer>
       <AbsLayer style={{ pointerEvents: "none" }}>{appendContent}</AbsLayer>
+      {appendOverlay}
     </div>
   );
 };
