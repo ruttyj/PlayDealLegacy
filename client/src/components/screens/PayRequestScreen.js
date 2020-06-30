@@ -95,11 +95,13 @@ const PayRequestScreen = ({
 
   let sumSelected = getSelectedSum();
   let noMoreNeeded = checkIsMoreNeeded();
-  let isConfirmDisabled = !(
-    cardSelection.selected.isAllSelected() ||
-    noMoreNeeded ||
-    cardSelection.selectable.count() === 0
-  );
+  let isConfirmDisabled =
+    false &&
+    !(
+      cardSelection.selected.isAllSelected() ||
+      noMoreNeeded ||
+      cardSelection.selectable.count() === 0
+    );
 
   // cache the card data - sort by value
   let cardsKeyed = {};
