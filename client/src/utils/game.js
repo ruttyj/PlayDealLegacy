@@ -97,27 +97,29 @@ function Game(ref) {
         let existedPreviously = game.request.existedPreviously(requestId);
 
         if (!existedPreviously) {
+          playSound = sounds.newRequest;
+
           let amITarget = game.request.amITarget(requestId);
-          if (amITarget) {
-            //Oh damn shits going down
-            if (game.card.hasTag(actionCardId, "stealCollection")) {
-              playSound = sounds.evilLaugh;
-            } else if (game.request.transfer.fromAuthor.exists(requestId)) {
-              playSound = sounds.hmm;
-            } else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
-              playSound = sounds.birthday;
-            } else if (game.card.hasTag(actionCardId, "debtCollection")) {
-              playSound = sounds.debtCollectors;
-            } else {
-              playSound = sounds.newRequest;
-            }
-          } else if (game.card.hasTag(actionCardId, "stealCollection")) {
-            playSound = sounds.quietEvilLaugh;
-          } else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
-            playSound = sounds.birthday;
-          } else {
-            playSound = sounds.newRequest;
-          }
+          //if (amITarget) {
+          //  //Oh damn shits going down
+          //  if (game.card.hasTag(actionCardId, "stealCollection")) {
+          //    playSound = sounds.evilLaugh;
+          //  } else if (game.request.transfer.fromAuthor.exists(requestId)) {
+          //    playSound = sounds.hmm;
+          //  } else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
+          //    playSound = sounds.birthday;
+          //  } else if (game.card.hasTag(actionCardId, "debtCollection")) {
+          //    playSound = sounds.debtCollectors;
+          //  } else {
+          //    playSound = sounds.newRequest;
+          //  }
+          //} else if (game.card.hasTag(actionCardId, "stealCollection")) {
+          //  playSound = sounds.quietEvilLaugh;
+          //} else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
+          //  playSound = sounds.birthday;
+          //} else {
+          //  playSound = sounds.newRequest;
+          //}
         }
       });
       if (
