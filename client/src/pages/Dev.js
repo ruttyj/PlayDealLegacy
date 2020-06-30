@@ -129,6 +129,11 @@ export default () => {
         <button onClick={() => sounds.introMusic.stop()}>
           introMusic stop
         </button>
+        <button onClick={() => sounds.love_to.play(1)}>love_to</button>
+        <button onClick={() => sounds.oh_pretty_please.play(1)}>
+          oh_pretty_please
+        </button>
+        <button onClick={() => sounds.farting.play(1)}>farting</button>
         <button onClick={() => sounds.swipe.play(1)}>swipe</button>
         <button onClick={() => sounds.shuffle.play()}>shuffle</button>
         <button onClick={() => sounds.evilLaugh.play()}>evilLaugh</button>

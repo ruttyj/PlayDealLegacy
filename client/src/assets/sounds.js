@@ -312,6 +312,27 @@ let sounds = {
     overlap: 100,
     volume: 0.5,
   }),
+  farting: Sound({
+    src: "/audio/reactions/farting.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+  love_to: Sound({
+    src: "/audio/reactions/love_to.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+  oh_pretty_please: Sound({
+    src: "/audio/reactions/oh_pretty_please.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
 };
 
 export default sounds;

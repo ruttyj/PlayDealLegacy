@@ -121,7 +121,6 @@ function Game(ref) {
         }
       });
       if (
-        false &&
         isDef(playSound) &&
         isFunc(playSound.play) &&
         canTrigger.requestSound
