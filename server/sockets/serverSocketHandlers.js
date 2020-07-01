@@ -623,6 +623,13 @@ function attachSocketHandlers(thisClient) {
                 }
               }
 
+              socketResponses.addToBucket(
+                "default",
+                PUBLIC_SUBJECTS.PEOPLE.ME({
+                  roomCode,
+                })
+              );
+
               if (personManager.getConnectedPeopleCount() === 1) {
                 socketResponses.addToBucket(
                   "default",
@@ -659,13 +666,6 @@ function attachSocketHandlers(thisClient) {
               socketResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
-                  roomCode,
-                })
-              );
-
-              socketResponses.addToBucket(
-                "default",
-                PUBLIC_SUBJECTS.PEOPLE.ME({
                   roomCode,
                 })
               );
@@ -938,8 +938,8 @@ function attachSocketHandlers(thisClient) {
               me: thisPersonId,
             };
 
-            socketResponses.addToSpecific(
-              thisPerson.getClientId(),
+            socketResponses.addToBucket(
+              "default",
               makeResponse({ subject, action, status, payload })
             );
             return socketResponses;
@@ -7320,6 +7320,7 @@ function attachSocketHandlers(thisClient) {
         socketResponses.addToBucket(
           requestResponses.reduce(mStrThisClientId, clientIds)
         );
+        console.log(JSON.stringify(requestResponses.serialize(), null, 2));
       });
     }
 

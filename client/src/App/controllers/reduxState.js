@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import generalActions from "../../App/actions/generalActions";
 import generalGetters from "../../App/getters/generalGetters";
+import { peopleInitialState } from "../reducers/peopleReducers";
+import { gameInitialState } from "../../App/reducers/gameReducers";
+import { roomsInitialState } from "../../App/reducers/roomReducers";
+
 import { connect } from "react-redux";
 import utils from "../../utils/index";
 import StateBuffer from "../../utils/StateBuffer";
@@ -9,8 +13,8 @@ const reduxConnect = connect;
 
 const { isDef } = utils;
 
-const GeneralController = (_initialState = {}) => {
-  const stateBuffer = StateBuffer();
+const ReduxState = (_initialState = {}) => {
+  const stateBuffer = StateBuffer(_initialState);
 
   // Connect to redux
   function connect() {
@@ -23,10 +27,6 @@ const GeneralController = (_initialState = {}) => {
     const mapDispatchToProps = {
       ...generalActions,
     };
-
-    //const middleMan = (OriginalComp) => {
-    //    return <OriginalComp />
-    //}
 
     const connectedComp = reduxConnect(mapStateToProps, mapDispatchToProps);
     return connectedComp;
@@ -42,10 +42,27 @@ const GeneralController = (_initialState = {}) => {
     stateBuffer.set(storeName, updatedState);
   }
 
+  async function directDispatch(storeName, disp, reducers, action) {
+    let updatedState = stateBuffer.get(storeName, {});
+    updatedState = reducers(updatedState, action);
+    const setter = (path, value) => {
+      disp({
+        type: "SET",
+        action: {
+          path,
+          value,
+        },
+      });
+    };
+    stateBuffer.setSetter(setter);
+    await stateBuffer.set(storeName, updatedState);
+  }
+
   const publicScope = {
     connect,
     interceptProps,
     dispatch,
+    directDispatch,
     ...stateBuffer,
   };
 
@@ -55,11 +72,16 @@ const GeneralController = (_initialState = {}) => {
   return getPublic();
 };
 
-var GeneralControllerSingleton = (function() {
+// Have only 1 global instance
+var ReduxStateSingleton = (function() {
   let instance;
 
   function createInstance() {
-    const object = GeneralController();
+    const object = ReduxState({
+      game: gameInitialState,
+      people: peopleInitialState,
+      rooms: roomsInitialState,
+    });
     return object;
   }
 
@@ -73,4 +95,4 @@ var GeneralControllerSingleton = (function() {
   };
 })();
 
-export default GeneralControllerSingleton;
+export default ReduxStateSingleton;

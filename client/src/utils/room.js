@@ -23,7 +23,7 @@ function Room(ref) {
   }
 
   function getAllPeopleInRoom() {
-    return props().getAllPeople();
+    return props().getAllPeopleData();
   }
 
   async function resetState() {

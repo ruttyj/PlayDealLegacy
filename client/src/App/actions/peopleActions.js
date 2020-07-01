@@ -1,4 +1,4 @@
-import peopleBuffer from "../buffers/peopleBuffer";
+import peopleReducers from "../reducers/peopleReducers";
 import { isDef } from "../../utils/";
 import {
   GET_PEOPLE,
@@ -8,12 +8,8 @@ import {
   GET_MY_ID,
   UPDATE_MY_NAME,
 } from "./types";
-
-function findResponse(responses, subject, action) {
-  return responses.find(
-    (res) => res.subject === subject && res.action === action
-  );
-}
+import ReduxState from "../controllers/reduxState";
+const reduxState = ReduxState.getInstance();
 
 let mapEvents = {
   GET_PEOPLE: ["PEOPLE", "GET_KEYED"],
@@ -31,7 +27,7 @@ const attachPeopleListeners = (con) => (dispatch) => {
     listnerTree.on(eventBranch, (data) => {
       let { payload } = data;
       if (isDef(payload)) {
-        dispatch({
+        reduxState.directDispatch("people", dispatch, peopleReducers, {
           type: eventType,
           payload: payload,
         });
@@ -63,7 +59,7 @@ const updateMyName = (con, roomCode, username) => async (dispatch) => {
 };
 
 const resetPeopleData = (value) => (dispatch) => {
-  dispatch({
+  reduxState.directDispatch("people", dispatch, peopleReducers, {
     type: `RESET`,
     payload: value,
   });

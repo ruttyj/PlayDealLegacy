@@ -6,37 +6,44 @@ import {
   getNestedValue,
   getKeyFromProp,
 } from "../../utils/";
-import gameBuffer from "../buffers/gameBuffer";
+import ReduxState from "../controllers/reduxState";
+const reduxState = ReduxState.getInstance();
 
 const makeGetters = (state) => {
-  const cachedState = state;
-  const storeState = gameBuffer.getState();
-
   const publicScope = {};
   Object.assign(publicScope, {
     getCustomUi(path = [], fallback = null) {
-      return getNestedValue(storeState.uiCustomize, path, fallback);
+      const _path = isArr(path) ? path : [path];
+      return reduxState.get(["game", "uiCustomize", ..._path], fallback);
     },
-    displayMode: storeState.displayMode,
 
     // PROPERTY SETS
-    propertySets: storeState.propertySets,
+    getPropertySetsData() {
+      return reduxState.get(["game", "propertySets"], {});
+    },
     getPropertySetMap() {
-      return gameBuffer.get(["propertySets", "items"], {});
+      return reduxState.get(["game", "propertySets", "items"], {});
     },
 
     // COLLECTIONS
-    playerCollections: storeState.playerCollections,
+    getPlayerCollectionsData() {
+      return reduxState.get(["game", "playerCollections"], {});
+    },
 
-    collections: storeState.collections,
+    getCollectionData() {
+      return reduxState.get(["game", "collections"], {});
+    },
 
     getCollectionIdsForPlayer(playerId) {
-      return gameBuffer.get(["playerCollections", "items", playerId], []);
+      return reduxState.get(
+        ["game", "playerCollections", "items", playerId],
+        []
+      );
     },
 
     getCollection(collectionId) {
-      let collection = gameBuffer.get(
-        ["collections", "items", collectionId],
+      let collection = reduxState.get(
+        ["game", "collections", "items", collectionId],
         {}
       );
       let result = { ...collection };
@@ -118,35 +125,35 @@ const makeGetters = (state) => {
     },
 
     getCollectionCards(collectionId) {
-      let collectionCardIds = gameBuffer.get(
-        ["collections", "items", collectionId, "cardIds"],
+      let collectionCardIds = reduxState.get(
+        ["game", "collections", "items", collectionId, "cardIds"],
         []
       );
       return publicScope._mapCardIdsToCardList(collectionCardIds);
     },
 
     getCollectionCardIds(collectionId) {
-      return gameBuffer.get(
-        ["collections", "items", collectionId, "cardIds"],
+      return reduxState.get(
+        ["game", "collections", "items", collectionId, "cardIds"],
         []
       );
     },
 
     // ROOM
-    getRoomCode() {
-      return cachedState.rooms.currentRoom
-        ? cachedState.rooms.currentRoom.code
-        : null;
+    getRoomCode(fallback = null) {
+      return reduxState.get(["rooms", "currentRoom", "code"], fallback);
     },
     getCurrentRoom() {
-      return cachedState.rooms.currentRoom;
+      return reduxState.get(["rooms", "currentRoom"], null);
     },
 
     // PEOPLE
-    players: storeState.players,
+    getAllPlayersData() {
+      return reduxState.get(["game", "players"], {});
+    },
 
     getHostId() {
-      return cachedState.people.host;
+      return reduxState.get(["people", "host"], null);
     },
 
     isHost(personId = null) {
@@ -160,7 +167,7 @@ const makeGetters = (state) => {
     },
 
     getMyId() {
-      return cachedState.people.myId;
+      return reduxState.get(["people", "myId"], null);
     },
 
     isMyId(personId = null) {
@@ -170,9 +177,8 @@ const makeGetters = (state) => {
     },
 
     getPerson(personId) {
-      return isDef(cachedState.people.items[personId])
-        ? cachedState.people.items[personId]
-        : null;
+      let path = ["people", "items", personId];
+      return reduxState.get(path, null);
     },
 
     getPersonStatus(personId = null) {
@@ -191,8 +197,10 @@ const makeGetters = (state) => {
 
     isAllPlayersReady() {
       let readyCount = 0;
-      let personCount = cachedState.people.order.length;
-      cachedState.people.order.forEach((personId) => {
+      let path = ["people", "order"];
+      let personOrder = reduxState.get(path, []);
+      let personCount = personOrder.length;
+      personOrder.forEach((personId) => {
         let person = publicScope.getPerson(personId);
         if (person.status === "ready") {
           ++readyCount;
@@ -201,17 +209,26 @@ const makeGetters = (state) => {
       return readyCount === personCount;
     },
 
+    getAllPeopleData() {
+      return reduxState.get(["people"], {});
+    },
+    getPersonOrder() {
+      return reduxState.get(["people", "order"], []);
+    },
+
     getAllPeopleList() {
       let result = [];
-      cachedState.people.order.foreach((personId) => {
-        let person = cachedState.people.items[personId];
-        result.push(person);
+      let personOrder = reduxState.get(["people", "order"], []);
+
+      personOrder.foreach((personId) => {
+        let person = reduxState.get(["people", "items", personId], null);
+        if (isDef(person)) result.push(person);
       });
       return result;
     },
 
     getAllPlayerIds() {
-      return gameBuffer.get(["players", "order"], []);
+      return reduxState.get(["game", "players", "order"], []);
     },
 
     // People in game
@@ -228,18 +245,21 @@ const makeGetters = (state) => {
     },
 
     // PLAYER HAND
-    playerHands: storeState.playerHands,
-    getAllPlayerHands() {
-      return storeState.playerHands;
+    getAllPlayerHandsData() {
+      return reduxState.get(["game", "playerHands"], {});
     },
+
     getMyHandCardIds() {
-      return gameBuffer.get(
-        ["playerHands", "items", publicScope.getMyId(), "cardIds"],
+      return reduxState.get(
+        ["game", "playerHands", "items", publicScope.getMyId(), "cardIds"],
         []
       );
     },
     getPlayerHand(playerId) {
-      let playerHand = gameBuffer.get(["playerHands", "items", playerId], {});
+      let playerHand = reduxState.get(
+        ["game", "playerHands", "items", playerId],
+        {}
+      );
       return publicScope._mergeCardDataIntoObject(playerHand);
     },
     getMyHand() {
@@ -281,17 +301,19 @@ const makeGetters = (state) => {
     },
 
     // PLAYER BANK
-    playerBanks: storeState.playerBanks,
+    getAllPlayerBanksData() {
+      return reduxState.get(["game", "playerBanks"], {});
+    },
     getMyBankCardIds() {
       return getNestedValue(
-        publicScope.playerBanks,
+        publicScope.getAllPlayerBanksData(),
         ["items", publicScope.getMyId(), "cardIds"],
         []
       );
     },
     getPlayerBankCardIds(playerId) {
       return getNestedValue(
-        publicScope.playerBanks,
+        publicScope.getAllPlayerBanksData(),
         ["items", playerId, "cardIds"],
         []
       );
@@ -299,7 +321,7 @@ const makeGetters = (state) => {
     getPlayerBankCards(playerId) {
       return publicScope._mapCardIdsToCardList(
         getNestedValue(
-          publicScope.playerBanks,
+          publicScope.getAllPlayerBanksData(),
           ["items", playerId, "cardIds"],
           []
         )
@@ -308,14 +330,17 @@ const makeGetters = (state) => {
 
     getPlayerBankTotal(playerId) {
       return getNestedValue(
-        publicScope.playerBanks,
+        publicScope.getAllPlayerBanksData(),
         ["items", playerId, "totalValue"],
         []
       );
     },
 
     // CARDS
-    cards: storeState.cards,
+
+    getAllCardsData() {
+      return reduxState.get(["game", "cards"], {});
+    },
 
     _mapCardIdsToCardList: function(cardIds) {
       if (isArr(cardIds))
@@ -351,10 +376,10 @@ const makeGetters = (state) => {
 
     getCard(cardOrId) {
       let cardId = getKeyFromProp(cardOrId, "id");
-      return gameBuffer.get(["cards", "items", cardId], null);
+      return reduxState.get(["game", "cards", "items", cardId], null);
     },
     getTotalCardCount() {
-      return gameBuffer.get(["cards", "order"], []).length;
+      return reduxState.get(["game", "cards", "order"], []).length;
     },
 
     isCardSetAugment(cardOrId) {
@@ -375,18 +400,20 @@ const makeGetters = (state) => {
     },
 
     // CURRENT TURN
-    playerTurn: storeState.playerTurn,
+    getPlayerTurnData() {
+      return reduxState.get(["game", "playerTurn"], {});
+    },
     getCurrentTurnPersonId() {
-      return gameBuffer.get(["playerTurn", "playerKey"], 0);
+      return reduxState.get(["game", "playerTurn", "playerKey"], 0);
     },
     isMyTurn() {
       return publicScope.getCurrentTurnPersonId() === publicScope.getMyId();
     },
     getCurrentTurnActionCount() {
-      return gameBuffer.get(["playerTurn", "actionCount"], 0);
+      return reduxState.get(["game", "playerTurn", "actionCount"], 0);
     },
     getCurrentTurnActionLimit() {
-      return gameBuffer.get(["playerTurn", "actionLimit"], 0);
+      return reduxState.get(["game", "playerTurn", "actionLimit"], 0);
     },
     getCurrentTurnActionsRemaining() {
       return (
@@ -395,42 +422,49 @@ const makeGetters = (state) => {
       );
     },
     getCurrentTurnPhase() {
-      return gameBuffer.get(["playerTurn", "phase"], null);
+      return reduxState.get(["game", "playerTurn", "phase"], null);
     },
     getPeviousTurnPhase() {
-      return gameBuffer.get(["playerTurnPrevious", "phase"], null);
+      return reduxState.get(["game", "playerTurnPrevious", "phase"], null);
     },
     getPeviousTurnPersonId() {
-      return gameBuffer.get(["playerTurnPrevious", "playerKey"], null);
+      return reduxState.get(["game", "playerTurnPrevious", "playerKey"], null);
     },
     isDrawPhase() {
-      return gameBuffer.get(["playerTurn", "phase"], null) === "draw";
+      return reduxState.get(["game", "playerTurn", "phase"], null) === "draw";
     },
     isDiscardPhase() {
-      return gameBuffer.get(["playerTurn", "phase"], null) === "discard";
+      return (
+        reduxState.get(["game", "playerTurn", "phase"], null) === "discard"
+      );
     },
     isDonePhase() {
-      return gameBuffer.get(["playerTurn", "phase"], null) === "done";
+      return reduxState.get(["game", "playerTurn", "phase"], null) === "done";
     },
     isActionPhase() {
-      return gameBuffer.get(["playerTurn", "phase"], null) === "action";
+      return reduxState.get(["game", "playerTurn", "phase"], null) === "action";
     },
     getTotalCountToDiscard() {
-      return gameBuffer.get(
-        ["playerTurn", "phaseData", "remainingCountToDiscard"],
+      console.log(
+        "getTotalCountToDiscard",
+        reduxState.get(["game", "playerTurn", "phaseData"], null)
+      );
+      return reduxState.get(
+        ["game", "playerTurn", "phaseData", "remainingCountToDiscard"],
         0
       );
     },
 
     // GAME STATUS
-    gameStatus: storeState.gameStatus,
-    winningPlayerId: storeState.winningPlayerId,
-    drawPile: storeState.drawPile,
-    activePile: storeState.activePile,
-    discardPile: storeState.discardPile,
+    getGameStatusData() {
+      return reduxState.get(["game", "gameStatus"], {});
+    },
+    getWinningPlayerId() {
+      return reduxState.get(["game", "winningPlayerId"], null);
+    },
 
     getActivePile() {
-      let activePile = gameBuffer.get("activePile", {
+      let activePile = reduxState.get(["game", "activePile"], {
         count: 0,
         totalValue: 0,
         cardIds: [],
@@ -448,18 +482,18 @@ const makeGetters = (state) => {
       return null;
     },
     getActivePileCount() {
-      return gameBuffer.get(["activePile", "count"], 0);
+      return reduxState.get(["game", "activePile", "count"], 0);
     },
 
     getDrawPile() {
-      return gameBuffer.get("drawPile", { count: 0 });
+      return reduxState.get(["game", "drawPile"], { count: 0 });
     },
     getDrawPileCount() {
-      return gameBuffer.get(["drawPile", "count"], 0);
+      return reduxState.get(["game", "drawPile", "count"], 0);
     },
 
     getDiscardPile() {
-      let discardPile = gameBuffer.get("discardPile", {
+      let discardPile = reduxState.get(["game", "discardPile"], {
         count: 0,
         totalValue: 0,
         cardIds: [],
@@ -467,7 +501,7 @@ const makeGetters = (state) => {
       return publicScope._mergeCardDataIntoObject(discardPile);
     },
     getDiscardPileCount() {
-      return gameBuffer.get(["discardPile", "count"], 0);
+      return reduxState.get(["game", "discardPile", "count"], 0);
     },
 
     getTopCardOnDiscardPile() {
@@ -477,69 +511,71 @@ const makeGetters = (state) => {
       return null;
     },
     getPreviousRequests() {
-      return gameBuffer.get("previousRequests", {});
+      return reduxState.get(["game", "previousRequests"], {});
+    },
+    getAllRequestData() {
+      return reduxState.get(["game", "requests"], {});
+    },
+    getAllPlayerRequestsData() {
+      return reduxState.get(["game", "playerRequests"], {});
     },
 
-    previousRequests: storeState.previousRequests,
-    requests: storeState.requests,
-    playerRequests: storeState.playerRequests,
-
     getRequestIdsForPlayer(playerId) {
-      gameBuffer.get(["playerRequests", "items", playerId], []);
+      reduxState.get(["game", "playerRequests", "items", playerId], []);
     },
 
     getDisplayMode(fallback = null) {
-      return gameBuffer.get(["displayMode"], fallback);
+      return reduxState.get(["game", "displayMode"], fallback);
     },
 
     getActionData(path = [], fallback = null) {
       let _path = isArr(path) ? path : [path];
-      return gameBuffer.get(["actionData", ..._path], fallback);
+      return reduxState.get(["game", "actionData", ..._path], fallback);
     },
 
     getDisplayData(path = [], fallback = null) {
       let _path = isArr(path) ? path : [path];
-      return gameBuffer.get(["displayData", ..._path], fallback);
+      return reduxState.get(["game", "displayData", ..._path], fallback);
     },
 
     getRequest(requestId, fallback = null) {
-      return gameBuffer.get(["requests", "items", requestId], fallback);
+      return reduxState.get(["game", "requests", "items", requestId], fallback);
     },
 
     getRequestsKeyed() {
-      return gameBuffer.get(["requests", "items"], {});
+      return reduxState.get(["game", "requests", "items"], {});
     },
     getRequestNestedValue(requestId, path = [], fallback = null) {
-      return gameBuffer.get(
-        ["requests", "items", requestId, ...path],
+      return reduxState.get(
+        ["game", "requests", "items", requestId, ...path],
         fallback
       );
     },
 
     cardSelection_getMeta(path, fallback = null) {
       let _path = isArr(path) ? path : [path];
-      return gameBuffer.get(["cardSelect", ..._path], fallback);
+      return reduxState.get(["game", "cardSelect", ..._path], fallback);
     },
     cardSelection_getAll() {
-      return gameBuffer.get(["cardSelect"], null);
+      return reduxState.get(["game", "cardSelect"], null);
     },
     cardSelection_getEnable() {
-      return gameBuffer.get(["cardSelect", "enable"], false);
+      return reduxState.get(["game", "cardSelect", "enable"], false);
     },
     cardSelection_getType() {
-      return gameBuffer.get(["cardSelect", "type"], "add");
+      return reduxState.get(["game", "cardSelect", "type"], "add");
     },
     cardSelection_getLimit() {
-      return gameBuffer.get(["cardSelect", "limit"], 0);
+      return reduxState.get(["game", "cardSelect", "limit"], 0);
     },
     cardSelection_getSelectable() {
-      return gameBuffer.get(["cardSelect", "selectable"], []);
+      return reduxState.get(["game", "cardSelect", "selectable"], []);
     },
     cardSelection_hasSelectableValue(value) {
       return publicScope.cardSelection_getSelectable().includes(value);
     },
     cardSelection_getSelected() {
-      return gameBuffer.get(["cardSelect", "selected"], []);
+      return reduxState.get(["game", "cardSelect", "selected"], []);
     },
     cardSelection_hasSelectedValue(value) {
       return publicScope.cardSelection_getSelected().includes(value);
@@ -553,50 +589,50 @@ const makeGetters = (state) => {
     },
 
     collectionSelection_getAll() {
-      return gameBuffer.get(["collectionSelect"], null);
+      return reduxState.get(["game", "collectionSelect"], null);
     },
     collectionSelection_getEnable() {
-      return gameBuffer.get(["collectionSelect", "enable"], false);
+      return reduxState.get(["game", "collectionSelect", "enable"], false);
     },
     collectionSelection_getType() {
-      return gameBuffer.get(["collectionSelect", "type"], "add");
+      return reduxState.get(["game", "collectionSelect", "type"], "add");
     },
     collectionSelection_getLimit() {
-      return gameBuffer.get(["collectionSelect", "limit"], 0);
+      return reduxState.get(["game", "collectionSelect", "limit"], 0);
     },
     collectionSelection_getSelectable() {
-      return gameBuffer.get(["collectionSelect", "selectable"], []);
+      return reduxState.get(["game", "collectionSelect", "selectable"], []);
     },
     collectionSelection_hasSelectableValue(value) {
       return publicScope.collectionSelection_getSelectable().includes(value);
     },
     collectionSelection_getSelected() {
-      return gameBuffer.get(["collectionSelect", "selected"], []);
+      return reduxState.get(["game", "collectionSelect", "selected"], []);
     },
     collectionSelection_hasSelectedValue(value) {
       return publicScope.collectionSelection_getSelected().includes(value);
     },
 
     personSelection_getAll() {
-      return gameBuffer.get(["personSelect"], null);
+      return reduxState.get(["game", "personSelect"], null);
     },
     personSelection_getEnable() {
-      return gameBuffer.get(["personSelect", "enable"], false);
+      return reduxState.get(["game", "personSelect", "enable"], false);
     },
     personSelection_getType() {
-      return gameBuffer.get(["personSelect", "type"], "add");
+      return reduxState.get(["game", "personSelect", "type"], "add");
     },
     personSelection_getLimit() {
-      return gameBuffer.get(["personSelect", "limit"], 0);
+      return reduxState.get(["game", "personSelect", "limit"], 0);
     },
     personSelection_getSelectable() {
-      return gameBuffer.get(["personSelect", "selectable"], []);
+      return reduxState.get(["game", "personSelect", "selectable"], []);
     },
     personSelection_hasSelectableValue(value) {
       return publicScope.personSelection_getSelectable().includes(value);
     },
     personSelection_getSelected() {
-      return gameBuffer.get(["personSelect", "selected"], []);
+      return reduxState.get(["game", "personSelect", "selected"], []);
     },
     personSelection_hasSelectedValue(value) {
       return publicScope.personSelection_getSelected().includes(value);

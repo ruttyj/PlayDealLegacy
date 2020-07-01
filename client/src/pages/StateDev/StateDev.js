@@ -19,9 +19,9 @@ import gameActions from "../../App/actions/gameActions";
 import generalActions from "../../App/actions/generalActions";
 import gameGetters from "../../App/getters/gameGetters";
 import generalGetters from "../../App/getters/generalGetters";
-import GeneralController from "../../App/controllers/generalController";
+import ReduxState from "../../App/controllers/reduxState";
 
-const reduxState = GeneralController.getInstance();
+const reduxState = ReduxState.getInstance();
 const _InnerComp = (props) => {
   reduxState.interceptProps(props);
   return (

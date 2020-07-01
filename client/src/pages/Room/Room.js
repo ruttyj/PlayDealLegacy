@@ -129,6 +129,9 @@ import RoomManager from "../../utils/roomManager";
 import PersonListItem from "../../components/game/PersonListItem/";
 import { isArray } from "lodash";
 
+import ReduxState from "../../App/controllers/reduxState";
+const reduxState = ReduxState.getInstance();
+
 const GameBoard = withResizeDetector(function(props) {
   const { previousSize, onChangeSize } = props;
   let { width, height } = props;
@@ -339,9 +342,11 @@ class GameUI extends React.Component {
   async handleOnHandCardClick({ cardId, from }) {
     from = els(from, "hand");
     let card = game.card.get(cardId);
-    let actionCardId = game.getDisplayData("actionCardId", 0);
-    console.log("actionCardId", actionCardId, game.getDisplayData([], 0));
-    console.log(String(cardId) === String(actionCardId));
+
+    let actionCardId = reduxState.get(
+      ["game", "displayData", "actionCardId"],
+      0
+    );
     if (String(cardId) === String(actionCardId)) {
       await game.resetUi();
     } else {
@@ -778,18 +783,13 @@ class GameUI extends React.Component {
 
     function makeOnSelectCard(cardId) {
       return async () => {
-        console.log("makeOnSelectCard");
         let actionCardId = game.getDisplayData(["actionCardId"], 0);
-        console.log("actionCardId", actionCardId, cardId);
         if (actionCardId === cardId) {
-          console.log("action card clicked");
-          await game.resetUi();
         } else if (isCollection) {
           if (!isCollectionSelectable) {
             game.toggleCardSelected(cardId);
           }
         } else {
-          console.log("default action");
           game.toggleCardSelected(cardId);
         }
       };
@@ -2188,13 +2188,24 @@ class GameUI extends React.Component {
   renderDebugData() {
     let dumpData = {
       state: this.state,
-      //
+
+      reduxState: reduxState.get(),
+
+      reduxState_people: reduxState.get("people", "not defined"),
+      reduxState_rooms: reduxState.get("rooms", "not defined"),
+
+      reduxState_game_displayData: reduxState.get(
+        ["game", "displayData"],
+        null
+      ),
+
       personSelection: game.selection.people.getAll(),
       cardSelection: game.selection.cards.getAll(),
       collectionSelection: game.selection.collections.getAll(),
 
       cards: game.getAllCardData(),
       people: room.getAllPeopleInRoom(),
+      lobbyUsers: game.getLobbyUsers(),
       players: game.getAllPlayers(),
       gameStatus: game.getGameStatus(),
       currentRoom: room.get(),
@@ -2428,4 +2439,8 @@ const mapDispatchToProps = {
   ...peopleActions,
   ...gameActions,
 };
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(GameUI));
+
+let LinkedComp = reduxState.connect()(GameUI);
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(LinkedComp)
+);

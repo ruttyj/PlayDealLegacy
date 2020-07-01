@@ -189,6 +189,9 @@ export default function StateBuffer(_initialState = {}) {
   function flush() {
     if (isDef(mSetter)) {
       mSetter(mMutator(mCurrentState));
+      console.log("flush", "success");
+    } else {
+      console.log("flush", "failure");
     }
   }
 

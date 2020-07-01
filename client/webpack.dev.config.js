@@ -5,7 +5,6 @@ const { CONNECT } = require("./config");
 
 module.exports = (env) => {
   let tst = path.resolve(__dirname, "src/components/");
-  console.log("@@@@@@@@", CONNECT);
   return {
     mode: "development",
     entry: "./src/index.jsx",

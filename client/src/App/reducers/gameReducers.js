@@ -139,7 +139,7 @@ function updateStateData(basePath) {
   };
 }
 
-const initialState = {
+const gameInitialState = {
   uiCustomize: {
     autoPassTurn: true,
   },
@@ -182,9 +182,9 @@ const initialState = {
   displayMode: null,
   displayData: {},
 };
-addSelectionControlInitialState(initialState, "cardSelect");
-addSelectionControlInitialState(initialState, "collectionSelect");
-addSelectionControlInitialState(initialState, "personSelect");
+addSelectionControlInitialState(gameInitialState, "cardSelect");
+addSelectionControlInitialState(gameInitialState, "collectionSelect");
+addSelectionControlInitialState(gameInitialState, "personSelect");
 
 function resetSelectionControl(name) {
   return function(state, { payload }) {
@@ -235,12 +235,15 @@ requirements:
 
 */
 
-const reducer = function(state = initialState, action) {
+const reducer = function(state = gameInitialState, action) {
   let subjectName;
   let updatedState;
+  let _path;
+  let path;
+  let value;
   switch (action.type) {
     case "RESET":
-      return JSON.parse(JSON.stringify(initialState));
+      return JSON.parse(JSON.stringify(gameInitialState));
     case "SET_STATE":
       return action.payload;
     case GET_GAME_PROPERTY_SETS:
@@ -262,7 +265,6 @@ const reducer = function(state = initialState, action) {
     case GET_PLAYER_REQUESTS:
       return makeGetItemized("playerRequests")(state, action);
     case REMOVE_ALL_PLAYER_REQUESTS:
-      console.log("REMOVE_ALL_PLAYER_REQUESTS");
       return setImmutableValue(state, ["playerRequests"], {
         items: {},
       });
@@ -290,8 +292,6 @@ const reducer = function(state = initialState, action) {
       return updatedState;
       return;
     case REMOVE_ALL_REQUESTS:
-      console.log("REMOVE_ALL_REQUESTS");
-
       updatedState = setImmutableValue(state, ["requests"], {
         items: {},
       });
@@ -420,10 +420,18 @@ const reducer = function(state = initialState, action) {
     case PERSON_TOGGLE_SELECTED_VALUE:
       return toggleSelectionValue("personSelect", "selected")(state, action);
 
+    case "SET":
+      _path = getNestedValue(action, ["payload", "path"], []);
+      path = isArr(_path) ? _path : [_path];
+      value = getNestedValue(action, ["payload", "value"], {});
+
+      updatedState = state;
+      updatedState = setImmutableValue(updatedState, path, value);
+      return updatedState;
     default:
       return state;
   }
 };
 
 export default reducer;
-export { initialState };
+export { gameInitialState };

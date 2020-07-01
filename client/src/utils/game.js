@@ -11,15 +11,20 @@ import {
 } from "../utils/";
 import SCREENS from "../data/screens";
 import PropertySetContainer from "../components/panels/playerPanel/PropertySetContainer";
+import ReduxState from "../App/controllers/reduxState";
+const reduxState = ReduxState.getInstance();
+
 function Game(ref) {
   sounds.setVolume(0.5);
 
   let mIsInit = false;
 
   function getLobbyUsers() {
-    return props().personOrder.map((id) => {
-      return getPerson(id);
-    });
+    return props()
+      .getPersonOrder()
+      .map((id) => {
+        return getPerson(id);
+      });
   }
 
   const placeHolderFunc = () => console.log("not defined");
@@ -122,6 +127,7 @@ function Game(ref) {
           //}
         }
       });
+
       if (
         isDef(playSound) &&
         isFunc(playSound.play) &&
@@ -135,6 +141,7 @@ function Game(ref) {
 
       let previousTurnPersonId = props().getPeviousTurnPersonId();
       let currentTurnPersonId = props().getCurrentTurnPersonId();
+      console.log("0", game.isMyTurn());
 
       if (game.isMyTurn()) {
         // If is my turn now
@@ -144,6 +151,7 @@ function Game(ref) {
         ) {
           sounds.yourTurn.play();
         }
+
         if (props().isDiscardPhase()) {
           // Flag cards to discard
           let previousTurnPhase = props().getPeviousTurnPhase();
@@ -151,9 +159,12 @@ function Game(ref) {
             await props().cardSelection_reset();
             await props().cardSelection_setSelected([]);
           }
+
           await props().cardSelection_setSelectable(props().getMyHandCardIds());
           await props().cardSelection_setEnable(true);
+
           await props().cardSelection_setType("remove");
+
           await props().cardSelection_setLimit(
             props().getTotalCountToDiscard()
           );
@@ -173,6 +184,7 @@ function Game(ref) {
           await game.resetUi();
         }
       }
+      console.log("8");
 
       // update previous ids
       let newPreviousIds = {};
@@ -1408,7 +1420,7 @@ function Game(ref) {
 
   function getGameStatus(path = [], fallback = null) {
     let _path = isArr(path) ? path : [path];
-    return getNestedValue(props(), ["gameStatus", ..._path], fallback);
+    return getNestedValue(props().getGameStatusData(), _path, fallback);
   }
 
   function getCurrentActionCount() {
@@ -1483,8 +1495,8 @@ function Game(ref) {
 
   function getAllPlayerCollectionIds(playerId) {
     return getNestedValue(
-      props(),
-      ["playerCollections", "items", playerId],
+      props().getPlayerCollectionsData(),
+      ["items", playerId],
       []
     );
   }
@@ -1577,7 +1589,7 @@ function Game(ref) {
   }
 
   function getPropertySet(id) {
-    return getNestedValue(props(), ["propertySets", "items", id], null);
+    return getNestedValue(props().getPropertySetsData(), ["items", id], null);
   }
 
   function doesMyHandHaveTooManyCards() {
@@ -1585,25 +1597,29 @@ function Game(ref) {
   }
 
   function isGameStarted() {
-    return getNestedValue(props(), ["gameStatus", "isGameStarted"], false);
+    return getNestedValue(
+      props().getGameStatusData(),
+      ["isGameStarted"],
+      false
+    );
   }
 
   function isGameOver() {
-    return getNestedValue(props(), ["gameStatus", "isGameOver"], false);
+    return getNestedValue(props().getGameStatusData(), ["isGameOver"], false);
   }
 
   function getWinningCondition() {
     return getNestedValue(
-      props(),
-      ["gameStatus", "winningCondition", "payload", "condition"],
+      props().getGameStatusData(),
+      ["winningCondition", "payload", "condition"],
       "For some reason..."
     );
   }
 
   function getWinningPersonId() {
     return getNestedValue(
-      props(),
-      ["gameStatus", "winningCondition", "payload", "playerId"],
+      props().getGameStatusData(),
+      ["winningCondition", "payload", "playerId"],
       null
     );
   }
@@ -1679,43 +1695,43 @@ function Game(ref) {
   }
 
   function getAllCardData() {
-    return props().cards;
+    return props().getAllCardsData();
   }
 
   function getAllPlayers() {
-    return props().players;
+    return props().getAllPlayersData();
   }
 
   function getGameStatus() {
-    return props().gameStatus;
+    return props().getGameStatusData();
   }
 
   function getDrawPile() {
-    return props().drawPile;
+    return props().getDrawPile();
   }
 
   function getAllPropertySets() {
-    return props().propertySets;
+    return props().getPropertySetsData();
   }
 
   function getAllPlayerHandData() {
-    return props().playerHands;
+    return props().getAllPlayerHandsData();
   }
 
   function getAllPlayerBankData() {
-    return props().playerBanks;
+    return props().getAllPlayerBanksData();
   }
   function getAllCollectionAssociationData() {
-    return props().playerCollections;
+    return props().getPlayerCollectionsData();
   }
   function getAllCollectionData() {
-    return props().collections;
+    return props().getCollectionData();
   }
   function getAllPlayerRequestData() {
-    return props().playerRequests;
+    return props().getAllPlayerRequestsData();
   }
   function getAllRequestsData() {
-    return props().requests;
+    return props().getAllRequestData();
   }
   function getAllPreviousRequestsData() {
     return props().getPreviousRequests();
@@ -1774,7 +1790,7 @@ function Game(ref) {
     getMyHand,
 
     turn: {
-      get: () => props().playerTurn,
+      get: () => props().getPlayerTurnData(),
       getPhaseKey: getCurrentPhaseKey,
       getPersonId: () => props().getCurrentTurnPersonId(),
     },
@@ -1796,7 +1812,7 @@ function Game(ref) {
     },
 
     activePile: {
-      get: () => props().activePile,
+      get: () => props().getActivePile(),
       getTopCard: getTopCardOnActionPile,
       hasTopCard() {
         return isDef(getTopCardOnActionPile());
@@ -1805,7 +1821,7 @@ function Game(ref) {
     },
 
     discardPile: {
-      get: () => props().discardPile,
+      get: () => props().getDiscardPile(),
       getTopCard: getTopCardOnDiscardPile,
       hasTopCard() {
         return isDef(getTopCardOnDiscardPile());
@@ -1818,7 +1834,11 @@ function Game(ref) {
     player: {
       hand: {
         getCardCount(id) {
-          return getNestedValue(props().playerHands, ["items", id, "count"], 0);
+          return getNestedValue(
+            props().getAllPlayerHandsData(),
+            ["items", id, "count"],
+            0
+          );
         },
       },
       bank: {
@@ -1908,7 +1928,7 @@ function Game(ref) {
             let request = getRequest(requestId);
 
             return isDefNested(
-              props().requests,
+              props().getAllRequestData(),
               [
                 "items",
                 requestId,
@@ -1923,7 +1943,7 @@ function Game(ref) {
           bank: {
             getIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -1939,7 +1959,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -1957,7 +1977,7 @@ function Game(ref) {
           property: {
             getIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -1973,7 +1993,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -1991,7 +2011,7 @@ function Game(ref) {
           collection: {
             getIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2007,7 +2027,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2026,7 +2046,7 @@ function Game(ref) {
         toAuthor: {
           exists(requestId) {
             return isDefNested(
-              props().requests,
+              props().getAllRequestData(),
               [
                 "items",
                 requestId,
@@ -2046,7 +2066,7 @@ function Game(ref) {
           property: {
             getIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2062,7 +2082,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2080,7 +2100,7 @@ function Game(ref) {
           collection: {
             getIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2096,7 +2116,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2115,7 +2135,7 @@ function Game(ref) {
         toTarget: {
           exists(requestId) {
             return isDefNested(
-              props().requests,
+              props().getAllRequestData(),
               [
                 "items",
                 requestId,
@@ -2141,7 +2161,7 @@ function Game(ref) {
           collection: {
             getIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2157,7 +2177,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().requests,
+                props().getAllRequestData(),
                 [
                   "items",
                   requestId,

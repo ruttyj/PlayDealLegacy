@@ -14,7 +14,7 @@ const reducer = function(state = initialState, action) {
       path = isArr(_path) ? _path : [_path];
       value = getNestedValue(action, ["payload", "value"], {});
 
-      let updatedState = state;
+      updatedState = state;
       updatedState = setImmutableValue(updatedState, path, value);
       return updatedState;
     default:
