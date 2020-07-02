@@ -202,7 +202,7 @@ let GameManager = () => {
     playerHand = player.getHand();
 
     // @CHEAT
-    //*
+    /*
     giveCards = [
       "SUPER_RENT",
       "PROPERTY_TEAL_1",
@@ -244,7 +244,7 @@ let GameManager = () => {
     }
     /*/
 
-    /*
+    //*
     if (isDef(players)) {
       for (let i = 0; i < mInitialCardCount; ++i) {
         players.forEach((player) => playerDrawCard(player.getKey()));
