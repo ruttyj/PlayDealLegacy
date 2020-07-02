@@ -205,7 +205,7 @@ let GameManager = () => {
     /*
     giveCards = [
       "SUPER_RENT",
-      "PROPERTY_TEAL_1",
+      "DEBT_COLLECTOR",
       "DOUBLE_THE_RENT",
       "DOUBLE_THE_RENT",
       "SUPER_WILD_PROPERTY",
@@ -222,7 +222,7 @@ let GameManager = () => {
       "SUPER_RENT",
       "DEAL_BREAKER",
       "DOUBLE_THE_RENT",
-      "PROPERTY_RED_1",
+      "ITS_MY_BIRTHDAY",
       "PROPERTY_TEAL_2",
     ];
     giveCards.forEach((cardKey) => {

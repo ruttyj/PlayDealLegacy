@@ -83,31 +83,31 @@ function Game(ref) {
         let requestId = request.id;
         let actionCardId = game.request.getActionCardId(requestId);
         let existedPreviously = game.request.existedPreviously(requestId);
-
+        console.log("existedPreviously", existedPreviously);
         if (!existedPreviously) {
           playSound = sounds.newRequest;
 
           let amITarget = game.request.amITarget(requestId);
-          //if (amITarget) {
-          //  //Oh damn shits going down
-          //  if (game.card.hasTag(actionCardId, "stealCollection")) {
-          //    playSound = sounds.evilLaugh;
-          //  } else if (game.request.transfer.fromAuthor.exists(requestId)) {
-          //    playSound = sounds.hmm;
-          //  } else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
-          //    playSound = sounds.birthday;
-          //  } else if (game.card.hasTag(actionCardId, "debtCollection")) {
-          //    playSound = sounds.debtCollectors;
-          //  } else {
-          //    playSound = sounds.newRequest;
-          //  }
-          //} else if (game.card.hasTag(actionCardId, "stealCollection")) {
-          //  playSound = sounds.quietEvilLaugh;
-          //} else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
-          //  playSound = sounds.birthday;
-          //} else {
-          //  playSound = sounds.newRequest;
-          //}
+          if (amITarget) {
+            //Oh damn shits going down
+            if (game.card.hasTag(actionCardId, "stealCollection")) {
+              playSound = sounds.evilLaugh;
+            } else if (game.request.transfer.fromAuthor.exists(requestId)) {
+              playSound = sounds.hmm;
+            } else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
+              playSound = sounds.birthday;
+            } else if (game.card.hasTag(actionCardId, "debtCollection")) {
+              playSound = sounds.debtCollectors;
+            } else {
+              playSound = sounds.newRequest;
+            }
+          } else if (game.card.hasTag(actionCardId, "stealCollection")) {
+            playSound = sounds.quietEvilLaugh;
+          } else if (game.card.hasTag(actionCardId, "itsMyBirthday")) {
+            playSound = sounds.birthday;
+          } else {
+            playSound = sounds.newRequest;
+          }
         }
       });
 
@@ -2092,7 +2092,7 @@ function Game(ref) {
       existedPreviously: (requestOrId) => {
         let request = getRequest(requestOrId);
         let requestId = request.id;
-        return isDefNested(props().getPreviousRequests, requestId, false);
+        return isDefNested(props().getPreviousRequests(), requestId, false);
       },
       transfer: {
         fromAuthor: {
