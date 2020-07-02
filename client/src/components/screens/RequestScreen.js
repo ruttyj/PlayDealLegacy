@@ -50,10 +50,12 @@ import CollectionsBookmarkIcon from "@material-ui/icons/CollectionsBookmark";
 import CropPortraitIcon from "@material-ui/icons/CropPortrait";
 import FilterListIcon from "@material-ui/icons/FilterList";
 import PropertySetContainer from "../panels/playerPanel/PropertySetContainer";
+import Menu from "@material-ui/core/Menu";
 
 import ScreenWrapper from "./ScreenWrapper.js";
 import makeMockRequests from "./mock/requests";
 import AutoButton from "../buttons/AutoButton";
+import AutoMenuItem from "../buttons/AutoMenuItem";
 
 import sounds from "../../assets/sounds";
 import grey from "@material-ui/core/colors/grey";
@@ -161,6 +163,7 @@ const DisplayRequest = ({
           backgroundColor: "#00000026",
           padding: "20px",
           width: "100%",
+          overflow: "auto",
         }}
       >
         {children}
@@ -183,7 +186,6 @@ const AcceptOrDecline = ({
         flexGrow: 1,
         alignItems: "center",
         justifyContent: "flex-end",
-        minWidth: "250px",
       }}
     >
       <MyButton
@@ -195,20 +197,22 @@ const AcceptOrDecline = ({
       >
         Accept
       </MyButton>
-      <MyButton
-        disabled={!canDeclineRequest(requestId)}
-        onClick={() => {
-          if (isFunc(onDeclineRequest) && canDeclineRequest(requestId)) {
-            onDeclineRequest({
-              requestId,
-              cardId: declineCardId,
-              responseKey: "decline",
-            });
-          }
-        }}
-      >
-        Decline
-      </MyButton>
+      {canDeclineRequest(requestId) && (
+        <MyButton
+          disabled={!canDeclineRequest(requestId)}
+          onClick={() => {
+            if (isFunc(onDeclineRequest) && canDeclineRequest(requestId)) {
+              onDeclineRequest({
+                requestId,
+                cardId: declineCardId,
+                responseKey: "decline",
+              });
+            }
+          }}
+        >
+          Decline
+        </MyButton>
+      )}
     </Flex>
   );
 };
@@ -274,6 +278,18 @@ let TypeHeader = ({ children }) => {
 };
 
 const RequestScreen = (props) => {
+  // Filter menu related
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  //---------------------------------------------
+
   let mRenderData = {};
   let renderData = makeTree(mRenderData);
 
@@ -1364,25 +1380,6 @@ const RequestScreen = (props) => {
           Requests
         </Typography>
       }
-      buttons={
-        <>
-          <AutoButton
-            details={renderData.get(["buttons", "toggleIsFilteringMine"])}
-          />
-          <AutoButton
-            details={renderData.get(["buttons", "toggleIsFilteringMeTarget"])}
-          />
-          <AutoButton
-            details={renderData.get(["buttons", "toggleIsFilteringMeReceive"])}
-          />
-          <AutoButton
-            details={renderData.get(["buttons", "toggleIsFilteringMeGiven"])}
-          />
-          <AutoButton
-            details={renderData.get(["buttons", "toggleIsFilteringOpen"])}
-          />
-        </>
-      }
     >
       <FullFlexColumn style={{ flexGrow: 1 }}>{requestContent}</FullFlexColumn>
     </ScreenWrapper>
@@ -1390,8 +1387,3 @@ const RequestScreen = (props) => {
 };
 
 export default RequestScreen;
-/*
-<pre>
-          <xmp style={{ color: "white" }}>{JSON.stringify(requests, null, 2)}</xmp>
-        </pre>
-*/

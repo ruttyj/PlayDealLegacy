@@ -202,13 +202,13 @@ let GameManager = () => {
     playerHand = player.getHand();
 
     // @CHEAT
-    /*
+    //*
     giveCards = [
       "SUPER_RENT",
       "PROPERTY_TEAL_1",
       "DOUBLE_THE_RENT",
-      "SWAP_PROPERTY",
-      "STEAL_PROPERTY",
+      "DOUBLE_THE_RENT",
+      "SUPER_WILD_PROPERTY",
     ];
     giveCards.forEach((cardKey) => {
       playerHand.addCard(
@@ -244,7 +244,7 @@ let GameManager = () => {
     }
     /*/
 
-    //*
+    /*
     if (isDef(players)) {
       for (let i = 0; i < mInitialCardCount; ++i) {
         players.forEach((player) => playerDrawCard(player.getKey()));
@@ -944,17 +944,6 @@ let GameManager = () => {
     return status;
   }
 
-  function playCardAddToBank(playerKey, card) {
-    if (canPreformActionById(card)) {
-      let bank = getPlayerBank(playerKey);
-      let hand = getPlayerHand(playerKey);
-      if (isDef(bank) && isDef(hand)) {
-        bank.addCard(hand.giveCard(card));
-        getCurrentTurn().setActionPreformed("BANK", card);
-      }
-    }
-  }
-
   function playCardFromHandToNewCollection(playerKey, cardOrId) {
     if (canPreformActionById(cardOrId)) {
       let collection = getPlayerManager().createNewCollectionForPlayer(
@@ -1233,7 +1222,6 @@ let GameManager = () => {
     // Play
     canPreformActionById,
     playCardById,
-    playCardAddToBank,
     playCardFromHandToNewCollection,
     drawNCards,
 

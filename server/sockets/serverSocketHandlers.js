@@ -1421,7 +1421,11 @@ function attachSocketHandlers(thisClient) {
 
                     let isWildCard = game.doesCardHaveTag(card, "wild");
 
-                    game.playCardAddToBank(thisPersonId, card);
+                    let bank = game.getPlayerBank(thisPersonId);
+                    let hand = game.getPlayerHand(thisPersonId);
+                    bank.addCard(hand.giveCard(cardId));
+                    game.getCurrentTurn().setActionPreformed("BANK", card);
+
                     status = "success";
 
                     //PLAYER_HANDS
@@ -3691,12 +3695,36 @@ function attachSocketHandlers(thisClient) {
                             if (amountRemaining <= 0) {
                               status = "success";
                             } else {
-                              //player has nothing on the table
-                              let hasProperties =
-                                player.getAllCollectionIds().length > 0;
+                              // Player has nothing on the table of value
+                              let hasProperties;
+                              let collectionManager = game.getCollectionManager();
+                              let allMyCollectionIds = player.getAllCollectionIds();
+                              let hasPayableProperty = false;
+                              if (allMyCollectionIds.length > 0) {
+                                allMyCollectionIds.forEach((collectionId) => {
+                                  let collection = collectionManager.getCollection(
+                                    collectionId
+                                  );
+                                  let collectionCards = collection.getAllCards();
+                                  if (collectionCards.length > 0) {
+                                    for (
+                                      let i = 0;
+                                      i < collectionCards.length;
+                                      ++i
+                                    ) {
+                                      let card = collectionCards[i];
+                                      if (isDef(card.value) && card.value > 0) {
+                                        hasPayableProperty = true;
+                                        break;
+                                      }
+                                    }
+                                  }
+                                });
+                              }
+
                               let hasBank =
                                 player.getBank().getTotalValue() > 0;
-                              if (!hasProperties && !hasBank) {
+                              if (!hasPayableProperty && !hasBank) {
                                 status = "success";
                               }
                             }
@@ -4011,6 +4039,7 @@ function attachSocketHandlers(thisClient) {
           makeConsumerFallbackResponse({ subject, action, socketResponses })
         );
       },
+
       COLLECT_CARD_TO_BANK_AUTO: (props) => {
         let doTheThing = function (consumerData) {
           let {
@@ -4052,6 +4081,7 @@ function attachSocketHandlers(thisClient) {
           doTheThing
         );
       },
+
       ACKNOWLEDGE_COLLECT_NOTHING: (props) => {
         let doTheThing = function (consumerData) {
           let { affected, checkpoints } = consumerData;
@@ -4068,6 +4098,7 @@ function attachSocketHandlers(thisClient) {
           doTheThing
         );
       },
+
       COLLECT_CARD_TO_BANK: (props) => {
         let doTheThing = function (consumerData) {
           let { cardId } = consumerData;
@@ -4096,6 +4127,7 @@ function attachSocketHandlers(thisClient) {
           doTheThing
         );
       },
+
       COLLECT_CARD_TO_COLLECTION: (props) => {
         let doTheThing = function (consumerData) {
           let { cardId, requestId, collectionId } = consumerData;
@@ -5743,7 +5775,6 @@ function attachSocketHandlers(thisClient) {
             .getCurrentTurn()
             .getRequestManager()
             .getAllRequestIds();
-          console.log("makeGetAllKeysFn", result);
           return result;
         },
         makeGetAlMyKeysFn: (
@@ -7320,7 +7351,6 @@ function attachSocketHandlers(thisClient) {
         socketResponses.addToBucket(
           requestResponses.reduce(mStrThisClientId, clientIds)
         );
-        console.log(JSON.stringify(requestResponses.serialize(), null, 2));
       });
     }
 
@@ -7344,7 +7374,6 @@ function attachSocketHandlers(thisClient) {
   function handleClientDisconnect() {
     let clientId = thisClient.id;
     let rooms = roomManager.getRoomsForClientId(clientId);
-    console.log("handleClientDisconnect");
     cookieTokenManager.dissociateClient(clientId);
 
     if (isDef(rooms)) {

@@ -82,7 +82,10 @@ const ScreenWrapper = ({ title, children, buttons }) => {
                   </FlexRow>
                 </FillContent>
                 {isDef(buttons) ? (
-                  <FillFooter height={50} style={{ textAlign: "right" }}>
+                  <FillFooter
+                    height={50}
+                    style={{ textAlign: "right", display: "flex" }}
+                  >
                     {buttons}
                   </FillFooter>
                 ) : (

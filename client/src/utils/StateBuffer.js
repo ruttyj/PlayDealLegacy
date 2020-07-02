@@ -30,7 +30,7 @@ export default function StateBuffer(_initialState = {}) {
   const _flush = debounce(async function() {
     //console.log("flush");
     flush(mSetter);
-  }, 1);
+  }, 150);
 
   function setSetter(f) {
     mSetter = f;
@@ -189,10 +189,8 @@ export default function StateBuffer(_initialState = {}) {
   function flush() {
     if (isDef(mSetter)) {
       mSetter(mMutator(mCurrentState));
-      console.log("flush", "success");
-    } else {
-      console.log("flush", "failure");
     }
+    console.log("flush");
   }
 
   function getState() {

@@ -13,10 +13,10 @@ const {
   inRange,
   getNestedValue,
   setImmutableValue,
-  deleteImmutableValue
+  deleteImmutableValue,
 } = Utils;
 
-const identity = v => v;
+const identity = (v) => v;
 
 //#######################################################
 
@@ -28,7 +28,7 @@ export default function StateBuffer(_initialState = {}) {
   let mCurrentState = initialState;
 
   let mSetter = null;
-  let mMutator = v => v;
+  let mMutator = (v) => v;
   const _flush = debounce(async function() {
     //console.log("flush");
     flush(mSetter);
@@ -108,8 +108,6 @@ export default function StateBuffer(_initialState = {}) {
         mCurrentState = setImmutableValue(mCurrentState, path, newValue);
       }
     }
-
-    console.log("mCurrentState", mCurrentState);
   }
 
   function remove(path = []) {
@@ -131,7 +129,7 @@ export default function StateBuffer(_initialState = {}) {
       } else if (isObj(iterable)) {
         let keys = Object.keys(iterable);
         if (keys.length > 0) {
-          return keys.map(key => {
+          return keys.map((key) => {
             let value = iterable[key];
             fn(value, key, iterable);
           });
@@ -230,7 +228,7 @@ export default function StateBuffer(_initialState = {}) {
     flush,
     getState,
     setSetter,
-    setMutator
+    setMutator,
   };
 
   function getPublic() {
