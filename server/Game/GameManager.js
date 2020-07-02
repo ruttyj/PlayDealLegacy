@@ -204,11 +204,12 @@ let GameManager = () => {
     // @CHEAT
     /*
     giveCards = [
-      "SUPER_RENT",
-      "DEBT_COLLECTOR",
-      "DOUBLE_THE_RENT",
-      "DOUBLE_THE_RENT",
-      "SUPER_WILD_PROPERTY",
+      "PROPERTY_BROWN_1",
+      "PROPERTY_BROWN_2",
+      "PROPERTY_BLUE_1",
+      "PROPERTY_BLUE_2",
+      "PROPERTY_TEAL_1",
+      "PROPERTY_TEAL_2",
     ];
     giveCards.forEach((cardKey) => {
       playerHand.addCard(
@@ -219,11 +220,11 @@ let GameManager = () => {
     player = players[1];
     playerHand = player.getHand();
     giveCards = [
-      "SUPER_RENT",
+      "DEBT_COLLECTOR",
       "DEAL_BREAKER",
       "DOUBLE_THE_RENT",
+      "DOUBLE_THE_RENT",
       "ITS_MY_BIRTHDAY",
-      "PROPERTY_TEAL_2",
     ];
     giveCards.forEach((cardKey) => {
       playerHand.addCard(
@@ -242,7 +243,7 @@ let GameManager = () => {
         ++playerIndex;
       });
     }
-    /*/
+    //*/
 
     //*
     if (isDef(players)) {

@@ -565,7 +565,7 @@ function attachSocketHandlers(thisClient) {
             let hasReconnnected = false;
             let game = room.getGame();
             if (isDef(game)) {
-              if (game.isGameStarted() && !game.isGameOver()) {
+              if (game.isGameStarted()) {
                 if (isDef(token)) {
                   let tokenData = cookieTokenManager.get(token);
                   if (isDef(tokenData)) {
@@ -609,6 +609,8 @@ function attachSocketHandlers(thisClient) {
 
             let status = "";
             let payload = null;
+
+            console.log("isDef(game) person", isDef(game), person);
 
             if (isDef(person)) {
               let personId = person.getId();
