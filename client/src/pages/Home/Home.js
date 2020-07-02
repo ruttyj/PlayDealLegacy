@@ -18,6 +18,7 @@ import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 
+import { ArrowToolTip } from "../../packages/ReactWindows/Exports/Exports";
 import FancyButton from "../../components/buttons/FancyButton";
 import { motion } from "framer-motion";
 import RelLayer from "../../components/layers/RelLayer";
@@ -38,7 +39,7 @@ import {
 } from "../../components/Flex";
 
 import Header from "../../components/Header";
-import { els, isDef, getNestedValue } from "../../utils/";
+import { els, isDef, getNestedValue, classes } from "../../utils/";
 
 // Socket related
 import { connect } from "react-redux";
@@ -107,13 +108,6 @@ class Home extends BaseComponent {
       self.history.push(`/room/${roomCode}`);
     }
 
-    function handleCreateRoom() {
-      let roomCode = self.get(["customRoomCode", "value"], "");
-      if (isDef(roomCode) && roomCode.length > 1) {
-        goToRoom(roomCode);
-      }
-    }
-
     const validateRoomName = (event) => {
       let field = "customRoomCode";
       let value = String(event.target.value)
@@ -134,6 +128,13 @@ class Home extends BaseComponent {
         self.set([field, "errorMessage"], null);
       }
       self.set([field, "value"], value);
+    };
+
+    const handleCreateRoom = async () => {
+      let randomCode = await this.props.getRandomRoomCode(this.io);
+      if (isDef(randomCode)) {
+        goToRoom(randomCode);
+      }
     };
 
     let chooseOptionContent = "";
@@ -173,72 +174,29 @@ class Home extends BaseComponent {
           }
           actions={
             <div>
-              <FancyButton
-                variant="secondary"
-                onClick={() => self.set("mode", "create")}
+              <ArrowToolTip
+                title="Create a room with a random code."
+                placement="top"
               >
-                Create
-              </FancyButton>
+                <FancyButton variant="secondary" onClick={handleCreateRoom}>
+                  Create
+                </FancyButton>
+              </ArrowToolTip>
 
-              <FancyButton
-                onClick={() => {
-                  let roomCode = String(
-                    self.get(["customRoomCode", "value"], "")
-                  );
-                  if (roomCode.length > 0) {
-                    goToRoom(roomCode);
-                  }
-                }}
-              >
-                Join
-              </FancyButton>
-            </div>
-          }
-        />
-      );
-    }
-
-    // Create room
-    let createRoomContent = "";
-    if (self.is("mode", "create")) {
-      createRoomContent = (
-        <IntroContainer
-          content={
-            <>
-              <HeaderTitle>Create Room</HeaderTitle>
-
-              <FullFlexRowCenter>
-                <ThemeProvider theme={theme}>
-                  <TextField
-                    className="code-input"
-                    variant="filled"
-                    error={self.get(["customRoomCode", "hasError"], false)}
-                    helperText={self.get(
-                      ["customRoomCode", "errorMessage"],
-                      null
-                    )}
-                    placeholder="CODE"
-                    defaultValue={self.get(["customRoomCode", "value"])}
-                    onChange={validateRoomName}
-                    onKeyPress={(event) => {
-                      if (event.key === "Enter") {
-                        handleCreateRoom();
-                      }
-                    }}
-                  />
-                </ThemeProvider>
-              </FullFlexRowCenter>
-            </>
-          }
-          actions={
-            <div>
-              <FancyButton
-                variant="secondary"
-                onClick={() => self.set("mode", "choose")}
-              >
-                Back
-              </FancyButton>
-              <FancyButton onClick={handleCreateRoom}>Create</FancyButton>
+              <ArrowToolTip title="Join room with above code." placement="top">
+                <FancyButton
+                  onClick={() => {
+                    let roomCode = String(
+                      self.get(["customRoomCode", "value"], "")
+                    );
+                    if (roomCode.length > 0) {
+                      goToRoom(roomCode);
+                    }
+                  }}
+                >
+                  Join
+                </FancyButton>
+              </ArrowToolTip>
             </div>
           }
         />
@@ -313,7 +271,6 @@ class Home extends BaseComponent {
                               }}
                             >
                               {chooseOptionContent}
-                              {createRoomContent}
                             </FullFlexColumnCenter>
                           </motion.div>
                         </motion.div>

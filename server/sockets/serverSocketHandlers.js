@@ -441,6 +441,23 @@ function attachSocketHandlers(thisClient) {
 
         return socketResponses;
       },
+      // Get a random room code
+      GET_RANDOM_CODE: (props) => {
+        const socketResponses = SocketResponseBuckets();
+        const [subject, action] = ["ROOM", "GET_RANDOM_CODE"];
+
+        let status = "success";
+        let payload = {
+          code: roomManager.getRandomCode(),
+        };
+
+        socketResponses.addToBucket(
+          "default",
+          makeResponse({ subject, action, status, payload })
+        );
+
+        return socketResponses;
+      },
       GET_CURRENT: (props) => {
         const [subject, action] = ["ROOM", "GET_CURRENT"];
         const socketResponses = SocketResponseBuckets();

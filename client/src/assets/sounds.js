@@ -318,6 +318,11 @@ let sounds = {
     loop: false,
     overlap: 100,
     volume: 0.5,
+    sprite: {
+      v1: [0, 1000, false],
+      v2: [1500, 3500, false],
+      v3: [4000, 5000, false],
+    },
   }),
   love_to: Sound({
     src: "/audio/reactions/love_to.mp3",
@@ -328,6 +333,54 @@ let sounds = {
   }),
   oh_pretty_please: Sound({
     src: "/audio/reactions/oh_pretty_please.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+  na_na: Sound({
+    src: "/audio/reactions/na-na.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+    sprite: {
+      main: [0, 1750, false],
+    },
+  }),
+  super_genius: Sound({
+    src: "/audio/reactions/super-genius.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+
+  wise_guy_eh: Sound({
+    src: "/audio/reactions/wise-guy-eh.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+
+  shazaam: Sound({
+    src: "/audio/reactions/shazaam.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+
+  whats_the_big_idea: Sound({
+    src: "/audio/reactions/whats-the-big-idea.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+  annoying_excuse_me: Sound({
+    src: "/audio/reactions/annoying-excuse-me.mp3",
     rate: 1,
     loop: false,
     overlap: 100,

@@ -9,6 +9,17 @@ import {
   ArrowToolTip,
   wallpapers,
 } from "../Components/Imports/";
+
+export default {
+  WindowManager,
+  WindowContainer,
+  DragWindow,
+  DragListH,
+  BlurredWrapper,
+  AppSidebar,
+  ArrowToolTip,
+  wallpapers,
+};
 export {
   WindowManager,
   WindowContainer,

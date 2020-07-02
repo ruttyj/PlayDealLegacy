@@ -155,6 +155,10 @@ function RoomManager() {
     return null;
   }
 
+  function getRandomCode() {
+    return utils.makeUniqueCode(4, hasRoomCode);
+  }
+
   function getRoomsForClientId(clientId) {
     let rooms = [];
     forEachRoom((room) => {
@@ -262,6 +266,7 @@ function RoomManager() {
     hasClientManager,
     getRoomsForClientId,
     listAllRoomCodes,
+    getRandomCode,
 
     getRoomByCode,
     getRoomById,

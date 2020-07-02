@@ -1,4 +1,4 @@
-import { isDef } from "../../utils/";
+import { isDef, getNestedValue } from "../../utils/";
 import { SET_CURRENT_ROOM } from "./types";
 import roomReducers from "../reducers/roomReducers";
 
@@ -48,6 +48,20 @@ const listAllRooms = (con) => async (dispatch) => {
       resolve(resposnse);
     });
     con.emitSingleRequest("ROOM", "GET_All_KEYED", {
+      props: {},
+    });
+  });
+
+  return myPromise;
+};
+
+const getRandomRoomCode = (con) => async (dispatch) => {
+  let myPromise = new Promise((resolve, reject) => {
+    con.listnerTree.on(["ROOM", "GET_RANDOM_CODE"], (responses) => {
+      let code = getNestedValue(responses, ["payload", "code"], null);
+      resolve(code);
+    });
+    con.emitSingleRequest("ROOM", "GET_RANDOM_CODE", {
       props: {},
     });
   });
@@ -108,4 +122,5 @@ export default {
   existsRoom,
   getOnlineStats,
   attachRoomListeners,
+  getRandomRoomCode,
 };
