@@ -149,6 +149,15 @@ export default () => {
           annoying_excuse_me
         </button>
         <button onClick={() => sounds.shazaam.play(1)}>shazaam</button>
+        <button
+          onClick={() =>
+            responsiveVoice.speak(`It's jordan's turn!`, "US English Male", {
+              volume: 1,
+            })
+          }
+        >
+          text to speach
+        </button>
         <button onClick={() => sounds.swipe.play(1)}>swipe</button>
         <button onClick={() => sounds.shuffle.play()}>shuffle</button>
         <button onClick={() => sounds.evilLaugh.play()}>evilLaugh</button>
