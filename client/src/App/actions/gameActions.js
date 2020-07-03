@@ -2,7 +2,7 @@
 
 import ReduxState from "../controllers/reduxState";
 import gameReducers from "../reducers/gameReducers";
-import { isDef, makeListenerMap } from "../../utils/";
+import { isDef, makeListenerMap, getNestedValue } from "../../utils/";
 import {
   GET_GAME_PROPERTY_SETS,
   GET_PLAYER_HANDS,
@@ -206,12 +206,21 @@ const changeWildPropertySetKey = (
   chosenSetKey,
   collectionId
 ) => async (dispatch) => {
-  let result = await con.emitSingleRequest(
+  let fetchedData = await con.emitSingleRequest(
     "MY_TURN",
     "CHANGE_CARD_ACTIVE_SET",
     defaultProps(roomCode, { cardId, chosenSetKey, collectionId })
   );
-  return result;
+
+  if (isDef(fetchedData)) {
+    let response = fetchedData.find(
+      (r) => r.action === "CHANGE_CARD_ACTIVE_SET"
+    );
+    if (isDef(response)) {
+      return response.status === "success";
+    }
+  }
+  return false;
 };
 
 const chargeRentForCollection = (

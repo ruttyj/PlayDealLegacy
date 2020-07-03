@@ -208,8 +208,8 @@ let GameManager = () => {
       "PROPERTY_BROWN_2",
       "PROPERTY_BLUE_1",
       "PROPERTY_BLUE_2",
-      "PROPERTY_TEAL_1",
-      "PROPERTY_TEAL_2",
+      "PROPERTY_PINK_1",
+      "PROPERTY_PINK_2",
     ];
     giveCards.forEach((cardKey) => {
       playerHand.addCard(

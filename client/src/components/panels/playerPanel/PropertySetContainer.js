@@ -141,9 +141,7 @@ export default ({
     </>
   );
 
-  let backdropStyle = transparent
-    ? {}
-    : { backgroundColor: "#00000026", backdropFilter: "blur(15px)" };
+  let backdropStyle = transparent ? {} : { backgroundColor: "#00000026" };
 
   return (
     <div

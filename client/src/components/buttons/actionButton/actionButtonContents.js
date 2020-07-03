@@ -1,7 +1,8 @@
 import React from "react";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const actionButtonContents = {
-  waiting: "",
+  waiting: <CircularProgress />,
   drawCards: (
     <img
       src="https://static.thenounproject.com/png/219514-200.png"
@@ -38,7 +39,7 @@ const actionButtonContents = {
   confirm: (
     <img
       src="/img/check.png"
-      alt="confirm"
+      alt="Confirm"
       style={{
         width: "50px",
         height: "50px",
@@ -50,7 +51,7 @@ const actionButtonContents = {
   close: (
     <img
       src="/img/close.png"
-      alt="Pass Turn"
+      alt="Close"
       style={{
         width: "50px",
         height: "50px",
@@ -58,9 +59,10 @@ const actionButtonContents = {
       }}
     />
   ),
+
   nextPhase: (
     <img
-      src="https://cdn3.iconfinder.com/data/icons/virtual-notebook/16/button_rotate-512.png"
+      src="/img/end_turn.png"
       alt="Pass Turn"
       style={{
         width: "50px",

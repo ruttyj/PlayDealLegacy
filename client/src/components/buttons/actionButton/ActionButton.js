@@ -93,6 +93,7 @@ const ActionButton = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              textAlign: "center",
             }}
           >
             {children}

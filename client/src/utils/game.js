@@ -226,13 +226,22 @@ function Game(ref) {
 
   // data for the render process - does not provoke rerender unlike state
 
+  //===============================
+  //  RENDER DATA
+  //#region
   function updateRenderData(path, value) {
     setNestedValue(renderData, path, value);
   }
+
   function getRenderData(path, fallback = null) {
     return getNestedValue(renderData, path, fallback);
   }
+  //#endregion
+  //_______________________________
 
+  //===============================
+  //  CUSTOM UI
+  //#region
   function getCustomUi(path = [], fallback = null) {
     return props().getCustomUi(path, fallback);
   }
@@ -240,6 +249,8 @@ function Game(ref) {
   async function setCustomUi(path = [], value = null) {
     await props().setCustomUi(path, value);
   }
+  //#endregion
+  //_______________________________
 
   //===============================
   // ROOM
@@ -1146,13 +1157,14 @@ function Game(ref) {
     propertySetKey,
     { collectionId } = {}
   ) {
-    await props().changeWildPropertySetKey(
+    let result = await props().changeWildPropertySetKey(
       connection(),
       props().getRoomCode(),
       cardId,
       propertySetKey,
       isDef(collectionId) ? collectionId : null
     );
+    console.log("flipWildPropertyCard", result);
   }
 
   async function addCardToMyBankFromHand(id) {
@@ -1631,6 +1643,41 @@ function Game(ref) {
     return result;
   }
 
+  function describeCardLocation(cardId) {
+    let game = getPublic();
+    let card = game.card.get(cardId);
+    let speech = "";
+    console.log("describeCardLocation", card);
+    if (isDef(card)) {
+      let seperated = seperateCards([card.id]);
+      console.log("seperateCards", seperated);
+
+      speech = "Card location unknown.";
+      if (isArr(seperated) && seperated.length === 1) {
+        let info = seperated[0];
+        let isMyCard = isMyId(info.playerId);
+        let location = info.location;
+        let player = game.person.get(info.playerId);
+        let playerName = getNestedValue(player, "name", "player");
+        let locationDescription = "";
+        if (location === "collection") {
+          let collection = game.collection.get(info.collectionId);
+          if (isDef(collection)) {
+            console.log("collection", { info, collection });
+            locationDescription = collection.name;
+          }
+        }
+        if (isMyCard) {
+          speech = `That card's in my ${locationDescription} ${location}`;
+        } else {
+          speech = `That card's in ${playerName}'s ${locationDescription} ${location}`;
+        }
+      }
+    }
+
+    return speech;
+  }
+
   function getAllCardData() {
     return props().getAllCardsData();
   }
@@ -1932,6 +1979,7 @@ function Game(ref) {
       isSetAugmentCard,
       isRentCard,
       isDrawCard,
+      describeLocation: describeCardLocation,
     },
     cards: {
       get: getCards,
@@ -2006,9 +2054,11 @@ function Game(ref) {
 
     // TURN
     turn: {
+      isMyTurn,
       get: () => props().getPlayerTurnData(),
       getPhaseKey: getCurrentPhaseKey,
       getPersonId: () => props().getCurrentTurnPersonId(),
+      getPerson: () => getPublic().person.get(props().getCurrentTurnPersonId()),
     },
 
     // PLAYERS

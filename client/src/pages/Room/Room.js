@@ -130,6 +130,12 @@ import PersonListItem from "../../components/game/PersonListItem/";
 import { isArray } from "lodash";
 
 import ReduxState from "../../App/controllers/reduxState";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+const voiceConfig = {
+  voice: "Australian Female",
+};
+
 const reduxState = ReduxState.getInstance();
 
 const GameBoard = withResizeDetector(function(props) {
@@ -257,6 +263,7 @@ class GameUI extends React.Component {
 
       "handleCloseReqeustScreenIfNoRequests",
       "handleOnHandCardClick",
+      "handleOnPlayerCardClick",
       "handleOnCardDrop",
       "handleOnCardDropOnPlayerPanel",
       "handleCollectionSelect",
@@ -347,11 +354,15 @@ class GameUI extends React.Component {
       ["game", "displayData", "actionCardId"],
       0
     );
+    let speech = null;
     if (String(cardId) === String(actionCardId)) {
       await game.resetUi();
     } else {
       if (!game.isCardSelectionEnabled()) {
         if (game.isMyTurn()) {
+          if (game.phase.get() === "draw") {
+            speech = "I need to draw my cards first.";
+          }
           if (game.phase.isActionPhase()) {
             if (game.card.isCashCard(card)) {
               if (from === "hand") {
@@ -382,6 +393,19 @@ class GameUI extends React.Component {
                 let isSuccess = await game.initAskForRent(card);
                 if (isSuccess) {
                   return true;
+                } else {
+                  let speechStart = "I don't have any";
+                  let speechEnd = " collections that I can charge rent.";
+                  speech = `${speechStart} matching ${speechEnd}.`;
+                  let sets = [...els(card.sets, [])];
+                  if (sets.length == 1) {
+                    speech = `${speechStart} ${sets[0]} ${speechEnd}`;
+                  } else if (sets.length >= 1 && sets.length < 5) {
+                    let last = sets.pop();
+                    speech = `${speechStart} ${sets.join(
+                      ", "
+                    )} or ${last} ${speechEnd}`;
+                  }
                 }
               } else if (game.card.hasTag(card, "collectValue")) {
                 let isSuccess = game.initAskForValueCollection(card);
@@ -403,13 +427,36 @@ class GameUI extends React.Component {
                 if (isSuccess) {
                   return true;
                 }
+              } else if (game.card.hasTag(card, "justSayNo")) {
+                speech = `I don't have anything to say no to.`;
               }
             }
           }
+        } else {
+          speech = "It's not my turn yet";
+        }
+
+        if (isDef(speech)) {
+          responsiveVoice.speak(speech, voiceConfig.voice, {
+            volume: 1,
+          });
         }
 
         // if action not preformed above, shake card
         this.shakeCard(cardId);
+      }
+    }
+  }
+
+  async handleOnPlayerCardClick({ cardId, from }) {
+    from = els(from, "hand");
+    let card = game.card.get(cardId);
+    if (isDef(card)) {
+      let speech = game.card.describeLocation(card.id);
+      if (isDef(speech)) {
+        responsiveVoice.speak(speech, voiceConfig.voice, {
+          volume: 1,
+        });
       }
     }
   }
@@ -933,11 +980,27 @@ class GameUI extends React.Component {
 
     function setNextPhaseButton() {
       let isButtonDisabled = !game.canPassTurn();
+
+      let buttonSpeech = null;
+      if (isButtonDisabled) {
+        buttonSpeech = "I can't do that until all requests are settled";
+      }
+
+      let handleOnClick = () => {
+        if (isButtonDisabled) {
+          if (isDef(buttonSpeech)) {
+            responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
+              volume: 1,
+            });
+          }
+        } else {
+          game.passTurn();
+        }
+      };
+
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
       game.updateRenderData(["actionButton", "title"], "Next Phase");
-      game.updateRenderData(["actionButton", "onClick"], () => {
-        game.passTurn();
-      });
+      game.updateRenderData(["actionButton", "onClick"], handleOnClick);
       game.updateRenderData(
         ["actionButton", "contents"],
         actionButtonContents.nextPhase
@@ -946,12 +1009,29 @@ class GameUI extends React.Component {
 
     function setEndTurnButton() {
       let isButtonDisabled = !game.canPassTurn();
+
+      let buttonSpeech = null;
+      if (isButtonDisabled) {
+        buttonSpeech = "I have to wait until all requests are settled";
+      }
+
+      let handleOnClick = () => {
+        console.log("isButtonDisabled", isButtonDisabled);
+        if (isButtonDisabled) {
+          if (isDef(buttonSpeech)) {
+            responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
+              volume: 1,
+            });
+          }
+        } else {
+          game.passTurn();
+        }
+      };
+
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
       game.updateRenderData(["actionButton", "className"], "pulse_white");
       game.updateRenderData(["actionButton", "title"], "Next Turn");
-      game.updateRenderData(["actionButton", "onClick"], () => {
-        game.passTurn();
-      });
+      game.updateRenderData(["actionButton", "onClick"], handleOnClick);
       game.updateRenderData(
         ["actionButton", "contents"],
         actionButtonContents.nextPhase
@@ -974,40 +1054,58 @@ class GameUI extends React.Component {
     }
 
     function setDefaultButton() {
+      let buttonText = ``;
+      let buttonSpeech = `It's mot my turn`;
+      let buttonAction = () => {};
+      let currentTurnPerson = game.turn.getPerson();
+      if (isDef(currentTurnPerson)) {
+        buttonText = `Waiting on ${game.turn.getPerson().name}`;
+        buttonSpeech = `Waiting for ${
+          game.turn.getPerson().name
+        } to finish their turn`;
+      } else {
+        buttonText = `Waiting`;
+      }
+
+      buttonAction = () => {
+        responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
+          volume: 1,
+        });
+      };
+
       game.updateRenderData(["actionButton", "disabled"], true);
-      game.updateRenderData(["actionButton", "onClick"], () => {});
+      game.updateRenderData(["actionButton", "onClick"], buttonAction);
       game.updateRenderData(["actionButton", "title"], "Waiting");
-      game.updateRenderData(
-        ["actionButton", "contents"],
-        actionButtonContents.waiting
-      );
+      game.updateRenderData(["actionButton", "contents"], buttonText);
     }
 
     // -----------------------------------------
     //              ACTION BUTTON
     // -----------------------------------------
-    setDefaultButton();
 
-    if (game.isMyTurn() && game.turn.getPhaseKey() === "draw") {
-      //console.clear();
-    }
-    // On discard saftey measure that all cards are selected
-    if (game.isMyTurn() && game.turn.getPhaseKey() === "discard") {
-      //It had does not match selectable size
-      if (
-        game.myHand.getCardIds().length !==
-        game.selection.cards.selectable.get().length
-      ) {
-        let doItMaybe = async () =>
-          await game.selection.cards.selectable.set(game.myHand.getCardIds());
-        doItMaybe();
-      }
-    }
     let displayMode = game.getDisplayData("mode");
     let actionCardId = game.getActionCardId();
+    setDefaultButton();
     if (game.getGameStatus("isGameStarted")) {
       game.updateRenderData(["actionButton", "className"], "");
       if (game.isMyTurn()) {
+        if (game.turn.getPhaseKey() === "draw") {
+          //console.clear();
+        }
+        // On discard saftey measure that all cards are selected
+        if (game.turn.getPhaseKey() === "discard") {
+          //It had does not match selectable size
+          if (
+            game.myHand.getCardIds().length !==
+            game.selection.cards.selectable.get().length
+          ) {
+            let doItMaybe = async () =>
+              await game.selection.cards.selectable.set(
+                game.myHand.getCardIds()
+              );
+            doItMaybe();
+          }
+        }
         if (game.canDrawInitialCards()) {
           setDrawInitialCardsButton();
         } else if (game.phase.isDiscardPhase()) {
@@ -1607,9 +1705,20 @@ class GameUI extends React.Component {
                   card: card,
                   from: "hand",
                 }}
-                onActiveSetChange={({ cardId, propertySetKey }) =>
-                  game.flipWildPropertyCard(cardId, propertySetKey)
-                }
+                onActiveSetChange={async ({ cardId, propertySetKey }) => {
+                  let result = await game.flipWildPropertyCard(
+                    cardId,
+                    propertySetKey
+                  );
+                  if (!result) {
+                    if (!game.turn.isMyTurn()) {
+                      let speech = `I have to wait until it's my turn to change the color of this card.`;
+                      responsiveVoice.speak(speech, voiceConfig.voice, {
+                        volume: 1,
+                      });
+                    }
+                  }
+                }}
                 onClick={this.handleOnHandCardClick}
                 propertySetMap={propertySetsKeyed}
                 highlightIsSelectable={true}
@@ -1636,7 +1745,9 @@ class GameUI extends React.Component {
         let howMany = game.cards.myHand.getTooMany();
         turnNotice = (
           <TurnNotice>
-            {howMany} {pluralize("card", howMany)} too many in your hand.
+            You have allot of cards there... You will need to play at least
+            {howMany} {pluralize("card", howMany)} or else have to discard them
+            at the end of your turn.
           </TurnNotice>
         );
       }
@@ -1879,7 +1990,7 @@ class GameUI extends React.Component {
                                       collectionId: collectionId,
                                       cardId: card.id,
                                     }}
-                                    onClick={this.handleOnHandCardClick}
+                                    onClick={this.handleOnPlayerCardClick}
                                     highlightIsSelectable={true}
                                     selectionEnabled={cardCheck.isSelectionEnabled(
                                       card.id
@@ -1953,7 +2064,7 @@ class GameUI extends React.Component {
                             from: "bank",
                             cardId: card.id,
                           }}
-                          onClick={this.handleOnHandCardClick}
+                          onClick={this.handleOnPlayerCardClick}
                           selectionEnabled={cardCheck.isSelectionEnabled(
                             card.id
                           )}
@@ -2120,13 +2231,11 @@ class GameUI extends React.Component {
             style={{
               height: "100%",
               width: "100%",
-              border: "2px solid white",
-              mixBlendMode: "overlay",
             }}
           />
         </AbsLayer>
         {/* my section content */}
-        <AbsLayer style={{ backdropFilter: "blur(15px)" }}>
+        <AbsLayer style={{}}>
           <div
             style={{
               display: "flex",
@@ -2362,7 +2471,6 @@ class GameUI extends React.Component {
                 {/*-------------- RENDER LIST OF USERS -------------------*/}
                 <div
                   style={{
-                    backdropFilter: "blur(15px)",
                     backgroundColor: "#ffffff85",
                     height: "100%",
                   }}

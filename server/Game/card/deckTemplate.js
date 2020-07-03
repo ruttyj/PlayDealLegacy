@@ -29,7 +29,7 @@ const deckTemplate = {
     SUPER_RENT: 3,
     RENT_BLUE_GREEN: 2,
     RENT_ORANGE_PURPLE: 2,
-    RENT_BLACK_TEAL: 2,
+    RENT_BLACK_PINK: 2,
     RENT_YELLOW_ORANGE: 2,
     RENT_BROWN_CYAN: 2,
 
@@ -44,7 +44,7 @@ const deckTemplate = {
     // Wild properties
     SUPER_WILD_PROPERTY: 2,
     WILD_PROPERTY_ORANGE_PURPLE: 2,
-    WILD_PROPERTY_TEAL_BLACK: 1,
+    WILD_PROPERTY_PINK_BLACK: 1,
     WILD_PROPERTY_GREEN_BLACK: 1,
     WILD_PROPERTY_CYAN_BLACK: 1,
     WILD_PROPERTY_CYAN_BROWN: 1,
@@ -275,7 +275,7 @@ const deckTemplate = {
         "black",
         "purple",
         "cyan",
-        "teal",
+        "pink",
         "brown",
       ],
     },
@@ -299,14 +299,14 @@ const deckTemplate = {
       sets: ["orange", "purple"],
       value: 1,
     },
-    RENT_BLACK_TEAL: {
+    RENT_BLACK_PINK: {
       class: "collection",
-      key: "RENT_BLACK_TEAL",
+      key: "RENT_BLACK_PINK",
       name: "Rent",
       tags: ["rent", "request", "contestable", "bankable"],
       canBePrevented: true,
       target: "all",
-      sets: ["black", "teal"],
+      sets: ["black", "pink"],
       value: 1,
     },
     RENT_YELLOW_ORANGE: {
@@ -547,8 +547,8 @@ const deckTemplate = {
         },
       ],
     },
-    teal: {
-      set: "teal",
+    pink: {
+      set: "pink",
       tags: ["property", "utility"],
       colorCode: "#d27eae",
       rent: {
@@ -558,12 +558,12 @@ const deckTemplate = {
       cards: [
         {
           name: "Internet provider",
-          key: "PROPERTY_TEAL_1",
+          key: "PROPERTY_PINK_1",
           value: 2,
         },
         {
           name: "Streaming Services",
-          key: "PROPERTY_TEAL_2",
+          key: "PROPERTY_PINK_2",
           value: 2,
         },
       ],
@@ -606,7 +606,7 @@ const deckTemplate = {
         "black",
         "purple",
         "cyan",
-        "teal",
+        "pink",
         "brown",
         AMBIGUOUS_SET_KEY,
       ],
@@ -657,12 +657,12 @@ const deckTemplate = {
       tags: ["wild", "property"],
       value: 4,
     },
-    WILD_PROPERTY_TEAL_BLACK: {
+    WILD_PROPERTY_PINK_BLACK: {
       type: "property",
-      key: "WILD_PROPERTY_TEAL_BLACK",
+      key: "WILD_PROPERTY_PINK_BLACK",
       class: "wildPropertyLimited",
-      set: "teal",
-      sets: ["teal", "black"],
+      set: "pink",
+      sets: ["pink", "black"],
       tags: ["wild", "property"],
       value: 2,
     },
