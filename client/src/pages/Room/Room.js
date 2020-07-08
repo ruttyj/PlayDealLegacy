@@ -327,7 +327,7 @@ class GameUI extends React.Component {
     this.windowManager = WindowManager(this.stateBuffer);
 
     this.stateBuffer.set("theme", {
-      wallpaper: els(wallpapers[2], wallpapers[3]), // set default url
+      wallpaper: els(wallpapers[8], wallpapers[0]), // set default url
     });
   }
 

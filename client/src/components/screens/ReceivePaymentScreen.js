@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { isDef, isArr, isFunc, getNestedValue } from "../../utils/";
 
-import BlurredPanel from "../panels/BlurredPanel";
+import BlurredWrapper from "../../packages/ReactWindows/Components/Containers/BlurredWrapper";
 import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Button from "@material-ui/core/Button";
 import grey from "@material-ui/core/colors/grey";
@@ -79,25 +79,25 @@ const ReceivePaymentScreen = ({
   return (
     <AbsLayer>
       <div style={{ width: "100%", height: "100%", padding: "10px" }}>
-        <div
-          style={{
-            backgroundColor: "#000000a1",
-            width: "100%",
-            height: "100%",
-            overflow: "auto",
-          }}
-        >
-          <RelLayer>
-            <FillContainer>
-              <FillContent>
-                <FlexRow
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    padding: "40px 25px 20px 25px",
-                  }}
-                >
-                  <BlurredPanel style={{ width: "100%" }}>
+        <BlurredWrapper>
+          <div
+            style={{
+              backgroundColor: "#000000a1",
+              width: "100%",
+              height: "100%",
+              overflow: "auto",
+            }}
+          >
+            <RelLayer>
+              <FillContainer>
+                <FillContent>
+                  <FlexRow
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      padding: "40px 25px 20px 25px",
+                    }}
+                  >
                     <FillContainer>
                       <FillContent>
                         <FlexColumn style={{ width: "100%" }}>
@@ -576,16 +576,16 @@ const ReceivePaymentScreen = ({
                         </FlexRow>
                       </FillFooter>
                     </FillContainer>
-                  </BlurredPanel>
-                </FlexRow>
-              </FillContent>
-              <FillFooter height={50} style={{ textAlign: "right" }}>
-                {buttons}
-              </FillFooter>
-            </FillContainer>
-            <ActionBar />
-          </RelLayer>
-        </div>
+                  </FlexRow>
+                </FillContent>
+                <FillFooter height={50} style={{ textAlign: "right" }}>
+                  {buttons}
+                </FillFooter>
+              </FillContainer>
+              <ActionBar />
+            </RelLayer>
+          </div>
+        </BlurredWrapper>
       </div>
     </AbsLayer>
   );

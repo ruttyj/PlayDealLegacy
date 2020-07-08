@@ -17,6 +17,8 @@ import FillContent from "../fillContainer/FillContent";
 import FillHeader from "../fillContainer/FillHeader";
 import FillFooter from "../fillContainer/FillFooter";
 
+import BlurredWrapper from "../../packages/ReactWindows/Components/Containers/BlurredWrapper";
+
 // Cards
 import RenderCard from "../RenderCard";
 import RenderInteractableCard from "../RenderInteractableCard";
@@ -282,107 +284,110 @@ const PayRequestScreen = ({
   return (
     <AbsLayer>
       <div style={{ width: "100%", height: "100%", padding: "10px" }}>
-        <div
-          style={{
-            backgroundColor: "#000000a1",
-            width: "100%",
-            height: "100%",
-            overflow: "auto",
-          }}
-        >
-          <RelLayer>
-            <FillContainer>
-              <FillContent>
-                <FlexRow
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    padding: "40px 25px 20px 25px",
-                  }}
-                >
-                  <FlexColumn
+        <BlurredWrapper>
+          <div
+            style={{
+              backgroundColor: "#000000a1",
+              width: "100%",
+              height: "100%",
+              overflow: "auto",
+            }}
+          >
+            <RelLayer>
+              <FillContainer>
+                <FillContent>
+                  <FlexRow
                     style={{
-                      alignItems: "center",
-                      width: "50%",
-                      padding: "40px",
+                      width: "100%",
+                      height: "100%",
+                      padding: "40px 25px 20px 25px",
                     }}
                   >
-                    <FlexColumn style={{ alignItems: "center", width: "100%" }}>
-                      <FlexRow
-                        style={{ fontSize: "25px", marginBottom: "20px" }}
-                      >{`Pay ${authorName}`}</FlexRow>
+                    <FlexColumn
+                      style={{
+                        alignItems: "center",
+                        width: "50%",
+                        padding: "40px",
+                      }}
+                    >
                       <FlexColumn
-                        style={{
-                          fontSize: "25px",
-                          alignItems: "center",
-                          marginBottom: "20px",
-                        }}
+                        style={{ alignItems: "center", width: "100%" }}
                       >
-                        <div style={{ fontSize: "15px" }}>Amount</div>
-                        <div>
-                          <CurrencyText fontSizeEm={1}>
-                            {amountRemaining}
-                          </CurrencyText>
-                        </div>
-                      </FlexColumn>
-                      <FlexColumn
-                        style={{
-                          fontSize: "25px",
-                          alignItems: "center",
-                          marginBottom: "20px",
-                        }}
-                      >
-                        <div style={{ fontSize: "15px" }}>Value selected</div>
-                        <div>
-                          <CurrencyText fontSizeEm={1}>
-                            {sumSelected}
-                          </CurrencyText>
-                        </div>
+                        <FlexRow
+                          style={{ fontSize: "25px", marginBottom: "20px" }}
+                        >{`Pay ${authorName}`}</FlexRow>
+                        <FlexColumn
+                          style={{
+                            fontSize: "25px",
+                            alignItems: "center",
+                            marginBottom: "20px",
+                          }}
+                        >
+                          <div style={{ fontSize: "15px" }}>Amount</div>
+                          <div>
+                            <CurrencyText fontSizeEm={1}>
+                              {amountRemaining}
+                            </CurrencyText>
+                          </div>
+                        </FlexColumn>
+                        <FlexColumn
+                          style={{
+                            fontSize: "25px",
+                            alignItems: "center",
+                            marginBottom: "20px",
+                          }}
+                        >
+                          <div style={{ fontSize: "15px" }}>Value selected</div>
+                          <div>
+                            <CurrencyText fontSizeEm={1}>
+                              {sumSelected}
+                            </CurrencyText>
+                          </div>
+                        </FlexColumn>
                       </FlexColumn>
                     </FlexColumn>
-                  </FlexColumn>
-                  <BlurredPanel style={{ width: "100%" }}>
-                    {/* ----------------- MAIN WINDOW ----------------- */}
-                    <FlexColumn style={{ width: "100%" }}>
-                      {bankContents}
-                      {collectionContents}
-                    </FlexColumn>
-                  </BlurredPanel>
-                </FlexRow>
-              </FillContent>
-              <FillFooter height={50} style={{ textAlign: "right" }}>
-                <Button
-                  color="primary"
-                  style={{ margin: "4px" }}
-                  variant="contained"
-                  onClick={(e) => {
-                    playClickSound(false);
-                    onCancel(e);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={isConfirmDisabled}
-                  color="primary"
-                  style={{ margin: "4px" }}
-                  variant="contained"
-                  onClick={(e) => {
-                    playClickSound(isConfirmDisabled);
-                    onConfirm({
-                      responseKey: "accept",
-                      cardIds: cardSelection.selected.get(),
-                    });
-                  }}
-                >
-                  Confirm
-                </Button>
-              </FillFooter>
-            </FillContainer>
-
-            <ActionBar />
-          </RelLayer>
-        </div>
+                    <BlurredPanel style={{ width: "100%" }}>
+                      {/* ----------------- MAIN WINDOW ----------------- */}
+                      <FlexColumn style={{ width: "100%" }}>
+                        {bankContents}
+                        {collectionContents}
+                      </FlexColumn>
+                    </BlurredPanel>
+                  </FlexRow>
+                </FillContent>
+                <FillFooter height={50} style={{ textAlign: "right" }}>
+                  <Button
+                    color="primary"
+                    style={{ margin: "4px" }}
+                    variant="contained"
+                    onClick={(e) => {
+                      playClickSound(false);
+                      onCancel(e);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={isConfirmDisabled}
+                    color="primary"
+                    style={{ margin: "4px" }}
+                    variant="contained"
+                    onClick={(e) => {
+                      playClickSound(isConfirmDisabled);
+                      onConfirm({
+                        responseKey: "accept",
+                        cardIds: cardSelection.selected.get(),
+                      });
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                </FillFooter>
+              </FillContainer>
+              <ActionBar />
+            </RelLayer>
+          </div>
+        </BlurredWrapper>
       </div>
     </AbsLayer>
   );

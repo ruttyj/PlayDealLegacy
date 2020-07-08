@@ -10,7 +10,7 @@ import {
   makeTree,
 } from "../../utils/";
 
-import BlurredPanel from "../panels/BlurredPanel";
+import BlurredWrapper from "../../packages/ReactWindows/Components/Containers/BlurredWrapper";
 import Button from "@material-ui/core/Button";
 import AbsLayer from "../layers/AbsLayer";
 import RelLayer from "../layers/RelLayer";
@@ -47,25 +47,25 @@ const ScreenWrapper = ({ title, children, buttons }) => {
             overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              backgroundColor: "#000000a1",
-              width: "100%",
-              height: "100%",
-              overflow: "auto",
-            }}
-          >
-            <RelLayer>
-              <FillContainer>
-                <FillContent>
-                  <FlexRow
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      padding: "40px 25px 20px 25px",
-                    }}
-                  >
-                    <BlurredPanel style={{ width: "100%" }}>
+          <BlurredWrapper style={{ width: "100%" }}>
+            <div
+              style={{
+                backgroundColor: "#000000a1",
+                width: "100%",
+                height: "100%",
+                overflow: "auto",
+              }}
+            >
+              <RelLayer>
+                <FillContainer>
+                  <FillContent>
+                    <FlexRow
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        padding: "40px 25px 20px 25px",
+                      }}
+                    >
                       <FillContainer>
                         <FillContent>
                           <FlexColumn style={{ width: "100%" }}>
@@ -78,23 +78,23 @@ const ScreenWrapper = ({ title, children, buttons }) => {
                           </FlexColumn>
                         </FillContent>
                       </FillContainer>
-                    </BlurredPanel>
-                  </FlexRow>
-                </FillContent>
-                {isDef(buttons) ? (
-                  <FillFooter
-                    height={50}
-                    style={{ textAlign: "right", display: "flex" }}
-                  >
-                    {buttons}
-                  </FillFooter>
-                ) : (
-                  ""
-                )}
-              </FillContainer>
-              <ActionBar />
-            </RelLayer>
-          </div>
+                    </FlexRow>
+                  </FillContent>
+                  {isDef(buttons) ? (
+                    <FillFooter
+                      height={50}
+                      style={{ textAlign: "right", display: "flex" }}
+                    >
+                      {buttons}
+                    </FillFooter>
+                  ) : (
+                    ""
+                  )}
+                </FillContainer>
+                <ActionBar />
+              </RelLayer>
+            </div>
+          </BlurredWrapper>
         </div>
       </DndProvider>
     </AbsLayer>
