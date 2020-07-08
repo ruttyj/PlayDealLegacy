@@ -5,6 +5,7 @@ import pluralize from "pluralize";
 import StateBuffer from "../../utils/StateBuffer";
 import "./Room.scss";
 import {
+  classes,
   els,
   isDef,
   isDefNested,
@@ -60,6 +61,7 @@ import {
   FlexRow,
   FlexRowCenter,
   FullFlexRow,
+  FullFlexColumn,
 } from "../../components/Flex";
 import ShakeAnimationWrapper from "../../components/effects/Shake";
 
@@ -114,6 +116,8 @@ import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import StarBorder from "@material-ui/icons/StarBorder";
 
 // Buttons
+import { ArrowToolTip } from "../../packages/ReactWindows/Exports/Exports";
+
 import Button from "@material-ui/core/Button";
 import ActionButtonWrapper from "../../components/buttons/actionButton/ActionButtonWrapper";
 import ActionButton from "../../components/buttons/actionButton/ActionButton";
@@ -132,12 +136,28 @@ import { isArray } from "lodash";
 import ReduxState from "../../App/controllers/reduxState";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
+////////////////////////////////////////////////////
+/// Sidebar
+import AppSidebar from "../../packages/ReactWindows/Components/SideBar/";
+import BlurredWrapper from "../../packages/ReactWindows/Components/Containers/BlurredWrapper/";
+import { useEffect } from "../../packages/ReactWindows/Exports/";
+import PhotoSizeSelectActualIcon from "@material-ui/icons/PhotoSizeSelectActual";
+import BugReportIcon from "@material-ui/icons/BugReport";
+import EmojiPeopleIcon from "@material-ui/icons/EmojiPeople";
+import AddIcon from "@material-ui/icons/Add";
+import PublicIcon from "@material-ui/icons/Public";
+import ChatIcon from "@material-ui/icons/Chat";
+import PeopleIcon from "@material-ui/icons/People";
+////////////////////////////////////////////////////
+/// Voice Config
 const voiceConfig = {
   voice: "Australian Female",
 };
 
 const reduxState = ReduxState.getInstance();
 
+/////////////////////////////////////////////////////
+/// Game Board
 const GameBoard = withResizeDetector(function(props) {
   const { previousSize, onChangeSize } = props;
   let { width, height } = props;
@@ -361,7 +381,7 @@ class GameUI extends React.Component {
       if (!game.isCardSelectionEnabled()) {
         if (game.isMyTurn()) {
           if (game.phase.get() === "draw") {
-            speech = "I need to draw my cards first.";
+            speech = "I need to draw first.";
           }
           if (game.phase.isActionPhase()) {
             if (game.card.isCashCard(card)) {
@@ -898,14 +918,32 @@ class GameUI extends React.Component {
     }
 
     function setDiscardButton() {
-      game.updateRenderData(
-        ["actionButton", "disabled"],
-        !game.phase.canDiscardCards()
-      );
+      let isButtonDisabled = !game.phase.canDiscardCards();
+
+      let buttonTitle = "Confirm discard cards";
+      if (isButtonDisabled) {
+        let howMany = game.phase.getDiscardCount();
+        buttonTitle = `I need to select ${howMany} ${pluralize(
+          `card`,
+          howMany
+        )} to discard.`;
+      }
+
+      game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
       game.updateRenderData(
         ["actionButton", "onClick"],
         self.handleOnDiscardCards
       );
+      game.updateRenderData(["actionButton", "onClick"], (...args) => {
+        if (isButtonDisabled) {
+          responsiveVoice.speak(buttonTitle, voiceConfig.voice, {
+            volume: 1,
+          });
+        } else {
+          self.handleOnDiscardCards(...args);
+        }
+      });
+      game.updateRenderData(["actionButton", "title"], buttonTitle);
       game.updateRenderData(
         ["actionButton", "contents"],
         actionButtonContents.discard
@@ -918,6 +956,7 @@ class GameUI extends React.Component {
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (rentButtonEnabled) self.handleOnChargeRentClick();
       });
+      game.updateRenderData(["actionButton", "title"], "Charge rent.");
       game.updateRenderData(
         ["actionButton", "contents"],
         actionButtonContents.confirm
@@ -927,7 +966,10 @@ class GameUI extends React.Component {
     function setStealPropertyButton() {
       let buttonEnabled = game.selection.cards.selected.isLimitSelected();
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
-      game.updateRenderData(["actionButton", "title"], "Confirm Request");
+      game.updateRenderData(
+        ["actionButton", "title"],
+        "Confirm steal property"
+      );
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (buttonEnabled) self.handleStealPropertyClick();
       });
@@ -940,7 +982,7 @@ class GameUI extends React.Component {
     function setStealCollectionButton() {
       let buttonEnabled = game.selection.collections.selected.isLimitSelected();
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
-      game.updateRenderData(["actionButton", "title"], "Confirm Request");
+      game.updateRenderData(["actionButton", "title"], "Confirm collection");
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (buttonEnabled) self.handleStealCollectionClick();
       });
@@ -953,7 +995,7 @@ class GameUI extends React.Component {
     function setAskForPropertySwapButton() {
       let buttonEnabled = game.selection.cards.selected.isLimitSelected();
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
-      game.updateRenderData(["actionButton", "title"], "Confirm Request");
+      game.updateRenderData(["actionButton", "title"], "Confirm swap property");
       game.updateRenderData(["actionButton", "onClick"], () => {
         if (buttonEnabled) self.handleSwapPropertyClick();
       });
@@ -994,12 +1036,15 @@ class GameUI extends React.Component {
             });
           }
         } else {
+          responsiveVoice.speak("I end my turn.", "Australian Female", {
+            volume: 1,
+          });
           game.passTurn();
         }
       };
 
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
-      game.updateRenderData(["actionButton", "title"], "Next Phase");
+      game.updateRenderData(["actionButton", "title"], "Proceed to next phase");
       game.updateRenderData(["actionButton", "onClick"], handleOnClick);
       game.updateRenderData(
         ["actionButton", "contents"],
@@ -1011,6 +1056,7 @@ class GameUI extends React.Component {
       let isButtonDisabled = !game.canPassTurn();
 
       let buttonSpeech = null;
+      let buttonTitle = "Proceed to next person's turn";
       if (isButtonDisabled) {
         buttonSpeech = "I have to wait until all requests are settled";
       }
@@ -1018,6 +1064,7 @@ class GameUI extends React.Component {
       let handleOnClick = () => {
         console.log("isButtonDisabled", isButtonDisabled);
         if (isButtonDisabled) {
+          buttonTitle = buttonSpeech;
           if (isDef(buttonSpeech)) {
             responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
               volume: 1,
@@ -1030,7 +1077,7 @@ class GameUI extends React.Component {
 
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
       game.updateRenderData(["actionButton", "className"], "pulse_white");
-      game.updateRenderData(["actionButton", "title"], "Next Turn");
+      game.updateRenderData(["actionButton", "title"], buttonTitle);
       game.updateRenderData(["actionButton", "onClick"], handleOnClick);
       game.updateRenderData(
         ["actionButton", "contents"],
@@ -1743,11 +1790,23 @@ class GameUI extends React.Component {
     if (game.isMyTurn()) {
       if (game.cards.myHand.hasTooMany()) {
         let howMany = game.cards.myHand.getTooMany();
+        let text = `I have allot of cards... I will need to discard ${howMany} ${pluralize(
+          `card`,
+          howMany
+        )} at the end of my turn if I don't use ${
+          howMany === 1 ? "it" : "them"
+        }.`;
         turnNotice = (
           <TurnNotice>
-            You have allot of cards there... You will need to play at least
-            {howMany} {pluralize("card", howMany)} or else have to discard them
-            at the end of your turn.
+            <div
+              onClick={() => {
+                responsiveVoice.speak(text, voiceConfig.voice, {
+                  volume: 1,
+                });
+              }}
+            >
+              {text}
+            </div>
           </TurnNotice>
         );
       }
@@ -2226,67 +2285,68 @@ class GameUI extends React.Component {
     let mySection = (
       <RelLayer>
         {/* background for my section*/}
-        <AbsLayer>
-          <div
-            style={{
-              height: "100%",
-              width: "100%",
-            }}
-          />
-        </AbsLayer>
+        <AbsLayer></AbsLayer>
         {/* my section content */}
         <AbsLayer style={{}}>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              paddingTop: "10px",
-              height: "calc(100% - 20px)",
-            }}
-          >
-            {pileContents}
-            <MyHandContainer
-              hasTooManyCards={game.cards.myHand.hasTooMany()}
-              style={handStyle}
+          <BlurredWrapper>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                paddingTop: "10px",
+                height: "calc(100% - 20px)",
+                flexGrow: 1,
+              }}
             >
-              {this.renderCardsInMyHand()}
-            </MyHandContainer>
-            <ActionButtonWrapper>
-              <RequestButton
-                style={{ height: "fit-content" }}
-                disabled={game.getRenderData(["requestButton", "disabled"])}
-                onClick={game.getRenderData(["requestButton", "onClick"])}
+              {pileContents}
+              <MyHandContainer
+                hasTooManyCards={game.cards.myHand.hasTooMany()}
+                style={handStyle}
               >
-                {game.getRenderData(["requestButton", "label"])}
-              </RequestButton>
+                {this.renderCardsInMyHand()}
+              </MyHandContainer>
+              <ActionButtonWrapper>
+                <RequestButton
+                  style={{ height: "fit-content" }}
+                  disabled={game.getRenderData(["requestButton", "disabled"])}
+                  onClick={game.getRenderData(["requestButton", "onClick"])}
+                >
+                  {game.getRenderData(["requestButton", "label"])}
+                </RequestButton>
 
-              <ActionButton
-                className={game.getRenderData(
-                  ["actionButton", "className"],
-                  ""
-                )}
-                title={game.getRenderData(["actionButton", "title"], "")}
-                disabled={game.getRenderData(["actionButton", "disabled"])}
-                onClick={game.getRenderData(["actionButton", "onClick"])}
-              >
-                {game.getRenderData(["actionButton", "contents"], "")}
-              </ActionButton>
-              <RelLayer style={{ height: "auto" }}>
-                <AutoPassTurnButton
-                  disabled={!game.isStarted()}
-                  value={game.customUi.get("autoPassTurn", false)}
-                  onClick={() => {
-                    if (game.isStarted()) {
-                      game.customUi.set(
-                        "autoPassTurn",
-                        !game.customUi.get("autoPassTurn", false)
-                      );
-                    }
-                  }}
-                />
-              </RelLayer>
-            </ActionButtonWrapper>
-          </div>
+                <ArrowToolTip
+                  title={game.getRenderData(["actionButton", "title"], "")}
+                  placement="top"
+                >
+                  <ActionButton
+                    className={game.getRenderData(
+                      ["actionButton", "className"],
+                      ""
+                    )}
+                    title={game.getRenderData(["actionButton", "title"], "")}
+                    disabled={game.getRenderData(["actionButton", "disabled"])}
+                    onClick={game.getRenderData(["actionButton", "onClick"])}
+                  >
+                    {game.getRenderData(["actionButton", "contents"], "")}
+                  </ActionButton>
+                </ArrowToolTip>
+                <RelLayer style={{ height: "auto" }}>
+                  <AutoPassTurnButton
+                    disabled={!game.isStarted()}
+                    value={game.customUi.get("autoPassTurn", false)}
+                    onClick={() => {
+                      if (game.isStarted()) {
+                        game.customUi.set(
+                          "autoPassTurn",
+                          !game.customUi.get("autoPassTurn", false)
+                        );
+                      }
+                    }}
+                  />
+                </RelLayer>
+              </ActionButtonWrapper>
+            </div>
+          </BlurredWrapper>
         </AbsLayer>
       </RelLayer>
     );
@@ -2355,12 +2415,7 @@ class GameUI extends React.Component {
   }
 
   renderBackground() {
-    return (
-      <BlurredBackground
-        blur={0}
-        backgroundImage="https://images.unsplash.com/photo-1586021755075-3da0c78d4881?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2100&q=80"
-      />
-    );
+    return <div {...classes("main-background")}></div>;
   }
 
   renderListOfUsers() {
@@ -2443,88 +2498,105 @@ class GameUI extends React.Component {
 
     return (
       <DndProvider backend={Backend}>
-        <FillContainer>
-          <FillHeader>
-            <AppBar position="static">
-              <Toolbar>
-                <h5
-                  style={{ padding: "12px" }}
-                  onClick={() => room.leaveRoom()}
-                >
-                  Room <strong>{room.getCode()}</strong>
-                </h5>
-              </Toolbar>
-            </AppBar>
-          </FillHeader>
-
-          <FillContent>
-            <RelLayer>
-              <AbsLayer>{this.renderBackground()}</AbsLayer>
-              <SplitterLayout
-                customClassName="people_list"
-                primaryIndex={1}
-                primaryMinSize={0}
-                secondaryInitialSize={uiConfig.sidebar.initialSize}
-                secondaryMinSize={uiConfig.sidebar.minSize}
-                secondaryMaxSize={uiConfig.sidebar.maxSize}
-              >
-                {/*-------------- RENDER LIST OF USERS -------------------*/}
-                <div
-                  style={{
-                    backgroundColor: "#ffffff85",
-                    height: "100%",
-                  }}
-                >
-                  {this.renderListOfUsers()}
-                </div>
-                <RelLayer>
-                  <GrowPanel>
-                    <SplitterLayout
-                      percentage
-                      primaryIndex={1}
-                      primaryMinSize={0}
-                      secondaryInitialSize={0}
-                      secondaryMinSize={0}
+        <FullFlexRow>
+          <FlexColumn>
+            <AppSidebar>
+              <div {...classes("button", "not-allowed")}>
+                <BugReportIcon />
+              </div>
+              <div {...classes("button", "not-allowed")}>
+                <PeopleIcon />
+              </div>
+              <div {...classes("button", "not-allowed")}>
+                <ChatIcon />
+              </div>
+            </AppSidebar>
+          </FlexColumn>
+          <FullFlexColumn>
+            <FillContainer>
+              <FillHeader>
+                <AppBar position="static">
+                  <Toolbar>
+                    <h5
+                      style={{ padding: "12px" }}
+                      onClick={() => room.leaveRoom()}
                     >
-                      {this.renderDebugData()}
+                      Room <strong>{room.getCode()}</strong>
+                    </h5>
+                  </Toolbar>
+                </AppBar>
+              </FillHeader>
 
-                      {/*################################################*/}
-                      {/*                   GAME BOARD                   */}
-                      {/*################################################*/}
-                      <RelLayer>
-                        <VSplitterDragIndicator />
-                        {/*----------------------------------------------*/}
-                        {/*                 Game content                 */}
-                        {/*----------------------------------------------*/}
-                        <AbsLayer style={{ color: "white" }}>
+              <FillContent>
+                <RelLayer>
+                  <AbsLayer>{this.renderBackground()}</AbsLayer>
+                  <SplitterLayout
+                    customClassName="people_list"
+                    primaryIndex={1}
+                    primaryMinSize={0}
+                    secondaryInitialSize={uiConfig.sidebar.initialSize}
+                    secondaryMinSize={uiConfig.sidebar.minSize}
+                    secondaryMaxSize={uiConfig.sidebar.maxSize}
+                  >
+                    {/*-------------- RENDER LIST OF USERS -------------------*/}
+                    <div
+                      style={{
+                        backgroundColor: "#ffffff85",
+                        height: "100%",
+                      }}
+                    >
+                      {this.renderListOfUsers()}
+                    </div>
+                    <RelLayer>
+                      <GrowPanel>
+                        <SplitterLayout
+                          percentage
+                          primaryIndex={1}
+                          primaryMinSize={0}
+                          secondaryInitialSize={0}
+                          secondaryMinSize={0}
+                        >
+                          {this.renderDebugData()}
+
+                          {/*################################################*/}
+                          {/*                   GAME BOARD                   */}
+                          {/*################################################*/}
                           <RelLayer>
-                            <GameBoard
-                              previousSize={this.stateBuffer.get(
-                                ["gameWindow", "size"],
-                                {}
-                              )}
-                              onChangeSize={(size) =>
-                                this.stateBuffer.set(
-                                  ["gameWindow", "size"],
-                                  size
-                                )
-                              }
-                              uiConfig={uiConfig}
-                              gameboard={game.getRenderData("gameboard")}
-                              turnNotice={game.getRenderData("turnNotice")}
-                              myArea={this.renderMyArea()}
-                            />
+                            <VSplitterDragIndicator />
+                            {/*----------------------------------------------*/}
+                            {/*                 Game content                 */}
+                            {/*----------------------------------------------*/}
+                            <AbsLayer style={{ color: "white" }}>
+                              <RelLayer>
+                                <GameBoard
+                                  previousSize={this.stateBuffer.get(
+                                    ["gameWindow", "size"],
+                                    {}
+                                  )}
+                                  onChangeSize={(size) =>
+                                    this.stateBuffer.set(
+                                      ["gameWindow", "size"],
+                                      size
+                                    )
+                                  }
+                                  uiConfig={uiConfig}
+                                  gameboard={game.getRenderData("gameboard")}
+                                  turnNotice={game.getRenderData("turnNotice")}
+                                  myArea={this.renderMyArea()}
+                                />
+                              </RelLayer>
+                            </AbsLayer>
                           </RelLayer>
-                        </AbsLayer>
-                      </RelLayer>
-                      {/* End Game board ________________________________*/}
-                    </SplitterLayout>
-                  </GrowPanel>
+                          {/* End Game board ________________________________*/}
+                        </SplitterLayout>
+                      </GrowPanel>
+                    </RelLayer>
+                  </SplitterLayout>
                 </RelLayer>
-              </SplitterLayout>
-            </RelLayer>
-          </FillContent>
-        </FillContainer>
+              </FillContent>
+            </FillContainer>
+          </FullFlexColumn>
+        </FullFlexRow>
       </DndProvider>
     );
   }

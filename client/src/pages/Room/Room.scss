@@ -1,3 +1,20 @@
+:root {
+  --bkgd-image: url(https://images.pexels.com/photos/101472/pexels-photo-101472.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260);
+}
+
+#app {
+  background-image: var(--bkgd-image);
+}
+
+.main-background {
+  background-image: var(--bkgd-image);
+  background-position: center center;
+  background-attachment: fixed;
+  content: "";
+  display: flex;
+  flex-grow: 1;
+}
+
 .quote-rent-amount {
   position: absolute;
   bottom: 0px;

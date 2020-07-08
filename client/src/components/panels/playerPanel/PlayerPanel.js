@@ -1,5 +1,5 @@
 import React from "react";
-
+import BlurredBackground from "../../../packages/ReactWindows/Components/Containers/BlurredWrapper/";
 export default ({ children, style = {} }) => {
   return (
     <div
@@ -12,7 +12,7 @@ export default ({ children, style = {} }) => {
         ...style,
       }}
     >
-      {children}
+      <BlurredBackground>{children}</BlurredBackground>
     </div>
   );
 };

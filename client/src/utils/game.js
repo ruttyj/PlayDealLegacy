@@ -12,8 +12,12 @@ import {
 import SCREENS from "../data/screens";
 import PropertySetContainer from "../components/panels/playerPanel/PropertySetContainer";
 import ReduxState from "../App/controllers/reduxState";
-const reduxState = ReduxState.getInstance();
+const reduxState = ReduxState.getInstance(); // Object to manipulate the redux state
 const placeHolderFunc = () => console.log("not defined");
+
+const voiceConfig = {
+  voice: "Australian Female",
+};
 
 function Game(ref) {
   sounds.setVolume(0.5);
@@ -35,8 +39,14 @@ function Game(ref) {
   }
 
   function init() {
+    attachEventHandlers();
+    mIsInit = true;
+  }
+
+  function attachEventHandlers() {
     let game = getPublic();
 
+    // Upon person joining the room
     on(["ROOM", "JOIN"], async (response) => {
       if (isDef(response)) {
         let { personId } = response.payload;
@@ -47,11 +57,21 @@ function Game(ref) {
       }
     });
 
+    // When the game starts
     on(["GAME", "START"], async (data) => {
       sounds.startGame.play();
     });
+
+    // When a person draws cards
     on(["PLAYERS", "PERSON_DREW_CARDS_KEYED"], async (data) => {
+      const game = getPublic();
+
       if (game.isMyTurn()) {
+        if (game.phase.get() === "draw") {
+          responsiveVoice.speak("I draw.", "Australian Female", {
+            volume: 1,
+          });
+        }
         sounds.drawCard.play(data.payload.count);
       } else {
         sounds.theyDrewCard.play(data.payload.count);
@@ -63,14 +83,22 @@ function Game(ref) {
       endTurnSound: true,
       requestSound: true,
     };
+
+    // When the player's turn updates
     on(["PLAYER_TURN", `${"GET"}__STORE_UPDATED`], async () => {
       const game = getPublic();
+
       // Play sound when my turn is done
       if (game.phase.isMyDonePhase() && canTrigger.endTurnSound) {
+        responsiveVoice.speak("Job's done", "Australian Female", {
+          volume: 1,
+        });
+
         canTrigger.endTurnSound = false;
+        let isAutoPassTurnEnabled = game.customUi.get("autoPassTurn", false);
         setTimeout(() => {
           sounds.endTurn.play();
-          if (game.customUi.get("autoPassTurn", false)) {
+          if (isAutoPassTurnEnabled) {
             game.passTurn();
           }
         }, 700);
@@ -133,6 +161,7 @@ function Game(ref) {
           !props().isMyId(previousTurnPersonId)
         ) {
           sounds.yourTurn.play();
+          console.log("before it wasnt");
         }
 
         if (props().isDiscardPhase()) {
@@ -164,6 +193,9 @@ function Game(ref) {
           props().getPeviousTurnPersonId() !== currentTurnPersonId &&
           game.phase.get() === "draw"
         ) {
+          responsiveVoice.speak("It's my turn.", "Australian Female", {
+            volume: 1,
+          });
           await game.resetUi();
         }
       }
@@ -177,6 +209,7 @@ function Game(ref) {
       props().setPreviousRequests(newPreviousIds);
     });
 
+    // When requests updates
     on(["REQUESTS", `${"GET_KEYED"}__STORE_UPDATED`], async () => {
       const game = getPublic();
       // open request screen if any requests are active
@@ -199,10 +232,10 @@ function Game(ref) {
       }
     });
 
+    // Attach the core listeners
     props().attachRoomListeners(connection());
     props().attachPeopleListeners(connection());
     props().attachGameListeners(connection());
-    mIsInit = true;
   }
 
   async function resetState() {
@@ -685,6 +718,7 @@ function Game(ref) {
 
   function passTurn() {
     if (canPassTurn()) {
+      console.log("Hellooooo");
       props().passTurn(connection(), props().getRoomCode());
     }
   }
@@ -1664,7 +1698,7 @@ function Game(ref) {
           let collection = game.collection.get(info.collectionId);
           if (isDef(collection)) {
             console.log("collection", { info, collection });
-            locationDescription = collection.name;
+            locationDescription = collection.key;
           }
         }
         if (isMyCard) {
@@ -2485,6 +2519,10 @@ function Game(ref) {
     collectCollection,
 
     getActionCardId,
+    actionCard: {
+      getId: getActionCardId,
+      get: () => getPublic().card.get(getActionCardId()),
+    },
 
     // SELECTION
     selection: {
