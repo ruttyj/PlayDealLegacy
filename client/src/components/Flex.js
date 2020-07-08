@@ -1,5 +1,5 @@
 import React from "react";
-
+import { classes } from "../utils/";
 const Flex = ({ children, style = {} }) => {
   return <div style={{ display: "flex", ...style }}>{children}</div>;
 };
@@ -106,8 +106,12 @@ const FullFlexColumnCenter = ({ children, style = {} }) => {
   );
 };
 
-const FullFlexRow = ({ children, style = {} }) => {
-  return <FlexRow style={{ width: "100%", ...style }}>{children}</FlexRow>;
+const FullFlexRow = ({ children, classNames = "", style = {} }) => {
+  return (
+    <FlexRow {...classes(classNames)} style={{ width: "100%", ...style }}>
+      {children}
+    </FlexRow>
+  );
 };
 
 const FullFlexRowCenter = ({ children, style = {} }) => {

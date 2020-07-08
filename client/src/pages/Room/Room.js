@@ -135,6 +135,7 @@ import { isArray } from "lodash";
 
 import ReduxState from "../../App/controllers/reduxState";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import wallpapers from "../../packages/ReactWindows/Data/Wallpapers";
 
 ////////////////////////////////////////////////////
 /// Sidebar
@@ -148,6 +149,11 @@ import AddIcon from "@material-ui/icons/Add";
 import PublicIcon from "@material-ui/icons/Public";
 import ChatIcon from "@material-ui/icons/Chat";
 import PeopleIcon from "@material-ui/icons/People";
+
+////////////////////////////////////////////////////
+/// WindowManager
+import WindowManager from "../../packages/ReactWindows/Utils/WindowManager";
+
 ////////////////////////////////////////////////////
 /// Voice Config
 const voiceConfig = {
@@ -316,6 +322,12 @@ class GameUI extends React.Component {
     this.stateBuffer.setSetter(this.setState);
     bindFuncs.forEach((funcName) => {
       this[funcName] = this[funcName].bind(this);
+    });
+
+    this.windowManager = WindowManager(this.stateBuffer);
+
+    this.stateBuffer.set("theme", {
+      wallpaper: els(wallpapers[2], wallpapers[3]), // set default url
     });
   }
 
@@ -2358,6 +2370,8 @@ class GameUI extends React.Component {
     let dumpData = {
       state: this.state,
 
+      theme: this.stateBuffer.get("theme"),
+
       reduxState: reduxState.get(),
 
       reduxState_people: reduxState.get("people", "not defined"),
@@ -2415,7 +2429,7 @@ class GameUI extends React.Component {
   }
 
   renderBackground() {
-    return <div {...classes("main-background")}></div>;
+    return <div {...classes("focused-bkgd", "full-block")}></div>;
   }
 
   renderListOfUsers() {
@@ -2496,107 +2510,118 @@ class GameUI extends React.Component {
     //========================================
     this.updateRender();
 
+    let wallpaper = this.stateBuffer.get(["theme", "wallpaper"]);
+    const style = {
+      "--bkgd-image": `url("${wallpaper}")`,
+    };
+
     return (
       <DndProvider backend={Backend}>
-        <FullFlexRow>
-          <FlexColumn>
-            <AppSidebar>
-              <div {...classes("button", "not-allowed")}>
-                <BugReportIcon />
-              </div>
-              <div {...classes("button", "not-allowed")}>
-                <PeopleIcon />
-              </div>
-              <div {...classes("button", "not-allowed")}>
-                <ChatIcon />
-              </div>
-            </AppSidebar>
-          </FlexColumn>
-          <FullFlexColumn>
-            <FillContainer>
-              <FillHeader>
-                <AppBar position="static">
-                  <Toolbar>
-                    <h5
-                      style={{ padding: "12px" }}
-                      onClick={() => room.leaveRoom()}
-                    >
-                      Room <strong>{room.getCode()}</strong>
-                    </h5>
-                  </Toolbar>
-                </AppBar>
-              </FillHeader>
+        <div style={{ ...style, display: "flex", flexGrow: "1" }}>
+          <FullFlexRow>
+            <FlexColumn>
+              <AppSidebar>
+                <div {...classes("button", "not-allowed")}>
+                  <BugReportIcon />
+                </div>
+                <div {...classes("button", "not-allowed")}>
+                  <PeopleIcon />
+                </div>
+                <div {...classes("button", "not-allowed")}>
+                  <ChatIcon />
+                </div>
+              </AppSidebar>
+            </FlexColumn>
+            <FullFlexColumn>
+              <FillContainer>
+                <FillHeader>
+                  <AppBar position="static">
+                    <Toolbar>
+                      <h5
+                        style={{ padding: "12px" }}
+                        onClick={() => room.leaveRoom()}
+                      >
+                        Room <strong>{room.getCode()}</strong>
+                      </h5>
+                    </Toolbar>
+                  </AppBar>
+                </FillHeader>
 
-              <FillContent>
-                <RelLayer>
-                  <AbsLayer>{this.renderBackground()}</AbsLayer>
-                  <SplitterLayout
-                    customClassName="people_list"
-                    primaryIndex={1}
-                    primaryMinSize={0}
-                    secondaryInitialSize={uiConfig.sidebar.initialSize}
-                    secondaryMinSize={uiConfig.sidebar.minSize}
-                    secondaryMaxSize={uiConfig.sidebar.maxSize}
-                  >
-                    {/*-------------- RENDER LIST OF USERS -------------------*/}
-                    <div
-                      style={{
-                        backgroundColor: "#ffffff85",
-                        height: "100%",
-                      }}
+                <FillContent>
+                  <RelLayer>
+                    <AbsLayer>{this.renderBackground()}</AbsLayer>
+                    <SplitterLayout
+                      customClassName="people_list"
+                      primaryIndex={1}
+                      primaryMinSize={0}
+                      secondaryInitialSize={uiConfig.sidebar.initialSize}
+                      secondaryMinSize={uiConfig.sidebar.minSize}
+                      secondaryMaxSize={uiConfig.sidebar.maxSize}
                     >
-                      {this.renderListOfUsers()}
-                    </div>
-                    <RelLayer>
-                      <GrowPanel>
-                        <SplitterLayout
-                          percentage
-                          primaryIndex={1}
-                          primaryMinSize={0}
-                          secondaryInitialSize={0}
-                          secondaryMinSize={0}
+                      {/*-------------- RENDER LIST OF USERS -------------------*/}
+                      <BlurredWrapper>
+                        <div
+                          style={{
+                            backgroundColor: "#ffffff85",
+                            height: "100%",
+                          }}
                         >
-                          {this.renderDebugData()}
+                          {this.renderListOfUsers()}
+                        </div>
+                      </BlurredWrapper>
+                      <RelLayer>
+                        <GrowPanel>
+                          <SplitterLayout
+                            percentage
+                            primaryIndex={1}
+                            primaryMinSize={0}
+                            secondaryInitialSize={0}
+                            secondaryMinSize={0}
+                          >
+                            {this.renderDebugData()}
 
-                          {/*################################################*/}
-                          {/*                   GAME BOARD                   */}
-                          {/*################################################*/}
-                          <RelLayer>
-                            <VSplitterDragIndicator />
-                            {/*----------------------------------------------*/}
-                            {/*                 Game content                 */}
-                            {/*----------------------------------------------*/}
-                            <AbsLayer style={{ color: "white" }}>
-                              <RelLayer>
-                                <GameBoard
-                                  previousSize={this.stateBuffer.get(
-                                    ["gameWindow", "size"],
-                                    {}
-                                  )}
-                                  onChangeSize={(size) =>
-                                    this.stateBuffer.set(
+                            {/*################################################*/}
+                            {/*                   GAME BOARD                   */}
+                            {/*################################################*/}
+                            <RelLayer>
+                              <VSplitterDragIndicator />
+                              {/*----------------------------------------------*/}
+                              {/*                 Game content                 */}
+                              {/*----------------------------------------------*/}
+                              <AbsLayer style={{ color: "white" }}>
+                                <RelLayer>
+                                  <GameBoard
+                                    previousSize={this.stateBuffer.get(
                                       ["gameWindow", "size"],
-                                      size
-                                    )
-                                  }
-                                  uiConfig={uiConfig}
-                                  gameboard={game.getRenderData("gameboard")}
-                                  turnNotice={game.getRenderData("turnNotice")}
-                                  myArea={this.renderMyArea()}
-                                />
-                              </RelLayer>
-                            </AbsLayer>
-                          </RelLayer>
-                          {/* End Game board ________________________________*/}
-                        </SplitterLayout>
-                      </GrowPanel>
-                    </RelLayer>
-                  </SplitterLayout>
-                </RelLayer>
-              </FillContent>
-            </FillContainer>
-          </FullFlexColumn>
-        </FullFlexRow>
+                                      {}
+                                    )}
+                                    onChangeSize={(size) =>
+                                      this.stateBuffer.set(
+                                        ["gameWindow", "size"],
+                                        size
+                                      )
+                                    }
+                                    uiConfig={uiConfig}
+                                    gameboard={game.getRenderData("gameboard")}
+                                    turnNotice={game.getRenderData(
+                                      "turnNotice"
+                                    )}
+                                    myArea={this.renderMyArea()}
+                                  />
+                                </RelLayer>
+                              </AbsLayer>
+                            </RelLayer>
+                            {/* End Game board ________________________________*/}
+                          </SplitterLayout>
+                        </GrowPanel>
+                      </RelLayer>
+                    </SplitterLayout>
+                  </RelLayer>
+                </FillContent>
+              </FillContainer>
+            </FullFlexColumn>
+          </FullFlexRow>
+        </div>
       </DndProvider>
     );
   }

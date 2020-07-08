@@ -26,7 +26,8 @@
 }
 
 .blurred-bkgd:before,
-.blurred-bkgd:after {
+.blurred-bkgd:after,
+.focused-bkgd {
   -webkit-transition: background-image 0.2s ease-in-out;
   transition: background-image 0.2s ease-in-out;
   background-image: var(--bkgd-image);
