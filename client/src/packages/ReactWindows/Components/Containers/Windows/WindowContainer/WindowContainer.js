@@ -4,30 +4,39 @@ import Utils from "../../../../Utils";
 import RelLayer from "../../../../Components/Layers/RelLayer";
 import AbsLayer from "../../../../Components/Layers/AbsLayer";
 import "./WindowContainer.scss";
+import { isDef } from "../../../../../../utils";
 const { isFunc, classes } = Utils;
 
 const WindowContainer = withResizeDetector(function(props) {
   const { children } = props;
   const { width, height } = props;
   const { windowManager } = props;
-  const leftIndicator = windowManager
-    .getState()
-    .get(["windows", "snapIndicator", "w"], false);
 
-  const rightIndicator = windowManager
-    .getState()
-    .get(["windows", "snapIndicator", "e"], false);
-
-  const topIndicator = windowManager
-    .getState()
-    .get(["windows", "snapIndicator", "n"], false);
-
-  const bottomIndicator = windowManager
-    .getState()
-    .get(["windows", "snapIndicator", "s"], false);
+  let leftIndicator;
+  let rightIndicator;
+  let topIndicator;
+  let bottomIndicator;
   const containerSize = { width, height };
 
-  windowManager.setContainerSize(containerSize);
+  if (false && isDef(windowManager)) {
+    leftIndicator = windowManager
+      .getState()
+      .get(["windows", "snapIndicator", "w"], false);
+
+    rightIndicator = windowManager
+      .getState()
+      .get(["windows", "snapIndicator", "e"], false);
+
+    topIndicator = windowManager
+      .getState()
+      .get(["windows", "snapIndicator", "n"], false);
+
+    bottomIndicator = windowManager
+      .getState()
+      .get(["windows", "snapIndicator", "s"], false);
+
+    windowManager.setContainerSize(containerSize);
+  }
 
   // save these indicators for after when alternate anchor points are supported IE: se / (bottom, right)
   // const otherIndicators = (

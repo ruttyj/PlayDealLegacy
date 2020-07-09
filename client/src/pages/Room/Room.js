@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
 import { withResizeDetector } from "react-resize-detector";
 import { withRouter } from "react-router";
 import pluralize from "pluralize";
@@ -12,6 +14,7 @@ import {
   isArr,
   getNestedValue,
   emptyFunc,
+  setImmutableValue,
 } from "../../utils/";
 
 import sounds from "../../assets/sounds";
@@ -69,7 +72,6 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 
-import BlurredBackground from "../../components/layers/BlurredBackground";
 import Avatar from "@material-ui/core/Avatar";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -155,6 +157,7 @@ import HomeIcon from "@material-ui/icons/Home";
 /// WindowManager
 import WindowManager from "../../packages/ReactWindows/Utils/WindowManager";
 import WindowContainer from "../../packages/ReactWindows/Components/Containers/Windows/WindowContainer/";
+import DragWindow from "../../packages/ReactWindows/Components/Containers/Windows/DragWindow/";
 ////////////////////////////////////////////////////
 /// Voice Config
 const voiceConfig = {
@@ -2516,12 +2519,42 @@ class GameUI extends React.Component {
       "--bkgd-image": `url("${wallpaper}")`,
     };
 
+    const addWindow = () => {
+      this.windowManager.createWindow({
+        isFocused: true,
+        isFullSize: true,
+        isDragDisabled: true,
+        isResizeDisabled: true,
+        title: "Drag and Drop Grids - IFrame",
+        children(props) {
+          return (
+            <div>
+              Hello there <br />X<br />X<br />X<br />X<br />X<br />X
+            </div>
+          );
+        },
+      });
+    };
+
+    const windowManager = this.windowManager;
+
     return (
       <DndProvider backend={Backend}>
         <div style={{ ...style, display: "flex", flexGrow: "1" }}>
           <FullFlexRow>
             <FlexColumn>
               <AppSidebar>
+                {false && (
+                  <div
+                    {...classes("button")}
+                    onClick={() => {
+                      addWindow();
+                    }}
+                  >
+                    <HomeIcon />
+                  </div>
+                )}
+
                 <div
                   {...classes("button")}
                   onClick={() => {
@@ -2570,81 +2603,182 @@ class GameUI extends React.Component {
                 <FillContent>
                   <RelLayer>
                     <AbsLayer>{this.renderBackground()}</AbsLayer>
-                    <WindowContainer
-                      windowManager={this.windowManager}
-                      children={({ containerSize }) => (
-                        <>
+
+                    <SplitterLayout
+                      customClassName="people_list"
+                      primaryIndex={1}
+                      primaryMinSize={0}
+                      secondaryInitialSize={uiConfig.sidebar.initialSize}
+                      secondaryMinSize={uiConfig.sidebar.minSize}
+                      secondaryMaxSize={uiConfig.sidebar.maxSize}
+                    >
+                      {/*-------------- RENDER LIST OF USERS -------------------*/}
+                      <BlurredWrapper>
+                        <div
+                          style={{
+                            backgroundColor: "#ffffff85",
+                            height: "100%",
+                          }}
+                        >
+                          {this.renderListOfUsers()}
+                        </div>
+                      </BlurredWrapper>
+                      <RelLayer>
+                        <GrowPanel>
                           <SplitterLayout
-                            customClassName="people_list"
+                            percentage
                             primaryIndex={1}
                             primaryMinSize={0}
-                            secondaryInitialSize={uiConfig.sidebar.initialSize}
-                            secondaryMinSize={uiConfig.sidebar.minSize}
-                            secondaryMaxSize={uiConfig.sidebar.maxSize}
+                            secondaryInitialSize={0}
+                            secondaryMinSize={0}
                           >
-                            {/*-------------- RENDER LIST OF USERS -------------------*/}
-                            <BlurredWrapper>
-                              <div
-                                style={{
-                                  backgroundColor: "#ffffff85",
-                                  height: "100%",
-                                }}
-                              >
-                                {this.renderListOfUsers()}
-                              </div>
-                            </BlurredWrapper>
-                            <RelLayer>
-                              <GrowPanel>
-                                <SplitterLayout
-                                  percentage
-                                  primaryIndex={1}
-                                  primaryMinSize={0}
-                                  secondaryInitialSize={0}
-                                  secondaryMinSize={0}
-                                >
-                                  {this.renderDebugData()}
+                            {this.renderDebugData()}
 
-                                  {/*################################################*/}
-                                  {/*                   GAME BOARD                   */}
-                                  {/*################################################*/}
-                                  <RelLayer>
-                                    <VSplitterDragIndicator />
-                                    {/*----------------------------------------------*/}
-                                    {/*                 Game content                 */}
-                                    {/*----------------------------------------------*/}
-                                    <AbsLayer style={{ color: "white" }}>
-                                      <RelLayer>
-                                        <GameBoard
-                                          previousSize={this.stateBuffer.get(
-                                            ["gameWindow", "size"],
-                                            {}
-                                          )}
-                                          onChangeSize={(size) =>
-                                            this.stateBuffer.set(
+                            {/*################################################*/}
+                            {/*                   GAME BOARD                   */}
+                            {/*################################################*/}
+                            <RelLayer>
+                              <VSplitterDragIndicator />
+                              {/*----------------------------------------------*/}
+                              {/*                 Game content                 */}
+                              {/*----------------------------------------------*/}
+                              <AbsLayer style={{ color: "white" }}>
+                                <RelLayer>
+                                  <WindowContainer
+                                    windowManager={windowManager}
+                                    children={({ containerSize }) =>
+                                      windowManager && (
+                                        <>
+                                          <GameBoard
+                                            previousSize={this.stateBuffer.get(
                                               ["gameWindow", "size"],
-                                              size
-                                            )
-                                          }
-                                          uiConfig={uiConfig}
-                                          gameboard={game.getRenderData(
-                                            "gameboard"
-                                          )}
-                                          turnNotice={game.getRenderData(
-                                            "turnNotice"
-                                          )}
-                                          myArea={this.renderMyArea()}
-                                        />
-                                      </RelLayer>
-                                    </AbsLayer>
-                                  </RelLayer>
-                                  {/* End Game board ________________________________*/}
-                                </SplitterLayout>
-                              </GrowPanel>
+                                              {}
+                                            )}
+                                            onChangeSize={(size) =>
+                                              this.stateBuffer.set(
+                                                ["gameWindow", "size"],
+                                                size
+                                              )
+                                            }
+                                            uiConfig={uiConfig}
+                                            gameboard={game.getRenderData(
+                                              "gameboard"
+                                            )}
+                                            turnNotice={game.getRenderData(
+                                              "turnNotice"
+                                            )}
+                                            myArea={this.renderMyArea()}
+                                          />
+                                          <div {...classes("window-host")}>
+                                            {windowManager
+                                              .getAllWindows()
+                                              .map((window) => {
+                                                const contents = (
+                                                  <DragWindow
+                                                    window={window}
+                                                    onSet={(path, value) =>
+                                                      windowManager.setWindow(
+                                                        window.id,
+                                                        setImmutableValue(
+                                                          window,
+                                                          path,
+                                                          value
+                                                        )
+                                                      )
+                                                    }
+                                                    onSetSize={(...args) =>
+                                                      windowManager.setSize(
+                                                        window.id,
+                                                        ...args
+                                                      )
+                                                    }
+                                                    onSetPosition={(
+                                                      ...args
+                                                    ) => {
+                                                      windowManager.setPosition(
+                                                        window.id,
+                                                        ...args
+                                                      );
+                                                    }}
+                                                    onClose={() =>
+                                                      windowManager.removeWindow(
+                                                        window.id
+                                                      )
+                                                    }
+                                                    onToggleWindow={() =>
+                                                      windowManager.toggleWindow(
+                                                        window.id,
+                                                        true
+                                                      )
+                                                    }
+                                                    onSetFocus={(value) =>
+                                                      windowManager.setFocused(
+                                                        window.id,
+                                                        value
+                                                      )
+                                                    }
+                                                    onDown={(window) => {
+                                                      // allow dragging to be unaffected incase the other window prevents event propagation
+                                                      windowManager.toggleOtherWindowsPointerEvents(
+                                                        window.id,
+                                                        true
+                                                      );
+                                                    }}
+                                                    onUp={(window) => {
+                                                      // renable pointer events for other windows
+                                                      windowManager.toggleOtherWindowsPointerEvents(
+                                                        window.id,
+                                                        false
+                                                      );
+                                                    }}
+                                                    title={window.title}
+                                                    snapIndicator={this.stateBuffer.get(
+                                                      [
+                                                        "windows",
+                                                        "snapIndicator",
+                                                      ]
+                                                    )}
+                                                    setSnapIndicator={(
+                                                      key,
+                                                      value
+                                                    ) =>
+                                                      this.stateBuffer.set(
+                                                        [
+                                                          "windows",
+                                                          "snapIndicator",
+                                                          key,
+                                                        ],
+                                                        value
+                                                      )
+                                                    }
+                                                    containerSize={
+                                                      containerSize
+                                                    }
+                                                    children={window.children}
+                                                    actions={window.actions}
+                                                  />
+                                                );
+                                                return (
+                                                  <AnimatePresence
+                                                    key={window.id}
+                                                  >
+                                                    {contents}
+                                                  </AnimatePresence>
+                                                );
+                                              })}
+                                          </div>
+                                        </>
+                                      )
+                                    }
+                                  />
+                                </RelLayer>
+                              </AbsLayer>
                             </RelLayer>
+                            {/* End Game board ________________________________*/}
                           </SplitterLayout>
-                        </>
-                      )}
-                    />
+                        </GrowPanel>
+                      </RelLayer>
+                    </SplitterLayout>
                   </RelLayer>
                 </FillContent>
               </FillContainer>

@@ -27,8 +27,10 @@ function DragHandle(props) {
 
   const handleOnDown = () => {
     if (!disabled) {
-      setDown(true);
-      onDown();
+      if (!isDown) {
+        setDown(true);
+        onDown();
+      }
     }
   };
 

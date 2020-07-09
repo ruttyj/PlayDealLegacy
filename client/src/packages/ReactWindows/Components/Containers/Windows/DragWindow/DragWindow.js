@@ -44,6 +44,7 @@ const DragWindow = withResizeDetector(function(props) {
     snapIndicator = {},
     children,
     actions,
+    hideTitle = false,
   } = props;
   let {
     onSet = ef,
@@ -656,7 +657,7 @@ const DragWindow = withResizeDetector(function(props) {
           {dragHandleContents}
           <div {...classes(["inner-content", "grow", "column"])}>
             <FillContainer>
-              <FillHeader>{headerContents}</FillHeader>
+              {hideTitle && <FillHeader>{headerContents}</FillHeader>}
 
               <FillContent
                 classNames={[

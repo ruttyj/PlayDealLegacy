@@ -2,6 +2,10 @@
   --bkgd-image: url(https://images.pexels.com/photos/101472/pexels-photo-101472.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260);
 }
 
+.window-host {
+  z-index: 10;
+}
+
 .main-background {
   background-image: var(--bkgd-image);
   background-position: center center;
