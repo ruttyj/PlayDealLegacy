@@ -34,7 +34,6 @@ function IntroContainer(props) {
               "linear-gradient(45deg, #820773, #1c026c 40%, #0087d6)",
             color: "white",
           }}
-          title="Contemplative Reptile"
         >
           <FullFlexColumnCenter>{content}</FullFlexColumnCenter>
         </CardMedia>
