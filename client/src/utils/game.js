@@ -1522,11 +1522,12 @@ function Game(ref) {
       if (collectionCards.length > 0) {
         collectionCards.forEach((cardId) => {
           if (game.card.isSetAugmentCard(cardId)) {
-            let effect = getNestedValue(cardId, ["setAugment", "affect"]);
-            if (isDef(effect.inc)) {
+            let card = game.card.get(cardId);
+            let effect = getNestedValue(card, ["setAugment", "affect"]);
+            if (isDefNested(effect, "inc")) {
               incrementAmount += effect.inc;
             }
-            if (isDef(effect.multiply)) {
+            if (isDefNested(effect, "multiply")) {
               multiplyAmount *= effect.multiply;
             }
           }

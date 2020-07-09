@@ -149,11 +149,12 @@ import AddIcon from "@material-ui/icons/Add";
 import PublicIcon from "@material-ui/icons/Public";
 import ChatIcon from "@material-ui/icons/Chat";
 import PeopleIcon from "@material-ui/icons/People";
+import HomeIcon from "@material-ui/icons/Home";
 
 ////////////////////////////////////////////////////
 /// WindowManager
 import WindowManager from "../../packages/ReactWindows/Utils/WindowManager";
-
+import WindowContainer from "../../packages/ReactWindows/Components/Containers/Windows/WindowContainer/";
 ////////////////////////////////////////////////////
 /// Voice Config
 const voiceConfig = {
@@ -2521,14 +2522,33 @@ class GameUI extends React.Component {
           <FullFlexRow>
             <FlexColumn>
               <AppSidebar>
-                <div {...classes("button", "not-allowed")}>
-                  <BugReportIcon />
+                <div
+                  {...classes("button")}
+                  onClick={() => {
+                    this.props.history.push("/");
+                  }}
+                >
+                  <ArrowToolTip title="Leave room" placement="right">
+                    <HomeIcon />
+                  </ArrowToolTip>
                 </div>
                 <div {...classes("button", "not-allowed")}>
-                  <PeopleIcon />
+                  <ArrowToolTip
+                    title="Show debugging variables"
+                    placement="right"
+                  >
+                    <BugReportIcon />
+                  </ArrowToolTip>
                 </div>
                 <div {...classes("button", "not-allowed")}>
-                  <ChatIcon />
+                  <ArrowToolTip title="Show person menu" placement="right">
+                    <PeopleIcon />
+                  </ArrowToolTip>
+                </div>
+                <div {...classes("button", "not-allowed")}>
+                  <ArrowToolTip title="Show chat" placement="right">
+                    <ChatIcon />
+                  </ArrowToolTip>
                 </div>
               </AppSidebar>
             </FlexColumn>
@@ -2550,72 +2570,81 @@ class GameUI extends React.Component {
                 <FillContent>
                   <RelLayer>
                     <AbsLayer>{this.renderBackground()}</AbsLayer>
-                    <SplitterLayout
-                      customClassName="people_list"
-                      primaryIndex={1}
-                      primaryMinSize={0}
-                      secondaryInitialSize={uiConfig.sidebar.initialSize}
-                      secondaryMinSize={uiConfig.sidebar.minSize}
-                      secondaryMaxSize={uiConfig.sidebar.maxSize}
-                    >
-                      {/*-------------- RENDER LIST OF USERS -------------------*/}
-                      <BlurredWrapper>
-                        <div
-                          style={{
-                            backgroundColor: "#ffffff85",
-                            height: "100%",
-                          }}
-                        >
-                          {this.renderListOfUsers()}
-                        </div>
-                      </BlurredWrapper>
-                      <RelLayer>
-                        <GrowPanel>
+                    <WindowContainer
+                      windowManager={this.windowManager}
+                      children={({ containerSize }) => (
+                        <>
                           <SplitterLayout
-                            percentage
+                            customClassName="people_list"
                             primaryIndex={1}
                             primaryMinSize={0}
-                            secondaryInitialSize={0}
-                            secondaryMinSize={0}
+                            secondaryInitialSize={uiConfig.sidebar.initialSize}
+                            secondaryMinSize={uiConfig.sidebar.minSize}
+                            secondaryMaxSize={uiConfig.sidebar.maxSize}
                           >
-                            {this.renderDebugData()}
-
-                            {/*################################################*/}
-                            {/*                   GAME BOARD                   */}
-                            {/*################################################*/}
+                            {/*-------------- RENDER LIST OF USERS -------------------*/}
+                            <BlurredWrapper>
+                              <div
+                                style={{
+                                  backgroundColor: "#ffffff85",
+                                  height: "100%",
+                                }}
+                              >
+                                {this.renderListOfUsers()}
+                              </div>
+                            </BlurredWrapper>
                             <RelLayer>
-                              <VSplitterDragIndicator />
-                              {/*----------------------------------------------*/}
-                              {/*                 Game content                 */}
-                              {/*----------------------------------------------*/}
-                              <AbsLayer style={{ color: "white" }}>
-                                <RelLayer>
-                                  <GameBoard
-                                    previousSize={this.stateBuffer.get(
-                                      ["gameWindow", "size"],
-                                      {}
-                                    )}
-                                    onChangeSize={(size) =>
-                                      this.stateBuffer.set(
-                                        ["gameWindow", "size"],
-                                        size
-                                      )
-                                    }
-                                    uiConfig={uiConfig}
-                                    gameboard={game.getRenderData("gameboard")}
-                                    turnNotice={game.getRenderData(
-                                      "turnNotice"
-                                    )}
-                                    myArea={this.renderMyArea()}
-                                  />
-                                </RelLayer>
-                              </AbsLayer>
+                              <GrowPanel>
+                                <SplitterLayout
+                                  percentage
+                                  primaryIndex={1}
+                                  primaryMinSize={0}
+                                  secondaryInitialSize={0}
+                                  secondaryMinSize={0}
+                                >
+                                  {this.renderDebugData()}
+
+                                  {/*################################################*/}
+                                  {/*                   GAME BOARD                   */}
+                                  {/*################################################*/}
+                                  <RelLayer>
+                                    <VSplitterDragIndicator />
+                                    {/*----------------------------------------------*/}
+                                    {/*                 Game content                 */}
+                                    {/*----------------------------------------------*/}
+                                    <AbsLayer style={{ color: "white" }}>
+                                      <RelLayer>
+                                        <GameBoard
+                                          previousSize={this.stateBuffer.get(
+                                            ["gameWindow", "size"],
+                                            {}
+                                          )}
+                                          onChangeSize={(size) =>
+                                            this.stateBuffer.set(
+                                              ["gameWindow", "size"],
+                                              size
+                                            )
+                                          }
+                                          uiConfig={uiConfig}
+                                          gameboard={game.getRenderData(
+                                            "gameboard"
+                                          )}
+                                          turnNotice={game.getRenderData(
+                                            "turnNotice"
+                                          )}
+                                          myArea={this.renderMyArea()}
+                                        />
+                                      </RelLayer>
+                                    </AbsLayer>
+                                  </RelLayer>
+                                  {/* End Game board ________________________________*/}
+                                </SplitterLayout>
+                              </GrowPanel>
                             </RelLayer>
-                            {/* End Game board ________________________________*/}
                           </SplitterLayout>
-                        </GrowPanel>
-                      </RelLayer>
-                    </SplitterLayout>
+                        </>
+                      )}
+                    />
                   </RelLayer>
                 </FillContent>
               </FillContainer>
