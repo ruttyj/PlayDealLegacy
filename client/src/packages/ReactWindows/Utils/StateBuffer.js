@@ -30,7 +30,6 @@ export default function StateBuffer(_initialState = {}) {
   let mSetter = null;
   let mMutator = (v) => v;
   const _flush = debounce(async function() {
-    //console.log("flush");
     flush(mSetter);
   }, 1);
 

@@ -1052,7 +1052,7 @@ class GameUI extends React.Component {
             });
           }
         } else {
-          responsiveVoice.speak("I end my turn.", "Australian Female", {
+          responsiveVoice.speak("I end my turn.", voiceConfig.voice, {
             volume: 1,
           });
           game.passTurn();
@@ -1768,11 +1768,17 @@ class GameUI extends React.Component {
                   card: card,
                   from: "hand",
                 }}
-                onActiveSetChange={async ({ cardId, propertySetKey }) => {
+                onActiveSetChange={async ({ e, cardId, propertySetKey }) => {
+                  if (isDefNested(e, "stopPropagation")) {
+                    console.log("stopPropagation");
+                    e.stopPropagation();
+                  }
                   let result = await game.flipWildPropertyCard(
                     cardId,
                     propertySetKey
                   );
+                  console.log("result", result);
+
                   if (!result) {
                     if (!game.turn.isMyTurn()) {
                       let speech = `I have to wait until it's my turn to change the color of this card.`;
@@ -2038,16 +2044,57 @@ class GameUI extends React.Component {
                                   <RenderInteractableCard
                                     card={card}
                                     propertySetMap={propertySetsKeyed}
-                                    onActiveSetChange={({
+                                    onActiveSetChange={async ({
+                                      e,
                                       cardId,
                                       propertySetKey,
-                                    }) =>
-                                      game.flipWildPropertyCard(
+                                    }) => {
+                                      if (isDefNested(e, "stopPropagation")) {
+                                        console.log("stopPropagation");
+                                        e.stopPropagation();
+                                      }
+
+                                      let result = await game.flipWildPropertyCard(
                                         cardId,
                                         propertySetKey,
                                         { collectionId }
-                                      )
-                                    }
+                                      );
+
+                                      if (result) {
+                                        // card was flipped
+                                      } else {
+                                        //
+                                        let speech =
+                                          "I can't change this card's color yet.";
+
+                                        if (!game.isMyId(person.id)) {
+                                          speech = game.card.describeLocation(
+                                            card.id
+                                          );
+                                        } else {
+                                          speech =
+                                            "I need to wait untill it's my turn.";
+                                          if (game.turn.isMyTurn()) {
+                                            speech =
+                                              "I need to wait untill it's my turn.";
+                                          } else if (
+                                            game.turn.isMyTurn() &&
+                                            game.phase.get() === "draw"
+                                          ) {
+                                            speech =
+                                              "I need to draw my cards first.";
+                                          }
+                                        }
+
+                                        responsiveVoice.speak(
+                                          speech,
+                                          voiceConfig.voice,
+                                          {
+                                            volume: 1,
+                                          }
+                                        );
+                                      }
+                                    }}
                                     scaledPercent={
                                       uiConfig.collection.default.scalePercent
                                     }

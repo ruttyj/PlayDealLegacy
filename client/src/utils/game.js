@@ -111,7 +111,6 @@ function Game(ref) {
         let requestId = request.id;
         let actionCardId = game.request.getActionCardId(requestId);
         let existedPreviously = game.request.existedPreviously(requestId);
-        console.log("existedPreviously", existedPreviously);
         if (!existedPreviously) {
           playSound = sounds.newRequest;
 
@@ -152,7 +151,6 @@ function Game(ref) {
 
       let previousTurnPersonId = props().getPeviousTurnPersonId();
       let currentTurnPersonId = props().getCurrentTurnPersonId();
-      console.log("0", game.isMyTurn());
 
       if (game.isMyTurn()) {
         // If is my turn now
@@ -161,7 +159,6 @@ function Game(ref) {
           !props().isMyId(previousTurnPersonId)
         ) {
           sounds.yourTurn.play();
-          console.log("before it wasnt");
         }
 
         if (props().isDiscardPhase()) {
@@ -199,7 +196,6 @@ function Game(ref) {
           await game.resetUi();
         }
       }
-      console.log("8");
 
       // update previous ids
       let newPreviousIds = {};
@@ -718,7 +714,6 @@ function Game(ref) {
 
   function passTurn() {
     if (canPassTurn()) {
-      console.log("Hellooooo");
       props().passTurn(connection(), props().getRoomCode());
     }
   }
@@ -1035,8 +1030,6 @@ function Game(ref) {
     await game.selection.collections.selectable.set(selectableCollectionIds);
     await game.selection.collections.selectable.setLimit(1);
 
-    console.log("actionCardId", game.getDisplayData(["actionCardId"], 0));
-
     return true;
   }
 
@@ -1198,7 +1191,7 @@ function Game(ref) {
       propertySetKey,
       isDef(collectionId) ? collectionId : null
     );
-    console.log("flipWildPropertyCard", result);
+    return result;
   }
 
   async function addCardToMyBankFromHand(id) {
@@ -1447,7 +1440,6 @@ function Game(ref) {
   }
 
   async function updateDisplayData(path, value) {
-    console.log("updateDisplayData", { path, value });
     await props().updateDisplayData({ path, value });
   }
 
@@ -1682,10 +1674,8 @@ function Game(ref) {
     let game = getPublic();
     let card = game.card.get(cardId);
     let speech = "";
-    console.log("describeCardLocation", card);
     if (isDef(card)) {
       let seperated = seperateCards([card.id]);
-      console.log("seperateCards", seperated);
 
       speech = "Card location unknown.";
       if (isArr(seperated) && seperated.length === 1) {
@@ -1698,8 +1688,7 @@ function Game(ref) {
         if (location === "collection") {
           let collection = game.collection.get(info.collectionId);
           if (isDef(collection)) {
-            console.log("collection", { info, collection });
-            locationDescription = collection.key;
+            locationDescription = collection.propertySetKey;
           }
         }
         if (isMyCard) {
