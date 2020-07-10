@@ -188,6 +188,7 @@ function Game(ref) {
         // if is new turn reset selections
         if (
           props().getPeviousTurnPersonId() !== currentTurnPersonId &&
+          game.isMyTurn() &&
           game.phase.get() === "draw"
         ) {
           responsiveVoice.speak("It's my turn.", "Australian Female", {
