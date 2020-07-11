@@ -488,12 +488,12 @@ class GameUI extends React.Component {
     from = els(from, "hand");
     let card = game.card.get(cardId);
     if (isDef(card)) {
-      let speech = game.card.describeLocation(card.id);
-      if (isDef(speech)) {
-        responsiveVoice.speak(speech, voiceConfig.voice, {
-          volume: 1,
-        });
-      }
+      //let speech = game.card.describeLocation(card.id);
+      //if (isDef(speech)) {
+      //  responsiveVoice.speak(speech, voiceConfig.voice, {
+      //    volume: 1,
+      //  });
+      //}
     }
   }
 
