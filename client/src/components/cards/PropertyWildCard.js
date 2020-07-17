@@ -98,7 +98,7 @@ const PropertyWildCard = ({
 
   return (
     <BaseDealCard color={getColorForSetKey(card.set)} style={style}>
-      <PropertyTitle title="Wild Card" />
+      <PropertyTitle title="Wildling" />
       <div className={classes.toggle}>{renderOptions}</div>
       <MiniPriceDiamond value={cardValue} />
     </BaseDealCard>
