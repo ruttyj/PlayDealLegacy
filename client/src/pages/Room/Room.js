@@ -1812,7 +1812,7 @@ class GameUI extends React.Component {
     if (game.isMyTurn()) {
       if (game.cards.myHand.hasTooMany()) {
         let howMany = game.cards.myHand.getTooMany();
-        let text = `I have allot of cards... I will need to discard ${howMany} ${pluralize(
+        let text = `I have a lot of cards... I will need to discard ${howMany} ${pluralize(
           `card`,
           howMany
         )} at the end of my turn if I don't use ${
