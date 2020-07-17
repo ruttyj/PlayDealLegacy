@@ -341,12 +341,12 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Valyrian Steel",
+          name: "Penthouse Suite",
           key: "PROPERTY_BLUE_1",
           value: 4,
         },
         {
-          name: "Dragonglass",
+          name: "Lake Side",
           key: "PROPERTY_BLUE_2",
           value: 4,
         },
@@ -363,17 +363,17 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Viserion",
+          name: "National Park",
           key: "PROPERTY_GREEN_1",
           value: 4,
         },
         {
-          name: "Drogon",
+          name: "North of Nowhere",
           key: "PROPERTY_GREEN_2",
           value: 4,
         },
         {
-          name: "Rhaegal",
+          name: "The Booneys",
           key: "PROPERTY_GREEN_3",
           value: 4,
         },
@@ -390,17 +390,17 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Elia Martell",
+          name: "College Dorms",
           key: "PROPERTY_YELLOW_1",
           value: 3,
         },
         {
-          name: "Oberyn Martell",
+          name: "Thrift Shop",
           key: "PROPERTY_YELLOW_2",
           value: 3,
         },
         {
-          name: "Lewyn Martell",
+          name: "Friend's Couch",
           key: "PROPERTY_YELLOW_3",
           value: 3,
         },
@@ -417,17 +417,17 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Tyrion Lannister",
+          name: "Papa Fried Chicken",
           key: "PROPERTY_RED_1",
           value: 2,
         },
         {
-          name: "Cersei Lannister",
+          name: "McDo",
           key: "PROPERTY_RED_2",
           value: 2,
         },
         {
-          name: "Jaime Lannister",
+          name: "Pizza Place",
           key: "PROPERTY_RED_3",
           value: 2,
         },
@@ -444,17 +444,17 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Daenerys Targaryen",
+          name: "Hill-Billy Hay Stack",
           key: "PROPERTY_ORANGE_1",
           value: 2,
         },
         {
-          name: "Viserys Targaryen",
+          name: "Trailer Park",
           key: "PROPERTY_ORANGE_2",
           value: 2,
         },
         {
-          name: "Rhaegar Targaryen",
+          name: "The local bar",
           key: "PROPERTY_ORANGE_3",
           value: 2,
         },
@@ -464,22 +464,22 @@ const deckTemplate = {
       set: "black",
       cards: [
         {
-          name: "Ghost",
+          name: "Metro Lines",
           key: "PROPERTY_BLACK_1",
           value: 2,
         },
         {
-          name: "Nymeria",
+          name: "Zuber",
           key: "PROPERTY_BLACK_2",
           value: 2,
         },
         {
-          name: "Lady",
+          name: "Taxi Company",
           key: "PROPERTY_BLACK_3",
           value: 2,
         },
         {
-          name: "Summer",
+          name: "Bus Company",
           key: "PROPERTY_BLACK_4",
           value: 2,
         },
@@ -504,17 +504,17 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Lady Tyrell",
+          name: "Hair Salon",
           key: "PROPERTY_PURPLE_1",
           value: 2,
         },
         {
-          name: "Lady Stark",
+          name: "Spa",
           key: "PROPERTY_PURPLE_2",
           value: 2,
         },
         {
-          name: "Lady Arryn",
+          name: "Yoga",
           key: "PROPERTY_PURPLE_3",
           value: 2,
         },
@@ -531,17 +531,17 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Ned Stark",
+          name: "Water Park",
           key: "PROPERTY_CYAN_1",
           value: 1,
         },
         {
-          name: "Khal Drogo",
+          name: "The Local Beach",
           key: "PROPERTY_CYAN_2",
           value: 1,
         },
         {
-          name: "Jon Arryn",
+          name: "AquaLand",
           key: "PROPERTY_CYAN_3",
           value: 1,
         },
@@ -557,12 +557,12 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "3 Eyed Raven",
+          name: "Internet provider",
           key: "PROPERTY_PINK_1",
           value: 2,
         },
         {
-          name: "Longclaw",
+          name: "Streaming Services",
           key: "PROPERTY_PINK_2",
           value: 2,
         },
@@ -578,12 +578,12 @@ const deckTemplate = {
       },
       cards: [
         {
-          name: "Ramsay Bolton",
+          name: "Cardboard Box",
           key: "PROPERTY_BROWN_1",
           value: 1,
         },
         {
-          name: "Joffrey Lannister",
+          name: "Trash bin",
           key: "PROPERTY_BROWN_2",
           value: 1,
         },
