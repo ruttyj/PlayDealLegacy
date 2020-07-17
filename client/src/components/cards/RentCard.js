@@ -137,7 +137,9 @@ export default ({
       <MiniPriceDiamond value={cardValue} />
       <div className={classes.card_wrapper}>
         <div className={classes.rent_colors}>
-          <div className={classes.rent_inner}>RENT</div>
+          <div className={classes.rent_inner}>
+            <small style={{ textAlign: "center" }}>IRON BANK</small>
+          </div>
         </div>
         <div className={classes.card_title}>
           {target === "one" ? (

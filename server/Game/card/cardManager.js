@@ -1,4 +1,4 @@
-const deckTemplate = require("./deckTemplate_testDeck");
+const deckTemplate = require("./deckTemplate");
 const {
   els,
   isDef,

@@ -61,9 +61,9 @@ export default ({ card = {}, style = {} }) => {
           />
         </div>
         <div className={classes.card_title}>
-          Draw 2
+          Littlefinger's
           <br />
-          Cards
+          brothel
         </div>
       </div>
       <MiniPriceDiamond value={cardValue} />

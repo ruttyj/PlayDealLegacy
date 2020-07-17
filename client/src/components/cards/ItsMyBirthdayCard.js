@@ -60,7 +60,7 @@ export default ({ card = {}, style = {} }) => {
             className={classes.img_style_smaller}
           />
         </div>
-        <div className={classes.card_title}>It's my Birthday!</div>
+        <div className={classes.card_title}>Give me fucking chicken!</div>
       </div>
       <MiniPriceDiamond value={cardValue} />
     </BaseDealCard>

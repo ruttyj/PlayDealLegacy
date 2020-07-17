@@ -73,7 +73,7 @@ const deckTemplate = {
   },
   action: {
     DEAL_BREAKER: {
-      name: "Steal Collection",
+      name: "Red Wedding",
       key: "DEAL_BREAKER",
       tags: ["request", "stealCollection", "contestable", "bankable"],
       class: "stealCollection",
@@ -82,7 +82,7 @@ const deckTemplate = {
       value: 5,
     },
     JUST_SAY_NO: {
-      name: "Just say no",
+      name: "Hodor",
       key: "JUST_SAY_NO",
       class: "justSayNo",
       tags: [
@@ -96,7 +96,7 @@ const deckTemplate = {
       value: 4,
     },
     STEAL_PROPERTY: {
-      name: "Steal property",
+      name: "White Walker",
       key: "STEAL_PROPERTY",
       class: "stealProperty",
       tags: ["request", "stealProperty", "contestable", "bankable"],
@@ -144,7 +144,7 @@ const deckTemplate = {
       value: 3,
     },
     ITS_MY_BIRTHDAY: {
-      name: "It's my birthday!",
+      name: "Give me fucking chicken",
       key: "ITS_MY_BIRTHDAY",
       class: "collection",
       tags: [

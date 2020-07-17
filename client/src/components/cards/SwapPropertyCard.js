@@ -89,7 +89,7 @@ export default ({ card = {}, style = {} }) => {
             className={classes.img_style_smaller}
           />
         </div>
-        <div className={classes.card_title}>Swap Property</div>
+        <div className={classes.card_title}>Reek</div>
       </div>
       <MiniPriceDiamond value={cardValue} color={color} />
     </BaseDealCard>

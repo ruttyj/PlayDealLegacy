@@ -55,7 +55,7 @@ export default ({ card = {}, style = {} }) => {
             className={classes.img_style}
           />
         </div>
-        <div className={classes.card_title}>STEAL PROPERTY</div>
+        <div className={classes.card_title}>White Walker</div>
       </div>
       <MiniPriceDiamond value={cardValue} color={color} />
     </BaseDealCard>
