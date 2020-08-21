@@ -32,8 +32,9 @@ export default function StateBuffer(_initialState = {}) {
     mMutator = m;
   }
 
-  function toggle(path = [], value) {
-    mCurrentState = setImmutableValue(mCurrentState, path, !get(path, false));
+  function toggle(path = [], fallback = false) {
+    let currentValue = get(path, fallback);
+    mCurrentState = setImmutableValue(mCurrentState, path, !currentValue);
     _flush();
   }
 

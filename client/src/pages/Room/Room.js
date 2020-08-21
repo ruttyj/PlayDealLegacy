@@ -65,6 +65,7 @@ import {
   FlexRowCenter,
   FullFlexRow,
   FullFlexColumn,
+  FullFlexGrow,
 } from "../../components/Flex";
 import ShakeAnimationWrapper from "../../components/effects/Shake";
 
@@ -116,6 +117,8 @@ import GameOverScreen from "../../components/screens/GameOverScreen";
 // Icons
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import StarBorder from "@material-ui/icons/StarBorder";
+import RecordVoiceOverIcon from "@material-ui/icons/RecordVoiceOver";
+import VoiceOverOffIcon from "@material-ui/icons/VoiceOverOff";
 
 // Buttons
 import { ArrowToolTip } from "../../packages/ReactWindows/Exports/Exports";
@@ -383,6 +386,10 @@ class GameUI extends React.Component {
   //########################################
   // When clicking a card in hand
   async handleOnHandCardClick({ cardId, from }) {
+    const IS_SPEECH_ENABLED = this.stateBuffer.get(
+      ["textToSpeech", "enabled"],
+      false
+    );
     from = els(from, "hand");
     let card = game.card.get(cardId);
 
@@ -472,7 +479,7 @@ class GameUI extends React.Component {
           speech = "It's not my turn yet";
         }
 
-        if (isDef(speech)) {
+        if (IS_SPEECH_ENABLED && isDef(speech)) {
           responsiveVoice.speak(speech, voiceConfig.voice, {
             volume: 1,
           });
@@ -915,6 +922,10 @@ class GameUI extends React.Component {
   //########################################
   updateRender(customFn, mode) {
     const self = this;
+    const IS_SPEECH_ENABLED = self.stateBuffer.get(
+      ["textToSpeech", "enabled"],
+      false
+    );
 
     // Action button defintions
 
@@ -952,9 +963,11 @@ class GameUI extends React.Component {
       );
       game.updateRenderData(["actionButton", "onClick"], (...args) => {
         if (isButtonDisabled) {
-          responsiveVoice.speak(buttonTitle, voiceConfig.voice, {
-            volume: 1,
-          });
+          if (IS_SPEECH_ENABLED) {
+            responsiveVoice.speak(buttonTitle, voiceConfig.voice, {
+              volume: 1,
+            });
+          }
         } else {
           self.handleOnDiscardCards(...args);
         }
@@ -1045,16 +1058,24 @@ class GameUI extends React.Component {
       }
 
       let handleOnClick = () => {
+        let speech = null;
+        let passTurn = false;
         if (isButtonDisabled) {
           if (isDef(buttonSpeech)) {
-            responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
-              volume: 1,
-            });
+            speech = buttonSpeech;
           }
         } else {
-          responsiveVoice.speak("I end my turn.", voiceConfig.voice, {
+          speech = "Jobs done.";
+          passTurn = true;
+        }
+
+        if (IS_SPEECH_ENABLED && speech) {
+          responsiveVoice.speak(speech, voiceConfig.voice, {
             volume: 1,
           });
+        }
+
+        if (passTurn) {
           game.passTurn();
         }
       };
@@ -1081,7 +1102,7 @@ class GameUI extends React.Component {
         console.log("isButtonDisabled", isButtonDisabled);
         if (isButtonDisabled) {
           buttonTitle = buttonSpeech;
-          if (isDef(buttonSpeech)) {
+          if (IS_SPEECH_ENABLED && isDef(buttonSpeech)) {
             responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
               volume: 1,
             });
@@ -1131,9 +1152,11 @@ class GameUI extends React.Component {
       }
 
       buttonAction = () => {
-        responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
-          volume: 1,
-        });
+        if (IS_SPEECH_ENABLED && buttonSpeech) {
+          responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
+            volume: 1,
+          });
+        }
       };
 
       game.updateRenderData(["actionButton", "disabled"], true);
@@ -1738,6 +1761,10 @@ class GameUI extends React.Component {
 
   renderCardsInMyHand() {
     let renderMyHand = [];
+    const IS_SPEECH_ENABLED = this.stateBuffer.get(
+      ["textToSpeech", "enabled"],
+      false
+    );
 
     if (game.isInit()) {
       let myHand = game.getMyHand();
@@ -1808,6 +1835,10 @@ class GameUI extends React.Component {
   }
 
   renderDiscardCardsNotice() {
+    const IS_SPEECH_ENABLED = this.stateBuffer.get(
+      ["textToSpeech", "enabled"],
+      false
+    );
     let turnNotice = "";
     if (game.isMyTurn()) {
       if (game.cards.myHand.hasTooMany()) {
@@ -1909,6 +1940,11 @@ class GameUI extends React.Component {
       } else {
         collectionsForPerson = [];
       }
+
+      const IS_SPEECH_ENABLED = this.stateBuffer.get(
+        ["textToSpeech", "enabled"],
+        false
+      );
 
       return (
         <PlayerPanelWrapper
@@ -2086,13 +2122,15 @@ class GameUI extends React.Component {
                                           }
                                         }
 
-                                        responsiveVoice.speak(
-                                          speech,
-                                          voiceConfig.voice,
-                                          {
-                                            volume: 1,
-                                          }
-                                        );
+                                        if (IS_SPEECH_ENABLED) {
+                                          responsiveVoice.speak(
+                                            speech,
+                                            voiceConfig.voice,
+                                            {
+                                              volume: 1,
+                                            }
+                                          );
+                                        }
                                       }
                                     }}
                                     scaledPercent={
@@ -2585,6 +2623,17 @@ class GameUI extends React.Component {
 
     const windowManager = this.windowManager;
 
+    let getAnnouncerText = (value) => {
+      let newIndex = value ? 1 : 0;
+      let labelTexts = ["Turn announcer ON", "Turn announcer OFF"];
+      return labelTexts[newIndex];
+    };
+
+    const IS_SPEECH_ENABLED = this.stateBuffer.get(
+      ["textToSpeech", "enabled"],
+      false
+    );
+
     return (
       <DndProvider backend={Backend}>
         <div style={{ ...style, display: "flex", flexGrow: "1" }}>
@@ -2643,6 +2692,33 @@ class GameUI extends React.Component {
                       >
                         Room <strong>{room.getCode()}</strong>
                       </h5>
+                      <FullFlexGrow />
+                      <FlexRow
+                        style={{ flexShrink: 0, cursor: "pointer" }}
+                        title={getAnnouncerText(IS_SPEECH_ENABLED)}
+                        onClick={() => {
+                          console.log("I got clicked");
+                          const basePath = ["textToSpeech"];
+                          let enabledPath = ["textToSpeech", "enabled"];
+                          let labelPath = ["textToSpeech", "label"];
+                          let value = this.stateBuffer.get(enabledPath, false);
+                          let newValue = !value;
+                          this.stateBuffer.set(enabledPath, newValue);
+                          this.stateBuffer.set(
+                            labelPath,
+                            getAnnouncerText(newValue)
+                          );
+                        }}
+                      >
+                        <FullFlexRow>
+                          {getAnnouncerText(IS_SPEECH_ENABLED)}
+                        </FullFlexRow>
+                        {IS_SPEECH_ENABLED ? (
+                          <RecordVoiceOverIcon className="mh10" />
+                        ) : (
+                          <VoiceOverOffIcon className="mh10" />
+                        )}
+                      </FlexRow>
                     </Toolbar>
                   </AppBar>
                 </FillHeader>

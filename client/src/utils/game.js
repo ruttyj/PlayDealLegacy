@@ -68,9 +68,9 @@ function Game(ref) {
 
       if (game.isMyTurn()) {
         if (game.phase.get() === "draw") {
-          responsiveVoice.speak("I draw.", "Australian Female", {
-            volume: 1,
-          });
+          //responsiveVoice.speak("I draw.", "Australian Female", {
+          //  volume: 1,
+          //});
         }
         sounds.drawCard.play(data.payload.count);
       } else {
@@ -90,9 +90,9 @@ function Game(ref) {
 
       // Play sound when my turn is done
       if (game.phase.isMyDonePhase() && canTrigger.endTurnSound) {
-        responsiveVoice.speak("Job's done", "Australian Female", {
-          volume: 1,
-        });
+        //responsiveVoice.speak("Job's done", "Australian Female", {
+        //  volume: 1,
+        //});
 
         canTrigger.endTurnSound = false;
         let isAutoPassTurnEnabled = game.customUi.get("autoPassTurn", false);
@@ -191,9 +191,10 @@ function Game(ref) {
           game.isMyTurn() &&
           game.phase.get() === "draw"
         ) {
-          responsiveVoice.speak("It's my turn.", "Australian Female", {
-            volume: 1,
-          });
+          sounds.yourTurn.play(1);
+          //responsiveVoice.speak("It's my turn.", "Australian Female", {
+          //  volume: 1,
+          //});
           await game.resetUi();
         }
       }
