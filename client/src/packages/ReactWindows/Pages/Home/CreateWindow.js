@@ -1,3 +1,4 @@
+import "./CreateWindow.scss";
 import {
   React,
   useState,
@@ -6,9 +7,24 @@ import {
   DragListH,
   DragListV,
   wallpapers,
+  wallpaperNames,
   SizeBackgroundColor,
+  motion,
+  useSpring,
+  useTransform,
+  motionValue,
 } from "../../Components/Imports/";
-const { classes } = Utils;
+import ReactScrollWheelHandler from "react-scroll-wheel-handler";
+
+const {
+  els,
+  isDef,
+  isArr,
+  isFunc,
+  classes,
+  getNestedValue,
+  setImmutableValue,
+} = Utils;
 
 function WindowAComponent(props) {
   const { size, position, containerSize } = props;
@@ -66,28 +82,180 @@ function WindowAComponent(props) {
   );
 }
 
+// Only execute onClick when the mouse down and up is withing a threshold
+function useSmartClick(...args) {
+  let [isDragging, setDragging] = useState();
+  let [startMousePos, setStartMousePos] = useState();
+
+  function makelisteners(props = {}, opts = {}) {
+    let { threshold = 10 } = opts;
+    let onClick = (...args) => {
+      let funcName = "onClick";
+      isDef(props[funcName]) ? props[funcName](...args) : null;
+    };
+
+    let onDrop = (...args) => {
+      let funcName = "onDrop";
+      isDef(props[funcName]) ? props[funcName](...args) : null;
+    };
+
+    let onMouseDown = (...args) => {
+      let funcName = "onMouseDown";
+      isDef(props[funcName]) ? props[funcName](...args) : null;
+
+      let e = args[0];
+      setStartMousePos({ x: e.screenX, y: e.screenY });
+    };
+
+    let onRelease = (...args) => {
+      let e = args[0];
+      let currentPos = { x: e.screenX, y: e.screenY };
+      let calcDist = (A, B) => {
+        let dX = Math.abs(B.x - A.x);
+        let dY = Math.abs(B.y - A.y);
+        return Math.sqrt(Math.pow(dX, 2) + Math.pow(dY, 2));
+      };
+
+      // If the distanct is within threshold execute onClick else execute onDrop
+      let dist = calcDist(startMousePos, currentPos);
+      if (dist <= threshold) {
+        onClick(...args);
+      } else {
+        onDrop(...args);
+      }
+    };
+
+    let onMouseUp = (...args) => {
+      let funcName = "onMouseUp";
+      isDef(props[funcName]) ? props[funcName](...args) : null;
+      onRelease(...args);
+    };
+
+    let onMoving = (...args) => {
+      setDragging(true);
+      let funcName = "onMoving";
+      isDef(props[funcName]) ? props[funcName](...args) : null;
+    };
+
+    let onMouseMove = (...args) => {
+      onMoving(...args);
+    };
+
+    const listeners = {
+      onMouseDown,
+      onMouseUp,
+      onMouseMove,
+    };
+    return listeners;
+  }
+
+  return makelisteners;
+}
+
 function createWallpaperWindow(windowManager, isFocused = true) {
   const ChooseWallpaper = (props) => {
+    let state = windowManager.getState();
+
+    let makelisteners = useSmartClick();
+    const contentOffsetY = motionValue(0);
+    const y = useTransform(contentOffsetY, [0, -100], [0, 50]);
+
+    function TrackScroll() {
+      return { contentOffsetY: contentOffsetY };
+    }
+
+    const ease = [0.6, 0.05, -0.01, 0.99];
+    const x = useSpring(0, { stiffness: 300, damping: 200, ease: ease });
+
+    let activeBackground = state.get(["theme", "wallpaper"], null);
+    const limitLeft = -1000;
+    let makeContents = wallpaperNames.map((name) => {
+      let url = `/img/Wallpapers/${name}.png`;
+      let urlFullSize = `/img/Wallpapers/${name} (1).png`;
+      let onClick = () => {
+        let state = windowManager.getState();
+        state.set(["theme", "wallpaper"], urlFullSize);
+      };
+      return (
+        <div
+          key={url}
+          style={{
+            backgroundImage: `url(${url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center center",
+            content: "",
+            width: "25%",
+            height: "150px",
+            cursor: "pointer",
+            margin: "5px",
+          }}
+          {...classes([
+            "grid-item",
+            activeBackground === urlFullSize ? "border" : "",
+          ])}
+          {...makelisteners({
+            onClick,
+          })}
+        />
+      );
+    });
+
+    let incPos = (amount) => {
+      let oldVal = x.get();
+      let newVal = oldVal + amount;
+      x.stop();
+      x.set(newVal);
+    };
+    let fullWidth = 400;
+
+    let navClasses = [
+      "flex",
+      "column",
+      "grid-nav",
+      "center-center",
+      "no-select",
+    ];
+    let gridSection = ["full", "flex", "row", "grid-section"];
+    let itemSection = ["full", "flex", "column", "overflow-hidden"];
+    let scrollAmount = 155;
+
+    let scrollRight = () => incPos(scrollAmount);
+    let scrollLeft = () => incPos(-1 * scrollAmount);
     return (
-      <div {...classes("full", "v-fit-content", "wrap")}>
-        {wallpapers.map((url) => {
-          return (
-            <div
-              style={{
-                backgroundImage: `url(${url})`,
-                backgroundSize: "cover",
-                content: "",
-                width: "25%",
-                height: "150px",
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                let state = windowManager.getState();
-                state.set(["theme", "wallpaper"], url);
-              }}
-            />
-          );
-        })}
+      <div {...classes("full", "wrap", "bkgd-selection")}>
+        <div {...classes(...gridSection)}>
+          <div
+            {...classes(...navClasses, "left")}
+            onClick={() => incPos(fullWidth)}
+          >
+            {"<"}
+          </div>
+          <div {...classes(...itemSection)}>
+            <ReactScrollWheelHandler
+              style={{ width: "100%", height: "100%" }}
+              upHandler={scrollRight}
+              downHandler={scrollLeft}
+              leftHandler={scrollLeft}
+              rightHandler={scrollRight}
+              timeout={100}
+            >
+              <motion.div
+                dragConstraints={{ left: limitLeft, right: 0 }}
+                drag={"x"}
+                style={{ x }}
+                {...classes(["flex", "full", "column", "wrap"])}
+              >
+                {makeContents}
+              </motion.div>
+            </ReactScrollWheelHandler>
+          </div>
+          <div
+            {...classes(...navClasses, "right")}
+            onClick={() => incPos(-1 * fullWidth)}
+          >
+            {">"}
+          </div>
+        </div>
       </div>
     );
   };

@@ -220,7 +220,7 @@ function Home(props) {
     taskBarItems[window.id] = (
       <ArrowToolTip title={window.title} placement="top">
         <div
-          {...classes("button", "noselect", outterClasses)}
+          {...classes("button", "no-select", outterClasses)}
           key={window.id}
           onClick={() => windowManager.toggleWindow(window.id)}
         >
@@ -236,40 +236,41 @@ function Home(props) {
   const style = {
     "--bkgd-image": `url("${wallpaper}")`,
   };
+
+  let menu = (
+    <>
+      <div {...classes("button")} onClick={() => openDancingTrooper()}>
+        <EmojiPeopleIcon />
+      </div>
+      <div {...classes("button")} onClick={() => openBackgroundPicker()}>
+        <PhotoSizeSelectActualIcon />
+      </div>
+      <div {...classes("button")} onClick={() => openDebugger()}>
+        <BugReportIcon />
+      </div>
+      <div {...classes("button")} onClick={() => openDebuggerV2()}>
+        <BugReportIcon />
+      </div>
+      <div {...classes("button")} onClick={() => addWindow()}>
+        <AddIcon />
+      </div>
+      <div {...classes("button")} onClick={() => addPlayDealWindow()}>
+        <AddIcon />
+      </div>
+      <div {...classes("button")} onClick={() => addFireworksWindow()}>
+        <AddIcon />
+      </div>
+      <div {...classes("button")} onClick={() => addThreeJSWindow()}>
+        <AddIcon />
+      </div>
+      <div {...classes("button")} onClick={() => addInternetExplorerWindow()}>
+        <PublicIcon />
+      </div>
+    </>
+  );
   return (
     <motion.div {...classes("full", "row", "main-bkgd")} style={style}>
-      <AppSidebar>
-        <div {...classes("button")} onClick={() => openDancingTrooper()}>
-          <EmojiPeopleIcon />
-        </div>
-
-        <div {...classes("button")} onClick={() => openBackgroundPicker()}>
-          <PhotoSizeSelectActualIcon />
-        </div>
-        <div {...classes("button")} onClick={() => openDebugger()}>
-          <BugReportIcon />
-        </div>
-        <div {...classes("button")} onClick={() => openDebuggerV2()}>
-          <BugReportIcon />
-        </div>
-        <div {...classes("button")} onClick={() => addWindow()}>
-          <AddIcon />
-        </div>
-        <div {...classes("button")} onClick={() => addPlayDealWindow()}>
-          <AddIcon />
-        </div>
-
-        <div {...classes("button")} onClick={() => addFireworksWindow()}>
-          <AddIcon />
-        </div>
-        <div {...classes("button")} onClick={() => addThreeJSWindow()}>
-          <AddIcon />
-        </div>
-
-        <div {...classes("button")} onClick={() => addInternetExplorerWindow()}>
-          <PublicIcon />
-        </div>
-      </AppSidebar>
+      <AppSidebar>{menu}</AppSidebar>
       <FillContainer>
         <FillHeader>
           <AppHeader />
@@ -280,6 +281,7 @@ function Home(props) {
             children={({ containerSize }) => (
               <>
                 {windowManager.getAllWindows().map((window) => {
+                  const Child = window.children;
                   const contents = (
                     <DragWindow
                       window={window}
@@ -322,7 +324,7 @@ function Home(props) {
                         state.set(["windows", "snapIndicator", key], value)
                       }
                       containerSize={containerSize}
-                      children={window.children}
+                      children={<Child />}
                       actions={window.actions}
                     />
                   );

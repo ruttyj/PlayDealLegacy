@@ -49,7 +49,7 @@ function DragHandle(props) {
     <motion.div
       {..._props}
       {...classes(
-        "noselect",
+        "no-select",
         !disabled ? classNames : "",
         isActive ? "active" : ""
       )}

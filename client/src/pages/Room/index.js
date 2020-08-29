@@ -1,2 +1,2 @@
-import Room from "./Room";
+import Room from "./Components/Room";
 export default Room;

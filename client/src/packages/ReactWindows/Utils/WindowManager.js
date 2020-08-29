@@ -127,6 +127,10 @@ function WindowManager(state) {
     let _path = isArr(path) ? path : [path];
     state.set(["windows", "items", id, ..._path], value);
   }
+  // @alias setValue
+  function windowSetNested(...args) {
+    return setValue(...args);
+  }
 
   function setWindow(id, window) {
     state.set(["windows", "items", id], window);

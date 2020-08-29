@@ -30,6 +30,7 @@
     "react-resize-detector": "^5.0.6",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.1",
+    "react-scroll-wheel-handler": "^1.1.5",
     "react-splitter-layout": "latest",
     "react-spring": "^8.0.27",
     "react-three-fiber": "^4.2.8",

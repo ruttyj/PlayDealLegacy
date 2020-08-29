@@ -325,7 +325,7 @@ const DragWindow = withResizeDetector(function(props) {
 
   if (size.width > 300) {
     headerContents = (
-      <div {...classes("header", "noselect")}>
+      <div {...classes("header", "no-select")}>
         <div {...classes("row")}>
           {leftHeaderActionContents}
           {titleContents}
@@ -335,7 +335,7 @@ const DragWindow = withResizeDetector(function(props) {
     );
   } else {
     headerContents = (
-      <div {...classes("header", "noselect")}>
+      <div {...classes("header", "no-select")}>
         <div {...classes("row")}>
           {leftHeaderActionContents}
           <DragHandle

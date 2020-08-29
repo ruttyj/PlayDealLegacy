@@ -166,7 +166,8 @@ pre {
   resize: both;
 }
 
-.noselect {
+.no-select,
+.no-select {
   -webkit-touch-callout: none; /* iOS Safari */
   -webkit-user-select: none; /* Safari */
   -khtml-user-select: none; /* Konqueror HTML */
@@ -310,6 +311,11 @@ pre {
   width: 100%;
   height: 100%;
   touch-action: none;
+  transition: background-image 0.2s ease-in-out;
+  background-image: var(--bkgd-image);
+  background-size: cover;
+  background-position: center, center;
+  background-attachment: fixed;
 }
 
 .blurred-bkgd {
