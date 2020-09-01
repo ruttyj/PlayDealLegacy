@@ -2337,14 +2337,19 @@ class GameUI extends React.Component {
               >
                 <DragItem item={{ type: "ACTIVE_CARD" }}>
                   <RelLayer>
-                    {game.activePile.hasTopCard() ? (
-                      <RenderCard
-                        card={game.activePile.getTopCard()}
-                        propertySetMap={propertySetsKeyed}
-                      />
-                    ) : (
-                      <BaseDealCard />
-                    )}
+                    <RelLayer>
+                      {game.activePile.hasTopCard() ? (
+                        <RenderCard
+                          card={game.activePile.getTopCard()}
+                          propertySetMap={propertySetsKeyed}
+                        />
+                      ) : (
+                        <BaseDealCard />
+                      )}
+                    </RelLayer>
+                    <AbsLayer>
+                      <PileCount>{game.activePile.getCount()}</PileCount>
+                    </AbsLayer>
                   </RelLayer>
                 </DragItem>
               </CheckLayer>

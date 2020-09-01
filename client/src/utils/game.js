@@ -1399,6 +1399,9 @@ function Game(ref) {
       100
     );
   }
+  function getActivePileCount() {
+    return props().getActivePileCount();
+  }
   function getTopCardOnActionPile() {
     return props().getTopCardOnActionPile();
   }
@@ -2038,6 +2041,7 @@ function Game(ref) {
       hasTopCard() {
         return isDef(getTopCardOnActionPile());
       },
+      getCount: getActivePileCount,
       getThickness: getActivePileCountThickness,
     },
 
