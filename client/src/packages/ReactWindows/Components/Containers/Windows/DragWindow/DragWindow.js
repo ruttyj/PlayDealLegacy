@@ -672,6 +672,8 @@ const DragWindow = withResizeDetector(function(props) {
 
   const windowSize = getSize();
   const windowPos = getPosition();
+  let top = anchorPosY;
+  let left = anchorPosX;
   // Draw Window
   return (
     <motion.div
@@ -681,7 +683,6 @@ const DragWindow = withResizeDetector(function(props) {
         classNames,
         window.isDragging ? "dragging" : ""
       )}
-      drag={true}
       onMouseDown={() => {
         if (!isFocused) setFocused(true);
       }}
@@ -696,6 +697,8 @@ const DragWindow = withResizeDetector(function(props) {
       exit="hidden"
       animate={animateState}
       style={{
+        top,
+        left,
         position: "absolute",
         zIndex: zIndex,
 
