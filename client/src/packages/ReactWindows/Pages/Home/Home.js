@@ -35,6 +35,7 @@ const {
   isDef,
   isArr,
   isFunc,
+  isTruthy,
   classes,
   getNestedValue,
   setImmutableValue,
@@ -49,6 +50,7 @@ state.set("theme", {
 
 createWindowA(windowManager, false);
 createWallpaperWindow(windowManager, true);
+let cachedResult = null;
 function Home(props) {
   //console.log("#####################################################");
   const [isLeftSnapIndicator, setIsLeftSnapIndicator] = useState(false);
@@ -268,94 +270,112 @@ function Home(props) {
       </div>
     </>
   );
-  return (
-    <motion.div {...classes("full", "row", "main-bkgd")} style={style}>
-      <AppSidebar>{menu}</AppSidebar>
-      <FillContainer>
-        <FillHeader>
-          <AppHeader />
-        </FillHeader>
-        <FillContent>
-          <WindowContainer
-            windowManager={windowManager}
-            children={({ containerSize }) => (
-              <>
-                {windowManager.getAllWindows().map((window) => {
-                  const Child = window.children;
-                  const contents = (
-                    <DragWindow
-                      window={window}
-                      onSet={(path, value) =>
-                        windowManager.setWindow(
-                          window.id,
-                          setImmutableValue(window, path, value)
-                        )
-                      }
-                      onSetSize={(...args) =>
-                        windowManager.setSize(window.id, ...args)
-                      }
-                      onSetPosition={(...args) => {
-                        windowManager.setPosition(window.id, ...args);
-                      }}
-                      onClose={() => windowManager.removeWindow(window.id)}
-                      onToggleWindow={() =>
-                        windowManager.toggleWindow(window.id, true)
-                      }
-                      onSetFocus={(value) =>
-                        windowManager.setFocused(window.id, value)
-                      }
-                      onDown={(window) => {
-                        // allow dragging to be unaffected incase the other window prevents event propagation
-                        windowManager.toggleOtherWindowsPointerEvents(
-                          window.id,
-                          true
-                        );
-                      }}
-                      onUp={(window) => {
-                        // renable pointer events for other windows
-                        windowManager.toggleOtherWindowsPointerEvents(
-                          window.id,
-                          false
-                        );
-                      }}
-                      title={window.title}
-                      snapIndicator={state.get(["windows", "snapIndicator"])}
-                      setSnapIndicator={(key, value) =>
-                        state.set(["windows", "snapIndicator", key], value)
-                      }
-                      containerSize={containerSize}
-                      children={<Child />}
-                      actions={window.actions}
-                    />
+
+  console.log("==== RENDER ====");
+
+  if (true || !isDef(cachedResult)) {
+    let makeAllWindows = ({ containerSize }) => {
+      return (
+        <>
+          {windowManager.getAllWindows().map((window) => {
+            const Child = window.children;
+            const contents = (
+              <DragWindow
+                window={window}
+                onSet={(path, value) => {
+                  console.log("onSet", window.id);
+                  windowManager.setWindow(
+                    window.id,
+                    setImmutableValue(window, path, value)
                   );
-                  return (
-                    <AnimatePresence key={window.id}>
-                      {contents}
-                    </AnimatePresence>
+                }}
+                onSetSize={(...args) => {
+                  console.log("onSetSize");
+                  windowManager.setSize(window.id, ...args);
+                }}
+                onSetPosition={(...args) => {
+                  console.log("onSetPosition");
+                  windowManager.setPosition(window.id, ...args);
+                }}
+                onClose={() => windowManager.removeWindow(window.id)}
+                onToggleWindow={() => {
+                  console.log("toggleWindow");
+                  windowManager.toggleWindow(window.id, true);
+                }}
+                onSetFocus={(value) => {
+                  let win = windowManager.getWindow(window.id);
+                  if (win.isFocused !== value) {
+                    console.log("setFocused");
+                    windowManager.setFocused(window.id, value);
+                  }
+                }}
+                onDown={(window) => {
+                  // allow dragging to be unaffected incase the other window prevents event propagation
+                  windowManager.toggleOtherWindowsPointerEvents(
+                    window.id,
+                    true
                   );
-                })}
-              </>
-            )}
-          />
-        </FillContent>
-        <FillFooter height={60}>
-          <div {...classes("full")}>
-            <BlurredWrapper>
-              <div {...classes("taskbar", "full", "tinted-dark")}>
-                <DragListH
-                  items={taskBarItems}
-                  order={windowManager.getTaskbarOrder()}
-                  setOrder={(newOrder) => {
-                    windowManager.setTaskbarOrder(newOrder);
-                  }}
-                />
-              </div>
-            </BlurredWrapper>
-          </div>
-        </FillFooter>
-      </FillContainer>
-    </motion.div>
-  );
+                }}
+                onUp={(window) => {
+                  // renable pointer events for other windows
+                  windowManager.toggleOtherWindowsPointerEvents(
+                    window.id,
+                    false
+                  );
+                }}
+                title={window.title}
+                snapIndicator={state.get(["windows", "snapIndicator"])}
+                setSnapIndicator={(key, value) => {
+                  console.log("setSnapIndicator");
+                  state.set(["windows", "snapIndicator", key], value);
+                }}
+                containerSize={containerSize}
+                children={<Child />}
+                actions={window.actions}
+              />
+            );
+            return (
+              <AnimatePresence key={window.id}>{contents}</AnimatePresence>
+            );
+          })}
+        </>
+      );
+    };
+
+    cachedResult = (
+      <motion.div {...classes("full", "row", "main-bkgd")} style={style}>
+        <AppSidebar>{menu}</AppSidebar>
+        <FillContainer>
+          <FillHeader>
+            <AppHeader />
+          </FillHeader>
+          <FillContent>
+            <WindowContainer
+              windowManager={windowManager}
+              children={makeAllWindows}
+            />
+          </FillContent>
+          <FillFooter height={60}>
+            <div {...classes("full")}>
+              <BlurredWrapper>
+                <div {...classes("taskbar", "full", "tinted-dark")}>
+                  <DragListH
+                    items={taskBarItems}
+                    order={windowManager.getTaskbarOrder()}
+                    setOrder={(newOrder) => {
+                      windowManager.setTaskbarOrder(newOrder);
+                    }}
+                  />
+                </div>
+              </BlurredWrapper>
+            </div>
+          </FillFooter>
+        </FillContainer>
+      </motion.div>
+    );
+  }
+
+  return cachedResult;
 }
 
 export default Home;

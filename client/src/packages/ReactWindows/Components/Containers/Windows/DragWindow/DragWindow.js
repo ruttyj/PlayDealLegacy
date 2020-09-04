@@ -25,6 +25,7 @@ const {
   setImmutableValue,
   isFunc,
   isDef,
+  isTruthy,
   els,
 } = Utils;
 let ef = () => {}; // empty function
@@ -33,6 +34,12 @@ let ef = () => {}; // empty function
  */
 
 const DragWindow = withResizeDetector(function(props) {
+  let CONFIG = {
+    state: {
+      write: true,
+    },
+  };
+
   let {
     window = {},
     containerSize,
@@ -61,6 +68,8 @@ const DragWindow = withResizeDetector(function(props) {
     onSnapRelease = ef,
   } = props;
 
+  const [cachedDragHandleContents, setCachedDragHandleContents] = useState();
+
   const zIndex = getNestedValue(window, "zIndex", 0);
 
   const isFocused = getNestedValue(window, "isFocused", false);
@@ -78,11 +87,13 @@ const DragWindow = withResizeDetector(function(props) {
 
   const isFullSize = getNestedValue(window, "isFullSize", false);
   const setFullSize = (value) => {
+    console.log("setFullSize");
     onSet("isFullSize", value);
   };
 
   const isDragDisabled = getNestedValue(window, "isDragDisabled", false);
   const setDragDisabled = (value) => {
+    console.log("setDragDisabled");
     onSet("isDragDisabled", value);
   };
 
@@ -104,17 +115,38 @@ const DragWindow = withResizeDetector(function(props) {
     };
   };
 
+  const anchorPosY = useMotionValue(window.position.top);
+  const anchorPosX = useMotionValue(window.position.left);
+
+  const getPosition = () => {
+    return {
+      left: anchorPosX.get(),
+      top: anchorPosY.get(),
+    };
+  };
+  const setPosition = (newValue) => {
+    anchorPosY.set(newValue.top);
+    anchorPosX.set(newValue.left);
+    onSetPosition(newValue);
+  };
+
   const getSize = () => {
     return {
       height: window.size.height,
       width: window.size.width,
     };
   };
-  const getPosition = () => {
-    return {
-      left: window.position.left,
-      top: window.position.top,
-    };
+  const setSize = (newValue) => {
+    if (
+      newValue.height !== window.size.height ||
+      newValue.width !== window.size.width
+    ) {
+      onSetSize(newValue);
+    }
+  };
+
+  const setFocused = (newValue) => {
+    onSetFocus(newValue);
   };
 
   const initialPosition = getPosition();
@@ -122,8 +154,8 @@ const DragWindow = withResizeDetector(function(props) {
 
   // Set the position if not defined on original object
   useEffect(() => {
-    onSetSize(initialSize);
-    onSetPosition(initialPosition);
+    setSize(initialSize);
+    setPosition(initialPosition);
   }, []);
 
   const toggleDragEnabled = () => {
@@ -138,12 +170,21 @@ const DragWindow = withResizeDetector(function(props) {
   const newPosTop = useTransform(handlePosTop, (v) => v);
 
   if (isFullSize) {
-    if (newPosLeft.get() !== 0) newPosLeft.set(0);
-    if (newPosTop.get() !== 0) newPosTop.set(0);
-    onSetPosition({
-      top: newPosTop.get(),
-      left: newPosLeft.get(),
-    });
+    let hasChanged = false;
+    if (newPosLeft.get() !== 0) {
+      hasChanged = true;
+      newPosLeft.set(0);
+    }
+    if (newPosTop.get() !== 0) {
+      hasChanged = true;
+      newPosTop.set(0);
+    }
+    if (hasChanged) {
+      setPosition({
+        top: newPosTop.get(),
+        left: newPosLeft.get(),
+      });
+    }
   }
 
   // Dont allow to resize outside of bounds
@@ -195,8 +236,8 @@ const DragWindow = withResizeDetector(function(props) {
     handleSizeHeight.set(newSize.height);
     handleSizeWidth.set(newSize.width);
 
-    onSetPosition(newPos);
-    onSetSize(newSize);
+    setPosition(newPos);
+    setSize(newSize);
     //*
     let boundaries = {
       w: newPos.left,
@@ -253,6 +294,8 @@ const DragWindow = withResizeDetector(function(props) {
     //*/
   };
 
+  const computePosAndSize = (info) => {};
+
   const onDrag = (e, info) => {
     if (!isDragDisabled) {
       if (isFullSize) {
@@ -269,8 +312,10 @@ const DragWindow = withResizeDetector(function(props) {
           height: handleSizeHeight.get(),
           width: handleSizeWidth.get(),
         };
-        updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
-        onSetFocus(true);
+        if (isTruthy(CONFIG.state.write)) {
+          updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
+          setFocused(true);
+        }
       }
     }
   };
@@ -292,7 +337,7 @@ const DragWindow = withResizeDetector(function(props) {
       valueToSet.isResizing = true;
     }
     if (!isFocused) {
-      onSetFocus(true);
+      setFocused(true);
     }
     let newValue = { ...window };
     Object.assign(newValue, valueToSet);
@@ -378,7 +423,9 @@ const DragWindow = withResizeDetector(function(props) {
             );
           }
 
-          updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
+          if (isTruthy(CONFIG.state.write)) {
+            updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
+          }
         }
       }
     };
@@ -388,70 +435,78 @@ const DragWindow = withResizeDetector(function(props) {
   useEffect(() => {
     let newPos = { ...getPosition() };
     let newSize = { ...getSize() };
-    updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
+    if (isTruthy(CONFIG.state.write)) {
+      updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
+    }
   }, [containerSize.width, containerSize.height]);
 
-  // Drag handles
-  let dragHandleContents = (
-    <>
-      <DragHandle
-        onDrag={makeOnDragReize("e")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle", "resize-handle-e"]}
-      />
-      <DragHandle
-        onDrag={makeOnDragReize("w")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle", "resize-handle-w"]}
-      />
-      <DragHandle
-        onDrag={makeOnDragReize("n")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle", "resize-handle-n"]}
-      />
-      <DragHandle
-        onDrag={makeOnDragReize("s")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle", "resize-handle-s"]}
-      />
-      <DragHandle
-        onDrag={makeOnDragReize("se")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle-corner", "resize-handle-se"]}
-      />
-      <DragHandle
-        onDrag={makeOnDragReize("ne")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle-corner", "resize-handle-ne"]}
-      />
-      <DragHandle
-        onDrag={makeOnDragReize("nw")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle-corner", "resize-handle-nw"]}
-      />
-      <DragHandle
-        onDrag={makeOnDragReize("sw")}
-        onDown={onResizeDown}
-        onUp={onUp}
-        disabled={isResizeDisabled}
-        classNames={["resize-handle-corner", "resize-handle-sw"]}
-      />
-    </>
-  );
+  let dragHandleContents = null;
+
+  if (true || isDef(cachedDragHandleContents)) {
+    // Drag handles
+    dragHandleContents = (
+      <>
+        <DragHandle
+          onDrag={makeOnDragReize("e")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle", "resize-handle-e"]}
+        />
+        <DragHandle
+          onDrag={makeOnDragReize("w")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle", "resize-handle-w"]}
+        />
+        <DragHandle
+          onDrag={makeOnDragReize("n")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle", "resize-handle-n"]}
+        />
+        <DragHandle
+          onDrag={makeOnDragReize("s")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle", "resize-handle-s"]}
+        />
+        <DragHandle
+          onDrag={makeOnDragReize("se")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle-corner", "resize-handle-se"]}
+        />
+        <DragHandle
+          onDrag={makeOnDragReize("ne")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle-corner", "resize-handle-ne"]}
+        />
+        <DragHandle
+          onDrag={makeOnDragReize("nw")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle-corner", "resize-handle-nw"]}
+        />
+        <DragHandle
+          onDrag={makeOnDragReize("sw")}
+          onDown={onResizeDown}
+          onUp={onUp}
+          disabled={isResizeDisabled}
+          classNames={["resize-handle-corner", "resize-handle-sw"]}
+        />
+      </>
+    );
+
+    //setCachedDragHandleContents(dragHandleContents);
+  }
 
   const childArgs = {
     window,
@@ -477,7 +532,7 @@ const DragWindow = withResizeDetector(function(props) {
       onDrag={onDrag}
       onDown={() => onDown()}
       onUp={onUp}
-      onClick={() => onSetFocus()}
+      onClick={() => setFocused()}
       classNames={["title", isDragDisabled ? "not-allowed" : ""]}
     >
       {isDef(title) ? (isFunc(title) ? title(childArgs) : title) : ""}
@@ -565,7 +620,7 @@ const DragWindow = withResizeDetector(function(props) {
             onDrag={onDrag}
             onDown={() => onDown()}
             onUp={onUp}
-            onClick={() => onSetFocus()}
+            onClick={() => setFocused()}
             classNames={["title", isDragDisabled ? "not-allowed" : ""]}
           />
           {rightHeaderActionContents}
@@ -616,6 +671,7 @@ const DragWindow = withResizeDetector(function(props) {
     (disablePointerEventsOnBlur && !isFocused);
 
   const windowSize = getSize();
+  const windowPos = getPosition();
   // Draw Window
   return (
     <motion.div
@@ -625,14 +681,15 @@ const DragWindow = withResizeDetector(function(props) {
         classNames,
         window.isDragging ? "dragging" : ""
       )}
+      drag={true}
       onMouseDown={() => {
-        if (!isFocused) onSetFocus(true);
+        if (!isFocused) setFocused(true);
       }}
       onMouseDown={() => {
-        if (!isFocused) onSetFocus(true);
+        if (!isFocused) setFocused(true);
       }}
       onTapStart={() => {
-        if (!isFocused) onSetFocus(true);
+        if (!isFocused) setFocused(true);
       }}
       variants={variants}
       initial="hidden"
@@ -641,7 +698,7 @@ const DragWindow = withResizeDetector(function(props) {
       style={{
         position: "absolute",
         zIndex: zIndex,
-        ...(isFullSize ? { top: "0px", left: "0px" } : getPosition()),
+
         ...(isFullSize
           ? { height: "100%", width: "100%" }
           : {

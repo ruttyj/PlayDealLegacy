@@ -1,11 +1,15 @@
 import classNames from "classname";
 
-const isDef = v => v !== undefined && v !== null;
-const isArr = v => isDef(v) && Array.isArray(v);
-const isFunc = v => isDef(v) && typeof v === "function";
-const isStr = v => isDef(v) && typeof v === "string";
-const isNum = v => isDef(v) && typeof v === "number";
-const isObj = v => isDef(v) && typeof v === "object";
+const isDef = (v) => v !== undefined && v !== null;
+const isArr = (v) => isDef(v) && Array.isArray(v);
+const isFunc = (v) => isDef(v) && typeof v === "function";
+const isStr = (v) => isDef(v) && typeof v === "string";
+const isNum = (v) => isDef(v) && typeof v === "number";
+const isObj = (v) => isDef(v) && typeof v === "object";
+const isTruthy = (v) => isDef(v) && v == true;
+const isFalsey = (v) => isDef(v) && v == false;
+const isTrue = (v) => isDef(v) && v === true;
+const isFalse = (v) => isDef(v) && v === false;
 const inRangeExclusive = (min, val, max) => min < val < max;
 const inRangeInclusive = (min, val, max) => min <= val <= max;
 
@@ -69,7 +73,7 @@ const setNestedValue = function(a, b, c, d) {
     var path = tempPath instanceof Array ? tempPath : [tempPath];
     var lastIndex = path.length - 1;
     var current = 0;
-    path.forEach(key => {
+    path.forEach((key) => {
       if (current === lastIndex) {
         setter(ref, key, value);
       } else {
@@ -165,7 +169,7 @@ function setImmutableValue(ref, _path, value) {
 function classes(...args) {
   let _args = [];
   if (isDef(args)) {
-    args.forEach(arg => {
+    args.forEach((arg) => {
       if (isDef(arg)) {
         if (isArr(arg)) {
           _args = [..._args, ...arg.flat(0)];
@@ -188,6 +192,12 @@ const publicScope = {
   isObj,
   els,
   elsFn,
+
+  isTruthy,
+  isFalsey,
+  isTrue,
+  isFalse,
+
   inRange: inRangeInclusive,
   inRangeInclusive,
   inRangeExclusive,
@@ -201,7 +211,7 @@ const publicScope = {
   isDefNested,
   //@TODO checkNested(ref, [path], op, value)
   setImmutableValue,
-  deleteImmutableValue
+  deleteImmutableValue,
 };
 
 export default publicScope;

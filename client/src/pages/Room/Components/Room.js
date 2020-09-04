@@ -248,6 +248,7 @@ const uiConfig = {
 let game;
 let room;
 let roomManager;
+let gameContentsCached = null;
 class GameUI extends React.Component {
   constructor(props, context) {
     super(props, context);
@@ -344,6 +345,24 @@ class GameUI extends React.Component {
       wallpaper: els(wallpapers[8], wallpapers[0]), // set default url
     });
     createWallpaperWindow(this.windowManager, true);
+  }
+
+  toggleBackgroundPicker() {
+    let windowManager = this.windowManager;
+    let window = windowManager.getWindowByKey("backgroundPicker");
+    if (isDef(window)) {
+      window.isHidde;
+    }
+  }
+
+  openBackgroundPicker() {
+    let windowManager = this.windowManager;
+    let window = windowManager.getWindowByKey("backgroundPicker");
+    if (isDef(window)) {
+      windowManager.setFocused(window.id);
+    } else {
+      createWallpaperWindow(windowManager);
+    }
   }
 
   async resetData() {
@@ -2647,6 +2666,24 @@ class GameUI extends React.Component {
       false
     );
 
+    let gameContents = null;
+    if (!isDef(gameContentsCached)) {
+      gameContents = (
+        <GameBoard
+          previousSize={this.stateBuffer.get(["gameWindow", "size"], {})}
+          onChangeSize={(size) =>
+            this.stateBuffer.set(["gameWindow", "size"], size)
+          }
+          uiConfig={uiConfig}
+          gameboard={game.getRenderData("gameboard")}
+          turnNotice={game.getRenderData("turnNotice")}
+          myArea={this.renderMyArea()}
+        />
+      );
+      gameContentsCached = gameContents;
+    } else {
+      gameContents = gameContentsCached;
+    }
     return (
       <DndProvider backend={Backend}>
         <div style={{ ...style, display: "flex", flexGrow: "1" }}>
@@ -2674,22 +2711,18 @@ class GameUI extends React.Component {
                     <HomeIcon />
                   </ArrowToolTip>
                 </div>
-                <div {...classes("button", "not-allowed")}>
+
+                <div
+                  {...classes("button")}
+                  onClick={() => {
+                    this.openBackgroundPicker();
+                  }}
+                >
                   <ArrowToolTip
-                    title="Show debugging variables"
+                    title="Open Background picker"
                     placement="right"
                   >
-                    <BugReportIcon />
-                  </ArrowToolTip>
-                </div>
-                <div {...classes("button", "not-allowed")}>
-                  <ArrowToolTip title="Show person menu" placement="right">
-                    <PeopleIcon />
-                  </ArrowToolTip>
-                </div>
-                <div {...classes("button", "not-allowed")}>
-                  <ArrowToolTip title="Show chat" placement="right">
-                    <ChatIcon />
+                    <PhotoSizeSelectActualIcon />
                   </ArrowToolTip>
                 </div>
               </AppSidebar>
@@ -2785,26 +2818,7 @@ class GameUI extends React.Component {
                                     children={({ containerSize }) =>
                                       windowManager && (
                                         <>
-                                          <GameBoard
-                                            previousSize={this.stateBuffer.get(
-                                              ["gameWindow", "size"],
-                                              {}
-                                            )}
-                                            onChangeSize={(size) =>
-                                              this.stateBuffer.set(
-                                                ["gameWindow", "size"],
-                                                size
-                                              )
-                                            }
-                                            uiConfig={uiConfig}
-                                            gameboard={game.getRenderData(
-                                              "gameboard"
-                                            )}
-                                            turnNotice={game.getRenderData(
-                                              "turnNotice"
-                                            )}
-                                            myArea={this.renderMyArea()}
-                                          />
+                                          {gameContents}
                                           <div {...classes("window-host")}>
                                             {windowManager
                                               .getAllWindows()
