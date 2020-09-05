@@ -44,8 +44,6 @@ const DragWindow = withResizeDetector(function(props) {
     window = {},
     containerSize,
     classNames = [],
-    width, // provided by withResizeDetector
-    height, // provided by withResizeDetector
     minSize = {},
     title = "Untitled",
     snapIndicator = {},
@@ -115,9 +113,9 @@ const DragWindow = withResizeDetector(function(props) {
     };
   };
 
+  // Get size from motion value to make butery smooth
   const anchorPosY = useMotionValue(window.position.top);
   const anchorPosX = useMotionValue(window.position.left);
-
   const getPosition = () => {
     return {
       left: anchorPosX.get(),
@@ -130,13 +128,17 @@ const DragWindow = withResizeDetector(function(props) {
     onSetPosition(newValue);
   };
 
+  const winSizeY = useMotionValue(window.size.height);
+  const winSizeX = useMotionValue(window.size.width);
   const getSize = () => {
     return {
-      height: window.size.height,
-      width: window.size.width,
+      height: winSizeY.get(),
+      width: winSizeX.get(),
     };
   };
   const setSize = (newValue) => {
+    winSizeY.set(newValue.height);
+    winSizeX.set(newValue.width);
     if (
       newValue.height !== window.size.height ||
       newValue.width !== window.size.width
@@ -674,6 +676,8 @@ const DragWindow = withResizeDetector(function(props) {
   const windowPos = getPosition();
   let top = anchorPosY;
   let left = anchorPosX;
+  let width = winSizeX;
+  let height = winSizeY;
   // Draw Window
   return (
     <motion.div
@@ -705,7 +709,8 @@ const DragWindow = withResizeDetector(function(props) {
         ...(isFullSize
           ? { height: "100%", width: "100%" }
           : {
-              ...windowSize,
+              width,
+              height,
               maxHeight: windowSize.height,
               maxWidth: windowSize.width,
             }),
