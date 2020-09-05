@@ -220,13 +220,13 @@ function Game(ref) {
 
       if (game.requests.getAllIds().length && game.requests.openExists()) {
         if (!isDef(displayMode)) {
-          await updateDisplayData("mode", SCREENS.REQUESTS);
+          await updateDisplayMode(SCREENS.REQUESTS);
         }
       }
 
       // close request screen if all requests are completed
       if (game.requests.getAllIds().length > 0 && !game.requests.openExists()) {
-        await updateDisplayData("mode", null);
+        await updateDisplayMode(null);
       }
     });
 
@@ -555,6 +555,7 @@ function Game(ref) {
 
   function drawTurnStartingCards() {
     props().drawTurnStartingCards(connection(), props().getRoomCode());
+    updateDisplayMode(null);
   }
 
   function getAllPlayers() {
@@ -853,7 +854,7 @@ function Game(ref) {
       augmentCardIds: getNestedValue(request.payload, "augmentCardIds", null),
       amount: request.payload.amountRemaining,
     });
-    await updateDisplayData("mode", "respond-pay");
+    await updateDisplayMode("respond-pay");
   }
 
   async function initAskForRent(cardOrId, collectionId = null) {
@@ -912,9 +913,9 @@ function Game(ref) {
 
       await game.resetDisplayData();
       await game.updateDisplayData([], {
-        mode: "chargeRent",
         actionCardId: card.id,
       });
+      await updateDisplayMode("chargeRent");
 
       return true;
     } else {
@@ -963,6 +964,7 @@ function Game(ref) {
         mode: "askPropleForValue",
         actionCardId: card.id,
       });
+      await updateDisplayMode("askPropleForValue");
     }
 
     return true;
@@ -996,9 +998,9 @@ function Game(ref) {
     await game.selection.cards.selectable.setLimit(1);
 
     await game.updateDisplayData([], {
-      mode: "stealProperty",
       actionCardId: card.id,
     });
+    await updateDisplayMode("stealProperty");
 
     return true;
   }
@@ -1009,9 +1011,9 @@ function Game(ref) {
     await game.resetUi();
 
     await game.updateDisplayData([], {
-      mode: "stealCollection",
       actionCardId: card.id,
     });
+    await updateDisplayMode("stealCollection");
 
     await game.selection.cards.reset();
     await game.selection.cards.setEnabled(true);
@@ -1077,9 +1079,9 @@ function Game(ref) {
     await game.selection.cards.selectable.setLimit(2);
 
     await game.updateDisplayData([], {
-      mode: "askForPropertySwap",
       actionCardId: card.id,
     });
+    await updateDisplayMode("askForPropertySwap");
 
     return true;
   }
@@ -1092,7 +1094,7 @@ function Game(ref) {
     };
     await game.valueCollection(args);
     await game.resetUi();
-    await game.updateDisplayData("mode", SCREENS.REQUESTS);
+    await updateDisplayMode(SCREENS.REQUESTS);
   }
 
   function getIncompleteCollectionMatchingSet(myPersonId, propertySetKey) {
@@ -1205,6 +1207,7 @@ function Game(ref) {
     await props().collectionSelection_reset();
     await props().personSelection_reset();
     await props().resetDisplayData();
+    await updateDisplayMode(null);
   }
 
   async function cancelPropertyAction() {
@@ -1212,6 +1215,7 @@ function Game(ref) {
     await props().collectionSelection_reset();
     await props().personSelection_reset();
     await props().resetDisplayData();
+    await updateDisplayMode(null);
   }
   //#endregion
   //_______________________________
@@ -1224,6 +1228,7 @@ function Game(ref) {
     await props().cardSelection_reset();
     await props().collectionSelection_reset();
     await props().personSelection_reset();
+    await updateDisplayMode(null);
   }
   //#endregion
   //_______________________________
@@ -1446,6 +1451,17 @@ function Game(ref) {
 
   async function updateDisplayData(path, value) {
     await props().updateDisplayData({ path, value });
+  }
+
+  async function updateDisplayMode(mode) {
+    await updateDisplayData(["mode"], mode);
+
+    if (mode === null) {
+      await updateDisplayData("actionProtection", true);
+      setTimeout(function() {
+        updateDisplayData("actionProtection", false);
+      }, 1000);
+    }
   }
 
   async function resetDisplayData() {
@@ -2711,6 +2727,7 @@ function Game(ref) {
 
     // DISPLAY DATA
     updateDisplayData,
+    updateDisplayMode,
     resetDisplayData,
     getDisplayData,
     resetUi,

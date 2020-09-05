@@ -431,6 +431,7 @@ class GameUI extends React.Component {
     let speech = null;
     if (String(cardId) === String(actionCardId)) {
       await game.resetUi();
+      await game.updateDisplayMode(null);
     } else {
       if (!game.isCardSelectionEnabled()) {
         if (game.isMyTurn()) {
@@ -538,7 +539,7 @@ class GameUI extends React.Component {
   async handleCloseReqeustScreenIfNoRequests() {
     await game.resetUi();
     if (game.requests.openExists()) {
-      await game.updateDisplayData("mode", SCREENS.REQUESTS);
+      await game.updateDisplayMode(SCREENS.REQUESTS);
     }
   }
 
@@ -758,7 +759,7 @@ class GameUI extends React.Component {
         targetIds: game.getSelectedPeopleIds(),
       });
       await game.resetUi();
-      await game.updateDisplayData("mode", SCREENS.REQUESTS);
+      await game.updateDisplayMode(SCREENS.REQUESTS);
     }
   }
 
@@ -793,7 +794,7 @@ class GameUI extends React.Component {
         theirPropertyCardId: theirs[0],
       });
       await game.resetUi();
-      await game.updateDisplayData("mode", SCREENS.REQUESTS);
+      await game.updateDisplayMode(SCREENS.REQUESTS);
     }
   }
 
@@ -934,7 +935,7 @@ class GameUI extends React.Component {
 
     await game.stealCollection(props);
     await game.resetUi();
-    await game.updateDisplayData("mode", SCREENS.REQUESTS);
+    await game.updateDisplayMode(SCREENS.REQUESTS);
   }
 
   async stealProperty(cardId, theirPropertyCardId) {
@@ -944,7 +945,7 @@ class GameUI extends React.Component {
       theirPropertyCardId,
     });
     await game.resetUi();
-    await game.updateDisplayData("mode", SCREENS.REQUESTS);
+    await game.updateDisplayMode(SCREENS.REQUESTS);
   }
   //########################################
 
@@ -1088,6 +1089,11 @@ class GameUI extends React.Component {
         buttonSpeech = "I can't do that until all requests are settled";
       }
 
+      if (game.getDisplayData("actionProtection")) {
+        isButtonDisabled = true;
+        buttonSpeech = "Click protection engaged";
+      }
+
       let handleOnClick = () => {
         let speech = null;
         let passTurn = false;
@@ -1128,9 +1134,12 @@ class GameUI extends React.Component {
       if (isButtonDisabled) {
         buttonSpeech = "I have to wait until all requests are settled";
       }
+      if (game.getDisplayData("actionProtection")) {
+        isButtonDisabled = true;
+        buttonSpeech = "Click protection engaged";
+      }
 
       let handleOnClick = () => {
-        console.log("isButtonDisabled", isButtonDisabled);
         if (isButtonDisabled) {
           buttonTitle = buttonSpeech;
           if (IS_SPEECH_ENABLED && isDef(buttonSpeech)) {
@@ -1258,9 +1267,9 @@ class GameUI extends React.Component {
       onClick: () => {
         if (isGameStarted) {
           if (displayMode === SCREENS.REQUESTS) {
-            game.updateDisplayData("mode", null);
+            game.updateDisplayMode(null);
           } else {
-            game.updateDisplayData("mode", SCREENS.REQUESTS);
+            game.updateDisplayMode(SCREENS.REQUESTS);
           }
         }
       },
@@ -1283,11 +1292,6 @@ class GameUI extends React.Component {
             if (responseKey === "accept") {
               return game.initPayValueRequest(requestId);
             } else {
-              console.log("respondToValueRequest", {
-                requestId,
-                cardId,
-                responseKey,
-              });
               await game.respondToValueRequest({
                 requestId,
                 cardId,
@@ -1376,7 +1380,7 @@ class GameUI extends React.Component {
 
         let onClickCollect = async ({ requestId, iCanCollect }) => {
           if (iCanCollect) {
-            await game.updateDisplayData("mode", SCREENS.COLLECT);
+            await game.updateDisplayMode(SCREENS.COLLECT);
           } else {
             await game.collectNothingToNothing(requestId);
             await this.handleCloseReqeustScreenIfNoRequests();
@@ -1563,7 +1567,7 @@ class GameUI extends React.Component {
             await game.resetDisplayData();
             await game.resetUi();
             if (game.requests.openExists()) {
-              await game.updateDisplayData("mode", SCREENS.REQUESTS);
+              await game.updateDisplayMode(SCREENS.REQUESTS);
             }
           };
 
@@ -1697,11 +1701,11 @@ class GameUI extends React.Component {
               responseKey: "accept",
             });
             await game.resetUi();
-            await game.updateDisplayData("mode", SCREENS.REQUESTS);
+            await game.updateDisplayMode(SCREENS.REQUESTS);
           };
           let onCancel = async ({ requestId, cardId }) => {
             await game.resetUi();
-            game.updateDisplayData("mode", SCREENS.REQUESTS);
+            game.updateDisplayMode(SCREENS.REQUESTS);
           };
 
           let getPerson = (id) => game.person.get(id);
@@ -2494,6 +2498,8 @@ class GameUI extends React.Component {
   renderDebugData() {
     let dumpData = {
       state: this.state,
+      actionProtection: game.getDisplayData(["actionProtection"]),
+      displayMode: game.getDisplayData(["mode"]),
 
       theme: this.stateBuffer.get("theme"),
 

@@ -184,7 +184,7 @@ function createWallpaperWindow(windowManager, isFocused = true) {
     const x = useSpring(0, { stiffness: 300, damping: 200, ease: ease });
 
     let activeBackground = state.get(["theme", "wallpaper"], null);
-    const limitLeft = -1000;
+    const limitLeft = -2000;
     let makeContents = wallpaperNames.map((name) => {
       let url = `/img/Wallpapers/${name}.png`;
       let urlFullSize = `/img/Wallpapers/${name} (1).png`;
