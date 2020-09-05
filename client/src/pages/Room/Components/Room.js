@@ -155,6 +155,7 @@ import PublicIcon from "@material-ui/icons/Public";
 import ChatIcon from "@material-ui/icons/Chat";
 import PeopleIcon from "@material-ui/icons/People";
 import HomeIcon from "@material-ui/icons/Home";
+import PersonIcon from "@material-ui/icons/Person";
 
 ////////////////////////////////////////////////////
 /// WindowManager
@@ -166,6 +167,7 @@ import {
   createTrooperIframe,
   createWindowA,
   createWallpaperWindow,
+  createSetUsernameScreen,
 } from "../../../packages/ReactWindows/Pages/Home/CreateWindow";
 import "../../../packages/ReactWindows/Pages/Home/Home.scss";
 ////////////////////////////////////////////////////
@@ -344,24 +346,26 @@ class GameUI extends React.Component {
     this.stateBuffer.set("theme", {
       wallpaper: els(wallpapers[8], wallpapers[0]), // set default url
     });
-    createWallpaperWindow(this.windowManager, true);
+    createSetUsernameScreen(this.windowManager, game, true);
   }
 
   toggleBackgroundPicker() {
     let windowManager = this.windowManager;
     let window = windowManager.getWindowByKey("backgroundPicker");
     if (isDef(window)) {
-      window.isHidde;
+      windowManager.windowSetValue(window.id, "isOpen", !window.isOpen);
+    } else {
+      createWallpaperWindow(windowManager);
     }
   }
 
-  openBackgroundPicker() {
+  toggleUsernamePicker() {
     let windowManager = this.windowManager;
-    let window = windowManager.getWindowByKey("backgroundPicker");
+    let window = windowManager.getWindowByKey("usernamePicker");
     if (isDef(window)) {
-      windowManager.setFocused(window.id);
+      windowManager.windowSetValue(window.id, "isOpen", !window.isOpen);
     } else {
-      createWallpaperWindow(windowManager);
+      createSetUsernameScreen(windowManager, game);
     }
   }
 
@@ -2667,7 +2671,7 @@ class GameUI extends React.Component {
     );
 
     let gameContents = null;
-    if (!isDef(gameContentsCached)) {
+    if (true || !isDef(gameContentsCached)) {
       gameContents = (
         <GameBoard
           previousSize={this.stateBuffer.get(["gameWindow", "size"], {})}
@@ -2684,255 +2688,252 @@ class GameUI extends React.Component {
     } else {
       gameContents = gameContentsCached;
     }
+
+    const sidebarContents = (
+      <>
+        {false && (
+          <div
+            {...classes("button")}
+            onClick={() => {
+              addWindow();
+            }}
+          >
+            <HomeIcon />
+          </div>
+        )}
+
+        <div
+          {...classes("button")}
+          onClick={() => {
+            this.props.history.push("/");
+          }}
+        >
+          <ArrowToolTip title="Leave room" placement="right">
+            <HomeIcon />
+          </ArrowToolTip>
+        </div>
+
+        <div
+          {...classes("button")}
+          onClick={() => {
+            this.toggleBackgroundPicker();
+          }}
+        >
+          <ArrowToolTip title="Toggle background picker" placement="right">
+            <PhotoSizeSelectActualIcon />
+          </ArrowToolTip>
+        </div>
+
+        <div
+          {...classes("button")}
+          onClick={() => {
+            this.toggleUsernamePicker();
+          }}
+        >
+          <ArrowToolTip title="Toggle username picker" placement="right">
+            <PersonIcon />
+          </ArrowToolTip>
+        </div>
+      </>
+    );
+
+    const mainPanel = (
+      <>
+        <FillContainer>
+          <FillHeader>
+            <AppBar position="static">
+              <Toolbar>
+                <h5
+                  style={{ padding: "12px" }}
+                  onClick={() => room.leaveRoom()}
+                >
+                  Room <strong>{room.getCode()}</strong>
+                </h5>
+                <FullFlexGrow />
+                <FlexRow
+                  style={{ flexShrink: 0, cursor: "pointer" }}
+                  title={getAnnouncerText(IS_SPEECH_ENABLED)}
+                  onClick={() => {
+                    console.log("I got clicked");
+                    const basePath = ["textToSpeech"];
+                    let enabledPath = ["textToSpeech", "enabled"];
+                    let labelPath = ["textToSpeech", "label"];
+                    let value = this.stateBuffer.get(enabledPath, false);
+                    let newValue = !value;
+                    this.stateBuffer.set(enabledPath, newValue);
+                    this.stateBuffer.set(labelPath, getAnnouncerText(newValue));
+                  }}
+                >
+                  <FullFlexRow>
+                    {getAnnouncerText(IS_SPEECH_ENABLED)}
+                  </FullFlexRow>
+                  {IS_SPEECH_ENABLED ? (
+                    <RecordVoiceOverIcon className="mh10" />
+                  ) : (
+                    <VoiceOverOffIcon className="mh10" />
+                  )}
+                </FlexRow>
+              </Toolbar>
+            </AppBar>
+          </FillHeader>
+
+          <FillContent>
+            <RelLayer>
+              <AbsLayer>{this.renderBackground()}</AbsLayer>
+
+              <SplitterLayout
+                customClassName="people_list"
+                primaryIndex={1}
+                primaryMinSize={0}
+                secondaryInitialSize={uiConfig.sidebar.initialSize}
+                secondaryMinSize={uiConfig.sidebar.minSize}
+                secondaryMaxSize={uiConfig.sidebar.maxSize}
+              >
+                {/*-------------- RENDER LIST OF USERS -------------------*/}
+                <BlurredWrapper>
+                  <div
+                    style={{
+                      backgroundColor: "#ffffff85",
+                      height: "100%",
+                    }}
+                  >
+                    {this.renderListOfUsers()}
+                  </div>
+                </BlurredWrapper>
+                <RelLayer>
+                  <GrowPanel>
+                    <SplitterLayout
+                      percentage
+                      primaryIndex={1}
+                      primaryMinSize={0}
+                      secondaryInitialSize={0}
+                      secondaryMinSize={0}
+                    >
+                      {this.renderDebugData()}
+
+                      {/*################################################*/}
+                      {/*                   GAME BOARD                   */}
+                      {/*################################################*/}
+                      <RelLayer>
+                        <VSplitterDragIndicator />
+                        {/*----------------------------------------------*/}
+                        {/*                 Game content                 */}
+                        {/*----------------------------------------------*/}
+                        <AbsLayer style={{ color: "white" }}>
+                          {gameContents}
+                        </AbsLayer>
+                      </RelLayer>
+                      {/* End Game board ________________________________*/}
+                    </SplitterLayout>
+                  </GrowPanel>
+                </RelLayer>
+              </SplitterLayout>
+            </RelLayer>
+          </FillContent>
+        </FillContainer>
+      </>
+    );
+
+    const windowsChildContents = mainPanel;
+    const windowContents = (
+      <>
+        <RelLayer>
+          <AbsLayer>
+            <RelLayer>
+              <WindowContainer
+                windowManager={windowManager}
+                children={({ containerSize }) =>
+                  windowManager && (
+                    <>
+                      <FillContainer>
+                        <FillContent>{windowsChildContents}</FillContent>
+                      </FillContainer>
+
+                      <div {...classes("window-host")}>
+                        {windowManager.getAllWindows().map((window) => {
+                          let contents = null;
+
+                          if (window.isOpen === true)
+                            contents = (
+                              <DragWindow
+                                window={window}
+                                onSet={(path, value) =>
+                                  windowManager.setWindow(
+                                    window.id,
+                                    setImmutableValue(window, path, value)
+                                  )
+                                }
+                                onSetSize={(...args) =>
+                                  windowManager.setSize(window.id, ...args)
+                                }
+                                onSetPosition={(...args) => {
+                                  windowManager.setPosition(window.id, ...args);
+                                }}
+                                onClose={() => {
+                                  console.log("close");
+                                  windowManager.removeWindow(window.id);
+                                }}
+                                onToggleWindow={() =>
+                                  windowManager.toggleWindow(window.id, true)
+                                }
+                                onSetFocus={(value) =>
+                                  windowManager.setFocused(window.id, value)
+                                }
+                                onDown={(window) => {
+                                  // allow dragging to be unaffected incase the other window prevents event propagation
+                                  windowManager.toggleOtherWindowsPointerEvents(
+                                    window.id,
+                                    true
+                                  );
+                                }}
+                                onUp={(window) => {
+                                  // renable pointer events for other windows
+                                  windowManager.toggleOtherWindowsPointerEvents(
+                                    window.id,
+                                    false
+                                  );
+                                }}
+                                title={window.title}
+                                snapIndicator={this.stateBuffer.get([
+                                  "windows",
+                                  "snapIndicator",
+                                ])}
+                                setSnapIndicator={(key, value) =>
+                                  this.stateBuffer.set(
+                                    ["windows", "snapIndicator", key],
+                                    value
+                                  )
+                                }
+                                containerSize={containerSize}
+                                children={window.children}
+                                actions={window.actions}
+                              />
+                            );
+                          return (
+                            <AnimatePresence key={window.id}>
+                              {contents}
+                            </AnimatePresence>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )
+                }
+              />
+            </RelLayer>
+          </AbsLayer>
+        </RelLayer>
+      </>
+    );
+
     return (
       <DndProvider backend={Backend}>
         <div style={{ ...style, display: "flex", flexGrow: "1" }}>
           <FullFlexRow>
             <FlexColumn>
-              <AppSidebar>
-                {false && (
-                  <div
-                    {...classes("button")}
-                    onClick={() => {
-                      addWindow();
-                    }}
-                  >
-                    <HomeIcon />
-                  </div>
-                )}
-
-                <div
-                  {...classes("button")}
-                  onClick={() => {
-                    this.props.history.push("/");
-                  }}
-                >
-                  <ArrowToolTip title="Leave room" placement="right">
-                    <HomeIcon />
-                  </ArrowToolTip>
-                </div>
-
-                <div
-                  {...classes("button")}
-                  onClick={() => {
-                    this.openBackgroundPicker();
-                  }}
-                >
-                  <ArrowToolTip
-                    title="Open Background picker"
-                    placement="right"
-                  >
-                    <PhotoSizeSelectActualIcon />
-                  </ArrowToolTip>
-                </div>
-              </AppSidebar>
+              <AppSidebar>{sidebarContents}</AppSidebar>
             </FlexColumn>
-            <FullFlexColumn>
-              <FillContainer>
-                <FillHeader>
-                  <AppBar position="static">
-                    <Toolbar>
-                      <h5
-                        style={{ padding: "12px" }}
-                        onClick={() => room.leaveRoom()}
-                      >
-                        Room <strong>{room.getCode()}</strong>
-                      </h5>
-                      <FullFlexGrow />
-                      <FlexRow
-                        style={{ flexShrink: 0, cursor: "pointer" }}
-                        title={getAnnouncerText(IS_SPEECH_ENABLED)}
-                        onClick={() => {
-                          console.log("I got clicked");
-                          const basePath = ["textToSpeech"];
-                          let enabledPath = ["textToSpeech", "enabled"];
-                          let labelPath = ["textToSpeech", "label"];
-                          let value = this.stateBuffer.get(enabledPath, false);
-                          let newValue = !value;
-                          this.stateBuffer.set(enabledPath, newValue);
-                          this.stateBuffer.set(
-                            labelPath,
-                            getAnnouncerText(newValue)
-                          );
-                        }}
-                      >
-                        <FullFlexRow>
-                          {getAnnouncerText(IS_SPEECH_ENABLED)}
-                        </FullFlexRow>
-                        {IS_SPEECH_ENABLED ? (
-                          <RecordVoiceOverIcon className="mh10" />
-                        ) : (
-                          <VoiceOverOffIcon className="mh10" />
-                        )}
-                      </FlexRow>
-                    </Toolbar>
-                  </AppBar>
-                </FillHeader>
-
-                <FillContent>
-                  <RelLayer>
-                    <AbsLayer>{this.renderBackground()}</AbsLayer>
-
-                    <SplitterLayout
-                      customClassName="people_list"
-                      primaryIndex={1}
-                      primaryMinSize={0}
-                      secondaryInitialSize={uiConfig.sidebar.initialSize}
-                      secondaryMinSize={uiConfig.sidebar.minSize}
-                      secondaryMaxSize={uiConfig.sidebar.maxSize}
-                    >
-                      {/*-------------- RENDER LIST OF USERS -------------------*/}
-                      <BlurredWrapper>
-                        <div
-                          style={{
-                            backgroundColor: "#ffffff85",
-                            height: "100%",
-                          }}
-                        >
-                          {this.renderListOfUsers()}
-                        </div>
-                      </BlurredWrapper>
-                      <RelLayer>
-                        <GrowPanel>
-                          <SplitterLayout
-                            percentage
-                            primaryIndex={1}
-                            primaryMinSize={0}
-                            secondaryInitialSize={0}
-                            secondaryMinSize={0}
-                          >
-                            {this.renderDebugData()}
-
-                            {/*################################################*/}
-                            {/*                   GAME BOARD                   */}
-                            {/*################################################*/}
-                            <RelLayer>
-                              <VSplitterDragIndicator />
-                              {/*----------------------------------------------*/}
-                              {/*                 Game content                 */}
-                              {/*----------------------------------------------*/}
-                              <AbsLayer style={{ color: "white" }}>
-                                <RelLayer>
-                                  <WindowContainer
-                                    windowManager={windowManager}
-                                    children={({ containerSize }) =>
-                                      windowManager && (
-                                        <>
-                                          {gameContents}
-                                          <div {...classes("window-host")}>
-                                            {windowManager
-                                              .getAllWindows()
-                                              .map((window) => {
-                                                const contents = (
-                                                  <DragWindow
-                                                    window={window}
-                                                    onSet={(path, value) =>
-                                                      windowManager.setWindow(
-                                                        window.id,
-                                                        setImmutableValue(
-                                                          window,
-                                                          path,
-                                                          value
-                                                        )
-                                                      )
-                                                    }
-                                                    onSetSize={(...args) =>
-                                                      windowManager.setSize(
-                                                        window.id,
-                                                        ...args
-                                                      )
-                                                    }
-                                                    onSetPosition={(
-                                                      ...args
-                                                    ) => {
-                                                      windowManager.setPosition(
-                                                        window.id,
-                                                        ...args
-                                                      );
-                                                    }}
-                                                    onClose={() =>
-                                                      windowManager.removeWindow(
-                                                        window.id
-                                                      )
-                                                    }
-                                                    onToggleWindow={() =>
-                                                      windowManager.toggleWindow(
-                                                        window.id,
-                                                        true
-                                                      )
-                                                    }
-                                                    onSetFocus={(value) =>
-                                                      windowManager.setFocused(
-                                                        window.id,
-                                                        value
-                                                      )
-                                                    }
-                                                    onDown={(window) => {
-                                                      // allow dragging to be unaffected incase the other window prevents event propagation
-                                                      windowManager.toggleOtherWindowsPointerEvents(
-                                                        window.id,
-                                                        true
-                                                      );
-                                                    }}
-                                                    onUp={(window) => {
-                                                      // renable pointer events for other windows
-                                                      windowManager.toggleOtherWindowsPointerEvents(
-                                                        window.id,
-                                                        false
-                                                      );
-                                                    }}
-                                                    title={window.title}
-                                                    snapIndicator={this.stateBuffer.get(
-                                                      [
-                                                        "windows",
-                                                        "snapIndicator",
-                                                      ]
-                                                    )}
-                                                    setSnapIndicator={(
-                                                      key,
-                                                      value
-                                                    ) =>
-                                                      this.stateBuffer.set(
-                                                        [
-                                                          "windows",
-                                                          "snapIndicator",
-                                                          key,
-                                                        ],
-                                                        value
-                                                      )
-                                                    }
-                                                    containerSize={
-                                                      containerSize
-                                                    }
-                                                    children={window.children}
-                                                    actions={window.actions}
-                                                  />
-                                                );
-                                                return (
-                                                  <AnimatePresence
-                                                    key={window.id}
-                                                  >
-                                                    {contents}
-                                                  </AnimatePresence>
-                                                );
-                                              })}
-                                          </div>
-                                        </>
-                                      )
-                                    }
-                                  />
-                                </RelLayer>
-                              </AbsLayer>
-                            </RelLayer>
-                            {/* End Game board ________________________________*/}
-                          </SplitterLayout>
-                        </GrowPanel>
-                      </RelLayer>
-                    </SplitterLayout>
-                  </RelLayer>
-                </FillContent>
-              </FillContainer>
-            </FullFlexColumn>
+            <FullFlexColumn>{windowContents}</FullFlexColumn>
           </FullFlexRow>
         </div>
       </DndProvider>

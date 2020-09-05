@@ -128,7 +128,7 @@ function WindowManager(state) {
     state.set(["windows", "items", id, ..._path], value);
   }
   // @alias setValue
-  function windowSetNested(...args) {
+  function windowSetValue(...args) {
     return setValue(...args);
   }
 
@@ -302,6 +302,7 @@ function WindowManager(state) {
     getWindow,
     setWindow,
     setValue,
+    windowSetValue,
     getOrderedWindows,
     getAllWindows,
     getTaskbarOrder,

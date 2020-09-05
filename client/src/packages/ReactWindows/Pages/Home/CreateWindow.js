@@ -15,6 +15,13 @@ import {
   motionValue,
 } from "../../Components/Imports/";
 import ReactScrollWheelHandler from "react-scroll-wheel-handler";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import CircularProgress from "@material-ui/core/CircularProgress";
+
+import FillContainer from "../../Components/Containers/FillContainer/FillContainer";
+import FillContent from "../../Components/Containers/FillContainer/FillContent";
+import FillHeader from "../../Components/Containers/FillContainer/FillHeader";
 
 const {
   els,
@@ -153,7 +160,16 @@ function useSmartClick(...args) {
 }
 
 function createWallpaperWindow(windowManager, isFocused = true) {
-  const ChooseWallpaper = (props) => {
+  const isFullSize = false;
+  const position = {
+    left: 300,
+    top: 50,
+  };
+  const size = {
+    width: 700,
+    height: 400,
+  };
+  const children = (props) => {
     let state = windowManager.getState();
 
     let makelisteners = useSmartClick();
@@ -262,18 +278,140 @@ function createWallpaperWindow(windowManager, isFocused = true) {
 
   // Dragable Lists window
   windowManager.createWindow({
-    title: "Background Picker",
+    title: "Choose a background",
     key: "backgroundPicker",
     isFocused,
-    position: {
-      left: 300,
-      top: 50,
-    },
-    size: {
-      width: 700,
-      height: 400,
-    },
-    children: ChooseWallpaper,
+    isFullSize,
+    position,
+    size,
+    children,
+  });
+}
+
+function WindowFooter(props = {}) {
+  const { children } = props;
+  return (
+    <FillFooter height={40} classNames={["footer", "actions", "center-center"]}>
+      {children}
+    </FillFooter>
+  );
+}
+
+function createSetUsernameScreen(windowManager, game, isFocused = true) {
+  const isFullSize = false;
+  const position = {
+    left: 300,
+    top: 50,
+  };
+  const size = {
+    width: 700,
+    height: 400,
+  };
+
+  const children = (props) => {
+    //=========================================
+    // Unpack props
+    //=========================================
+    const { window } = props;
+
+    //=========================================
+    // State
+    //=========================================
+    // Global state
+    let globalState = windowManager.getState();
+
+    // Local state
+    const [isLoading, setIsLoading] = useState(true);
+    const [nameInputValue, setNameInputValue] = useState("\\");
+
+    //=========================================
+    // Set current name if exists and is filler value "\"
+    //=========================================
+    let me = game.me();
+    let currentName = "";
+    if (isDef(me)) {
+      currentName = me.name;
+      if (nameInputValue === "\\") {
+        setNameInputValue(currentName);
+        setIsLoading(false);
+      }
+    }
+
+    //=========================================
+    // Define callbacks
+    //=========================================
+    let onNameChangeConfirm = async () => {
+      await game.updateMyName(nameInputValue);
+      windowManager.removeWindow(window.id);
+    };
+
+    const onNameKeyPress = (event) => {
+      if (event.key === "Enter") {
+        onNameChangeConfirm();
+      }
+    };
+    const onNameChange = () => {
+      let newValue = event.target.value;
+      newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
+      setNameInputValue(newValue);
+    };
+
+    //=========================================
+    // Decide the contents of the window
+    //=========================================
+    let contents = null;
+    if (isLoading) {
+      contents = (
+        <>
+          <div {...classes("flex", "full", "center-center")}>
+            <CircularProgress disableShrink />
+          </div>
+        </>
+      );
+    } else {
+      contents = (
+        <FillContainer {...classes("window-pad")}>
+          <FillContent>
+            <div {...classes("full", "flex", "column")}>
+              <div {...classes("flex", "grow", "column", "center-center")}>
+                <div {...classes("row")}>Please enter your name</div>
+                <div {...classes("row")}>
+                  <TextField
+                    {...classes("username-field")}
+                    InputProps={{ className: "username-field-input" }}
+                    variant="filled"
+                    autoFocus
+                    onKeyPress={onNameKeyPress}
+                    value={nameInputValue}
+                    onChange={onNameChange}
+                  />
+                </div>
+              </div>
+            </div>
+          </FillContent>
+
+          <WindowFooter>
+            <div {...classes("spacer")} />
+            <div {...classes("button")} onClick={onNameChangeConfirm}>
+              Confirm
+            </div>
+          </WindowFooter>
+        </FillContainer>
+      );
+    }
+
+    return contents;
+  };
+
+  // Dragable Lists window
+  windowManager.createWindow({
+    title: "Enter a username",
+    key: "usernamePicker",
+    isFocused,
+    isFullSize,
+    position,
+    size,
+    children,
   });
 }
 
@@ -358,4 +496,5 @@ export {
   createTrooperIframe,
   createWindowA,
   createWallpaperWindow,
+  createSetUsernameScreen,
 };

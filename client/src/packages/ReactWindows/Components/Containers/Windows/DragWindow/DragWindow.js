@@ -707,7 +707,12 @@ const DragWindow = withResizeDetector(function(props) {
         zIndex: zIndex,
 
         ...(isFullSize
-          ? { height: "100%", width: "100%" }
+          ? {
+              height: containerSize.height,
+              width: containerSize.width,
+              maxHeight: containerSize.height,
+              maxWidth: containerSize.width,
+            }
           : {
               width,
               height,
