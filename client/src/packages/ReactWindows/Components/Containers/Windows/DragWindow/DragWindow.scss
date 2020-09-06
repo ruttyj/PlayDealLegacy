@@ -2,18 +2,25 @@
   pointer-events: none;
 }
 
+.window-inner {
+  padding: 0px;
+  margin: 0px;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
 .window {
   opacity: 1;
   transition: background-color 300ms linear;
   background-color: #ffffff00;
 }
 
-.window.dragging,
-.window.blurred-bkgd.dragging,
-.window.blurred-bkgd.dragging:before,
-.window.blurred-bkgd.dragging:after {
-  background-color: #f90;
-  background-image: none;
+.window.blurred-bkgd,
+.window.blurred-bkgd:before,
+.window.blurred-bkgd:after,
+.fade-background {
+  transition: background-color 100ms linear, background-image 100ms linear;
 }
 
 .window.hiding {
@@ -33,3 +40,8 @@
 .window-pad {
   margin: 3px;
 }
+
+/*
+.blurred-bkgd-before,
+.blurred-bkgd-after
+*/

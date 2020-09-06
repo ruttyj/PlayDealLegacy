@@ -50,6 +50,7 @@ const DragWindow = withResizeDetector(function(props) {
     children,
     actions,
     hideTitle = false,
+    windowManager,
   } = props;
   let {
     onSet = ef,
@@ -83,15 +84,41 @@ const DragWindow = withResizeDetector(function(props) {
     false
   );
 
-  const isFullSize = getNestedValue(window, "isFullSize", false);
-  const setFullSize = (value) => {
-    console.log("setFullSize");
-    onSet("isFullSize", value);
+  // Use motion values to store anything which needs to update faster than the state
+  const motionValue = {
+    isFullSize: useMotionValue(window.isFullSize),
+    isDragging: useMotionValue(window.isDragging),
+    backgroundColor: useMotionValue("transparent"), // used to set the background color before the state has a chance to refresh
+    isChangingLocation: useMotionValue(false),
   };
 
-  const isDragDisabled = getNestedValue(window, "isDragDisabled", false);
+  let isFullSize = motionValue.isFullSize.get();
+  const setFullSize = (newValue) => {
+    if (isFullSize !== newValue) {
+      motionValue.isFullSize.set(newValue);
+
+      if (newValue) {
+        // set to full screen
+
+        // Cache the previous window size
+        let preSize = { ...window.size };
+        setSize({ ...containerSize });
+        onSet("prevSize", preSize);
+        window = windowManager.getWindow(window.id);
+      } else {
+        // return to normal size
+        if (isDef(window.prevSize)) {
+          setSize(window.prevSize);
+          onSet("prevSize", null);
+        }
+      }
+      onSet("isFullSize", newValue);
+    }
+  };
+
+  const isDragDisabled =
+    isFullSize || getNestedValue(window, "isDragDisabled", false);
   const setDragDisabled = (value) => {
-    console.log("setDragDisabled");
     onSet("isDragDisabled", value);
   };
 
@@ -103,8 +130,59 @@ const DragWindow = withResizeDetector(function(props) {
     setResizeDisabled(!isResizeDisabled);
   };
 
-  const isDragging = getNestedValue(window, "isDragging", false);
-  let isMouseEventsDisabled = isDragging;
+  const getIsDragging = () => {
+    return motionValue.isDragging.get();
+  };
+
+  /** /////////////////////////////////////////////////////////
+   *  isChangingLocation
+   *  =========================================================
+   *  If the container is resizing or if the window is resizing
+   *  Alter the state so that buggy re-rendering
+   *  (like brower background blur)
+   *  is mitigated
+   */
+  const [lastChangedTime, setLastChangedTime] = useState(null);
+  const getIsChangingLocation = () => {
+    return motionValue.isChangingLocation.get();
+  };
+  const getCurrentTime = () => {
+    return new Date().getTime();
+  };
+  // Return the state to an non-activly changing state
+  const debouncedsSetNotChanging = () => {
+    let timeout = 500;
+    function checkInactive() {
+      let current = motionValue.isChangingLocation.get();
+      if (current) {
+        let delta = getCurrentTime() - lastChangedTime;
+        if (isDef(lastChangedTime) && delta >= timeout) {
+          setLastChangedTime(null);
+          motionValue.isChangingLocation.set(false);
+          setIsChangingLocation(false);
+        }
+      }
+    }
+    setTimeout(checkInactive, timeout);
+  };
+
+  const setIsChangingLocation = (value) => {
+    motionValue.isChangingLocation.set(value);
+    if (value) {
+      setLastChangedTime(getCurrentTime());
+      if (value) {
+        debouncedsSetNotChanging();
+      }
+      motionValue.backgroundColor.set("#f90");
+    } else {
+      motionValue.backgroundColor.set("transparent");
+    }
+    motionValue.isDragging.set(value);
+  };
+
+  // end isChangingLocation ////////////////////////////////////////////
+
+  let isMouseEventsDisabled = getIsDragging();
 
   const getMinSize = () => {
     return {
@@ -151,41 +229,47 @@ const DragWindow = withResizeDetector(function(props) {
     onSetFocus(newValue);
   };
 
-  const initialPosition = getPosition();
   const initialSize = getSize();
 
   // Set the position if not defined on original object
-  useEffect(() => {
-    setSize(initialSize);
-    setPosition(initialPosition);
-  }, []);
 
   const toggleDragEnabled = () => {
     setDragDisabled(!isDragDisabled);
   };
 
-  const handleSizeHeight = useMotionValue(initialSize.height);
-  const handleSizeWidth = useMotionValue(initialSize.width);
-  const handlePosTop = useMotionValue(initialPosition.top);
-  const handlePosLeft = useMotionValue(initialPosition.left);
-  const newPosLeft = useTransform(handlePosLeft, (v) => v);
-  const newPosTop = useTransform(handlePosTop, (v) => v);
-
+  // Handle full size so values are always correct
   if (isFullSize) {
-    let hasChanged = false;
-    if (newPosLeft.get() !== 0) {
-      hasChanged = true;
-      newPosLeft.set(0);
+    let changed = {
+      position: false,
+      size: false,
+    };
+
+    // Update position for full size
+    let currentPos = getPosition();
+    if (currentPos.left !== 0) {
+      changed.position = true;
+      currentPos.left = 0;
     }
-    if (newPosTop.get() !== 0) {
-      hasChanged = true;
-      newPosTop.set(0);
+    if (currentPos.top !== 0) {
+      changed.position = true;
+      currentPos.top = 0;
     }
-    if (hasChanged) {
-      setPosition({
-        top: newPosTop.get(),
-        left: newPosLeft.get(),
-      });
+    if (changed.position) {
+      setPosition(currentPos);
+    }
+
+    // Update size for full size
+    let currentSize = getSize();
+    if (currentSize.width !== containerSize.width) {
+      changed.size = true;
+      currentSize.width = containerSize.width;
+    }
+    if (currentSize.height !== containerSize.height) {
+      changed.size = true;
+      currentSize.height = containerSize.height;
+    }
+    if (changed.size) {
+      setSize(currentSize);
     }
   }
 
@@ -232,12 +316,10 @@ const DragWindow = withResizeDetector(function(props) {
   const updatePosAndSize = (newPos, newSize, minSize, containerSize) => {
     restrictAxis(newPos, "top", newSize, "height", minSize, containerSize);
     restrictAxis(newPos, "left", newSize, "width", minSize, containerSize);
-    handlePosTop.set(newPos.top);
-    handlePosLeft.set(newPos.left);
+    anchorPosY.set(newPos.top);
+    anchorPosX.set(newPos.left);
 
-    handleSizeHeight.set(newSize.height);
-    handleSizeWidth.set(newSize.width);
-
+    setIsChangingLocation(true);
     setPosition(newPos);
     setSize(newSize);
     //*
@@ -304,15 +386,17 @@ const DragWindow = withResizeDetector(function(props) {
         setFullSize(false);
       }
 
+      setIsChangingLocation(true);
+
       let delta = info.delta;
       if (delta.x !== 0 || delta.y !== 0) {
         const newPos = {
-          left: handlePosLeft.get() + delta.x,
-          top: handlePosTop.get() + delta.y,
+          left: anchorPosX.get() + delta.x,
+          top: anchorPosY.get() + delta.y,
         };
         const newSize = {
-          height: handleSizeHeight.get(),
-          width: handleSizeWidth.get(),
+          height: winSizeY.get(),
+          width: winSizeX.get(),
         };
         if (isTruthy(CONFIG.state.write)) {
           updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
@@ -323,38 +407,30 @@ const DragWindow = withResizeDetector(function(props) {
   };
 
   const onDown = () => {
-    if (!window.isDragging) {
+    if (!getIsDragging()) {
       onSet("isDragging", true);
       // let the parent know the window is being interacted with
     }
 
     handleOnDown(window);
-    console.log("onDown");
   };
 
   const onResizeDown = () => {
-    let valueToSet = {};
-    valueToSet.isDragging = true;
+    let newResizingValue = false;
     if (!isResizeDisabled) {
-      valueToSet.isResizing = true;
+      newResizingValue = true;
     }
     if (!isFocused) {
       setFocused(true);
     }
-    let newValue = { ...window };
-    Object.assign(newValue, valueToSet);
+    onSet("isResizing", newResizingValue);
     onDown();
-    onSet([], newValue);
   };
 
   const onUp = (e, info) => {
-    let valueToSet = {};
-    valueToSet.isDragging = false;
-    valueToSet.isResizing = false;
-
-    let newValue = { ...window };
-    Object.assign(newValue, valueToSet);
-    onSet([], newValue);
+    onSet("isResizing", false);
+    onSet("isDragging", false);
+    setIsChangingLocation(false);
 
     // let the parent know the window is no longer being interacted with
     handleOnUp(window);
@@ -366,9 +442,11 @@ const DragWindow = withResizeDetector(function(props) {
       let delta = info.delta;
       if (!isResizeDisabled) {
         const size = {
-          height: handleSizeHeight.get(),
-          width: handleSizeWidth.get(),
+          height: winSizeY.get(),
+          width: winSizeX.get(),
         };
+        setIsChangingLocation(true);
+
         if (delta.x !== 0 || delta.y !== 0) {
           let originalWidth = getNestedValue(size, "width", null);
           if (Number.isNaN(originalWidth)) originalWidth = initialSize.width;
@@ -439,6 +517,7 @@ const DragWindow = withResizeDetector(function(props) {
     let newSize = { ...getSize() };
     if (isTruthy(CONFIG.state.write)) {
       updatePosAndSize(newPos, newSize, getMinSize(), containerSize);
+      setIsChangingLocation(true);
     }
   }, [containerSize.width, containerSize.height]);
 
@@ -511,7 +590,7 @@ const DragWindow = withResizeDetector(function(props) {
   }
 
   const childArgs = {
-    window,
+    window: windowManager.getWindow(window.id),
     containerSize,
     size: getSize(),
     position: getPosition(),
@@ -525,6 +604,10 @@ const DragWindow = withResizeDetector(function(props) {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const toggleFullSize = () => {
+    setFullSize(!isFullSize);
   };
 
   // Define the contents of the UI
@@ -552,7 +635,7 @@ const DragWindow = withResizeDetector(function(props) {
 
       <div
         {...classes("button")}
-        onClick={() => setFullSize(!isFullSize)}
+        onClick={toggleFullSize}
         title={isFullSize ? "Restore size" : "Maximize size"}
       >
         <div {...classes("circle green")} />
@@ -681,11 +764,16 @@ const DragWindow = withResizeDetector(function(props) {
   // Draw Window
   return (
     <motion.div
+      onAnimationStart={() => {
+        setIsChangingLocation(true);
+      }}
+      onAnimationComplete={() => {
+        setIsChangingLocation(false);
+      }}
       {...classes(
         "window",
-        "blurred-bkgd",
         classNames,
-        window.isDragging ? "dragging" : ""
+        getIsChangingLocation() ? "dragging" : ""
       )}
       onMouseDown={() => {
         if (!isFocused) setFocused(true);
@@ -722,32 +810,39 @@ const DragWindow = withResizeDetector(function(props) {
       }}
       transition={{ type: "spring", stiffness: 200 }}
     >
-      <div {...classes("full_wrapper", "main-bkgd", "relative")}>
-        <div {...classes("window-shell", "grow")}>
-          {dragHandleContents}
-          <div {...classes(["inner-content", "grow", "column"])}>
-            <FillContainer>
-              {!hideTitle && <FillHeader>{headerContents}</FillHeader>}
+      <div {...classes("window-inner", "relative")}>
+        <motion.div
+          {...classes("full", "fade-background", "relative")}
+          style={{
+            backgroundColor: motionValue.backgroundColor,
+          }}
+        >
+          <div {...classes("window-shell", "grow")}>
+            {dragHandleContents}
+            <div {...classes(["inner-content", "grow", "column"])}>
+              <FillContainer>
+                {!hideTitle && <FillHeader>{headerContents}</FillHeader>}
 
-              <FillContent
-                classNames={[
-                  "window-content",
-                  "tint-bkgd",
-                  "column",
-                  disablePointerEvents && "disable-pointer-events",
-                ]}
-              >
-                {childContents}
-              </FillContent>
+                <FillContent
+                  classNames={[
+                    "window-content",
+                    "tint-bkgd",
+                    "column",
+                    disablePointerEvents && "disable-pointer-events",
+                  ]}
+                >
+                  {childContents}
+                </FillContent>
 
-              {isDef(actions)
-                ? isFunc(actions)
-                  ? actions(childArgs)
-                  : actions
-                : ""}
-            </FillContainer>
+                {isDef(actions)
+                  ? isFunc(actions)
+                    ? actions(childArgs)
+                    : actions
+                  : ""}
+              </FillContainer>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );

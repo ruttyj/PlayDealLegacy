@@ -369,7 +369,7 @@ const DragWindow = withResizeDetector(function(props) {
       transition={{ type: "spring", stiffness: 200 }}
       {...classes("window", "blurred-bkgd")}
     >
-      <div {...classes("full_wrapper", "main-bkgd", "relative")}>
+      <div {...classes("main-bkgd", "relative")}>
         <div {...classes("window-shell", "grow")}>
           {dragHandleContents}
           <div {...classes(["inner-content", "grow", "column"])}>

@@ -305,7 +305,8 @@ pre {
   --bkgd-blur: 15px;
 }
 
-.main-bkgd {
+.main-bkgd,
+.blurred-bkgd-main {
   padding: 0px;
   margin: 0px;
   width: 100%;
@@ -318,7 +319,8 @@ pre {
   background-attachment: fixed;
 }
 
-.blurred-bkgd {
+.blurred-bkgd,
+.blurred-bkgd-main {
   position: relative;
   overflow: hidden;
   .focus-content {
@@ -326,7 +328,9 @@ pre {
   }
 }
 .blurred-bkgd:before,
-.blurred-bkgd:after {
+.blurred-bkgd:after,
+.blurred-bkgd-before,
+.blurred-bkgd-after {
   content: "";
   display: block;
   position: absolute;
@@ -341,14 +345,17 @@ pre {
 
 .main-bkgd,
 .blurred-bkgd:before,
-.blurred-bkgd:after {
+.blurred-bkgd:after,
+.blurred-bkgd-before,
+.blurred-bkgd-after {
   background-image: var(--bkgd-image);
   background-size: cover;
   background-position: center, center;
   background-attachment: fixed;
 }
 
-.blurred-bkgd:after {
+.blurred-bkgd:after,
+.blurred-bkgd-after {
   z-index: 2;
   background-repeat: no-repeat;
   background-size: cover;

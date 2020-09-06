@@ -386,6 +386,11 @@ function createSetUsernameScreen(windowManager, game, isFocused = true) {
                     onChange={onNameChange}
                   />
                 </div>
+                <div {...classes("row")}>
+                  <pre>
+                    <xmp>{JSON.stringify(window, null, 2)}</xmp>
+                  </pre>
+                </div>
               </div>
             </div>
           </FillContent>

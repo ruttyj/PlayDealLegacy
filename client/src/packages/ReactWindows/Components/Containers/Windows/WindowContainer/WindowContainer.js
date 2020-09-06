@@ -46,7 +46,7 @@ const WindowContainer = withResizeDetector(function(props) {
   //   </>
   // );
   return (
-    <RelLayer {...classes("full_wrapper full")}>
+    <RelLayer {...classes("window-container full_wrapper full")}>
       <div
         {...classes(
           "corner-indicator top-left",

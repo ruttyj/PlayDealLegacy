@@ -2848,83 +2848,92 @@ class GameUI extends React.Component {
             <RelLayer>
               <WindowContainer
                 windowManager={windowManager}
-                children={({ containerSize }) =>
-                  windowManager && (
-                    <>
-                      <FillContainer>
-                        <FillContent>{windowsChildContents}</FillContent>
-                      </FillContainer>
+                children={({ containerSize }) => {
+                  return (
+                    windowManager && (
+                      <>
+                        <FillContainer>
+                          <FillContent>{windowsChildContents}</FillContent>
+                        </FillContainer>
 
-                      <div {...classes("window-host")}>
-                        {windowManager.getAllWindows().map((window) => {
-                          let contents = null;
+                        <div {...classes("window-host")}>
+                          {windowManager.getAllWindows().map((window) => {
+                            let contents = null;
 
-                          if (window.isOpen === true)
-                            contents = (
-                              <DragWindow
-                                window={window}
-                                onSet={(path, value) =>
-                                  windowManager.setWindow(
-                                    window.id,
-                                    setImmutableValue(window, path, value)
-                                  )
-                                }
-                                onSetSize={(...args) =>
-                                  windowManager.setSize(window.id, ...args)
-                                }
-                                onSetPosition={(...args) => {
-                                  windowManager.setPosition(window.id, ...args);
-                                }}
-                                onClose={() => {
-                                  console.log("close");
-                                  windowManager.removeWindow(window.id);
-                                }}
-                                onToggleWindow={() =>
-                                  windowManager.toggleWindow(window.id, true)
-                                }
-                                onSetFocus={(value) =>
-                                  windowManager.setFocused(window.id, value)
-                                }
-                                onDown={(window) => {
-                                  // allow dragging to be unaffected incase the other window prevents event propagation
-                                  windowManager.toggleOtherWindowsPointerEvents(
-                                    window.id,
-                                    true
-                                  );
-                                }}
-                                onUp={(window) => {
-                                  // renable pointer events for other windows
-                                  windowManager.toggleOtherWindowsPointerEvents(
-                                    window.id,
-                                    false
-                                  );
-                                }}
-                                title={window.title}
-                                snapIndicator={this.stateBuffer.get([
-                                  "windows",
-                                  "snapIndicator",
-                                ])}
-                                setSnapIndicator={(key, value) =>
-                                  this.stateBuffer.set(
-                                    ["windows", "snapIndicator", key],
-                                    value
-                                  )
-                                }
-                                containerSize={containerSize}
-                                children={window.children}
-                                actions={window.actions}
-                              />
+                            if (window.isOpen === true)
+                              contents = (
+                                <DragWindow
+                                  window={window}
+                                  onSet={(path, value) => {
+                                    windowManager.setWindow(
+                                      window.id,
+                                      setImmutableValue(
+                                        windowManager.getWindow(window.id),
+                                        path,
+                                        value
+                                      )
+                                    );
+                                  }}
+                                  onSetSize={(...args) =>
+                                    windowManager.setSize(window.id, ...args)
+                                  }
+                                  onSetPosition={(...args) => {
+                                    windowManager.setPosition(
+                                      window.id,
+                                      ...args
+                                    );
+                                  }}
+                                  onClose={() => {
+                                    windowManager.removeWindow(window.id);
+                                  }}
+                                  onToggleWindow={() =>
+                                    windowManager.toggleWindow(window.id, true)
+                                  }
+                                  onSetFocus={(value) =>
+                                    windowManager.setFocused(window.id, value)
+                                  }
+                                  onDown={(window) => {
+                                    // allow dragging to be unaffected incase the other window prevents event propagation
+                                    windowManager.toggleOtherWindowsPointerEvents(
+                                      window.id,
+                                      true
+                                    );
+                                  }}
+                                  onUp={(window) => {
+                                    // renable pointer events for other windows
+                                    windowManager.toggleOtherWindowsPointerEvents(
+                                      window.id,
+                                      false
+                                    );
+                                  }}
+                                  title={window.title}
+                                  snapIndicator={this.stateBuffer.get([
+                                    "windows",
+                                    "snapIndicator",
+                                  ])}
+                                  setSnapIndicator={(key, value) =>
+                                    this.stateBuffer.set(
+                                      ["windows", "snapIndicator", key],
+                                      value
+                                    )
+                                  }
+                                  windowManager={windowManager}
+                                  containerSize={containerSize}
+                                  children={window.children}
+                                  actions={window.actions}
+                                />
+                              );
+                            return (
+                              <AnimatePresence key={window.id}>
+                                {contents}
+                              </AnimatePresence>
                             );
-                          return (
-                            <AnimatePresence key={window.id}>
-                              {contents}
-                            </AnimatePresence>
-                          );
-                        })}
-                      </div>
-                    </>
-                  )
-                }
+                          })}
+                        </div>
+                      </>
+                    )
+                  );
+                }}
               />
             </RelLayer>
           </AbsLayer>
