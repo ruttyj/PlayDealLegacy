@@ -1,7 +1,7 @@
 import React from "react";
 import Utils from "../../../Utils";
 const { classes } = Utils;
-export default ({ children, style = {}, classNames = [] }) => {
+export default ({ children, style = {}, classNames = [], className = "" }) => {
   return (
     <div
       style={{
@@ -10,7 +10,7 @@ export default ({ children, style = {}, classNames = [] }) => {
         display: "flex",
         ...style,
       }}
-      {...classes(classNames)}
+      {...classes(className, classNames)}
     >
       {children}
     </div>

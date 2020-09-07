@@ -22,7 +22,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import FillContainer from "../../Components/Containers/FillContainer/FillContainer";
 import FillContent from "../../Components/Containers/FillContainer/FillContent";
 import FillHeader from "../../Components/Containers/FillContainer/FillHeader";
-
+import Input from "@material-ui/core/Input";
 const {
   els,
   isDef,
@@ -32,6 +32,25 @@ const {
   getNestedValue,
   setImmutableValue,
 } = Utils;
+
+function WindowFooter(props = {}) {
+  const { children } = props;
+  return (
+    <FillFooter height={40} classNames={["footer", "actions", "center-center"]}>
+      {children}
+    </FillFooter>
+  );
+}
+
+function WindowContent({ children }) {
+  return (
+    <FillContent
+      {...classes("window-content", "tint-bkgd", "column", "overflow-auto")}
+    >
+      {children}
+    </FillContent>
+  );
+}
 
 function WindowAComponent(props) {
   const { size, position, containerSize } = props;
@@ -288,24 +307,15 @@ function createWallpaperWindow(windowManager, isFocused = true) {
   });
 }
 
-function WindowFooter(props = {}) {
-  const { children } = props;
-  return (
-    <FillFooter height={40} classNames={["footer", "actions", "center-center"]}>
-      {children}
-    </FillFooter>
-  );
-}
-
 function createSetUsernameScreen(windowManager, game, isFocused = true) {
   const isFullSize = false;
   const position = {
     left: 300,
-    top: 50,
+    top: 150,
   };
   const size = {
-    width: 700,
-    height: 400,
+    width: 400,
+    height: 200,
   };
 
   const children = (props) => {
@@ -362,39 +372,40 @@ function createSetUsernameScreen(windowManager, game, isFocused = true) {
     let contents = null;
     if (isLoading) {
       contents = (
-        <>
-          <div {...classes("flex", "full", "center-center")}>
-            <CircularProgress disableShrink />
-          </div>
-        </>
+        <FillContainer>
+          <WindowContent>
+            <div {...classes("flex", "full", "center-center")}>
+              <CircularProgress disableShrink />
+            </div>
+          </WindowContent>
+        </FillContainer>
       );
     } else {
       contents = (
-        <FillContainer {...classes("window-pad")}>
-          <FillContent>
-            <div {...classes("full", "flex", "column")}>
-              <div {...classes("flex", "grow", "column", "center-center")}>
-                <div {...classes("row")}>Please enter your name</div>
-                <div {...classes("row")}>
-                  <TextField
-                    {...classes("username-field")}
-                    InputProps={{ className: "username-field-input" }}
-                    variant="filled"
-                    autoFocus
-                    onKeyPress={onNameKeyPress}
-                    value={nameInputValue}
-                    onChange={onNameChange}
-                  />
-                </div>
-                <div {...classes("row")}>
-                  <pre>
-                    <xmp>{JSON.stringify(window, null, 2)}</xmp>
-                  </pre>
-                </div>
+        <FillContainer>
+          <WindowContent>
+            <div
+              {...classes(
+                "full",
+                "flex",
+                "column",
+                "grow",
+                "column",
+                "center-center"
+              )}
+            >
+              <div {...classes("row")}>
+                <Input
+                  {...classes("username-field")}
+                  variant="filled"
+                  autoFocus
+                  onKeyPress={onNameKeyPress}
+                  value={nameInputValue}
+                  onChange={onNameChange}
+                />
               </div>
             </div>
-          </FillContent>
-
+          </WindowContent>
           <WindowFooter>
             <div {...classes("spacer")} />
             <div {...classes("button")} onClick={onNameChangeConfirm}>

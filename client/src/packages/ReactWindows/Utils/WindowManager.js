@@ -8,6 +8,13 @@ function WindowManager(state) {
   const keyDictionaryPath = ["windows", "keyDictionary"];
   const containerSizePath = ["windows", "containerSize"];
 
+  let maxZindex = 0;
+  function setMaxZ(value) {
+    maxZindex = value;
+  }
+  function getMaxZ(value) {
+    return maxZindex + 1;
+  }
   state.set("windows", {
     containerSize: { width: -1, height: -1 },
     snapIndicator: {
@@ -220,6 +227,7 @@ function WindowManager(state) {
       getRenderOrder().forEach((windowId) => {
         let zi = zIndex++;
         setValue(windowId, "zIndex", zi);
+        setMaxZ(zi);
         if (windowId === id) {
           setValue(windowId, "isFocused", isFocused);
           if (isFocused) {
@@ -319,6 +327,7 @@ function WindowManager(state) {
     toggleOtherWindowsPointerEvents,
     setContainerSize,
     getContainerSize,
+    getMaxZ,
   };
 
   function getPublic() {

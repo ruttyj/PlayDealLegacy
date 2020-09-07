@@ -834,8 +834,8 @@ const DragWindow = withResizeDetector(function(props) {
 
                 <FillContent
                   classNames={[
-                    "window-content",
-                    "tint-bkgd",
+                    "overflow-hidden",
+                    "relative",
                     "column",
                     disablePointerEvents && "disable-pointer-events",
                   ]}
