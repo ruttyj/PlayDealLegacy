@@ -1,5 +1,14 @@
 import Utils from "../Utils";
-const { els, elsFn, isDef, isArr, getNestedValue, setImmutableValue } = Utils;
+const {
+  els,
+  elsFn,
+  isFunc,
+  isDef,
+  isDefNested,
+  isArr,
+  getNestedValue,
+  setImmutableValue,
+} = Utils;
 
 function WindowManager(state) {
   let topWindowId = 0;
@@ -288,10 +297,22 @@ function WindowManager(state) {
     });
   }
 
+  let onContainerSizeInitCallback = null;
+  function setOnContainerSizeInit(fn) {
+    onContainerSizeInitCallback = fn;
+  }
+
   function setContainerSize(size) {
-    let prevSize = getContainerSize();
-    if (size.width !== prevSize.width || size.height !== prevSize.height) {
-      state.set(containerSizePath, { ...size });
+    if (isDefNested(size, "width") && isDefNested(size, "height")) {
+      let prevSize = getContainerSize();
+      if (size.width !== prevSize.width || size.height !== prevSize.height) {
+        state.set(containerSizePath, { ...size });
+      }
+      if (prevSize.width === -1 && prevSize.height === -1) {
+        if (isFunc(onContainerSizeInitCallback)) {
+          onContainerSizeInitCallback();
+        }
+      }
     }
   }
 
@@ -325,6 +346,7 @@ function WindowManager(state) {
     removeWindow,
     toggleWindow,
     toggleOtherWindowsPointerEvents,
+    setOnContainerSizeInit,
     setContainerSize,
     getContainerSize,
     getMaxZ,

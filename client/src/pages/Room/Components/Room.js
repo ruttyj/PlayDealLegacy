@@ -343,10 +343,13 @@ class GameUI extends React.Component {
 
     this.windowManager = WindowManager(this.stateBuffer);
 
+    this.windowManager.setOnContainerSizeInit(() => {
+      createSetUsernameScreen(this.windowManager, game);
+    });
+
     this.stateBuffer.set("theme", {
       wallpaper: els(wallpapers[8], wallpapers[0]), // set default url
     });
-    createSetUsernameScreen(this.windowManager, game, true);
   }
 
   toggleBackgroundPicker() {
@@ -366,7 +369,6 @@ class GameUI extends React.Component {
       createWallpaperWindow(windowManager);
     }
   }
-
   toggleUsernamePicker() {
     let windowManager = this.windowManager;
     let window = windowManager.getWindowByKey("usernamePicker");
@@ -2865,6 +2867,8 @@ class GameUI extends React.Component {
               <WindowContainer
                 windowManager={windowManager}
                 children={({ containerSize }) => {
+                  windowManager.setContainerSize(containerSize);
+
                   return (
                     windowManager && (
                       <>

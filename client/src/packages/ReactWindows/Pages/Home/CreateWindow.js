@@ -180,14 +180,18 @@ function useSmartClick(...args) {
 
 function createWallpaperWindow(windowManager, isFocused = true) {
   const isFullSize = false;
-  const position = {
-    left: 300,
-    top: 50,
-  };
+
   const size = {
-    width: 700,
-    height: 400,
+    width: 900,
+    height: 550,
   };
+
+  const containerSize = windowManager.getContainerSize();
+  const position = {
+    left: containerSize.width / 2 - size.width / 2,
+    top: containerSize.height / 2 - size.height / 2,
+  };
+
   const children = (props) => {
     let state = windowManager.getState();
 
@@ -309,13 +313,15 @@ function createWallpaperWindow(windowManager, isFocused = true) {
 
 function createSetUsernameScreen(windowManager, game, isFocused = true) {
   const isFullSize = false;
-  const position = {
-    left: 300,
-    top: 150,
-  };
+
   const size = {
     width: 400,
     height: 200,
+  };
+  const containerSize = windowManager.getContainerSize();
+  const position = {
+    left: containerSize.width / 2 - size.width / 2,
+    top: containerSize.height / 2 - size.height / 2,
   };
 
   const children = (props) => {
