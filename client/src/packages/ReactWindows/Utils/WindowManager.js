@@ -102,6 +102,7 @@ function WindowManager(state) {
     if (props.isFocused) {
       setFocused(window.id, true);
     }
+    return window.id;
   }
 
   function removeWindow(id) {
@@ -212,7 +213,7 @@ function WindowManager(state) {
     }
   }
 
-  function setFocused(id, value = null) {
+  function setFocused(id, value = true) {
     // Check if we need to default the value
     let isFocused = !isDef(value) ? true : value;
 

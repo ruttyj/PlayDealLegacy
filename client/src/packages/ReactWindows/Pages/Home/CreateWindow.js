@@ -300,7 +300,7 @@ function createWallpaperWindow(windowManager, isFocused = true) {
   };
 
   // Dragable Lists window
-  windowManager.createWindow({
+  let windowId = windowManager.createWindow({
     title: "Choose a background",
     key: "backgroundPicker",
     isFocused,
@@ -309,9 +309,14 @@ function createWallpaperWindow(windowManager, isFocused = true) {
     size,
     children,
   });
+
+  if (isFocused) {
+    windowManager.setFocused(windowId);
+  }
+  return windowId;
 }
 
-function createSetUsernameScreen(windowManager, game, isFocused = true) {
+function createSetUsernameWindow(windowManager, game, isFocused = true) {
   const isFullSize = false;
 
   const size = {
@@ -426,7 +431,7 @@ function createSetUsernameScreen(windowManager, game, isFocused = true) {
   };
 
   // Dragable Lists window
-  windowManager.createWindow({
+  let windowId = windowManager.createWindow({
     title: "Enter a username",
     key: "usernamePicker",
     isFocused,
@@ -435,6 +440,10 @@ function createSetUsernameScreen(windowManager, game, isFocused = true) {
     size,
     children,
   });
+  if (isFocused) {
+    windowManager.setFocused(windowId);
+  }
+  return windowId;
 }
 
 function createWindowA(windowManager, isFocused = true) {
@@ -518,5 +527,5 @@ export {
   createTrooperIframe,
   createWindowA,
   createWallpaperWindow,
-  createSetUsernameScreen,
+  createSetUsernameWindow,
 };

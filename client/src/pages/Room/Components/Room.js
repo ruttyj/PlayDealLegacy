@@ -167,7 +167,7 @@ import {
   createTrooperIframe,
   createWindowA,
   createWallpaperWindow,
-  createSetUsernameScreen,
+  createSetUsernameWindow,
 } from "../../../packages/ReactWindows/Pages/Home/CreateWindow";
 import "../../../packages/ReactWindows/Pages/Home/Home.scss";
 ////////////////////////////////////////////////////
@@ -344,7 +344,7 @@ class GameUI extends React.Component {
     this.windowManager = WindowManager(this.stateBuffer);
 
     this.windowManager.setOnContainerSizeInit(() => {
-      createSetUsernameScreen(this.windowManager, game);
+      createSetUsernameWindow(this.windowManager, game);
     });
 
     this.stateBuffer.set("theme", {
@@ -383,7 +383,7 @@ class GameUI extends React.Component {
         windowManager.setFocused(window.id);
       }
     } else {
-      createSetUsernameScreen(windowManager, game);
+      createSetUsernameWindow(windowManager, game);
     }
   }
 

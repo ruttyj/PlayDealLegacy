@@ -186,7 +186,6 @@ const DragWindow = withResizeDetector(function(props) {
     } else {
       motionValue.backgroundColor.set("transparent");
     }
-    motionValue.isDragging.set(value);
   };
 
   // end isChangingLocation ////////////////////////////////////////////
