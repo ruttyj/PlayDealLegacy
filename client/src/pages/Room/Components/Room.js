@@ -353,7 +353,15 @@ class GameUI extends React.Component {
     let windowManager = this.windowManager;
     let window = windowManager.getWindowByKey("backgroundPicker");
     if (isDef(window)) {
-      windowManager.windowSetValue(window.id, "isOpen", !window.isOpen);
+      let isOpen = window.isOpen;
+      if (!isOpen) {
+        isOpen = !isOpen;
+        windowManager.windowSetValue(window.id, "isOpen", isOpen);
+      }
+
+      if (isOpen) {
+        windowManager.setFocused(window.id);
+      }
     } else {
       createWallpaperWindow(windowManager);
     }
@@ -363,7 +371,15 @@ class GameUI extends React.Component {
     let windowManager = this.windowManager;
     let window = windowManager.getWindowByKey("usernamePicker");
     if (isDef(window)) {
-      windowManager.windowSetValue(window.id, "isOpen", !window.isOpen);
+      let isOpen = window.isOpen;
+      if (!isOpen) {
+        isOpen = !isOpen;
+        windowManager.windowSetValue(window.id, "isOpen", isOpen);
+      }
+
+      if (isOpen) {
+        windowManager.setFocused(window.id);
+      }
     } else {
       createSetUsernameScreen(windowManager, game);
     }
