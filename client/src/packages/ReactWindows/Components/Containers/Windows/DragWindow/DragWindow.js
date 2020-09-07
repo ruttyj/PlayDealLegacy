@@ -116,13 +116,13 @@ const DragWindow = withResizeDetector(function(props) {
     }
   };
 
-  const isDragDisabled =
-    isFullSize || getNestedValue(window, "isDragDisabled", false);
+  const isDragDisabled = getNestedValue(window, "isDragDisabled", false);
   const setDragDisabled = (value) => {
     onSet("isDragDisabled", value);
   };
 
-  const isResizeDisabled = getNestedValue(window, "isResizeDisabled", false);
+  const isResizeDisabled =
+    isFullSize || getNestedValue(window, "isResizeDisabled", false);
   const setResizeDisabled = (value) => {
     onSet("isResizeDisabled", value);
   };
@@ -142,6 +142,7 @@ const DragWindow = withResizeDetector(function(props) {
    *  (like brower background blur)
    *  is mitigated
    */
+  const lastChangedId = useMotionValue(0);
   const [lastChangedTime, setLastChangedTime] = useState(null);
   const getIsChangingLocation = () => {
     return motionValue.isChangingLocation.get();
@@ -152,18 +153,26 @@ const DragWindow = withResizeDetector(function(props) {
   // Return the state to an non-activly changing state
   const debouncedsSetNotChanging = () => {
     let timeout = 500;
-    function checkInactive() {
-      let current = motionValue.isChangingLocation.get();
-      if (current) {
-        let delta = getCurrentTime() - lastChangedTime;
-        if (isDef(lastChangedTime) && delta >= timeout) {
-          setLastChangedTime(null);
-          motionValue.isChangingLocation.set(false);
-          setIsChangingLocation(false);
+    function makeCheckInactive(currentCheckId) {
+      return function() {
+        let isCurrentlyChanging = motionValue.isChangingLocation.get();
+        if (isCurrentlyChanging) {
+          // detect if is the most recent call of the method... to acheive the debounce effect
+          let isLastExecution = currentCheckId === lastChangedId.get();
+          if (isLastExecution) {
+            let delta = getCurrentTime() - lastChangedTime;
+            if (isDef(lastChangedTime) && delta >= timeout) {
+              setLastChangedTime(null);
+              motionValue.isChangingLocation.set(false);
+              setIsChangingLocation(false);
+            }
+          }
         }
-      }
+      };
     }
-    setTimeout(checkInactive, timeout);
+    let newId = lastChangedId.get() + 1;
+    lastChangedId.set(newId);
+    setTimeout(makeCheckInactive(newId), timeout);
   };
 
   const setIsChangingLocation = (value) => {
