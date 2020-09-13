@@ -6,7 +6,6 @@ import {
   useTransform,
   AnimatePresence,
   motionValue,
-  Override,
 } from "framer-motion";
 import AddIcon from "@material-ui/icons/Add";
 import FillContainer from "../../Components/Containers/FillContainer/FillContainer";
@@ -49,7 +48,6 @@ export {
   useTransform,
   AnimatePresence,
   motionValue,
-  Override,
   AddIcon,
   FillContainer,
   FillContent,
