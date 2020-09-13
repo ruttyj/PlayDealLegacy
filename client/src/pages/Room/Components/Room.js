@@ -172,11 +172,11 @@ import PeopleAltIcon from "@material-ui/icons/PeopleAlt";
 import WindowManager from "../../../packages/ReactWindows/Utils/WindowManager";
 import WindowContainer from "../../../packages/ReactWindows/Components/Containers/Windows/WindowContainer/";
 import DragWindow from "../../../packages/ReactWindows/Components/Containers/Windows/DragWindow/";
-import makeBackgroundPicker from "./Windows/BackgroundPicker";
-import makeUsernamePicker from "./Windows/InitialWindow";
-import makePlayerListWindow from "./Windows/PlayerListWindow";
-import makeTrooperDancingWindow from "./Windows/DancingTrooper";
-import createDebugWindow from "./Windows/DebugWindow";
+import makeBackgroundPicker from "../Components/Windows/BackgroundPicker";
+import makeUsernamePicker from "../Components/Windows/InitialWindow";
+import makePlayerListWindow from "../Components/Windows/PlayerListWindow";
+import makeTrooperDancingWindow from "../Components/Windows/DancingTrooper";
+import createDebugWindow from "../Components/Windows/DebugWindow";
 import "../../../packages/ReactWindows/Pages/Home/Home.scss";
 
 ////////////////////////////////////////////////////
