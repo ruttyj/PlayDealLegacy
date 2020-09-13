@@ -2,7 +2,8 @@
 
 PlayDeal is an Online multiplayer card game where players attempt to collect X many of a sets inorder to win.
 
-Currently only has 1 room and requires 2 browser instances to play. (More rooms comming soon)
+You can play online live with your friends at https://playdeal.live/ 
+(Will need at least 2 people in the same room to play)
 
 ![Available cards](https://i.ibb.co/sW0V0m7/PlayDeal.png)
 
