@@ -4,9 +4,8 @@ const reduxState = ReduxState.getInstance();
 
 const makeGetters = (state) => {
   const publicScope = {};
-  Object.assign(publicScope, {
-    // GAME STATUS
 
+  const cardSelection = {
     cardSelection_getMeta(path, fallback = null) {
       let _path = isArr(path) ? path : [path];
       return reduxState.get(["game", "cardSelect", ..._path], fallback);
@@ -42,7 +41,9 @@ const makeGetters = (state) => {
         0
       );
     },
+  };
 
+  const collectionSelection = {
     collectionSelection_getAll() {
       return reduxState.get(["game", "collectionSelect"], null);
     },
@@ -67,7 +68,9 @@ const makeGetters = (state) => {
     collectionSelection_hasSelectedValue(value) {
       return publicScope.collectionSelection_getSelected().includes(value);
     },
+  };
 
+  const personSelection = {
     personSelection_getAll() {
       return reduxState.get(["game", "personSelect"], null);
     },
@@ -99,6 +102,14 @@ const makeGetters = (state) => {
         0
       );
     },
+  };
+
+  Object.assign(publicScope, {
+    // GAME STATUS
+
+    ...cardSelection,
+    ...collectionSelection,
+    ...personSelection,
   });
 
   return publicScope;

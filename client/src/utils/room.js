@@ -8,6 +8,8 @@ import {
   setNestedValue,
   jsonLog,
 } from "../utils/";
+import ReduxState from "../App/controllers/reduxState";
+const reduxState = ReduxState.getInstance(); // Object to manipulate the redux state
 
 function Room(ref) {
   function props() {
@@ -23,7 +25,7 @@ function Room(ref) {
   }
 
   function getAllPeopleInRoom() {
-    return props().getAllPeopleData();
+    return reduxState.get(["people"], {});
   }
 
   async function resetState() {
