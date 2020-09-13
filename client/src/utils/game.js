@@ -3,10 +3,12 @@ import {
   isArr,
   isDef,
   isFunc,
+  isObj,
   isDefNested,
   els,
   getNestedValue,
   setNestedValue,
+  getKeyFromProp,
   jsonLog,
 } from "../utils/";
 import SCREENS from "../data/screens";
@@ -149,35 +151,30 @@ function Game(ref) {
         canTrigger.requestSound = true;
       }
 
-      let previousTurnPersonId = props().getPeviousTurnPersonId();
-      let currentTurnPersonId = props().getCurrentTurnPersonId();
+      let previousTurnPersonId = getPeviousTurnPersonId();
+      let currentTurnPersonId = getCurrentTurnPersonId();
 
       if (game.isMyTurn()) {
         // If is my turn now
-        if (
-          !isDef(previousTurnPersonId) ||
-          !props().isMyId(previousTurnPersonId)
-        ) {
+        if (!isDef(previousTurnPersonId) || !isMyId(previousTurnPersonId)) {
           sounds.yourTurn.play();
         }
 
-        if (props().isDiscardPhase()) {
+        if (isDiscardPhase()) {
           // Flag cards to discard
-          let previousTurnPhase = props().getPeviousTurnPhase();
+          let previousTurnPhase = getPeviousTurnPhase();
           if (previousTurnPhase !== "discard") {
             await props().cardSelection_reset();
             await props().cardSelection_setSelected([]);
           }
 
-          await props().cardSelection_setSelectable(props().getMyHandCardIds());
+          await props().cardSelection_setSelectable(getMyHandCardIds());
           await props().cardSelection_setEnable(true);
 
           await props().cardSelection_setType("remove");
 
-          await props().cardSelection_setLimit(
-            props().getTotalCountToDiscard()
-          );
-        } else if (props().isDonePhase()) {
+          await props().cardSelection_setLimit(getDiscardCount());
+        } else if (isDonePhase()) {
           // show the user no more actions can be taken
           await props().cardSelection_reset();
           await props().cardSelection_setEnable(true);
@@ -187,7 +184,7 @@ function Game(ref) {
       } else {
         // if is new turn reset selections
         if (
-          props().getPeviousTurnPersonId() !== currentTurnPersonId &&
+          getPeviousTurnPersonId() !== currentTurnPersonId &&
           game.isMyTurn() &&
           game.phase.get() === "draw"
         ) {
@@ -274,7 +271,8 @@ function Game(ref) {
   //  CUSTOM UI
   //#region
   function getCustomUi(path = [], fallback = null) {
-    return props().getCustomUi(path, fallback);
+    const _path = isArr(path) ? path : [path];
+    return reduxState.get(["game", "uiCustomize", ..._path], fallback);
   }
 
   async function setCustomUi(path = [], value = null) {
@@ -288,15 +286,13 @@ function Game(ref) {
   //#region
 
   function getLobbyUsers() {
-    return props()
-      .getPersonOrder()
-      .map((id) => {
-        return getPerson(id);
-      });
+    return getPersonOrder().map((id) => {
+      return getPerson(id);
+    });
   }
 
-  function getRoomCode() {
-    return props().getRoomCode();
+  function getRoomCode(fallback = null) {
+    return reduxState.get(["rooms", "currentRoom", "code"], fallback);
   }
 
   function getPersonStatusLabel(personId) {
@@ -314,8 +310,12 @@ function Game(ref) {
     await updateMyStatus(newStatus);
   }
 
-  function getPersonStatus(personId) {
-    return props().getPersonStatus(personId);
+  function getPersonStatus(personId = null) {
+    if (!isDef(personId)) personId = myId();
+
+    let person = getPerson(personId);
+    if (isDef(person)) return person.status;
+    return null;
   }
 
   function translatePersonStatus(status) {
@@ -367,7 +367,7 @@ function Game(ref) {
   }
 
   function getMyStatus() {
-    return props().getPersonStatus();
+    return getPersonStatus();
   }
 
   function amIReady() {
@@ -375,35 +375,95 @@ function Game(ref) {
   }
 
   function me() {
-    return props().getPerson(myId());
+    return getPerson(myId());
   }
 
   function isMyTurn() {
-    return props().isMyTurn();
+    return getCurrentTurnPersonId() === myId();
   }
 
+  function getPlayerHand(playerId) {
+    let playerHand = reduxState.get(
+      ["game", "playerHands", "items", playerId],
+      {}
+    );
+    return _mergeCardDataIntoObject(playerHand);
+  }
   function getMyHand() {
-    return props().getMyHand();
+    return getPlayerHand(myId());
   }
 
-  function amIHost() {
-    return props().amIHost();
+  function getMyCardIdsWithTags(mxd) {
+    let tags = isArr(mxd) ? mxd : [mxd];
+    let myHand = getMyHand();
+    let result = [];
+    let cardIds = myHand.cardIds;
+    if (isArr(cardIds)) {
+      cardIds.forEach((cardId) => {
+        for (let i = 0; i < tags.length; ++i) {
+          if (doesCardHaveTag(cardId, tags[i])) {
+            result.push(cardId);
+            break;
+          }
+        }
+      });
+    }
+    return result;
+  }
+
+  function getMyCardIdsWithTag(tag) {
+    let myHand = getMyHand();
+    let result = [];
+    let cardIds = myHand.cardIds;
+    if (isArr(cardIds)) {
+      cardIds.forEach((cardId) => {
+        if (doesCardHaveTag(cardId, tag)) {
+          result.push(cardId);
+        }
+      });
+    }
+    //rentAugment
+    return result;
+  }
+
+  function getHostId() {
+    return reduxState.get(["people", "host"], null);
   }
 
   function myId() {
-    return props().getMyId();
+    return reduxState.get(["people", "myId"], null);
   }
 
   function isMyId(personId) {
     return String(myId()) === String(personId);
   }
 
-  function getMyBankCardIds() {
-    return props().getPlayerBankCardIds(myId());
+  function amIHost() {
+    return isMyId(getHostId());
   }
 
+  function getAllPlayerBankData() {
+    return reduxState.get(["game", "playerBanks"], {});
+  }
+  function getPlayerBankCardIds(playerId) {
+    return getNestedValue(
+      getAllPlayerBankData(),
+      ["items", playerId, "cardIds"],
+      []
+    );
+  }
+  function getMyBankCardIds() {
+    return getPlayerBankCardIds(myId());
+  }
+
+  function getRequestIdsForPlayer(playerId, fallback = []) {
+    return reduxState.get(
+      ["game", "playerRequests", "items", playerId],
+      fallback
+    );
+  }
   function getMyRequestIds() {
-    return props().getRequestIdsForPlayer(myId(), []);
+    return getRequestIdsForPlayer(myId());
   }
   //#endregion
   //_______________________________
@@ -412,32 +472,28 @@ function Game(ref) {
   // PHASE
   //#region
   function isActionPhase() {
-    return props().isActionPhase();
+    return reduxState.get(["game", "playerTurn", "phase"], null) === "action";
   }
 
   function isMyDonePhase() {
-    return isMyTurn() && props().getCurrentTurnPhase() === "done";
+    return isMyTurn() && getCurrentPhaseKey() === "done";
   }
 
   function isDiscardPhase() {
-    return props().isDiscardPhase();
+    return reduxState.get(["game", "playerTurn", "phase"], null) === "discard";
   }
 
   function isGameStarted() {
-    return getNestedValue(
-      props().getGameStatusData(),
-      ["isGameStarted"],
-      false
-    );
+    return getNestedValue(getGameStatusData(), ["isGameStarted"], false);
   }
 
   function isGameOver() {
-    return getNestedValue(props().getGameStatusData(), ["isGameOver"], false);
+    return getNestedValue(getGameStatusData(), ["isGameOver"], false);
   }
 
   function getWinningCondition() {
     return getNestedValue(
-      props().getGameStatusData(),
+      getGameStatusData(),
       ["winningCondition", "payload", "condition"],
       "For some reason..."
     );
@@ -445,7 +501,7 @@ function Game(ref) {
 
   function getWinningPersonId() {
     return getNestedValue(
-      props().getGameStatusData(),
+      getGameStatusData(),
       ["winningCondition", "payload", "playerId"],
       null
     );
@@ -459,8 +515,16 @@ function Game(ref) {
     return null;
   }
 
+  function getGameStatusData() {
+    return reduxState.get(["game", "gameStatus"], {});
+  }
+
+  function getWinningPlayerId() {
+    return reduxState.get(["game", "winningPlayerId"], null);
+  }
+
   function getGameStatus() {
-    return props().getGameStatusData();
+    return getGameStatusData();
   }
 
   function canStartGame() {
@@ -469,11 +533,11 @@ function Game(ref) {
 
   function getGameStatus(path = [], fallback = null) {
     let _path = isArr(path) ? path : [path];
-    return getNestedValue(props().getGameStatusData(), _path, fallback);
+    return getNestedValue(getGameStatusData(), _path, fallback);
   }
 
   function getCurrentActionCount() {
-    return props().getCurrentTurnActionCount();
+    return reduxState.get(["game", "playerTurn", "actionCount"], 0);
   }
   //#endregion
   //_______________________________
@@ -497,12 +561,12 @@ function Game(ref) {
 
   function isRentCard(cardOrId) {
     let card = getCard(cardOrId);
-    return props().doesCardHaveTag(card.id, "rent");
+    return doesCardHaveTag(card.id, "rent");
   }
 
   function doesCardHaveTag(cardOrId, tag) {
     let card = getCard(cardOrId);
-    return props().doesCardHaveTag(card.id, tag);
+    return isArr(card.tags) ? card.tags.includes(tag) : false;
   }
 
   function isDrawCard(cardOrId) {
@@ -532,29 +596,40 @@ function Game(ref) {
   //#region
 
   function isEveryoneReady() {
-    return props().isAllPlayersReady();
+    let readyCount = 0;
+    let path = ["people", "order"];
+    let personOrder = reduxState.get(path, []);
+    let personCount = personOrder.length;
+    personOrder.forEach((personId) => {
+      let person = publicScope.getPerson(personId);
+      if (person.status === "ready") {
+        ++readyCount;
+      }
+    });
+    return readyCount === personCount;
   }
 
-  function getPerson(id) {
-    return props().getPerson(id);
+  function getPerson(personId) {
+    let path = ["people", "items", personId];
+    return reduxState.get(path, null);
   }
 
-  function isPersonReady(personId) {
-    return props().isPersonReady(personId);
+  function isPersonReady(personId = null) {
+    if (!isDef(personId)) personId = myId();
+    let status = getPersonStatus(personId);
+    return status === "ready";
   }
 
   function canPassTurn() {
-    return (
-      isMyTurn() && !["draw", "request"].includes(props().getCurrentTurnPhase())
-    );
+    return isMyTurn() && !["draw", "request"].includes(getCurrentPhaseKey());
   }
 
   function canDrawInitialCards() {
-    return isMyTurn() && props().getCurrentTurnPhase() === "draw";
+    return isMyTurn() && getCurrentPhaseKey() === "draw";
   }
 
   function drawTurnStartingCards() {
-    props().drawTurnStartingCards(connection(), props().getRoomCode());
+    props().drawTurnStartingCards(connection(), getRoomCode());
     updateDisplayMode(null);
   }
 
@@ -562,30 +637,31 @@ function Game(ref) {
     return props().getAllPlayers();
   }
 
-  function getAllPropertySetsKeyed() {
-    return props().getPropertySetMap();
-  }
-
   function getCurrentPhaseKey() {
-    return props().getCurrentTurnPhase();
-  }
-
-  function getCurrentPhase() {
-    return props().getCurrentTurnPhase();
+    return reduxState.get(["game", "playerTurn", "phase"], null);
   }
 
   function isHost(personId) {
-    return props().isHost(personId);
+    if (!isDef(personId)) personId = myId();
+    let hostId = getHostId();
+    return isDef(hostId) && String(hostId) === String(personId);
   }
 
   function getActionCountRemaining() {
-    return (
-      props().getCurrentTurnActionLimit() - props().getCurrentTurnActionCount()
-    );
+    return getCurrentTurnActionLimit() - getCurrentActionCount();
+  }
+
+  function getCurrentTurnActionLimit() {
+    return reduxState.get(["game", "playerTurn", "actionLimit"], 0);
+  }
+
+  function getCurrentTurnActionsRemaining() {
+    return getCurrentActionCount() - getCurrentTurnActionLimit();
   }
 
   function getCard(cardOrId) {
-    return props().getCard(cardOrId);
+    let cardId = getKeyFromProp(cardOrId, "id");
+    return reduxState.get(["game", "cards", "items", cardId], null);
   }
   //#endregion
   //_______________________________
@@ -597,17 +673,13 @@ function Game(ref) {
     actionCardId,
     { collectionId, augmentCardsIds, targetIds, targetId }
   ) {
-    return props().chargeRentForCollection(
-      connection(),
-      props().getRoomCode(),
-      {
-        cardId: actionCardId,
-        collectionId,
-        augmentCardsIds,
-        targetIds,
-        targetId,
-      }
-    );
+    return props().chargeRentForCollection(connection(), getRoomCode(), {
+      cardId: actionCardId,
+      collectionId,
+      augmentCardsIds,
+      targetIds,
+      targetId,
+    });
   }
 
   function canChargeRent() {
@@ -628,11 +700,11 @@ function Game(ref) {
   // COLLECTION
   //#region
   function getAllCollectionAssociationData() {
-    return props().getPlayerCollectionsData();
+    return reduxState.get(["game", "playerCollections"], []);
   }
 
   function valueCollection({ cardId, augmentCardsIds, targetIds }) {
-    return props().valueCollection(connection(), props().getRoomCode(), {
+    return props().valueCollection(connection(), getRoomCode(), {
       cardId: cardId,
       augmentCardsIds,
       targetIds,
@@ -644,7 +716,7 @@ function Game(ref) {
     myPropertyCardId,
     theirPropertyCardId,
   }) {
-    return await props().swapProperties(connection(), props().getRoomCode(), {
+    return await props().swapProperties(connection(), getRoomCode(), {
       cardId,
       myPropertyCardId,
       theirPropertyCardId,
@@ -654,55 +726,53 @@ function Game(ref) {
   async function respondToPropertyTransfer({ cardId, requestId, responseKey }) {
     return await props().respondToPropertyTransfer(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       { cardId, requestId, responseKey }
     );
   }
 
   async function stealProperties({ cardId, theirPropertyCardId }) {
-    return await props().stealProperties(connection(), props().getRoomCode(), {
+    return await props().stealProperties(connection(), getRoomCode(), {
       cardId,
       theirPropertyCardId,
     });
   }
 
   async function stealCollection({ cardId, theirCollectionId }) {
-    return await props().stealCollection(connection(), props().getRoomCode(), {
+    return await props().stealCollection(connection(), getRoomCode(), {
       cardId,
       theirCollectionId,
     });
   }
 
   async function respondToStealProperty({ cardId, requestId, responseKey }) {
-    return await props().respondToStealProperty(
-      connection(),
-      props().getRoomCode(),
-      { cardId, requestId, responseKey }
-    );
+    return await props().respondToStealProperty(connection(), getRoomCode(), {
+      cardId,
+      requestId,
+      responseKey,
+    });
   }
 
   async function respondToJustSayNo({ cardId, requestId, responseKey }) {
-    return await props().respondToJustSayNo(
-      connection(),
-      props().getRoomCode(),
-      { cardId, requestId, responseKey }
-    );
+    return await props().respondToJustSayNo(connection(), getRoomCode(), {
+      cardId,
+      requestId,
+      responseKey,
+    });
   }
 
   async function respondToStealCollection({ cardId, requestId, responseKey }) {
-    return await props().respondToStealCollection(
-      connection(),
-      props().getRoomCode(),
-      { cardId, requestId, responseKey }
-    );
+    return await props().respondToStealCollection(connection(), getRoomCode(), {
+      cardId,
+      requestId,
+      responseKey,
+    });
   }
 
   async function collectCollection({ requestId }) {
-    return await props().collectCollection(
-      connection(),
-      props().getRoomCode(),
-      { requestId }
-    );
+    return await props().collectCollection(connection(), getRoomCode(), {
+      requestId,
+    });
   }
   //#endregion
   //_______________________________
@@ -717,12 +787,13 @@ function Game(ref) {
 
   function passTurn() {
     if (canPassTurn()) {
-      props().passTurn(connection(), props().getRoomCode());
+      props().passTurn(connection(), getRoomCode());
     }
   }
 
-  function canAddCardToBank(card) {
-    return props().canAddCardToBank(card);
+  function canAddCardToBank(cardOrId) {
+    let card = getCard(cardOrId);
+    return card.type === "cash" || card.type === "action";
   }
 
   async function transferPropertyToExistingCollection(
@@ -732,7 +803,7 @@ function Game(ref) {
   ) {
     return await props().transferPropertyToExistingCollection(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId,
       fromCollectionId,
       toCollectionId
@@ -746,7 +817,7 @@ function Game(ref) {
   ) {
     return await props().transferSetAugmentToExistingCollection(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId,
       fromCollectionId,
       toCollectionId
@@ -754,13 +825,14 @@ function Game(ref) {
   }
 
   function isCollectionComplete(collectionId) {
-    return props().getIsCollectionFull(collectionId);
+    let collection = getCollection(collectionId);
+    return getNestedValue(collection, "isFullSet", false);
   }
 
   async function collectCardToCollection(requestId, cardId, collectionId) {
     return await props().collectCardToCollection(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       requestId,
       cardId,
       collectionId
@@ -770,7 +842,7 @@ function Game(ref) {
   async function collectNothingToNothing(requestId) {
     return await props().collectNothingToNothing(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       requestId
     );
   }
@@ -778,7 +850,7 @@ function Game(ref) {
   async function collectCardToBank(requestId, cardId) {
     return await props().collectCardToBank(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       requestId,
       cardId
     );
@@ -857,23 +929,35 @@ function Game(ref) {
     await updateDisplayMode("respond-pay");
   }
 
+  function getCollectionIdsMatchingSets(playerId, propertySetKeys) {
+    let result = [];
+    let myCollectionIds = getCollectionIdsForPlayer(playerId);
+    myCollectionIds.forEach((collectionId) => {
+      let collection = getCollection(collectionId);
+      if (propertySetKeys.includes(collection.propertySetKey)) {
+        result.push(collectionId);
+      }
+    });
+    return result;
+  }
+
   async function initAskForRent(cardOrId, collectionId = null) {
     let game = getPublic();
     let card = getCard(cardOrId);
-    let propertySetKeysForCard = props().getPropertySetKeysForCard(card.id);
-    let matchingCollectionIds = props().getCollectionIdsMatchingSets(
+    let propertySetKeysForCard = getPropertySetKeysForCard(card.id);
+    let matchingCollectionIds = getCollectionIdsMatchingSets(
       myId(),
       propertySetKeysForCard
     );
     if (matchingCollectionIds.length > 0) {
       // Highlight compatible augment cards
-      let augmentCardIds = props().getMyCardIdsWithTag("rentAugment");
+      let augmentCardIds = getMyCardIdsWithTag("rentAugment");
 
       await game.selection.cards.reset();
       await game.selection.cards.setEnabled(true);
       await game.selection.cards.setType("add");
       await game.selection.cards.selectable.setLimit(
-        props().getCurrentTurnActionsRemaining() - 1
+        getCurrentTurnActionsRemaining() - 1
       );
       await game.selection.cards.selectable.set(augmentCardIds);
       await game.selection.cards.selected.set([]);
@@ -888,7 +972,7 @@ function Game(ref) {
         await game.selection.collections.selected.set([collectionId]);
       }
 
-      let allOpponentIds = props().getAllOpponentIds();
+      let allOpponentIds = getAllOpponentIds();
       if (card.target === "one") {
         await game.selection.people.reset();
         await game.selection.people.setType("add");
@@ -924,8 +1008,9 @@ function Game(ref) {
   }
 
   function getAllOpponentIds() {
-    return props().getAllOpponentIds();
+    return getAllPlayerIds().filter((id) => String(id) !== String(myId()));
   }
+
   async function initAskForValueCollection(cardOrId) {
     let game = getPublic();
     let card = getCard(cardOrId);
@@ -934,7 +1019,7 @@ function Game(ref) {
 
     let isOptionsSimple = false;
     await props().personSelection_reset();
-    let allOpponentIds = props().getAllOpponentIds();
+    let allOpponentIds = getAllOpponentIds();
 
     if (card.target === "one") {
       await game.selection.people.setType("add");
@@ -1098,10 +1183,23 @@ function Game(ref) {
   }
 
   function getIncompleteCollectionMatchingSet(myPersonId, propertySetKey) {
-    return props().getIncompleteCollectionMatchingSet(
-      myPersonId,
-      propertySetKey
-    );
+    let myCollectionIds = getCollectionIdsForPlayer(myPersonId);
+
+    for (
+      let collectionIndex = 0;
+      collectionIndex < myCollectionIds.length;
+      ++collectionIndex
+    ) {
+      let collectionId = myCollectionIds[collectionIndex];
+      let collection = getCollection(collectionId);
+      if (
+        !collection.isFullSet &&
+        collection.propertySetKey === propertySetKey
+      ) {
+        return collectionId;
+      }
+    }
+    return null;
   }
 
   function autoAddCardToMyCollection(cardOrId) {
@@ -1116,23 +1214,19 @@ function Game(ref) {
     if (isDef(existingCollectionId)) {
       addPropertyToExistingCollectionFromHand(cardId, existingCollectionId);
     } else {
-      props().addCardEmptySetFromHand(
-        connection(),
-        props().getRoomCode(),
-        cardId
-      );
+      props().addCardEmptySetFromHand(connection(), getRoomCode(), cardId);
     }
   }
 
   function playPassGo(cardOrId) {
     let card = getCard(cardOrId);
-    props().playPassGo(connection(), props().getRoomCode(), card.id);
+    props().playPassGo(connection(), getRoomCode(), card.id);
   }
 
   async function addPropertyToNewCollectionFromHand(cardId) {
     return await props().addCardEmptySetFromHand(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId
     );
   }
@@ -1140,7 +1234,7 @@ function Game(ref) {
   async function transferPropertyToNewCollection(cardId, fromCollectionId) {
     return await props().transferPropertyToNewCollection(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId,
       fromCollectionId
     );
@@ -1152,7 +1246,7 @@ function Game(ref) {
   ) {
     return await props().addPropertyToExistingCollectionFromHand(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId,
       toCollectionId
     );
@@ -1161,7 +1255,7 @@ function Game(ref) {
   async function transferSetAugmentToNewCollection(cardId, fromCollectionId) {
     return await props().transferSetAugmentToNewCollection(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId,
       fromCollectionId
     );
@@ -1173,14 +1267,14 @@ function Game(ref) {
   ) {
     return await props().addAugmentToExistingCollectionFromHand(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId,
       toCollectionId
     );
   }
 
   function getActionCardId() {
-    return props().getDisplayData(["actionCardId"], null);
+    return getDisplayData(["actionCardId"], null);
   }
 
   async function flipWildPropertyCard(
@@ -1190,7 +1284,7 @@ function Game(ref) {
   ) {
     let result = await props().changeWildPropertySetKey(
       connection(),
-      props().getRoomCode(),
+      getRoomCode(),
       cardId,
       propertySetKey,
       isDef(collectionId) ? collectionId : null
@@ -1199,7 +1293,7 @@ function Game(ref) {
   }
 
   async function addCardToMyBankFromHand(id) {
-    await props().addCardToMyBank(connection(), props().getRoomCode(), id);
+    await props().addCardToMyBank(connection(), getRoomCode(), id);
   }
 
   async function cancelRentAction() {
@@ -1237,7 +1331,10 @@ function Game(ref) {
   // DISCARD
   //#region
   function getDiscardCount() {
-    return props().getTotalCountToDiscard();
+    return reduxState.get(
+      ["game", "playerTurn", "phaseData", "remainingCountToDiscard"],
+      0
+    );
   }
 
   function getRemainingDiscardCount() {
@@ -1249,11 +1346,7 @@ function Game(ref) {
   }
 
   async function discardCards(selectedCardIds) {
-    await props().discardCards(
-      connection(),
-      props().getRoomCode(),
-      selectedCardIds
-    );
+    await props().discardCards(connection(), getRoomCode(), selectedCardIds);
   }
   //#endregion
   //_______________________________
@@ -1314,7 +1407,7 @@ function Game(ref) {
   function isRequiredCollectionsSelected() {
     return (
       props().collectionSelection_getSelected().length >=
-      props().getDisplayData(["requirements", "collectionSelectionCount"], 1)
+      getDisplayData(["requirements", "collectionSelectionCount"], 1)
     );
   }
   //#endregion
@@ -1367,7 +1460,7 @@ function Game(ref) {
   function isRequiredPeopleSelected() {
     return (
       props().personSelection_getSelected().length >=
-      props().getDisplayData(["requirements", "personSelectionCount"], 1)
+      getDisplayData(["requirements", "personSelectionCount"], 1)
     );
   }
   //#endregion
@@ -1377,19 +1470,17 @@ function Game(ref) {
   //  DRAW PILE
   //#region
   function getDrawPile() {
-    return props().getDrawPile();
+    return reduxState.get(["game", "drawPile"], { count: 0 });
   }
 
   function getDrawPileThickness() {
     return (
-      (Math.max(props().getDrawPileCount(), 1) /
-        Math.max(props().getTotalCardCount(), 1)) *
-      100
+      (Math.max(getDrawPileCount(), 1) / Math.max(getTotalCardCount(), 1)) * 100
     );
   }
 
   function getDrawPileCount() {
-    return props().getDrawPileCount();
+    return reduxState.get(["game", "drawPile", "count"], 0);
   }
   //#endregion
   //_______________________________
@@ -1397,18 +1488,37 @@ function Game(ref) {
   //===============================
   //  ACTIVE PILE
   //#region
+
+  function getTotalCardCount() {
+    return reduxState.get(["game", "cards", "order"], []).length;
+  }
+
+  function getActivePile() {
+    let activePile = reduxState.get(["game", "activePile"], {
+      count: 0,
+      totalValue: 0,
+      cardIds: [],
+    });
+    return _mergeCardDataIntoObject(activePile);
+  }
   function getActivePileCountThickness() {
     return (
-      (Math.max(props().getActivePileCount(), 1) /
-        Math.max(props().getTotalCardCount(), 1)) *
+      (Math.max(getActivePileCount(), 1) / Math.max(getTotalCardCount(), 1)) *
       100
     );
   }
   function getActivePileCount() {
-    return props().getActivePileCount();
+    return reduxState.get(["game", "activePile", "count"], 0);
   }
   function getTopCardOnActionPile() {
-    return props().getTopCardOnActionPile();
+    let activePile = getActivePile();
+    if (isDef(activePile)) {
+      let numCards = activePile.cards.length;
+      if (numCards > 0) {
+        return activePile.cards[numCards - 1];
+      }
+    }
+    return null;
   }
   //#endregion
   //_______________________________
@@ -1416,18 +1526,30 @@ function Game(ref) {
   //===============================
   //  DISCARD PILE
   //#region
+
+  function getDiscardPile() {
+    let discardPile = reduxState.get(["game", "discardPile"], {
+      count: 0,
+      totalValue: 0,
+      cardIds: [],
+    });
+    return _mergeCardDataIntoObject(discardPile);
+  }
+
   function getTopCardOnDiscardPile() {
-    return props().getTopCardOnDiscardPile();
+    let discardPile = getDiscardPile();
+    if (isDef(discardPile) && discardPile.count > 0)
+      return discardPile.cards[discardPile.count - 1];
+    return null;
   }
 
   function getDiscardPileCount() {
-    return props().getDiscardPileCount();
+    return reduxState.get(["game", "discardPile", "count"], 0);
   }
 
   function getDiscardPileCountThickness() {
     return (
-      (Math.max(props().getDiscardPileCount(), 1) /
-        Math.max(props().getTotalCardCount(), 1)) *
+      (Math.max(getDiscardPileCount(), 1) / Math.max(getTotalCardCount(), 1)) *
       100
     );
   }
@@ -1442,11 +1564,13 @@ function Game(ref) {
   }
 
   function getActionData(path, fallback = null) {
-    return props().getActionData(path, fallback);
+    let _path = isArr(path) ? path : [path];
+    return reduxState.get(["game", "actionData", ..._path], fallback);
   }
 
-  function getDisplayData(path, fallback = null) {
-    return props().getDisplayData(path, fallback);
+  function getDisplayData(path = [], fallback = null) {
+    let _path = isArr(path) ? path : [path];
+    return reduxState.get(["game", "displayData", ..._path], fallback);
   }
 
   async function updateDisplayData(path, value) {
@@ -1482,35 +1606,61 @@ function Game(ref) {
   //  COLLECTIONS
   //#region
   function getAllCollectionData() {
-    return props().getCollectionData();
-  }
-
-  function getMyCollectionIds() {
-    return props().getCollectionIdsForPlayer(myId());
+    return reduxState.get(["game", "playerCollections"], {});
   }
 
   function getCollectionIdsForPlayer(playerId) {
-    return props().getCollectionIdsForPlayer(playerId);
+    return reduxState.get(["game", "playerCollections", "items", playerId], []);
+  }
+
+  function getMyCollectionIds() {
+    return getCollectionIdsForPlayer(myId());
   }
 
   function getCollectionCardIds(collectionId) {
-    return props().getCollectionCardIds(collectionId);
-  }
-
-  function getCollectionCards(collectionId) {
-    return getCards(props().getCollectionCardIds(collectionId));
-  }
-
-  function getAllPlayerCollectionIds(playerId) {
-    return getNestedValue(
-      props().getPlayerCollectionsData(),
-      ["items", playerId],
+    return reduxState.get(
+      ["game", "collections", "items", collectionId, "cardIds"],
       []
     );
   }
 
+  function getCollectionMatchingSet(playerId, propertySetKey) {
+    let myCollectionIds = getCollectionIdsForPlayer(playerId);
+
+    for (
+      let collectionIndex = 0;
+      collectionIndex < myCollectionIds.length;
+      ++collectionIndex
+    ) {
+      let collectionId = myCollectionIds[collectionIndex];
+
+      let collectionCards = getCollectionCards(collectionId);
+      for (let cardIndex = 0; cardIndex < collectionCards.length; ++cardIndex) {
+        let card = collectionCards[cardIndex];
+        if (isDef(card.set)) {
+          if (card.set === propertySetKey) {
+            return collectionId;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  function getCollectionCards(collectionId) {
+    let collectionCardIds = reduxState.get(
+      ["game", "collections", "items", collectionId, "cardIds"],
+      []
+    );
+    return _mapCardIdsToCardList(collectionCardIds);
+  }
+
+  function getAllPlayerCollectionIds(playerId) {
+    return reduxState.get(["game", "playerCollections", "items", playerId], []);
+  }
+
   function getCollection(id) {
-    return props().getCollection(id);
+    return reduxState.get(["game", "collections", "items", id], []);
   }
 
   function getCollectionRentValue(id) {
@@ -1574,9 +1724,7 @@ function Game(ref) {
   //===============================
   //  PLAYERS
   //#region
-  function getAllPlayers() {
-    return props().getAllPlayersData();
-  }
+
   //#endregion
   //_______________________________
 
@@ -1584,7 +1732,10 @@ function Game(ref) {
   //  PLAYER HAND
   //#region
   function getMyHandCardIds() {
-    return props().getMyHandCardIds();
+    return reduxState.get(
+      ["game", "playerHands", "items", myId(), "cardIds"],
+      []
+    );
   }
 
   function getMyHandCards() {
@@ -1607,7 +1758,7 @@ function Game(ref) {
   }
 
   function getAllPlayerHandData() {
-    return props().getAllPlayerHandsData();
+    return getAllPlayerHandsData();
   }
   //#endregion
   //_______________________________
@@ -1627,7 +1778,7 @@ function Game(ref) {
   function getSumValueOfCards(cardIds) {
     let result = 0;
     cardIds.forEach((cardId) => {
-      let card = props().getCard(cardId);
+      let card = getCard(cardId);
       if (isDef(card)) result += els(card.value, 0);
     });
     return result;
@@ -1635,9 +1786,9 @@ function Game(ref) {
 
   function getAllCardIdsForPlayer(playerId) {
     let result = [];
-    let playerCollectionIds = props().getCollectionIdsForPlayer(playerId);
+    let playerCollectionIds = getCollectionIdsForPlayer(playerId);
     playerCollectionIds.forEach((collectionId) => {
-      let collectionCardIds = props().getCollectionCardIds(collectionId);
+      let collectionCardIds = getCollectionCardIds(collectionId);
       collectionCardIds.forEach((cardId) => {
         result.push(cardId);
       });
@@ -1655,14 +1806,14 @@ function Game(ref) {
     // @TODO refixit to fix the efficency when needs are more clear
 
     //let collectionIds
-    let allPlayerIds = props().getAllPlayerIds();
+    let allPlayerIds = getAllPlayerIds();
 
     // Get a mapping of where every public card belongs
     let mapping = {};
     allPlayerIds.forEach((playerId) => {
-      let playerCollectionIds = props().getCollectionIdsForPlayer(playerId);
+      let playerCollectionIds = getCollectionIdsForPlayer(playerId);
       playerCollectionIds.forEach((collectionId) => {
-        let collectionCardIds = props().getCollectionCardIds(collectionId);
+        let collectionCardIds = getCollectionCardIds(collectionId);
         collectionCardIds.forEach((cardId) => {
           mapping[cardId] = {
             location: "collection",
@@ -1724,7 +1875,7 @@ function Game(ref) {
   }
 
   function getAllCardData() {
-    return props().getAllCardsData();
+    return reduxState.get(["game", "cards"], {});
   }
 
   //#endregion
@@ -1734,15 +1885,23 @@ function Game(ref) {
   //  PROPERTIES
   //#region
   function getPropertySetsKeyed() {
-    return props().getPropertySetMap();
+    return reduxState.get(["game", "propertySets", "items"], {});
+  }
+
+  function getAllPropertySetsKeyed() {
+    return getPropertySetsKeyed();
+  }
+
+  function getPropertySetsData() {
+    return reduxState.get(["game", "propertySets"], {});
   }
 
   function getPropertySet(id) {
-    return getNestedValue(props().getPropertySetsData(), ["items", id], null);
+    return getNestedValue(getPropertySetsData(), ["items", id], null);
   }
 
   function getAllPropertySets() {
-    return props().getPropertySetsData();
+    return getPropertySetsData();
   }
   //#endregion
   //_______________________________
@@ -1750,16 +1909,18 @@ function Game(ref) {
   //===============================
   //  BANK
   //#region
-  function getAllPlayerBankData() {
-    return props().getAllPlayerBanksData();
-  }
-
   function getPlayerBankTotal(playerId) {
-    return props().getPlayerBankTotal(playerId);
+    return getNestedValue(
+      getAllPlayerBankData(),
+      ["items", playerId, "totalValue"],
+      []
+    );
   }
 
   function getPlayerBankCards(playerId) {
-    return props().getPlayerBankCards(playerId);
+    return _mapCardIdsToCardList(
+      getNestedValue(getAllPlayerBankData(), ["items", playerId, "cardIds"], [])
+    );
   }
   //#endregion
   //_______________________________
@@ -1781,14 +1942,18 @@ function Game(ref) {
     return null;
   }
 
-  function getRequest(id, fallback = null) {
-    return props().getRequest(id, fallback);
+  function getRequest(requestId, fallback = null) {
+    return reduxState.get(["game", "requests", "items", requestId], fallback);
+  }
+
+  function getRequestsKeyed() {
+    return reduxState.get(["game", "requests", "items"], {});
   }
 
   function getRequestIdsTargetedAtMe() {
     let result = [];
     let myIdNum = myId();
-    let requestsKeyed = props().getRequestsKeyed();
+    let requestsKeyed = getRequestsKeyed();
     Object.keys(requestsKeyed).forEach((requestId) => {
       let request = requestsKeyed[requestId];
       if (String(request.targetKey) === String(myIdNum)) {
@@ -1800,7 +1965,7 @@ function Game(ref) {
 
   function getAllRequestIds() {
     let result = [];
-    let requestsKeyed = props().getRequestsKeyed();
+    let requestsKeyed = getRequestsKeyed();
     Object.keys(requestsKeyed).forEach((requestId) => {
       result.push(requestId);
     });
@@ -1846,8 +2011,15 @@ function Game(ref) {
     return result;
   }
 
+  function getRequestNestedValue(requestId, path = [], fallback = null) {
+    return reduxState.get(
+      ["game", "requests", "items", requestId, ...path],
+      fallback
+    );
+  }
+
   function requestGiveToAuthorPropertyCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       [
         "payload",
@@ -1863,7 +2035,7 @@ function Game(ref) {
   }
 
   function requestGiveToAuthorBankCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       ["payload", "transaction", "items", "toAuthor", "items", "bank", "items"],
       []
@@ -1871,7 +2043,7 @@ function Game(ref) {
   }
 
   function requestGiveToTargetPropertyCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       [
         "payload",
@@ -1887,7 +2059,7 @@ function Game(ref) {
   }
 
   function requestGiveToTargetBankCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       ["payload", "transaction", "items", "toTarget", "items", "bank", "items"],
       []
@@ -1895,7 +2067,7 @@ function Game(ref) {
   }
 
   function requestConfirmedToAuthorPropertyCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       [
         "payload",
@@ -1911,7 +2083,7 @@ function Game(ref) {
   }
 
   function requestConfirmedToAuthorBankCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       [
         "payload",
@@ -1927,7 +2099,7 @@ function Game(ref) {
   }
 
   function requestConfirmedToTargetPropertyCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       [
         "payload",
@@ -1943,7 +2115,7 @@ function Game(ref) {
   }
 
   function requestConfirmedToTargetBankCardIds(requestId) {
-    return props().getRequestNestedValue(
+    return getRequestNestedValue(
       requestId,
       [
         "payload",
@@ -1959,24 +2131,96 @@ function Game(ref) {
   }
 
   function getAllPlayerRequestData() {
-    return props().getAllPlayerRequestsData();
-  }
-
-  function getAllRequestsData() {
-    return props().getAllRequestData();
+    return reduxState.get(["game", "playerRequests"], {});
   }
 
   function getAllPreviousRequestsData() {
-    return props().getPreviousRequests();
+    return reduxState.get(["game", "previousRequests"], {});
   }
   //#endregion
   //_______________________________
+
+  // UNSORTED
+
+  function getAllPeopleData() {
+    return reduxState.get(["people"], {});
+  }
+
+  function getCurrentTurnActionLimit() {
+    return reduxState.get(["game", "playerTurn", "actionLimit"], 0);
+  }
+
+  function isDrawPhase() {
+    return reduxState.get(["game", "playerTurn", "phase"], null) === "draw";
+  }
+
+  function getPeviousTurnPersonId() {
+    return reduxState.get(["game", "playerTurnPrevious", "playerKey"], null);
+  }
+
+  function getCurrentTurnPersonId() {
+    return reduxState.get(["game", "playerTurn", "playerKey"], 0);
+  }
+
+  function getPeviousTurnPhase() {
+    return reduxState.get(["game", "playerTurnPrevious", "phase"], null);
+  }
+
+  function isDonePhase() {
+    return reduxState.get(["game", "playerTurn", "phase"], null) === "done";
+  }
+
+  function getPersonOrder() {
+    return reduxState.get(["people", "order"], []);
+  }
+
+  function _mapCardIdsToCardList(cardIds) {
+    if (isArr(cardIds)) return cardIds.map((cardId) => getCard(cardId));
+    return [];
+  }
+
+  function getAllPlayerIds() {
+    return reduxState.get(["game", "players", "order"], []);
+  }
+
+  function getAllPlayerHandsData() {
+    return reduxState.get(["game", "playerHands"], {});
+  }
+
+  function getAllPlayers() {
+    let playerOrder = getAllPlayerIds();
+    return playerOrder.map((...props) => getPerson(...props));
+  }
+
+  function _mergeCardDataIntoObject(original) {
+    if (isObj(original)) {
+      let result = { ...original };
+      result.cards = _mapCardIdsToCardList(
+        getNestedValue(result, "cardIds", [])
+      );
+      return result;
+    }
+    return original;
+  }
+
+  function getPlayerTurnData() {
+    return reduxState.get(["game", "playerTurn"], {});
+  }
+
+  function getAllRequestData() {
+    return reduxState.get(["game", "requests"], {});
+  }
+
+  function getPropertySetKeysForCard(cardOrId) {
+    let card = getCard(cardOrId);
+    return getNestedValue(card, "sets", []);
+  }
 
   //respondToPropertyTransfer
   const publicScope = {
     // REQUESTS
     getAllPreviousRequestsData,
-    getAllRequestsData,
+    getAllRequestsData: getAllRequestData,
     getAllPlayerRequestData,
 
     // COLLECTIONS
@@ -2052,7 +2296,7 @@ function Game(ref) {
     },
 
     activePile: {
-      get: () => props().getActivePile(),
+      get: () => getActivePile(),
       getTopCard: getTopCardOnActionPile,
       hasTopCard() {
         return isDef(getTopCardOnActionPile());
@@ -2062,7 +2306,7 @@ function Game(ref) {
     },
 
     discardPile: {
-      get: () => props().getDiscardPile(),
+      get: () => getDiscardPile(),
       getTopCard: getTopCardOnDiscardPile,
       hasTopCard() {
         return isDef(getTopCardOnDiscardPile());
@@ -2101,10 +2345,10 @@ function Game(ref) {
     // TURN
     turn: {
       isMyTurn,
-      get: () => props().getPlayerTurnData(),
+      get: getPlayerTurnData,
       getPhaseKey: getCurrentPhaseKey,
-      getPersonId: () => props().getCurrentTurnPersonId(),
-      getPerson: () => getPublic().person.get(props().getCurrentTurnPersonId()),
+      getPersonId: () => getCurrentTurnPersonId(),
+      getPerson: () => getPublic().person.get(getCurrentTurnPersonId()),
     },
 
     // PLAYERS
@@ -2120,7 +2364,7 @@ function Game(ref) {
       hand: {
         getCardCount(id) {
           return getNestedValue(
-            props().getAllPlayerHandsData(),
+            getAllPlayerHandsData(),
             ["items", id, "count"],
             0
           );
@@ -2188,7 +2432,7 @@ function Game(ref) {
       existedPreviously: (requestOrId) => {
         let request = getRequest(requestOrId);
         let requestId = request.id;
-        return isDefNested(props().getPreviousRequests(), requestId, false);
+        return isDefNested(getAllPreviousRequestsData(), requestId, false);
       },
       transfer: {
         fromAuthor: {
@@ -2196,7 +2440,7 @@ function Game(ref) {
             let request = getRequest(requestId);
 
             return isDefNested(
-              props().getAllRequestData(),
+              getAllRequestData(),
               [
                 "items",
                 requestId,
@@ -2211,7 +2455,7 @@ function Game(ref) {
           bank: {
             getIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2227,7 +2471,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2245,7 +2489,7 @@ function Game(ref) {
           property: {
             getIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2261,7 +2505,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2279,7 +2523,7 @@ function Game(ref) {
           collection: {
             getIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2295,7 +2539,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2314,7 +2558,7 @@ function Game(ref) {
         toAuthor: {
           exists(requestId) {
             return isDefNested(
-              props().getAllRequestData(),
+              getAllRequestData(),
               [
                 "items",
                 requestId,
@@ -2334,7 +2578,7 @@ function Game(ref) {
           property: {
             getIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2350,7 +2594,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2368,7 +2612,7 @@ function Game(ref) {
           collection: {
             getIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2384,7 +2628,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2403,7 +2647,7 @@ function Game(ref) {
         toTarget: {
           exists(requestId) {
             return isDefNested(
-              props().getAllRequestData(),
+              getAllRequestData(),
               [
                 "items",
                 requestId,
@@ -2429,7 +2673,7 @@ function Game(ref) {
           collection: {
             getIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
@@ -2445,7 +2689,7 @@ function Game(ref) {
               ),
             getConfirmedIds: (requestId) =>
               getNestedValue(
-                props().getAllRequestData(),
+                getAllRequestData(),
                 [
                   "items",
                   requestId,
