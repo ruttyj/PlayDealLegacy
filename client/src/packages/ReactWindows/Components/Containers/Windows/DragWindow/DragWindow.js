@@ -3,11 +3,11 @@ import useConstant from "use-constant";
 import { motion, useTransform, useMotionValue } from "framer-motion";
 import { withResizeDetector } from "react-resize-detector";
 import CloseIcon from "@material-ui/icons/Close";
-import MinimizeIcon from "@material-ui/icons/Minimize";
 import FlareIcon from "@material-ui/icons/Flare";
 import LockIcon from "@material-ui/icons/Lock";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
-import FullscreenIcon from "@material-ui/icons/Fullscreen";
+
+import MinimizeIcon from "@material-ui/icons/Minimize";
 import FillContainer from "../../../../Components/Containers/FillContainer/FillContainer";
 import FillContent from "../../../../Components/Containers/FillContainer/FillContent";
 import FillHeader from "../../../../Components/Containers/FillContainer/FillHeader";
@@ -66,7 +66,7 @@ const DragWindow = withResizeDetector(function(props) {
     onSnapLeave = ef,
     onSnapRelease = ef,
   } = props;
-
+  const [menuAnchorElement, setMenuAnchorElement] = useState(null);
   const [cachedDragHandleContents, setCachedDragHandleContents] = useState();
 
   const zIndex = getNestedValue(window, "zIndex", 0);
@@ -593,31 +593,30 @@ const DragWindow = withResizeDetector(function(props) {
         />
       </>
     );
-
-    //setCachedDragHandleContents(dragHandleContents);
   }
+
+  const toggleFullSize = () => {
+    setFullSize(!isFullSize);
+  };
 
   const childArgs = {
     window: windowManager.getWindow(window.id),
     containerSize,
     size: getSize(),
     position: getPosition(),
+    do: {
+      close: onClose,
+      minimize: handleOnToggleWindow,
+      maxamize: toggleFullSize,
+    },
   };
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleMenuClick = (event) => {
+    setMenuAnchorElement(event.currentTarget);
   };
-
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleCloseMenu = () => {
+    setMenuAnchorElement(null);
   };
-
-  const toggleFullSize = () => {
-    setFullSize(!isFullSize);
-  };
-
   // Define the contents of the UI
   let headerContents = "";
   let titleContents = (
@@ -656,19 +655,19 @@ const DragWindow = withResizeDetector(function(props) {
 
   let rightHeaderActionContents = (
     <div {...classes("actions", "row", "right")} style={{ width: "102px" }}>
-      <div {...classes("button")} onClick={handleClick}>
+      <div {...classes("button")} onClick={handleMenuClick}>
         <MoreVertIcon />
       </div>
 
       <Menu
         id="simple-menu"
-        anchorEl={anchorEl}
+        anchorEl={menuAnchorElement}
         keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
+        open={Boolean(menuAnchorElement)}
+        onClose={handleCloseMenu}
       >
         <MenuItem
-          onClick={handleClose}
+          onClick={handleCloseMenu}
           onClick={() => {
             toggleDragEnabled();
           }}

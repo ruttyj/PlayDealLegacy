@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+}
 import { withResizeDetector } from "react-resize-detector";
 import { withRouter } from "react-router";
 import pluralize from "pluralize";
@@ -119,6 +127,8 @@ import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import StarBorder from "@material-ui/icons/StarBorder";
 import RecordVoiceOverIcon from "@material-ui/icons/RecordVoiceOver";
 import VoiceOverOffIcon from "@material-ui/icons/VoiceOverOff";
+import FullscreenIcon from "@material-ui/icons/Fullscreen";
+import FullscreenExitIcon from "@material-ui/icons/FullscreenExit";
 
 // Buttons
 import { ArrowToolTip } from "../../../packages/ReactWindows/Exports/Exports";
@@ -156,20 +166,19 @@ import ChatIcon from "@material-ui/icons/Chat";
 import PeopleIcon from "@material-ui/icons/People";
 import HomeIcon from "@material-ui/icons/Home";
 import PersonIcon from "@material-ui/icons/Person";
-
+import PeopleAltIcon from "@material-ui/icons/PeopleAlt";
 ////////////////////////////////////////////////////
 /// WindowManager
 import WindowManager from "../../../packages/ReactWindows/Utils/WindowManager";
 import WindowContainer from "../../../packages/ReactWindows/Components/Containers/Windows/WindowContainer/";
 import DragWindow from "../../../packages/ReactWindows/Components/Containers/Windows/DragWindow/";
-import {
-  createDebugger,
-  createTrooperIframe,
-  createWindowA,
-  createWallpaperWindow,
-  createSetUsernameWindow,
-} from "../../../packages/ReactWindows/Pages/Home/CreateWindow";
+import makeBackgroundPicker from "./Windows/BackgroundPicker";
+import makeUsernamePicker from "./Windows/InitialWindow";
+import makePlayerListWindow from "./Windows/PlayerListWindow";
+import makeTrooperDancingWindow from "./Windows/DancingTrooper";
+import createDebugWindow from "./Windows/DebugWindow";
 import "../../../packages/ReactWindows/Pages/Home/Home.scss";
+
 ////////////////////////////////////////////////////
 /// Voice Config
 const voiceConfig = {
@@ -238,7 +247,7 @@ const uiConfig = {
   },
 
   sidebar: {
-    initialSize: 300,
+    initialSize: 0,
     maxSize: 300,
     minSize: 0,
   },
@@ -343,8 +352,36 @@ class GameUI extends React.Component {
 
     this.windowManager = WindowManager(this.stateBuffer);
 
+    // Register methods to create windows on demand
     this.windowManager.setOnContainerSizeInit(() => {
-      createSetUsernameWindow(this.windowManager, game);
+      this.windowManager.registerWindow("backgroundPicker", () => {
+        makeBackgroundPicker({
+          windowManager: this.windowManager,
+        });
+      });
+
+      this.windowManager.registerWindow("dancingTrooper", () => {
+        makeTrooperDancingWindow({
+          windowManager: this.windowManager,
+        });
+      });
+
+      this.windowManager.registerWindow("usernamePicker", () => {
+        makeUsernamePicker({
+          windowManager: this.windowManager,
+          game,
+        });
+      });
+
+      this.windowManager.registerWindow("playerList", () => {
+        makePlayerListWindow({
+          windowManager: this.windowManager,
+          game,
+        });
+      });
+
+      //this.windowManager.invokeWindow("playerList");
+      this.windowManager.invokeWindow("usernamePicker");
     });
 
     this.stateBuffer.set("theme", {
@@ -354,37 +391,17 @@ class GameUI extends React.Component {
 
   toggleBackgroundPicker() {
     let windowManager = this.windowManager;
-    let window = windowManager.getWindowByKey("backgroundPicker");
-    if (isDef(window)) {
-      let isOpen = window.isOpen;
-      if (!isOpen) {
-        isOpen = !isOpen;
-        windowManager.windowSetValue(window.id, "isOpen", isOpen);
-      }
-
-      if (isOpen) {
-        windowManager.setFocused(window.id);
-      }
-    } else {
-      createWallpaperWindow(windowManager);
-    }
+    windowManager.toggleWindow("backgroundPicker");
   }
+
   toggleUsernamePicker() {
     let windowManager = this.windowManager;
-    let window = windowManager.getWindowByKey("usernamePicker");
-    if (isDef(window)) {
-      let isOpen = window.isOpen;
-      if (!isOpen) {
-        isOpen = !isOpen;
-        windowManager.windowSetValue(window.id, "isOpen", isOpen);
-      }
+    windowManager.toggleWindow("usernamePicker");
+  }
 
-      if (isOpen) {
-        windowManager.setFocused(window.id);
-      }
-    } else {
-      createSetUsernameWindow(windowManager, game);
-    }
+  togglePlayerList() {
+    let windowManager = this.windowManager;
+    windowManager.toggleWindow("playerList");
   }
 
   async resetData() {
@@ -2586,7 +2603,7 @@ class GameUI extends React.Component {
       <List
         style={{
           display: "inline-flex",
-          width: `${uiConfig.sidebar.initialSize}px`,
+          width: `${uiConfig.sidebar.maxSize}px`,
           maxWidth: `${uiConfig.sidebar.maxSize}px`,
           flexDirection: "column",
         }}
@@ -2694,24 +2711,56 @@ class GameUI extends React.Component {
       false
     );
 
+    const announcerContents = (
+      <FlexRow
+        style={{ flexShrink: 0, cursor: "pointer" }}
+        title={getAnnouncerText(IS_SPEECH_ENABLED)}
+        onClick={() => {
+          console.log("I got clicked");
+          const basePath = ["textToSpeech"];
+          let enabledPath = ["textToSpeech", "enabled"];
+          let labelPath = ["textToSpeech", "label"];
+          let value = this.stateBuffer.get(enabledPath, false);
+          let newValue = !value;
+          this.stateBuffer.set(enabledPath, newValue);
+          this.stateBuffer.set(labelPath, getAnnouncerText(newValue));
+        }}
+      >
+        <FullFlexRow>{getAnnouncerText(IS_SPEECH_ENABLED)}</FullFlexRow>
+        {IS_SPEECH_ENABLED ? (
+          <RecordVoiceOverIcon className="mh10" />
+        ) : (
+          <VoiceOverOffIcon className="mh10" />
+        )}
+      </FlexRow>
+    );
+
+    const fullScreenButtonContents = (
+      <FlexRow
+        style={{ flexShrink: 0, cursor: "pointer" }}
+        onClick={toggleFullScreen}
+      >
+        {document.fullscreenElement ? (
+          <FullscreenExitIcon />
+        ) : (
+          <FullscreenIcon />
+        )}
+      </FlexRow>
+    );
+
     let gameContents = null;
-    if (true || !isDef(gameContentsCached)) {
-      gameContents = (
-        <GameBoard
-          previousSize={this.stateBuffer.get(["gameWindow", "size"], {})}
-          onChangeSize={(size) =>
-            this.stateBuffer.set(["gameWindow", "size"], size)
-          }
-          uiConfig={uiConfig}
-          gameboard={game.getRenderData("gameboard")}
-          turnNotice={game.getRenderData("turnNotice")}
-          myArea={this.renderMyArea()}
-        />
-      );
-      gameContentsCached = gameContents;
-    } else {
-      gameContents = gameContentsCached;
-    }
+    gameContents = (
+      <GameBoard
+        previousSize={this.stateBuffer.get(["gameWindow", "size"], {})}
+        onChangeSize={(size) =>
+          this.stateBuffer.set(["gameWindow", "size"], size)
+        }
+        uiConfig={uiConfig}
+        gameboard={game.getRenderData("gameboard")}
+        turnNotice={game.getRenderData("turnNotice")}
+        myArea={this.renderMyArea()}
+      />
+    );
 
     const sidebarContents = (
       <>
@@ -2758,48 +2807,36 @@ class GameUI extends React.Component {
             <PersonIcon />
           </ArrowToolTip>
         </div>
+
+        <div
+          {...classes("button")}
+          onClick={() => {
+            this.windowManager.toggleWindow("playerList");
+          }}
+        >
+          <ArrowToolTip title="Toggle player list" placement="right">
+            <PeopleAltIcon />
+          </ArrowToolTip>
+        </div>
       </>
+    );
+
+    const appBarContents = (
+      <AppBar position="static">
+        <Toolbar>
+          <h5 style={{ padding: "12px" }} onClick={() => room.leaveRoom()}>
+            Room <strong>{room.getCode()}</strong>
+          </h5>
+          <FullFlexGrow />
+          {fullScreenButtonContents}
+        </Toolbar>
+      </AppBar>
     );
 
     const mainPanel = (
       <>
         <FillContainer>
-          <FillHeader>
-            <AppBar position="static">
-              <Toolbar>
-                <h5
-                  style={{ padding: "12px" }}
-                  onClick={() => room.leaveRoom()}
-                >
-                  Room <strong>{room.getCode()}</strong>
-                </h5>
-                <FullFlexGrow />
-                <FlexRow
-                  style={{ flexShrink: 0, cursor: "pointer" }}
-                  title={getAnnouncerText(IS_SPEECH_ENABLED)}
-                  onClick={() => {
-                    console.log("I got clicked");
-                    const basePath = ["textToSpeech"];
-                    let enabledPath = ["textToSpeech", "enabled"];
-                    let labelPath = ["textToSpeech", "label"];
-                    let value = this.stateBuffer.get(enabledPath, false);
-                    let newValue = !value;
-                    this.stateBuffer.set(enabledPath, newValue);
-                    this.stateBuffer.set(labelPath, getAnnouncerText(newValue));
-                  }}
-                >
-                  <FullFlexRow>
-                    {getAnnouncerText(IS_SPEECH_ENABLED)}
-                  </FullFlexRow>
-                  {IS_SPEECH_ENABLED ? (
-                    <RecordVoiceOverIcon className="mh10" />
-                  ) : (
-                    <VoiceOverOffIcon className="mh10" />
-                  )}
-                </FlexRow>
-              </Toolbar>
-            </AppBar>
-          </FillHeader>
+          <FillHeader>{appBarContents}</FillHeader>
 
           <FillContent>
             <RelLayer>

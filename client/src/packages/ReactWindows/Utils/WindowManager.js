@@ -70,9 +70,17 @@ function WindowManager(state) {
 
     let id = ++topWindowId;
     key = els(key, `#${id}`);
+
+    const selfManager = getProtected();
+
+    const setValue = (path, value) =>
+      selfManager.windowSetValue(id, path, value);
+
+    //selfManager.
     return {
       id,
       key,
+      set: setValue,
       title: els(title, `Window #${topWindowId}`),
       isOpen,
       zIndex,
@@ -221,6 +229,7 @@ function WindowManager(state) {
     if (isFocused) {
       // Was previously focused?
       const wasFocused = getWindow(id, "isFocused", false);
+      const wasOpen = getWindow(id, "isOpen", false);
       if (!wasFocused) {
         // change the render order
         let foundIndex = getRenderOrder().findIndex((v) => v === id);
@@ -232,6 +241,9 @@ function WindowManager(state) {
         }
       }
 
+      if (!wasOpen) {
+        setValue(window.id, "isOpen", true);
+      }
       // Set the new render order for all open windows
       let zIndex = 0;
       getRenderOrder().forEach((windowId) => {
@@ -281,6 +293,8 @@ function WindowManager(state) {
 
       setFocused(id, isFocused);
       setValue(id, "isOpen", isOpen);
+    } else {
+      windowManager.invokeWindow(key);
     }
   }
 
@@ -325,9 +339,42 @@ function WindowManager(state) {
     return state;
   }
 
+  const registry = {};
+  function registerWindow(name, callback) {
+    registry[name] = callback;
+  }
+
+  function invokeWindow(name, ...args) {
+    if (isFunc(registry[name])) {
+      registry[name](...args);
+    }
+  }
+
+  function toggleWindow(key) {
+    let window = getWindowByKey(key);
+    if (isDef(window)) {
+      if (window.isOpen) {
+        if (!window.isFocused) {
+          setFocused(window.id);
+        } else {
+          setValue(window.id, "isOpen", false);
+          setFocused(window.id, false);
+        }
+      } else {
+        setValue(window.id, "isOpen", true);
+        setFocused(window.id);
+      }
+    } else {
+      invokeWindow(key);
+    }
+  }
+
   const publicScope = {
     getState,
     createWindow,
+    registerWindow,
+    invokeWindow,
+    toggleWindow,
     getWindowByKey,
     getWindow,
     setWindow,
@@ -355,6 +402,13 @@ function WindowManager(state) {
 
   function getPublic() {
     return publicScope;
+  }
+
+  function getProtected() {
+    return {
+      ...getPublic(),
+      // Protected methods go here
+    };
   }
 
   return getPublic();
