@@ -182,9 +182,6 @@ export default function StateBuffer(_initialState = {}) {
   }
 
   function set(path = [], value) {
-    //console.log(els(null, null, "hello!"));
-
-    console.log("state.set", path, value);
     mCurrentState = setImmutableValue(mCurrentState, path, value);
     _flush();
   }

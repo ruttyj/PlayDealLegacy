@@ -32,7 +32,9 @@ function Game(ref) {
   };
 
   //===============================
+
   // INSTANCE LIFE CYCLE
+
   //#region
   let mIsInit = false;
 
@@ -241,7 +243,7 @@ function Game(ref) {
 
   //===============================
   // DEPENDENCIES FROM COMPONENT
-  //#region
+  //#region Dependencies
   function props() {
     return ref.props;
   }
@@ -255,7 +257,9 @@ function Game(ref) {
   // data for the render process - does not provoke rerender unlike state
 
   //===============================
+
   //  RENDER DATA
+
   //#region
   function updateRenderData(path, value) {
     setNestedValue(renderData, path, value);
@@ -268,7 +272,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  CUSTOM UI
+
   //#region
   function getCustomUi(path = [], fallback = null) {
     const _path = isArr(path) ? path : [path];
@@ -282,7 +288,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // ROOM
+  
   //#region
 
   function getLobbyUsers() {
@@ -331,7 +339,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // OBSERVERS
+  
   //#region
   function event() {
     return connection().listnerTree;
@@ -356,7 +366,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // ME
+  
   //#region
   async function updateMyName(name) {
     return await props().updateMyName(connection(), getRoomCode(), name);
@@ -469,8 +481,35 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // PHASE
+  
   //#region
+
+  function getPeviousTurnPersonId() {
+    return reduxState.get(["game", "playerTurnPrevious", "playerKey"], null);
+  }
+
+  function getCurrentTurnPersonId() {
+    return reduxState.get(["game", "playerTurn", "playerKey"], 0);
+  }
+
+  function getPeviousTurnPhase() {
+    return reduxState.get(["game", "playerTurnPrevious", "phase"], null);
+  }
+
+  function getPlayerTurnData() {
+    return reduxState.get(["game", "playerTurn"], {});
+  }
+
+  function getPersonOrder() {
+    return reduxState.get(["people", "order"], []);
+  }
+
+  function isDrawPhase() {
+    return reduxState.get(["game", "playerTurn", "phase"], null) === "draw";
+  }
+
   function isActionPhase() {
     return reduxState.get(["game", "playerTurn", "phase"], null) === "action";
   }
@@ -479,6 +518,10 @@ function Game(ref) {
     return isMyTurn() && getCurrentPhaseKey() === "done";
   }
 
+  function isDonePhase() {
+    return reduxState.get(["game", "playerTurn", "phase"], null) === "done";
+  }
+  
   function isDiscardPhase() {
     return reduxState.get(["game", "playerTurn", "phase"], null) === "discard";
   }
@@ -539,11 +582,17 @@ function Game(ref) {
   function getCurrentActionCount() {
     return reduxState.get(["game", "playerTurn", "actionCount"], 0);
   }
+
+  function getCurrentTurnActionLimit() {
+    return reduxState.get(["game", "playerTurn", "actionLimit"], 0);
+  }
   //#endregion
   //_______________________________
 
   //===============================
+
   // CARD DETECTION
+  
   //#region
   function isCashCard(card) {
     return card.type === "cash";
@@ -592,7 +641,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // GAME GENERAL
+  
   //#region
 
   function isEveryoneReady() {
@@ -667,7 +718,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // RENT
+  
   //#region
   function chargeRent(
     actionCardId,
@@ -697,7 +750,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // COLLECTION
+  
   //#region
   function getAllCollectionAssociationData() {
     return reduxState.get(["game", "playerCollections"], []);
@@ -778,7 +833,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // ACTION
+  
   //#region
   async function start() {
     await props().resetGame(connection(), getRoomCode()); // for Dev reasons
@@ -1315,7 +1372,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // CHARGE RENT
+  
   //#region
   async function resetChargeRentInfo() {
     await props().resetDisplayData();
@@ -1328,7 +1387,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // DISCARD
+  
   //#region
   function getDiscardCount() {
     return reduxState.get(
@@ -1352,7 +1413,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // CARD SELECTION
+  
   //#region
   function isCardSelectable(cardId) {
     return props().cardSelection_hasSelectableValue(cardId);
@@ -1398,7 +1461,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // COLLECTION SELECTION
+  
   //#region
   function getSelectedCollectionIds() {
     return props().collectionSelection_getSelected();
@@ -1414,7 +1479,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   // PERSON SELECTION
+  
   //#region
   function getSelectedPeopleIds() {
     return props().personSelection_getSelected();
@@ -1463,11 +1530,17 @@ function Game(ref) {
       getDisplayData(["requirements", "personSelectionCount"], 1)
     );
   }
+
+  function getAllPeopleData() {
+    return reduxState.get(["people"], {});
+  }
   //#endregion
   //_______________________________
 
   //===============================
+
   //  DRAW PILE
+  
   //#region
   function getDrawPile() {
     return reduxState.get(["game", "drawPile"], { count: 0 });
@@ -1486,7 +1559,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  ACTIVE PILE
+  
   //#region
 
   function getTotalCardCount() {
@@ -1524,7 +1599,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  DISCARD PILE
+  
   //#region
 
   function getDiscardPile() {
@@ -1557,7 +1634,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  DISPLAY STATE
+  
   //#region
   async function updateActionData(path, value) {
     await props().updateActionData({ path, value });
@@ -1603,7 +1682,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  COLLECTIONS
+  
   //#region
   function getAllCollectionData() {
     return reduxState.get(["game", "playerCollections"], {});
@@ -1722,14 +1803,25 @@ function Game(ref) {
   //_______________________________
 
   //===============================
-  //  PLAYERS
-  //#region
 
+  //  PLAYERS
+  
+  //#region
+  function getAllPlayerIds() {
+    return reduxState.get(["game", "players", "order"], []);
+  }
+  
+  function getAllPlayers() {
+    let playerOrder = getAllPlayerIds();
+    return playerOrder.map((...props) => getPerson(...props));
+  }
   //#endregion
   //_______________________________
 
   //===============================
+
   //  PLAYER HAND
+  
   //#region
   function getMyHandCardIds() {
     return reduxState.get(
@@ -1764,7 +1856,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  CARDS
+
   //#region
   function getCards(cardIds) {
     let result = [];
@@ -1882,7 +1976,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  PROPERTIES
+
   //#region
   function getPropertySetsKeyed() {
     return reduxState.get(["game", "propertySets", "items"], {});
@@ -1907,7 +2003,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  BANK
+
   //#region
   function getPlayerBankTotal(playerId) {
     return getNestedValue(
@@ -1926,7 +2024,9 @@ function Game(ref) {
   //_______________________________
 
   //===============================
+
   //  REQUESTS
+
   //#region
   function getActionCardIdForRequest(requestId) {
     let game = getPublic();
@@ -2142,54 +2242,15 @@ function Game(ref) {
 
   // UNSORTED
 
-  function getAllPeopleData() {
-    return reduxState.get(["people"], {});
-  }
 
-  function getCurrentTurnActionLimit() {
-    return reduxState.get(["game", "playerTurn", "actionLimit"], 0);
-  }
-
-  function isDrawPhase() {
-    return reduxState.get(["game", "playerTurn", "phase"], null) === "draw";
-  }
-
-  function getPeviousTurnPersonId() {
-    return reduxState.get(["game", "playerTurnPrevious", "playerKey"], null);
-  }
-
-  function getCurrentTurnPersonId() {
-    return reduxState.get(["game", "playerTurn", "playerKey"], 0);
-  }
-
-  function getPeviousTurnPhase() {
-    return reduxState.get(["game", "playerTurnPrevious", "phase"], null);
-  }
-
-  function isDonePhase() {
-    return reduxState.get(["game", "playerTurn", "phase"], null) === "done";
-  }
-
-  function getPersonOrder() {
-    return reduxState.get(["people", "order"], []);
-  }
 
   function _mapCardIdsToCardList(cardIds) {
     if (isArr(cardIds)) return cardIds.map((cardId) => getCard(cardId));
     return [];
   }
 
-  function getAllPlayerIds() {
-    return reduxState.get(["game", "players", "order"], []);
-  }
-
   function getAllPlayerHandsData() {
     return reduxState.get(["game", "playerHands"], {});
-  }
-
-  function getAllPlayers() {
-    let playerOrder = getAllPlayerIds();
-    return playerOrder.map((...props) => getPerson(...props));
   }
 
   function _mergeCardDataIntoObject(original) {
@@ -2201,10 +2262,6 @@ function Game(ref) {
       return result;
     }
     return original;
-  }
-
-  function getPlayerTurnData() {
-    return reduxState.get(["game", "playerTurn"], {});
   }
 
   function getAllRequestData() {

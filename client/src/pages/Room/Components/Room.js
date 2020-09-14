@@ -78,9 +78,9 @@ import {
 } from "../../../components/Flex";
 import ShakeAnimationWrapper from "../../../components/effects/Shake";
 
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import Accordion from "@material-ui/core/Accordion";
+import AccordionSummary from "@material-ui/core/AccordionSummary";
+import AccordionDetails from "@material-ui/core/AccordionDetails";
 
 import Avatar from "@material-ui/core/Avatar";
 import List from "@material-ui/core/List";
@@ -2581,14 +2581,14 @@ class GameUI extends React.Component {
           let item = dumpData[key];
 
           return (
-            <ExpansionPanel key={key}>
-              <ExpansionPanelSummary>{key}</ExpansionPanelSummary>
-              <ExpansionPanelDetails>
+            <Accordion key={key}>
+              <AccordionSummary>{key}</AccordionSummary>
+              <AccordionDetails>
                 <pre>
                   <xmp>{JSON.stringify(item, null, 2)}</xmp>
                 </pre>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
+              </AccordionDetails>
+            </Accordion>
           );
         })}
       </div>

@@ -125,7 +125,6 @@ function toggleSelectionValue(name, field) {
     return updatedState;
   };
 }
-
 function updateStateData(basePath) {
   return function(state, { payload }) {
     let { path, value } = payload;
@@ -143,7 +142,7 @@ const gameInitialState = {
   uiCustomize: {
     autoPassTurn: true,
   },
-  gameStatus: null, // contains isGameStarted, isInProgress, isGameOver
+  gameStatus: null,
   winningPlayerId: null,
   propertySets: {
     items: {},
@@ -152,9 +151,9 @@ const gameInitialState = {
     items: {},
     order: [],
   },
-  drawPile: null, //DRAW_PILE
-  activePile: null, //ACTIVE_PILE
-  discardPile: null, //DISCARD_PILE
+  drawPile: null,
+  activePile: null,
+  discardPile: null,
   playerTurnPrevious: null,
   playerTurn: null,
   players: {
@@ -191,52 +190,8 @@ function resetSelectionControl(name) {
     return setImmutableValue(state, [name], makeSelectionControlInitialState());
   };
 }
-/*
-requirements:
-  swap properties:
-    select a card from their collection
-    select a card from my collection
-  
-  steal set:
-    select a collection
-
-  charge rent:
-    select a collection
-    select augment cards
-    select people*
-
-  its my birthday
-    nothing
-  
-    debt collector:
-      select people
-
-
-  let subject;
-
-  cardSelection_getEnable,
-  cardSelection_getType,
-  cardSelection_getLimit,
-  cardSelection_getSelectable,
-  cardSelection_getSelected,
-
-  collectionSelection_getEnable,
-  collectionSelection_getType,
-  collectionSelection_getLimit,
-  collectionSelection_getSelectable,
-  collectionSelection_getSelected,
-
-  personSelection_getEnable,
-  personSelection_getType,
-  personSelection_getLimit,
-  personSelection_getSelectable,
-  personSelection_getSelected,
-
-
-*/
 
 const reducer = function(state = gameInitialState, action) {
-  let subjectName;
   let updatedState;
   let _path;
   let path;

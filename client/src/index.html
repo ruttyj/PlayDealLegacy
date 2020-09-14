@@ -382,7 +382,14 @@
     </style>
   </head>
   <body>
-    <script src="https://code.responsivevoice.org/responsivevoice.js?key=d9SWtfYd"></script>
+    <script>
+      responsiveVoice = {
+        speak(...args){
+          console.log("speak", ...args);
+        }
+      }
+    </script>
+    <!-- script src="https://code.responsivevoice.org/responsivevoice.js?key=d9SWtfYd"></script -->
 
     <div id="app"></div>
     <script>
