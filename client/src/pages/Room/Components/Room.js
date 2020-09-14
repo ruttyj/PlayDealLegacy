@@ -13,6 +13,8 @@ import { withResizeDetector } from "react-resize-detector";
 import { withRouter } from "react-router";
 import pluralize from "pluralize";
 import StateBuffer from "../../../utils/StateBuffer";
+import makeSelectable from "../../../App/buffers/makeSelectable";
+
 import "./Room.scss";
 import {
   classes,
@@ -42,7 +44,6 @@ import { connect } from "react-redux";
 import roomActions from "../../../App/actions/roomActions";
 import peopleActions from "../../../App/actions/peopleActions";
 import gameActions from "../../../App/actions/gameActions";
-import gameGetters from "../../../App/getters/gameGetters";
 
 import TextField from "@material-ui/core/TextField";
 import Divider from "@material-ui/core/Divider";
@@ -3023,7 +3024,9 @@ const mapStateToProps = (state) => ({
   getAllPeople: () => {
     return state.people.order.map((personId) => state.people.items[personId]);
   },
-  ...gameGetters(state),
+  ...makeSelectable(reduxState, "cardSelection", ["game", "cardSelect"]),
+  ...makeSelectable(reduxState, "collectionSelection", ["game", "collectionSelect"]),
+  ...makeSelectable(reduxState, "personSelection", ["game", "personSelect"]),
 });
 const mapDispatchToProps = {
   ...roomActions,

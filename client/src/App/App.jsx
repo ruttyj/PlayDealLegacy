@@ -10,10 +10,8 @@ import Home from "../pages/Home/";
 import Dev from "../pages/Dev";
 import Room from "../pages/Room/";
 import Dev4 from "../pages/Dev4";
-import StateDev from "../pages/StateDev/";
 
 import ReactWindowsExamplePage from "../pages/Windows/";
-import ReactWindowsExamplePage2 from "../pages/Windows2/";
 
 const theme = createMuiTheme({
   palette: {
@@ -55,29 +53,11 @@ class App extends Component {
                 />
 
                 <Route
-                  key="StateDev"
-                  exact
-                  path="/StateDev"
-                  render={(props) => {
-                    return <StateDev />;
-                  }}
-                />
-
-                <Route
                   key="windows"
                   exact
                   path="/windows"
                   render={(props) => {
                     return <ReactWindowsExamplePage />;
-                  }}
-                />
-
-                <Route
-                  key="windows"
-                  exact
-                  path="/windows2"
-                  render={(props) => {
-                    return <ReactWindowsExamplePage2 />;
                   }}
                 />
 

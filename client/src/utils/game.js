@@ -1793,7 +1793,7 @@ function Game(ref) {
         result.push(cardId);
       });
     });
-    let playerBankCardIds = props().getPlayerBankCardIds(playerId);
+    let playerBankCardIds = getPlayerBankCardIds(playerId);
     playerBankCardIds.forEach((cardId) => {
       result.push(cardId);
     });
@@ -1823,7 +1823,7 @@ function Game(ref) {
           };
         });
       });
-      let playerBankCardIds = props().getPlayerBankCardIds(playerId);
+      let playerBankCardIds = getPlayerBankCardIds(playerId);
       playerBankCardIds.forEach((cardId) => {
         mapping[cardId] = {
           location: "bank",
