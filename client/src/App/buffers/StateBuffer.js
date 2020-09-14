@@ -16,7 +16,6 @@ import {
 //#######################################################
 export default function StateBuffer(_initialState = {}) {
   const initialState = _initialState;
-  let mIsNotValid = true;
   let mCurrentState = initialState;
 
   let mSetter = null;

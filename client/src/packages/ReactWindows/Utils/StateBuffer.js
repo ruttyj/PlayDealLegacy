@@ -1,10 +1,7 @@
 import { debounce } from "lodash";
-import arraySwap from "array-move";
-
 import Utils from "../Utils/";
 
 const {
-  els,
   isDef,
   isDefNested,
   isArr,
