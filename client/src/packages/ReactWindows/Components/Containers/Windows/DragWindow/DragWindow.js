@@ -13,6 +13,7 @@ import FillContent from "../../../../Components/Containers/FillContainer/FillCon
 import FillHeader from "../../../../Components/Containers/FillContainer/FillHeader";
 import DragHandle from "../../../../Components/Functional/DragHandle/";
 import Utils from "../../../../Utils/";
+import useCachedSize from "../../../../Utils/useSizeCache";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Button from "@material-ui/core/Button";
 import Menu from "@material-ui/core/Menu";
@@ -32,6 +33,8 @@ let ef = () => {}; // empty function
 /*
  * Please excuse the mess
  */
+
+
 
 const DragWindow = withResizeDetector(function(props) {
   let CONFIG = {
@@ -722,30 +725,26 @@ const DragWindow = withResizeDetector(function(props) {
     );
   }
 
-  const [cachedWidth, setCachedWidth] = useState(undefined);
-  const [cachedHeight, setCachedHeight] = useState(undefined);
+  
+
 
   let childContents = "";
+  const contentsSize = useCachedSize();
   if (isDef(children)) {
-    // If is function/component wrap with ResizeDetector
+    // If children is function/component wrap with ResizeDetector
     if (isFunc(children)) {
+      // Convert function to component
       let Temp = children;
-      let Temp2 = ({width, height, otherProps}) => {
-        let activeWidth = cachedWidth;
-        let activeHeight = cachedHeight;
-        if (width !== cachedWidth && width !== undefined){
-          setCachedWidth(width);
-          activeWidth = width;
-        }
-        if (height !== cachedHeight && height !== undefined){
-          setCachedHeight(height);
-          activeHeight = height;
-        }
-        return <Temp contentSize={{width: activeWidth, height: activeHeight}} {...otherProps}/>;
+      // Wrap child component in size cache component
+      let Temp2 = ({width, height, ...otherProps}) => {
+        let cachedSize = contentsSize.process({width, height});
+        return <Temp contentSize={cachedSize} {...otherProps}/>;
       }
+      // Feed the component the it's size
       let Child = withResizeDetector(Temp2);
       childContents = <Child {...childArgs} />;
     } else {
+      // Children is static content
       childContents = children;
     }
   }
