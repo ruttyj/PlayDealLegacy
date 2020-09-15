@@ -3028,7 +3028,7 @@ class GameUI extends React.Component {
       innerContents = (
         <FullFlexColumn>
           <div {...classes("full column")}>{windowContents}</div>
-          <div {...classes("row sidebar-footer side-bar")}>
+          <div {...classes("row sidebar-footer side-bar space-around")}>
             {sidebarContents}
             </div>
         </FullFlexColumn>
