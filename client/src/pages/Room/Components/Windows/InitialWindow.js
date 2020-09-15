@@ -23,6 +23,7 @@ import FillContent from "../../../../packages/ReactWindows/Components/Containers
 import FillHeader from "../../../../packages/ReactWindows/Components/Containers/FillContainer/FillHeader";
 
 import WindowContent from "../../../../packages/ReactWindows/Components/Window/WindowContent";
+import FancyButton from "../../../../components/buttons/FancyButton";
 
 import Input from "@material-ui/core/Input";
 const {
@@ -57,11 +58,10 @@ function createSetUsernameWindow(props) {
   }
 
 
-  const isFullSize = false;
-
+  const isFullSize = true;
   const size = {
     width: 400,
-    height: 200,
+    height: 400,
   };
   const containerSize = windowManager.getContainerSize();
   const position = {
@@ -115,13 +115,17 @@ function createSetUsernameWindow(props) {
         onNameChangeConfirm();
       }
     };
+
     const onNameChange = () => {
       let newValue = event.target.value;
       newValue = newValue.charAt(0).toUpperCase() + newValue.slice(1);
       setNameInputValue(newValue);
     };
 
-    
+    const onReadyUp = () => {
+      onNameChangeConfirm(); 
+      game.updateMyStatus(game.const.READY);
+    }    
 
     //=========================================
     // Decide the contents of the window
@@ -140,7 +144,6 @@ function createSetUsernameWindow(props) {
     } else {
       contents = (
         <FillContainer>
-          <SizeBackgroundColor>
           <WindowContent>
             <div
               {...classes(
@@ -152,8 +155,11 @@ function createSetUsernameWindow(props) {
                 "center-center"
               )}
             >
-              <div {...classes("row")}>
-                Welcome!!
+              <div {...classes("column")}>
+                <h3>Welcome Player!</h3>
+                <div {...classes("center")} style={{padding: "10px"}}>
+                  Enter your name to start 
+                </div>
               </div>
               <div {...classes("row")}>
 
@@ -169,12 +175,13 @@ function createSetUsernameWindow(props) {
             </div>
           </WindowContent>
           <WindowFooter>
-            <div {...classes("spacer")} />
-            <div {...classes("button")} onClick={onNameChangeConfirm}>
-              Confirm
-            </div>
+            <FancyButton variant="secondary" onClick={onNameChangeConfirm}>
+              Enter room
+            </FancyButton>
+            <FancyButton variant="primary" onClick={onReadyUp}>
+              Ready Up
+            </FancyButton>
           </WindowFooter>
-          </SizeBackgroundColor>
         </FillContainer>
       );
     }

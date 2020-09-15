@@ -3041,6 +3041,12 @@ function Game(ref) {
     off,
     emit,
     listnerTree: ref.getConnection().listnerTree,
+
+
+    const: {
+      READY: "ready",
+
+    }
   };
 
   function getPublic() {

@@ -176,7 +176,7 @@ import DragWindow from "../../../packages/ReactWindows/Components/Containers/Win
 import makeBackgroundPicker from "../Components/Windows/BackgroundPicker";
 import makeUsernamePicker from "../Components/Windows/UsernamePicker";
 import makeWelcomeScreen from "../Components/Windows/InitialWindow";
-
+import makeLobbyWindow from "../Components/Windows/LobbyWindow";
 
 import makePlayerListWindow from "../Components/Windows/PlayerListWindow";
 import makeTrooperDancingWindow from "../Components/Windows/DancingTrooper";
@@ -392,10 +392,18 @@ class GameUI extends React.Component {
         });
       });
 
+      this.windowManager.registerWindow("lobbyWindow", () => {
+        makeLobbyWindow({
+          windowManager: this.windowManager,
+          game,
+        });
+      });
+      
 
       // Creeate these windows initially
-      this.windowManager.invokeWindow("usernamePicker");
-      //this.windowManager.invokeWindow("welcomeScreen");
+      //this.windowManager.invokeWindow("usernamePicker");
+      //this.windowManager.invokeWindow("lobbyWindow");
+      this.windowManager.invokeWindow("welcomeScreen");
       //this.windowManager.invokeWindow("playerList");
       //this.windowManager.invokeWindow("RoomLobby");
 
