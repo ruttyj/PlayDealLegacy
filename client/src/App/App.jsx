@@ -5,13 +5,21 @@ import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import store from "./store";
 import { Provider } from "react-redux";
 import { isDef } from "../utils";
+import { withResizeDetector } from "react-resize-detector";
 
-import Home from "../pages/Home/";
-import Dev from "../pages/Dev";
-import Room from "../pages/Room/";
-import Dev4 from "../pages/Dev4";
+
+import HomeRaw from "../pages/Home/";
+import DevRaw from "../pages/Dev";
+import RoomRaw from "../pages/Room/";
+import Dev4Raw from "../pages/Dev4";
 
 import ReactWindowsExamplePage from "../pages/Windows/";
+
+
+const Home = withResizeDetector(HomeRaw);
+const Dev = withResizeDetector(DevRaw);
+const Room = withResizeDetector(RoomRaw);
+const Dev4 = withResizeDetector(Dev4Raw);
 
 const theme = createMuiTheme({
   palette: {

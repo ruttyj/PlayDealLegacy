@@ -267,7 +267,6 @@ let gameContentsCached = null;
 class GameUI extends React.Component {
   constructor(props, context) {
     super(props, context);
-
     this.initialized = false;
 
     this.connection = createSocketConnection(
@@ -353,6 +352,7 @@ class GameUI extends React.Component {
     bindFuncs.forEach((funcName) => {
       this[funcName] = this[funcName].bind(this);
     });
+
 
     this.windowManager = WindowManager(this.stateBuffer);
 
@@ -2687,7 +2687,14 @@ class GameUI extends React.Component {
     );
   }
 
-  render() {
+  render(ans) {
+    let contentSize = {
+      width: this.props.width,
+      height: this.props.height,
+    };
+    let isSkinnyMode = contentSize.width < 500;
+    let isSuperLong = !isSkinnyMode && (contentSize.height < 500)
+
     //========================================
     //              GAME BOARD
     //========================================
@@ -2779,6 +2786,8 @@ class GameUI extends React.Component {
       />
     );
 
+    
+    let sidebarToolTipPlacement = isSkinnyMode ? "top" : "right"
     const sidebarContents = (
       <>
         {false && (
@@ -2798,7 +2807,7 @@ class GameUI extends React.Component {
             this.props.history.push("/");
           }}
         >
-          <ArrowToolTip title="Leave room" placement="right">
+          <ArrowToolTip title="Leave room" placement={sidebarToolTipPlacement}>
             <HomeIcon />
           </ArrowToolTip>
         </div>
@@ -2809,7 +2818,7 @@ class GameUI extends React.Component {
             this.toggleBackgroundPicker();
           }}
         >
-          <ArrowToolTip title="Toggle background picker" placement="right">
+          <ArrowToolTip title="Toggle background picker" placement={sidebarToolTipPlacement}>
             <PhotoSizeSelectActualIcon />
           </ArrowToolTip>
         </div>
@@ -2820,7 +2829,7 @@ class GameUI extends React.Component {
             this.toggleUsernamePicker();
           }}
         >
-          <ArrowToolTip title="Toggle username picker" placement="right">
+          <ArrowToolTip title="Toggle username picker" placement={sidebarToolTipPlacement}>
             <PersonIcon />
           </ArrowToolTip>
         </div>
@@ -2831,7 +2840,7 @@ class GameUI extends React.Component {
             this.windowManager.toggleWindow("playerList");
           }}
         >
-          <ArrowToolTip title="Toggle player list" placement="right">
+          <ArrowToolTip title="Toggle player list" placement={sidebarToolTipPlacement}>
             <PeopleAltIcon />
           </ArrowToolTip>
         </div>
@@ -2853,8 +2862,7 @@ class GameUI extends React.Component {
     const mainPanel = (
       <>
         <FillContainer>
-          <FillHeader>{appBarContents}</FillHeader>
-
+          {(isSkinnyMode || isSuperLong) && <FillHeader>{appBarContents}</FillHeader>}
           <FillContent>
             <RelLayer>
               <AbsLayer>{this.renderBackground()}</AbsLayer>
@@ -3014,16 +3022,53 @@ class GameUI extends React.Component {
         </RelLayer>
       </>
     );
-
-    return (
-      <DndProvider backend={Backend}>
-        <div style={{ ...style, display: "flex", flexGrow: "1" }}>
+    
+    let innerContents = null;
+    if (isSkinnyMode) {
+      innerContents = (
+        <FullFlexColumn>
+          <div {...classes("full column")}>{windowContents}</div>
+          <div {...classes("row sidebar-footer side-bar")}>
+            {sidebarContents}
+            </div>
+        </FullFlexColumn>
+      )
+    } else if(isSuperLong) {
+        innerContents = (
+          <FillContainer>
+            <FillContent>
+              <RelLayer>
+            <FullFlexRow>
+              <FlexColumn>
+                <AppSidebar>{sidebarContents}</AppSidebar>
+              </FlexColumn>
+              <FullFlexColumn>{windowContents}</FullFlexColumn>
+            </FullFlexRow>
+            </RelLayer>
+            </FillContent>
+          </FillContainer>
+          )
+    } else {
+      innerContents = (
+        <FillContainer>
+          <FillHeader>{appBarContents}</FillHeader>
+          <FillContent>
+            <RelLayer>
           <FullFlexRow>
             <FlexColumn>
               <AppSidebar>{sidebarContents}</AppSidebar>
             </FlexColumn>
             <FullFlexColumn>{windowContents}</FullFlexColumn>
           </FullFlexRow>
+          </RelLayer>
+          </FillContent>
+        </FillContainer>
+        )
+    }
+    return (
+      <DndProvider backend={Backend}>
+        <div style={{ ...style, display: "flex", flexGrow: "1" }}>
+          {innerContents}
         </div>
       </DndProvider>
     );
