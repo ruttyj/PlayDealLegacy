@@ -174,7 +174,10 @@ import WindowManager from "../../../packages/ReactWindows/Utils/WindowManager";
 import WindowContainer from "../../../packages/ReactWindows/Components/Containers/Windows/WindowContainer/";
 import DragWindow from "../../../packages/ReactWindows/Components/Containers/Windows/DragWindow/";
 import makeBackgroundPicker from "../Components/Windows/BackgroundPicker";
-import makeUsernamePicker from "../Components/Windows/InitialWindow";
+import makeUsernamePicker from "../Components/Windows/UsernamePicker";
+import makeWelcomeScreen from "../Components/Windows/InitialWindow";
+
+
 import makePlayerListWindow from "../Components/Windows/PlayerListWindow";
 import makeTrooperDancingWindow from "../Components/Windows/DancingTrooper";
 import createDebugWindow from "../Components/Windows/DebugWindow";
@@ -374,6 +377,14 @@ class GameUI extends React.Component {
         });
       });
 
+
+      this.windowManager.registerWindow("welcomeScreen", () => {
+        makeWelcomeScreen({
+          windowManager: this.windowManager,
+          game,
+        });
+      });
+
       this.windowManager.registerWindow("playerList", () => {
         makePlayerListWindow({
           windowManager: this.windowManager,
@@ -381,8 +392,13 @@ class GameUI extends React.Component {
         });
       });
 
-      //this.windowManager.invokeWindow("playerList");
+
+      // Creeate these windows initially
       this.windowManager.invokeWindow("usernamePicker");
+      //this.windowManager.invokeWindow("welcomeScreen");
+      //this.windowManager.invokeWindow("playerList");
+      //this.windowManager.invokeWindow("RoomLobby");
+
     });
 
     this.stateBuffer.set("theme", {

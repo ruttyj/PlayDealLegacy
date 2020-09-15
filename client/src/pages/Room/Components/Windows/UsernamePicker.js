@@ -47,16 +47,6 @@ function WindowFooter(props = {}) {
 function createSetUsernameWindow(props) {
   let { windowManager, game, isFocused = true } = props;
 
-
-  //=========================================
-  // Define Window Data
-  //=========================================
-  let windowData = {
-    title: "Welcome",
-    key: "welcomeScreen",
-  }
-
-
   const isFullSize = false;
 
   const size = {
@@ -69,11 +59,7 @@ function createSetUsernameWindow(props) {
     top: containerSize.height / 2 - size.height / 2,
   };
 
-
-  /////////////////////////////////////////////
-  //             Window Contents
-  /////////////////////////////////////////////
-  const windowContents = (props) => {
+  const children = (props) => {
     //=========================================
     // Unpack props
     //=========================================
@@ -121,8 +107,6 @@ function createSetUsernameWindow(props) {
       setNameInputValue(newValue);
     };
 
-    
-
     //=========================================
     // Decide the contents of the window
     //=========================================
@@ -140,7 +124,6 @@ function createSetUsernameWindow(props) {
     } else {
       contents = (
         <FillContainer>
-          <SizeBackgroundColor>
           <WindowContent>
             <div
               {...classes(
@@ -153,10 +136,6 @@ function createSetUsernameWindow(props) {
               )}
             >
               <div {...classes("row")}>
-                Welcome!!
-              </div>
-              <div {...classes("row")}>
-
                 <Input
                   {...classes("username-field")}
                   variant="filled"
@@ -174,7 +153,6 @@ function createSetUsernameWindow(props) {
               Confirm
             </div>
           </WindowFooter>
-          </SizeBackgroundColor>
         </FillContainer>
       );
     }
@@ -182,17 +160,15 @@ function createSetUsernameWindow(props) {
     return contents;
   };
 
-  
-
-  
   // Dragable Lists window
   let windowId = windowManager.createWindow({
-    ...windowData,
+    title: "Enter a username",
+    key: "usernamePicker",
     isFocused,
     isFullSize,
     position,
     size,
-    children: windowContents,
+    children,
   });
   if (isFocused) {
     windowManager.setFocused(windowId);

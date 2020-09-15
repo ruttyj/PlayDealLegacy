@@ -1,4 +1,6 @@
+import React, { useState, useEffect } from "react";
 import Utils from "../Utils";
+
 const {
   els,
   elsFn,
@@ -8,7 +10,9 @@ const {
   isArr,
   getNestedValue,
   setImmutableValue,
+  classes,
 } = Utils;
+
 
 function WindowManager(state) {
   let topWindowId = 0;
@@ -40,7 +44,7 @@ function WindowManager(state) {
 
   // create a window instance
   function _makeWindow(props) {
-    const { children } = props;
+    const { children, ...childProps } = props;
     let { key, title } = props;
     let {
       isOpen = false,
@@ -76,6 +80,17 @@ function WindowManager(state) {
     const setValue = (path, value) =>
       selfManager.windowSetValue(id, path, value);
 
+    
+
+    let childContents = "";
+    if (isFunc(children)) {
+      const Temp = children
+      childContents = (cprops) => children(cprops);
+    } else {
+      childContents = children
+    }
+    
+
     //selfManager.
     return {
       id,
@@ -95,7 +110,7 @@ function WindowManager(state) {
       isResizeDisabled,
       disablePointerEventsOnBlur,
       isTempDisablePointerEvents: false,
-      children,
+      children: childContents,
       actions,
     };
   }

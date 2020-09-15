@@ -8,6 +8,7 @@ import {
   useTransform,
   motionValue,
 } from "../../../../packages/ReactWindows/Components/Imports/";
+import { withResizeDetector } from "react-resize-detector";
 import ReactScrollWheelHandler from "react-scroll-wheel-handler";
 import { useSmartClick } from "./Gestures/useSmartClick";
 import FillContent from "../../../../packages/ReactWindows/Components/Containers/FillContainer/FillContent";
@@ -56,8 +57,13 @@ function createWallpaperWindow(props) {
     top: containerSize.height / 2 - size.height / 2,
   };
 
-  const children = (props) => {
+  const children = ((props) => {
+    // Get the size of the window contents
+    let {contentSize} = props;
+    let { width, height } = contentSize;
+
     let state = windowManager.getState();
+    const { window } = props;
 
     let makelisteners = useSmartClick();
     const contentOffsetY = motionValue(0);
@@ -124,44 +130,75 @@ function createWallpaperWindow(props) {
 
     let scrollRight = () => incPos(scrollAmount);
     let scrollLeft = () => incPos(-1 * scrollAmount);
-    return (
-      <div {...classes("full", "wrap", "bkgd-selection")}>
+
+
+    let leftScrollButton = (<div
+      {...classes(...navClasses, "left")}
+        onClick={() => incPos(fullWidth)}
+      >
+        {"<"}
+      </div>);
+
+      let rightScrollButton = (
+        <div
+        {...classes(...navClasses, "right")}
+        onClick={() => incPos(-1 * fullWidth)}
+      >
+        {">"}
+      </div>
+      );
+    let mainContents = <div {...classes(...itemSection)}>
+      <ReactScrollWheelHandler
+        style={{ width: "100%", height: "100%" }}
+        upHandler={scrollRight}
+        downHandler={scrollLeft}
+        leftHandler={scrollLeft}
+        rightHandler={scrollRight}
+        timeout={100}
+      >
+        <motion.div
+          dragConstraints={{ left: limitLeft, right: 0 }}
+          drag={"x"}
+          style={{ x }}
+          {...classes(["flex", "full", "column", "wrap"])}
+        >
+          {makeContents}
+        </motion.div>
+      </ReactScrollWheelHandler>
+    </div>
+
+
+    let wrapper = (contents) => <div {...classes("full", "wrap", "bkgd-selection")}>
+      <div {...classes(...gridSection)}>
+        {contents}
+      </div>
+    </div>
+
+    let finalContents = null;
+    if(width > 500){
+      finalContents = wrapper(
         <div {...classes(...gridSection)}>
-          <div
-            {...classes(...navClasses, "left")}
-            onClick={() => incPos(fullWidth)}
-          >
-            {"<"}
-          </div>
-          <div {...classes(...itemSection)}>
-            <ReactScrollWheelHandler
-              style={{ width: "100%", height: "100%" }}
-              upHandler={scrollRight}
-              downHandler={scrollLeft}
-              leftHandler={scrollLeft}
-              rightHandler={scrollRight}
-              timeout={100}
-            >
-              <motion.div
-                dragConstraints={{ left: limitLeft, right: 0 }}
-                drag={"x"}
-                style={{ x }}
-                {...classes(["flex", "full", "column", "wrap"])}
-              >
-                {makeContents}
-              </motion.div>
-            </ReactScrollWheelHandler>
-          </div>
-          <div
-            {...classes(...navClasses, "right")}
-            onClick={() => incPos(-1 * fullWidth)}
-          >
-            {">"}
+          {leftScrollButton}
+          {mainContents}
+          {rightScrollButton}
+        </div>
+      )
+    } else {
+      finalContents = wrapper(
+        <div {...classes(...gridSection)}>
+          <div {...classes("full column")}>
+            {mainContents}
+            <div {...classes("row center-center")}>
+              {leftScrollButton}
+              {rightScrollButton}
+            </div>
           </div>
         </div>
-      </div>
-    );
-  };
+      )
+    }
+
+    return finalContents;
+  });
 
   // Dragable Lists window
   let windowId = windowManager.createWindow({

@@ -182,7 +182,7 @@ const DragWindow = withResizeDetector(function(props) {
       if (value) {
         debouncedsSetNotChanging();
       }
-      motionValue.backgroundColor.set("#f90");
+      motionValue.backgroundColor.set("#000");
     } else {
       motionValue.backgroundColor.set("transparent");
     }
@@ -722,10 +722,28 @@ const DragWindow = withResizeDetector(function(props) {
     );
   }
 
+  const [cachedWidth, setCachedWidth] = useState(undefined);
+  const [cachedHeight, setCachedHeight] = useState(undefined);
+
   let childContents = "";
   if (isDef(children)) {
+    // If is function/component wrap with ResizeDetector
     if (isFunc(children)) {
-      let Child = children;
+      let Temp = children;
+      let Temp2 = ({width, height, otherProps}) => {
+        let activeWidth = cachedWidth;
+        let activeHeight = cachedHeight;
+        if (width !== cachedWidth && width !== undefined){
+          setCachedWidth(width);
+          activeWidth = width;
+        }
+        if (height !== cachedHeight && height !== undefined){
+          setCachedHeight(height);
+          activeHeight = height;
+        }
+        return <Temp contentSize={{width: activeWidth, height: activeHeight}} {...otherProps}/>;
+      }
+      let Child = withResizeDetector(Temp2);
       childContents = <Child {...childArgs} />;
     } else {
       childContents = children;
