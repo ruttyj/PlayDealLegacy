@@ -737,8 +737,8 @@ const DragWindow = withResizeDetector(function(props) {
       let Temp = children;
       // Wrap child component in size cache component
       let Temp2 = ({width, height, ...otherProps}) => {
-        let cachedSize = contentsSize.process({width, height});
-        return <Temp contentSize={cachedSize} {...otherProps}/>;
+        //let cachedSize = contentsSize.process({width, height});
+        return <Temp contentSize={{width, height}} {...otherProps}/>;
       }
       // Feed the component the it's size
       let Child = withResizeDetector(Temp2);
@@ -852,6 +852,7 @@ const DragWindow = withResizeDetector(function(props) {
                     "overflow-hidden",
                     "relative",
                     "column",
+                    "grow",
                     disablePointerEvents && "disable-pointer-events",
                   ]}
                 >

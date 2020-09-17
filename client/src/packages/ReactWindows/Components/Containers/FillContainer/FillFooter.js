@@ -5,7 +5,8 @@ export default ({ children, height = 200, style = {}, classNames = [] }) => {
   return (
     <div
       style={{
-        flex: `1 0 ${height}px`,
+        flexShrink: 1,
+        minHeight: `${height}px`,
         ...style,
       }}
       {...classes(classNames)}

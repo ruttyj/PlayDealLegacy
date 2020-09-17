@@ -7,6 +7,7 @@ export default ({ children, style = {}, classNames = [], className = "" }) => {
       style={{
         height: "100%",
         width: "100%",
+        flexGrow: 1,
         display: "flex",
         ...style,
       }}

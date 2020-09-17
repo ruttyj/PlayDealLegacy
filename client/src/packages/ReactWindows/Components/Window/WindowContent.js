@@ -14,7 +14,7 @@ const {
 function WindowContent({ children }) {
   return (
     <FillContent
-      {...classes("window-content", "tint-bkgd", "column", "overflow-auto")}
+      {...classes("window-content", "tint-bkgd", "column", "overflow-auto", "grow")}
     >
       {children}
     </FillContent>
