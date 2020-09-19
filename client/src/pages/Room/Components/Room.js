@@ -202,7 +202,8 @@ const GameBoard = withResizeDetector(function(props) {
     onChangeSize({ width, height });
   }
 
-  let { gameboard, turnNotice, myArea, uiConfig } = props;
+  let { gameboard, turnNotice, myArea, uiConfig, game } = props;
+
   return (
     <SplitterLayout
       customClassName="game_area"
@@ -2697,11 +2698,19 @@ class GameUI extends React.Component {
 
   render(ans) {
     let contentSize = {
-      width: this.props.width,
-      height: this.props.height,
+      width: this.props.width || -1,
+      height: this.props.height || -1,
     };
     let isSkinnyMode = contentSize.width < 500;
+    let isVerticallyTiny = contentSize.height < 700;
     let isSuperLong = !isSkinnyMode && (contentSize.height < 500)
+    let isSmallScreen = isSkinnyMode || isSuperLong;
+
+    game.updateRenderData("isSkinnyMode", isSkinnyMode);
+    game.updateRenderData("contentSize", contentSize);
+    game.updateRenderData("isVerticallyTiny", isVerticallyTiny);
+    game.updateRenderData("isSuperLong", isSuperLong);
+    game.updateRenderData("isSmallScreen", isSmallScreen);
 
     //========================================
     //              GAME BOARD
@@ -2783,6 +2792,7 @@ class GameUI extends React.Component {
     let gameContents = null;
     gameContents = (
       <GameBoard
+        game={game}
         previousSize={this.stateBuffer.get(["gameWindow", "size"], {})}
         onChangeSize={(size) =>
           this.stateBuffer.set(["gameWindow", "size"], size)
@@ -2867,12 +2877,25 @@ class GameUI extends React.Component {
       </AppBar>
     );
 
+
+    // Zoom out based on vertical height
+    let mainPanelStyle = {};
+    let containerSize = contentSize;
+    let zoom = 1;
+    if(containerSize.height > 0){
+      zoom = Math.min((containerSize.height-200)/900, 1);
+    }
+    Object.assign(mainPanelStyle, {
+      zoom: zoom,
+      transition: "zoom 300ms linear",
+    })
+
     const mainPanel = (
       <>
         <FillContainer>
-          {(isSkinnyMode || isSuperLong) && <FillHeader>{appBarContents}</FillHeader>}
+          {(isSmallScreen) && <FillHeader>{appBarContents}</FillHeader>}
           <FillContent>
-            <RelLayer>
+            <RelLayer style={mainPanelStyle}>
               <AbsLayer>{this.renderBackground()}</AbsLayer>
 
               <SplitterLayout
