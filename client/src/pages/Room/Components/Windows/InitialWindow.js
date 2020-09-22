@@ -25,6 +25,12 @@ import FillHeader from "../../../../packages/ReactWindows/Components/Containers/
 import WindowContent from "../../../../packages/ReactWindows/Components/Window/WindowContent";
 import FancyButton from "../../../../components/buttons/FancyButton";
 
+import {
+  getIsFullScreen,
+  toggleFullScreen,
+  getIsMobile,
+} from "../Logic/fullscreen";
+
 import Input from "@material-ui/core/Input";
 const {
   els,
@@ -48,15 +54,13 @@ function WindowFooter(props = {}) {
 function createSetUsernameWindow(props) {
   let { windowManager, game, isFocused = true } = props;
 
-
   //=========================================
   // Define Window Data
   //=========================================
   let windowData = {
     title: "Welcome",
     key: "welcomeScreen",
-  }
-
+  };
 
   const isFullSize = true;
   const size = {
@@ -68,7 +72,6 @@ function createSetUsernameWindow(props) {
     left: containerSize.width / 2 - size.width / 2,
     top: containerSize.height / 2 - size.height / 2,
   };
-
 
   /////////////////////////////////////////////
   //             Window Contents
@@ -108,6 +111,10 @@ function createSetUsernameWindow(props) {
     let onNameChangeConfirm = async () => {
       await game.updateMyName(nameInputValue);
       windowManager.removeWindow(window.id);
+      console.log("getIsFullScreen()", getIsFullScreen());
+      if (getIsMobile()) {
+        toggleFullScreen(true);
+      }
     };
 
     const onNameKeyPress = (event) => {
@@ -123,9 +130,9 @@ function createSetUsernameWindow(props) {
     };
 
     const onReadyUp = () => {
-      onNameChangeConfirm(); 
+      onNameChangeConfirm();
       game.updateMyStatus(game.const.READY);
-    }    
+    };
 
     //=========================================
     // Decide the contents of the window
@@ -157,12 +164,11 @@ function createSetUsernameWindow(props) {
             >
               <div {...classes("column")}>
                 <h3>Welcome Player!</h3>
-                <div {...classes("center")} style={{padding: "10px"}}>
-                  Enter your name to start 
+                <div {...classes("center")} style={{ padding: "10px" }}>
+                  Enter your name to start
                 </div>
               </div>
               <div {...classes("row")}>
-
                 <Input
                   {...classes("username-field")}
                   variant="filled"
@@ -189,9 +195,6 @@ function createSetUsernameWindow(props) {
     return contents;
   };
 
-  
-
-  
   // Dragable Lists window
   let windowId = windowManager.createWindow({
     ...windowData,

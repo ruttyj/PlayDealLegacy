@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-function toggleFullScreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    }
-  }
-}
+
+import { getIsFullScreen, toggleFullScreen } from "./Logic/fullscreen";
 import { withResizeDetector } from "react-resize-detector";
 import { withRouter } from "react-router";
 import pluralize from "pluralize";
@@ -354,7 +347,6 @@ class GameUI extends React.Component {
       this[funcName] = this[funcName].bind(this);
     });
 
-
     this.windowManager = WindowManager(this.stateBuffer);
 
     // Register methods to create windows on demand
@@ -378,7 +370,6 @@ class GameUI extends React.Component {
         });
       });
 
-
       this.windowManager.registerWindow("welcomeScreen", () => {
         makeWelcomeScreen({
           windowManager: this.windowManager,
@@ -399,7 +390,6 @@ class GameUI extends React.Component {
           game,
         });
       });
-      
 
       // Creeate these windows initially
       //this.windowManager.invokeWindow("usernamePicker");
@@ -407,7 +397,6 @@ class GameUI extends React.Component {
       this.windowManager.invokeWindow("welcomeScreen");
       //this.windowManager.invokeWindow("playerList");
       //this.windowManager.invokeWindow("RoomLobby");
-
     });
 
     this.stateBuffer.set("theme", {
@@ -2703,7 +2692,7 @@ class GameUI extends React.Component {
     };
     let isSkinnyMode = contentSize.width < 500;
     let isVerticallyTiny = contentSize.height < 700;
-    let isSuperLong = !isSkinnyMode && (contentSize.height < 500)
+    let isSuperLong = !isSkinnyMode && contentSize.height < 500;
     let isSmallScreen = isSkinnyMode || isSuperLong;
 
     game.updateRenderData("isSkinnyMode", isSkinnyMode);
@@ -2804,8 +2793,7 @@ class GameUI extends React.Component {
       />
     );
 
-    
-    let sidebarToolTipPlacement = isSkinnyMode ? "top" : "right"
+    let sidebarToolTipPlacement = isSkinnyMode ? "top" : "right";
     const sidebarContents = (
       <>
         {false && (
@@ -2836,7 +2824,10 @@ class GameUI extends React.Component {
             this.toggleBackgroundPicker();
           }}
         >
-          <ArrowToolTip title="Toggle background picker" placement={sidebarToolTipPlacement}>
+          <ArrowToolTip
+            title="Toggle background picker"
+            placement={sidebarToolTipPlacement}
+          >
             <PhotoSizeSelectActualIcon />
           </ArrowToolTip>
         </div>
@@ -2847,7 +2838,10 @@ class GameUI extends React.Component {
             this.toggleUsernamePicker();
           }}
         >
-          <ArrowToolTip title="Toggle username picker" placement={sidebarToolTipPlacement}>
+          <ArrowToolTip
+            title="Toggle username picker"
+            placement={sidebarToolTipPlacement}
+          >
             <PersonIcon />
           </ArrowToolTip>
         </div>
@@ -2858,7 +2852,10 @@ class GameUI extends React.Component {
             this.windowManager.toggleWindow("playerList");
           }}
         >
-          <ArrowToolTip title="Toggle player list" placement={sidebarToolTipPlacement}>
+          <ArrowToolTip
+            title="Toggle player list"
+            placement={sidebarToolTipPlacement}
+          >
             <PeopleAltIcon />
           </ArrowToolTip>
         </div>
@@ -2877,23 +2874,22 @@ class GameUI extends React.Component {
       </AppBar>
     );
 
-
     // Zoom out based on vertical height
     let mainPanelStyle = {};
     let containerSize = contentSize;
     let zoom = 1;
-    if(containerSize.height > 0){
-      zoom = Math.min((containerSize.height-200)/900, 1);
+    if (containerSize.height > 0) {
+      zoom = Math.min((containerSize.height - 200) / 900, 1);
     }
     Object.assign(mainPanelStyle, {
       zoom: zoom,
       transition: "zoom 300ms linear",
-    })
+    });
 
     const mainPanel = (
       <>
         <FillContainer>
-          {(isSmallScreen) && <FillHeader>{appBarContents}</FillHeader>}
+          {isSmallScreen && <FillHeader>{appBarContents}</FillHeader>}
           <FillContent>
             <RelLayer style={mainPanelStyle}>
               <AbsLayer>{this.renderBackground()}</AbsLayer>
@@ -3053,7 +3049,7 @@ class GameUI extends React.Component {
         </RelLayer>
       </>
     );
-    
+
     let innerContents = null;
     if (isSkinnyMode) {
       innerContents = (
@@ -3061,40 +3057,40 @@ class GameUI extends React.Component {
           <div {...classes("full column")}>{windowContents}</div>
           <div {...classes("row sidebar-footer side-bar space-around")}>
             {sidebarContents}
-            </div>
+          </div>
         </FullFlexColumn>
-      )
-    } else if(isSuperLong) {
-        innerContents = (
-          <FillContainer>
-            <FillContent>
-              <RelLayer>
-            <FullFlexRow>
-              <FlexColumn>
-                <AppSidebar>{sidebarContents}</AppSidebar>
-              </FlexColumn>
-              <FullFlexColumn>{windowContents}</FullFlexColumn>
-            </FullFlexRow>
+      );
+    } else if (isSuperLong) {
+      innerContents = (
+        <FillContainer>
+          <FillContent>
+            <RelLayer>
+              <FullFlexRow>
+                <FlexColumn>
+                  <AppSidebar>{sidebarContents}</AppSidebar>
+                </FlexColumn>
+                <FullFlexColumn>{windowContents}</FullFlexColumn>
+              </FullFlexRow>
             </RelLayer>
-            </FillContent>
-          </FillContainer>
-          )
+          </FillContent>
+        </FillContainer>
+      );
     } else {
       innerContents = (
         <FillContainer>
           <FillHeader>{appBarContents}</FillHeader>
           <FillContent>
             <RelLayer>
-          <FullFlexRow>
-            <FlexColumn>
-              <AppSidebar>{sidebarContents}</AppSidebar>
-            </FlexColumn>
-            <FullFlexColumn>{windowContents}</FullFlexColumn>
-          </FullFlexRow>
-          </RelLayer>
+              <FullFlexRow>
+                <FlexColumn>
+                  <AppSidebar>{sidebarContents}</AppSidebar>
+                </FlexColumn>
+                <FullFlexColumn>{windowContents}</FullFlexColumn>
+              </FullFlexRow>
+            </RelLayer>
           </FillContent>
         </FillContainer>
-        )
+      );
     }
     return (
       <DndProvider backend={Backend}>
@@ -3117,7 +3113,10 @@ const mapStateToProps = (state) => ({
     return state.people.order.map((personId) => state.people.items[personId]);
   },
   ...makeSelectable(reduxState, "cardSelection", ["game", "cardSelect"]),
-  ...makeSelectable(reduxState, "collectionSelection", ["game", "collectionSelect"]),
+  ...makeSelectable(reduxState, "collectionSelection", [
+    "game",
+    "collectionSelect",
+  ]),
   ...makeSelectable(reduxState, "personSelection", ["game", "personSelect"]),
 });
 const mapDispatchToProps = {
