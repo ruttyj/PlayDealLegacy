@@ -2711,7 +2711,6 @@ class GameUI extends React.Component {
 
     let activeBackground = state.get(["theme", "wallpaper"], null);
     let storageBackground = WINDOW.localStorage.getItem("background");
-    console.log("$$$$$$", storageBackground);
     if (isDef(storageBackground) && activeBackground !== storageBackground) {
       state.set(["theme", "wallpaper"], storageBackground);
       activeBackground = storageBackground;

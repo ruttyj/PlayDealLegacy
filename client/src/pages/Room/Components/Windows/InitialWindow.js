@@ -89,7 +89,6 @@ function createSetUsernameWindow(props) {
     //=========================================
     const { window } = props;
     const Storage = isDefNested(WINDOW, ["localStorage"]);
-    console.log("@@@@@@ WINDOW", WINDOW);
 
     //=========================================
     // State
@@ -119,7 +118,6 @@ function createSetUsernameWindow(props) {
       if (typeof Storage !== "undefined") {
         // Code for localStorage
         let localStorageUsername = WINDOW.localStorage.getItem("username");
-        console.log("@@@@@@@@@@@@@@", localStorageUsername);
 
         setNameInputValue(localStorageUsername);
       } else {
@@ -133,12 +131,10 @@ function createSetUsernameWindow(props) {
     //=========================================
     let onNameChangeConfirm = async () => {
       await game.updateMyName(nameInputValue);
-      console.log("@@@@@@ WINDOW", WINDOW);
       if (typeof Storage !== "undefined") {
         WINDOW.localStorage.setItem("username", nameInputValue);
       }
       windowManager.removeWindow(window.id);
-      console.log("getIsFullScreen()", getIsFullScreen());
       if (getIsMobile()) {
         toggleFullScreen(true);
       }
