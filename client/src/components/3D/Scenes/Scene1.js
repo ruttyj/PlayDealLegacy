@@ -40,7 +40,7 @@ function Plane() {
 function Scene() {
   const [screenSpacePanning, toggle] = useState(false);
   return (
-    <Canvas camera={{ position: [400, 300, 0] }}>
+    <Canvas className="landing-page" camera={{ position: [400, 300, 0] }}>
       <Controls screenSpacePanning={screenSpacePanning} />
       <fog attach="fog" args={["#0d0149", 0.003, 1000]} />
 

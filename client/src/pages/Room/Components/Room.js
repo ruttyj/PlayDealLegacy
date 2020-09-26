@@ -166,7 +166,7 @@ import PeopleAltIcon from "@material-ui/icons/PeopleAlt";
 import WindowManager from "../../../packages/ReactWindows/Utils/WindowManager";
 import WindowContainer from "../../../packages/ReactWindows/Components/Containers/Windows/WindowContainer/";
 import DragWindow from "../../../packages/ReactWindows/Components/Containers/Windows/DragWindow/";
-import makeBackgroundPicker from "../Components/Windows/BackgroundPicker";
+import makeBackgroundPicker from "../Components/Windows/BackgroundPicker/Window";
 import makeUsernamePicker from "../Components/Windows/UsernamePicker";
 import makeWelcomeScreen from "../Components/Windows/InitialWindow";
 import makeLobbyWindow from "../Components/Windows/LobbyWindow";
@@ -175,6 +175,8 @@ import makePlayerListWindow from "../Components/Windows/PlayerListWindow";
 import makeTrooperDancingWindow from "../Components/Windows/DancingTrooper";
 import createDebugWindow from "../Components/Windows/DebugWindow";
 import "../../../packages/ReactWindows/Pages/Home/Home.scss";
+
+const WINDOW = window;
 
 ////////////////////////////////////////////////////
 /// Voice Config
@@ -2686,6 +2688,7 @@ class GameUI extends React.Component {
   }
 
   render(ans) {
+    let state = this.stateBuffer;
     let contentSize = {
       width: this.props.width || -1,
       height: this.props.height || -1,
@@ -2706,7 +2709,15 @@ class GameUI extends React.Component {
     //========================================
     this.updateRender();
 
-    let wallpaper = this.stateBuffer.get(["theme", "wallpaper"]);
+    let activeBackground = state.get(["theme", "wallpaper"], null);
+    let storageBackground = WINDOW.localStorage.getItem("background");
+    console.log("$$$$$$", storageBackground);
+    if (isDef(storageBackground) && activeBackground !== storageBackground) {
+      state.set(["theme", "wallpaper"], storageBackground);
+      activeBackground = storageBackground;
+    }
+    let wallpaper = activeBackground;
+
     const style = {
       "--bkgd-image": `url("${wallpaper}")`,
     };
@@ -2915,29 +2926,19 @@ class GameUI extends React.Component {
                 </BlurredWrapper>
                 <RelLayer>
                   <GrowPanel>
-                    <SplitterLayout
-                      percentage
-                      primaryIndex={1}
-                      primaryMinSize={0}
-                      secondaryInitialSize={0}
-                      secondaryMinSize={0}
-                    >
-                      {this.renderDebugData()}
-
-                      {/*################################################*/}
-                      {/*                   GAME BOARD                   */}
-                      {/*################################################*/}
-                      <RelLayer>
-                        <VSplitterDragIndicator />
-                        {/*----------------------------------------------*/}
-                        {/*                 Game content                 */}
-                        {/*----------------------------------------------*/}
-                        <AbsLayer style={{ color: "white" }}>
-                          {gameContents}
-                        </AbsLayer>
-                      </RelLayer>
-                      {/* End Game board ________________________________*/}
-                    </SplitterLayout>
+                    {/*################################################*/}
+                    {/*                   GAME BOARD                   */}
+                    {/*################################################*/}
+                    <RelLayer>
+                      <VSplitterDragIndicator />
+                      {/*----------------------------------------------*/}
+                      {/*                 Game content                 */}
+                      {/*----------------------------------------------*/}
+                      <AbsLayer style={{ color: "white" }}>
+                        {gameContents}
+                      </AbsLayer>
+                    </RelLayer>
+                    {/* End Game board ________________________________*/}
                   </GrowPanel>
                 </RelLayer>
               </SplitterLayout>
@@ -3094,7 +3095,10 @@ class GameUI extends React.Component {
     }
     return (
       <DndProvider backend={Backend}>
-        <div style={{ ...style, display: "flex", flexGrow: "1" }}>
+        <div
+          {...classes("room-page")}
+          style={{ ...style, display: "flex", flexGrow: "1" }}
+        >
           {innerContents}
         </div>
       </DndProvider>

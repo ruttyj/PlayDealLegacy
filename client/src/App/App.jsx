@@ -7,14 +7,13 @@ import { Provider } from "react-redux";
 import { isDef } from "../utils";
 import { withResizeDetector } from "react-resize-detector";
 
-
 import HomeRaw from "../pages/Home/";
 import DevRaw from "../pages/Dev";
 import RoomRaw from "../pages/Room/";
 import Dev4Raw from "../pages/Dev4";
+import Drag from "../pages/Drag";
 
 import ReactWindowsExamplePage from "../pages/Windows/";
-
 
 const Home = withResizeDetector(HomeRaw);
 const Dev = withResizeDetector(DevRaw);
@@ -66,6 +65,15 @@ class App extends Component {
                   path="/windows"
                   render={(props) => {
                     return <ReactWindowsExamplePage />;
+                  }}
+                />
+
+                <Route
+                  key="Drag"
+                  exact
+                  path="/drag"
+                  render={(props) => {
+                    return <Drag />;
                   }}
                 />
 

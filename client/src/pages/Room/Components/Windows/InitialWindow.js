@@ -25,6 +25,8 @@ import FillHeader from "../../../../packages/ReactWindows/Components/Containers/
 import WindowContent from "../../../../packages/ReactWindows/Components/Window/WindowContent";
 import FancyButton from "../../../../components/buttons/FancyButton";
 
+import makeContents from "./BackgroundPicker/Contents";
+
 import {
   getIsFullScreen,
   toggleFullScreen,
@@ -32,9 +34,12 @@ import {
 } from "../Logic/fullscreen";
 
 import Input from "@material-ui/core/Input";
+
+const WINDOW = window;
 const {
   els,
   isDef,
+  isDefNested,
   isArr,
   isFunc,
   classes,
@@ -77,10 +82,14 @@ function createSetUsernameWindow(props) {
   //             Window Contents
   /////////////////////////////////////////////
   const windowContents = (props) => {
+    let { contentSize } = props;
+    let { width, height } = contentSize;
     //=========================================
     // Unpack props
     //=========================================
     const { window } = props;
+    const Storage = isDefNested(WINDOW, ["localStorage"]);
+    console.log("@@@@@@ WINDOW", WINDOW);
 
     //=========================================
     // State
@@ -91,6 +100,7 @@ function createSetUsernameWindow(props) {
     // Local state
     const [isLoading, setIsLoading] = useState(true);
     const [nameInputValue, setNameInputValue] = useState("\\");
+    const [isInit, setIsInit] = useState(false);
 
     //=========================================
     // Set current name if exists and is filler value "\"
@@ -105,11 +115,28 @@ function createSetUsernameWindow(props) {
       }
     }
 
+    if (!isInit) {
+      if (typeof Storage !== "undefined") {
+        // Code for localStorage
+        let localStorageUsername = WINDOW.localStorage.getItem("username");
+        console.log("@@@@@@@@@@@@@@", localStorageUsername);
+
+        setNameInputValue(localStorageUsername);
+      } else {
+        // No web storage Support.
+      }
+      setIsInit(true);
+    }
+
     //=========================================
     // Define callbacks
     //=========================================
     let onNameChangeConfirm = async () => {
       await game.updateMyName(nameInputValue);
+      console.log("@@@@@@ WINDOW", WINDOW);
+      if (typeof Storage !== "undefined") {
+        WINDOW.localStorage.setItem("username", nameInputValue);
+      }
       windowManager.removeWindow(window.id);
       console.log("getIsFullScreen()", getIsFullScreen());
       if (getIsMobile()) {
@@ -137,6 +164,7 @@ function createSetUsernameWindow(props) {
     //=========================================
     // Decide the contents of the window
     //=========================================
+    let BackgroundPicker = makeContents({ windowManager });
     let contents = null;
     if (isLoading) {
       contents = (
@@ -162,21 +190,38 @@ function createSetUsernameWindow(props) {
                 "center-center"
               )}
             >
-              <div {...classes("column")}>
-                <h3>Welcome Player!</h3>
-                <div {...classes("center")} style={{ padding: "10px" }}>
-                  Enter your name to start
+              <div {...classes("column full center-center")}>
+                <div {...classes("column full center-center")}>
+                  <div {...classes("column")}>
+                    <h3>Welcome Player!</h3>
+                    <div {...classes("center")} style={{ padding: "10px" }}>
+                      Enter your name to start
+                    </div>
+                  </div>
+                  <div {...classes("row")}>
+                    <Input
+                      {...classes("username-field")}
+                      variant="filled"
+                      autoFocus
+                      onKeyPress={onNameKeyPress}
+                      value={nameInputValue}
+                      onChange={onNameChange}
+                    />
+                  </div>
                 </div>
               </div>
-              <div {...classes("row")}>
-                <Input
-                  {...classes("username-field")}
-                  variant="filled"
-                  autoFocus
-                  onKeyPress={onNameKeyPress}
-                  value={nameInputValue}
-                  onChange={onNameChange}
-                />
+
+              <div {...classes("column full center-center")}>
+                <div
+                  {...classes("row full  center-center")}
+                  style={{ height: "250px" }}
+                >
+                  <BackgroundPicker
+                    height={300}
+                    width={width}
+                    {...props}
+                  ></BackgroundPicker>
+                </div>
               </div>
             </div>
           </WindowContent>
