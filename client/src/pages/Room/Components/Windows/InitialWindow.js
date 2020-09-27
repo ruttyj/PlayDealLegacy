@@ -173,21 +173,30 @@ function createSetUsernameWindow(props) {
         </FillContainer>
       );
     } else {
+      let backgorundPicker = (
+        <div {...classes("column full")}>
+          <div
+            {...classes("row full  center-center")}
+            style={{ height: "calc(100% - 500px)" }}
+          >
+            <BackgroundPicker
+              height={height - 300}
+              width={width}
+              {...props}
+            ></BackgroundPicker>
+          </div>
+        </div>
+      );
+
       contents = (
         <FillContainer>
           <WindowContent>
-            <div
-              {...classes(
-                "full",
-                "flex",
-                "column",
-                "grow",
-                "column",
-                "center-center"
-              )}
-            >
-              <div {...classes("column full center-center")}>
-                <div {...classes("column full center-center")}>
+            <div {...classes("full", "flex", "column", "grow", "column")}>
+              <div {...classes("column full ")}>
+                <div
+                  {...classes("column full center-center")}
+                  style={{ minHeight: "10px" }}
+                >
                   <div {...classes("column")}>
                     <h3>Welcome Player!</h3>
                     <div {...classes("center")} style={{ padding: "10px" }}>
@@ -204,19 +213,6 @@ function createSetUsernameWindow(props) {
                       onChange={onNameChange}
                     />
                   </div>
-                </div>
-              </div>
-
-              <div {...classes("column full center-center")}>
-                <div
-                  {...classes("row full  center-center")}
-                  style={{ height: "250px" }}
-                >
-                  <BackgroundPicker
-                    height={300}
-                    width={width}
-                    {...props}
-                  ></BackgroundPicker>
                 </div>
               </div>
             </div>

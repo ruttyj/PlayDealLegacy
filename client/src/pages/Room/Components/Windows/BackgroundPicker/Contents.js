@@ -123,7 +123,7 @@ const makeComponent = ({ windowManager }) => (props) => {
           dragConstraints={{ left: limitLeft, right: 0 }}
           drag={"x"}
           style={{ x }}
-          {...classes(["flex", "full", "column", "wrap"])}
+          {...classes(["flex", "full", "column", "wrap", "center-center"])}
         >
           {makeContents}
         </motion.div>
