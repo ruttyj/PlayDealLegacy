@@ -304,6 +304,9 @@ function makeConsumerFallbackResponse({ subject, action, socketResponses }) {
 }
 // #endregion
 
+
+
+
 //==================================================
 
 //                SOCKET HANDLERS
@@ -316,6 +319,40 @@ function attachSocketHandlers(thisClient) {
   // Declare
   const PRIVATE_SUBJECTS = {};
   const PUBLIC_SUBJECTS = {};
+
+  class GameActionController 
+  {
+    constructor()
+    {
+    }
+
+    createRoom(props)
+    {
+      const [subject, action] = ["ROOM", "CREATE"];
+      const socketResponses = SocketResponseBuckets();
+      let { roomCode } = props;
+      roomCode = els(roomCode, "AAAA");
+
+      let room = roomManager.createRoom(roomCode);
+      if (isDef(room)) {
+        let status = "success";
+        let payload = {};
+        let roomCode = room.getCode();
+        payload.roomCode = roomCode;
+
+        // Create Game
+        createGameInstance(room);
+
+        socketResponses.addToBucket(
+          "default",
+          makeResponse({ subject, action, status, payload })
+        );
+      }
+      return socketResponses;
+    }
+  }
+  
+  let gameActionController = new GameActionController();
 
   Object.assign(PRIVATE_SUBJECTS, {
     CLIENT: {
@@ -565,7 +602,7 @@ function attachSocketHandlers(thisClient) {
             let hasReconnnected = false;
             let game = room.getGame();
             if (isDef(game)) {
-              if (game.isGameStarted()) {
+              if (game.isGameStarted() || game.isGameOver()) {
                 if (isDef(token)) {
                   let tokenData = cookieTokenManager.get(token);
                   if (isDef(tokenData)) {
@@ -694,6 +731,9 @@ function attachSocketHandlers(thisClient) {
               };
               // Confirm action
               status = "success";
+
+              
+
               socketResponses.addToBucket(
                 "everyone",
                 makeResponse({
@@ -805,6 +845,16 @@ function attachSocketHandlers(thisClient) {
                   PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                 );
               }
+
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({
+                  subject,
+                  action: "I_JOINED_ROOM",
+                  status: "success",
+                  payload: null,
+                })
+              );
             }
             return socketResponses;
           },

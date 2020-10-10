@@ -1,12 +1,4 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
-import { getIsFullScreen, toggleFullScreen } from "./Logic/fullscreen";
-import { withResizeDetector } from "react-resize-detector";
-import { withRouter } from "react-router";
-import pluralize from "pluralize";
-import StateBuffer from "../../../utils/StateBuffer";
-import makeSelectable from "../../../App/buffers/makeSelectable";
 
 import "./Room.scss";
 import {
@@ -19,6 +11,15 @@ import {
   emptyFunc,
   setImmutableValue,
 } from "../../../utils/";
+
+import { motion, AnimatePresence } from "framer-motion";
+
+import { getIsFullScreen, toggleFullScreen } from "./Logic/fullscreen";
+import { withResizeDetector } from "react-resize-detector";
+import { withRouter } from "react-router";
+import pluralize from "pluralize";
+import StateBuffer from "../../../utils/StateBuffer";
+import makeSelectable from "../../../App/buffers/makeSelectable";
 
 import sounds from "../../../assets/sounds";
 
@@ -166,10 +167,14 @@ import PeopleAltIcon from "@material-ui/icons/PeopleAlt";
 import WindowManager from "../../../packages/ReactWindows/Utils/WindowManager";
 import WindowContainer from "../../../packages/ReactWindows/Components/Containers/Windows/WindowContainer/";
 import DragWindow from "../../../packages/ReactWindows/Components/Containers/Windows/DragWindow/";
+import makeMyCustomComp from "../Components/Windows/MyCustomComp/Window";
 import makeBackgroundPicker from "../Components/Windows/BackgroundPicker/Window";
 import makeUsernamePicker from "../Components/Windows/UsernamePicker";
 import makeWelcomeScreen from "../Components/Windows/InitialWindow";
 import makeLobbyWindow from "../Components/Windows/LobbyWindow";
+import makePlayerTurnWindow from "../Components/Windows/PlayerTurnWindow";
+
+
 
 import makePlayerListWindow from "../Components/Windows/PlayerListWindow";
 import makeTrooperDancingWindow from "../Components/Windows/DancingTrooper";
@@ -351,54 +356,82 @@ class GameUI extends React.Component {
 
     this.windowManager = WindowManager(this.stateBuffer);
 
+    let windowManager = this.windowManager;
+
     // Register methods to create windows on demand
-    this.windowManager.setOnContainerSizeInit(() => {
-      this.windowManager.registerWindow("backgroundPicker", () => {
+    windowManager.setOnContainerSizeInit(() => {
+      windowManager.registerWindow("customScreen", () => {
+        makeMyCustomComp({
+          windowManager,
+        });
+      });
+
+      windowManager.registerWindow("backgroundPicker", () => {
         makeBackgroundPicker({
-          windowManager: this.windowManager,
+          windowManager,
         });
       });
 
-      this.windowManager.registerWindow("dancingTrooper", () => {
+      windowManager.registerWindow("dancingTrooper", () => {
         makeTrooperDancingWindow({
-          windowManager: this.windowManager,
+          windowManager,
         });
       });
 
-      this.windowManager.registerWindow("usernamePicker", () => {
+      windowManager.registerWindow("usernamePicker", () => {
         makeUsernamePicker({
-          windowManager: this.windowManager,
+          windowManager,
           game,
         });
       });
 
-      this.windowManager.registerWindow("welcomeScreen", () => {
+      windowManager.registerWindow("welcomeScreen", () => {
         makeWelcomeScreen({
-          windowManager: this.windowManager,
+          windowManager,
           game,
         });
       });
 
-      this.windowManager.registerWindow("playerList", () => {
+      windowManager.registerWindow("playerList", () => {
         makePlayerListWindow({
-          windowManager: this.windowManager,
+          windowManager,
           game,
         });
       });
 
-      this.windowManager.registerWindow("lobbyWindow", () => {
+      windowManager.registerWindow("lobbyWindow", () => {
         makeLobbyWindow({
-          windowManager: this.windowManager,
+          windowManager,
           game,
         });
       });
 
-      // Creeate these windows initially
-      //this.windowManager.invokeWindow("usernamePicker");
-      //this.windowManager.invokeWindow("lobbyWindow");
-      this.windowManager.invokeWindow("welcomeScreen");
-      //this.windowManager.invokeWindow("playerList");
-      //this.windowManager.invokeWindow("RoomLobby");
+      windowManager.registerWindow("playerTurnOverlay", () => {
+        makePlayerTurnWindow({
+          key: "playerTurnOverlay",
+          windowManager,
+          game,
+        });
+      });
+      
+
+      //-----------------------------------------------------
+      //          Creeate these windows initially
+      //  @Note: Most recent invoked will be on top
+
+
+      game.on(["ROOM", "I_JOINED_ROOM"], async (data) => {
+        if (!game.isStarted()) {
+          windowManager.invokeWindow("welcomeScreen");
+          console.log("I JOINED THE ROOM");
+        } else {
+          windowManager.invokeWindow("playerTurnOverlay");
+        }
+      })
+  
+      //windowManager.invokeWindow("customScreen");
+      //windowManager.invokeWindow("playerList");
+      //windowManager.invokeWindow("RoomLobby");
     });
 
     this.stateBuffer.set("theme", {
@@ -1013,13 +1046,30 @@ class GameUI extends React.Component {
 
     // Action button defintions
 
+    function beforeOnClick(){
+      const windowManager = self.windowManager;
+      console.log(windowManager.getWindowByKey("playerTurnOverlay"));
+      let playerTurnOverlay = windowManager.getWindowByKey("playerTurnOverlay")
+      if(isDef(playerTurnOverlay)){
+        windowManager.toggleWindow(playerTurnOverlay.id, false);
+      }
+      console.log("beforeOnClick");
+    }
+
+    function afterOnClick(){
+      console.log("afterOnClick");
+    }
+    
+
     function setDrawInitialCardsButton() {
       game.updateRenderData(["actionButton", "disabled"], false);
       game.updateRenderData(["actionButton", "onClick"], async () => {
+        beforeOnClick();
         if (game.canDrawInitialCards()) {
           await game.resetUi();
           await game.drawTurnStartingCards();
         }
+        afterOnClick();
       });
       game.updateRenderData(["actionButton", "className"], "pulse_white");
       game.updateRenderData(
@@ -1046,6 +1096,7 @@ class GameUI extends React.Component {
         self.handleOnDiscardCards
       );
       game.updateRenderData(["actionButton", "onClick"], (...args) => {
+        beforeOnClick();
         if (isButtonDisabled) {
           if (IS_SPEECH_ENABLED) {
             responsiveVoice.speak(buttonTitle, voiceConfig.voice, {
@@ -1055,6 +1106,7 @@ class GameUI extends React.Component {
         } else {
           self.handleOnDiscardCards(...args);
         }
+        afterOnClick();
       });
       game.updateRenderData(["actionButton", "title"], buttonTitle);
       game.updateRenderData(
@@ -1067,7 +1119,9 @@ class GameUI extends React.Component {
       let rentButtonEnabled = game.canChargeRent();
       game.updateRenderData(["actionButton", "disabled"], !rentButtonEnabled);
       game.updateRenderData(["actionButton", "onClick"], () => {
+        beforeOnClick();
         if (rentButtonEnabled) self.handleOnChargeRentClick();
+        afterOnClick();
       });
       game.updateRenderData(["actionButton", "title"], "Charge rent.");
       game.updateRenderData(
@@ -1084,7 +1138,9 @@ class GameUI extends React.Component {
         "Confirm steal property"
       );
       game.updateRenderData(["actionButton", "onClick"], () => {
+        beforeOnClick();
         if (buttonEnabled) self.handleStealPropertyClick();
+        afterOnClick();
       });
       game.updateRenderData(
         ["actionButton", "contents"],
@@ -1097,7 +1153,9 @@ class GameUI extends React.Component {
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
       game.updateRenderData(["actionButton", "title"], "Confirm collection");
       game.updateRenderData(["actionButton", "onClick"], () => {
+        beforeOnClick();
         if (buttonEnabled) self.handleStealCollectionClick();
+        afterOnClick();
       });
       game.updateRenderData(
         ["actionButton", "contents"],
@@ -1110,7 +1168,9 @@ class GameUI extends React.Component {
       game.updateRenderData(["actionButton", "disabled"], !buttonEnabled);
       game.updateRenderData(["actionButton", "title"], "Confirm swap property");
       game.updateRenderData(["actionButton", "onClick"], () => {
+        beforeOnClick();
         if (buttonEnabled) self.handleSwapPropertyClick();
+        afterOnClick();
       });
       game.updateRenderData(
         ["actionButton", "contents"],
@@ -1123,9 +1183,11 @@ class GameUI extends React.Component {
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
       game.updateRenderData(["actionButton", "title"], "Confirm Request");
       game.updateRenderData(["actionButton", "onClick"], () => {
+        beforeOnClick();
         if (!isButtonDisabled) {
           game.handleAskForValueConfirm({ cardId: actionCardId });
         }
+        afterOnClick();
       });
       game.updateRenderData(
         ["actionButton", "contents"],
@@ -1147,6 +1209,7 @@ class GameUI extends React.Component {
       }
 
       let handleOnClick = () => {
+        beforeOnClick();
         let speech = null;
         let passTurn = false;
         if (isButtonDisabled) {
@@ -1167,6 +1230,7 @@ class GameUI extends React.Component {
         if (passTurn) {
           game.passTurn();
         }
+        afterOnClick();
       };
 
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
@@ -1192,6 +1256,7 @@ class GameUI extends React.Component {
       }
 
       let handleOnClick = () => {
+        beforeOnClick();
         if (isButtonDisabled) {
           buttonTitle = buttonSpeech;
           if (IS_SPEECH_ENABLED && isDef(buttonSpeech)) {
@@ -1202,6 +1267,7 @@ class GameUI extends React.Component {
         } else {
           game.passTurn();
         }
+        afterOnClick();
       };
 
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
@@ -1219,9 +1285,11 @@ class GameUI extends React.Component {
       game.updateRenderData(["actionButton", "disabled"], isButtonDisabled);
       game.updateRenderData(["actionButton", "title"], "Start Game");
       game.updateRenderData(["actionButton", "onClick"], () => {
+        beforeOnClick();
         if (game.amIHost()) {
           game.start();
         }
+        afterOnClick();
       });
       game.updateRenderData(
         ["actionButton", "contents"],
@@ -1244,11 +1312,13 @@ class GameUI extends React.Component {
       }
 
       buttonAction = () => {
+        beforeOnClick();
         if (IS_SPEECH_ENABLED && buttonSpeech) {
           responsiveVoice.speak(buttonSpeech, voiceConfig.voice, {
             volume: 1,
           });
         }
+        afterOnClick();
       };
 
       game.updateRenderData(["actionButton", "disabled"], true);
@@ -1256,6 +1326,9 @@ class GameUI extends React.Component {
       game.updateRenderData(["actionButton", "title"], "Waiting");
       game.updateRenderData(["actionButton", "contents"], buttonText);
     }
+
+
+
 
     // -----------------------------------------
     //              ACTION BUTTON
@@ -2507,22 +2580,22 @@ class GameUI extends React.Component {
                   {game.getRenderData(["requestButton", "label"])}
                 </RequestButton>
 
-                <ArrowToolTip
+                <ActionButton
+                  className={game.getRenderData(
+                    ["actionButton", "className"],
+                    ""
+                  )}
                   title={game.getRenderData(["actionButton", "title"], "")}
-                  placement="top"
+                  disabled={game.getRenderData(["actionButton", "disabled"])}
+                  onClick={game.getRenderData(["actionButton", "onClick"])}
                 >
-                  <ActionButton
-                    className={game.getRenderData(
-                      ["actionButton", "className"],
-                      ""
-                    )}
+                  <ArrowToolTip
                     title={game.getRenderData(["actionButton", "title"], "")}
-                    disabled={game.getRenderData(["actionButton", "disabled"])}
-                    onClick={game.getRenderData(["actionButton", "onClick"])}
+                    placement="top"
                   >
                     {game.getRenderData(["actionButton", "contents"], "")}
-                  </ActionButton>
-                </ArrowToolTip>
+                  </ArrowToolTip>
+                </ActionButton>
                 <RelLayer style={{ height: "auto" }}>
                   <AutoPassTurnButton
                     disabled={!game.isStarted()}
@@ -2891,6 +2964,8 @@ class GameUI extends React.Component {
     if (containerSize.height > 0) {
       zoom = Math.min((containerSize.height - 200) / 900, 1);
     }
+    zoom = 1;
+
     Object.assign(mainPanelStyle, {
       zoom: zoom,
       transition: "zoom 300ms linear",

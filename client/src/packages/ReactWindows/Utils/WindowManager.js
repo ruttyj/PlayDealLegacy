@@ -13,7 +13,6 @@ const {
   classes,
 } = Utils;
 
-
 function WindowManager(state) {
   let topWindowId = 0;
   const taskbarOrderPath = ["windows", "taskbarOrder"];
@@ -53,11 +52,13 @@ function WindowManager(state) {
       isDragDisabled = false,
       isResizeDisabled = false,
       disablePointerEventsOnBlur = false,
-      hideTitle = false,
+      isTitleHidden = false,
       position = null,
+      dynamicPosition = null,
       zIndex = 1,
       size = null,
       actions = null,
+      visibility = "solid",
     } = props;
 
     if (isFocused) {
@@ -80,16 +81,13 @@ function WindowManager(state) {
     const setValue = (path, value) =>
       selfManager.windowSetValue(id, path, value);
 
-    
-
     let childContents = "";
     if (isFunc(children)) {
-      const Temp = children
+      const Temp = children;
       childContents = (cprops) => children(cprops);
     } else {
-      childContents = children
+      childContents = children;
     }
-    
 
     //selfManager.
     return {
@@ -98,14 +96,16 @@ function WindowManager(state) {
       set: setValue,
       title: els(title, `Window #${topWindowId}`),
       isOpen,
+      visibility,
       zIndex,
       position,
+      dynamicPosition,
       size,
       isFocused,
       isFullSize,
       isDragging: false,
       isResizing: false,
-      hideTitle,
+      isTitleHidden,
       isDragDisabled,
       isResizeDisabled,
       disablePointerEventsOnBlur,
@@ -365,22 +365,70 @@ function WindowManager(state) {
     }
   }
 
-  function toggleWindow(key) {
+  // @TODO allow id or key
+  function toggleWindow(key, forceValue=null) {
+    let id;
     let window = getWindowByKey(key);
-    if (isDef(window)) {
-      if (window.isOpen) {
-        if (!window.isFocused) {
-          setFocused(window.id);
-        } else {
-          setValue(window.id, "isOpen", false);
-          setFocused(window.id, false);
-        }
-      } else {
-        setValue(window.id, "isOpen", true);
+
+    if(isDef(window)){
+      id = window.id;
+    } else {
+      id = key;
+      window = getWindow(id);
+    }
+
+
+    let closeWindow = () => {
+      if (!window.isFocused) {
         setFocused(window.id);
+      } else {
+        setValue(window.id, "isOpen", false);
+        setFocused(window.id, false);
+      }
+    }
+    let openWindow = () => {
+      setValue(window.id, "isOpen", true);
+      setFocused(window.id);
+    }
+
+    if (isDef(window)) {
+      let newValue = forceValue;
+      if(!isDef(newValue)){
+        if (window.isOpen){
+          newValue = false;
+        } else {
+          newValue = true;
+        }
+      }
+    
+      if (newValue) {
+        openWindow();
+      } else {
+        closeWindow();
       }
     } else {
       invokeWindow(key);
+    }
+  }
+
+  function toggleWindowFullSize(id, newValue) {
+    let window = getWindow(id);
+    if (isDef(window)) {
+      if (window.isFullSize !== newValue) {
+        if (newValue) {
+          // set to full screen
+          let preSize = { ...window.size };
+          setValue(window.id, "size", { ...getContainerSize() });
+          setValue(window.id, "prevSize", { ...preSize });
+        } else {
+          // return to normal size
+          if (isDef(window.prevSize)) {
+            setValue(window.id, "size", window.prevSize);
+            setValue(window.id, "prevSize", null);
+          }
+        }
+        setValue(window.id, "isFullSize", newValue);
+      }
     }
   }
 
@@ -408,6 +456,7 @@ function WindowManager(state) {
     setFocused,
     removeWindow,
     toggleWindow,
+    toggleWindowFullSize,
     toggleOtherWindowsPointerEvents,
     setOnContainerSizeInit,
     setContainerSize,

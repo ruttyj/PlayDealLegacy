@@ -25,7 +25,35 @@
 .window {
   opacity: 1;
   transition: background-color 300ms linear;
-  background-color: #292929e3;
+  .semi-solid {
+    background-color: #292929e3;
+    border: 1px solid #ffffff40;
+  }
+  .solid {
+    background-color: #000000ff;
+    border: 1px solid #ffffff40;
+  }
+}
+
+.window-shell.semi-solid {
+  background-color: #00000033;
+}
+
+.window-shell.solid {
+  background-color: #000000ff;
+}
+
+.window-shell {
+  padding: 4px;
+}
+
+.window-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  z-index: 3;
 }
 
 .window.blurred-bkgd,

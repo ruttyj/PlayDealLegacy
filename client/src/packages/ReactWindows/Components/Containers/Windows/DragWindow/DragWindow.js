@@ -34,8 +34,6 @@ let ef = () => {}; // empty function
  * Please excuse the mess
  */
 
-
-
 const DragWindow = withResizeDetector(function(props) {
   let CONFIG = {
     state: {
@@ -52,7 +50,6 @@ const DragWindow = withResizeDetector(function(props) {
     snapIndicator = {},
     children,
     actions,
-    hideTitle = false,
     windowManager,
   } = props;
   let {
@@ -71,6 +68,11 @@ const DragWindow = withResizeDetector(function(props) {
   } = props;
   const [menuAnchorElement, setMenuAnchorElement] = useState(null);
   const [cachedDragHandleContents, setCachedDragHandleContents] = useState();
+
+  let isTitleHidden = getNestedValue(window, "isTitleHidden", false);
+  let visibility = getNestedValue(window, "visibility", "solid");
+
+
 
   const zIndex = getNestedValue(window, "zIndex", 0);
 
@@ -206,10 +208,11 @@ const DragWindow = withResizeDetector(function(props) {
   const anchorPosY = useMotionValue(window.position.top);
   const anchorPosX = useMotionValue(window.position.left);
   const getPosition = () => {
-    return {
+    let currentPos = {
       left: anchorPosX.get(),
       top: anchorPosY.get(),
-    };
+    }
+    return currentPos;
   };
   const setPosition = (newValue) => {
     anchorPosY.set(newValue.top);
@@ -331,6 +334,17 @@ const DragWindow = withResizeDetector(function(props) {
     anchorPosX.set(newPos.left);
 
     setIsChangingLocation(true);
+
+    // If has specific function for position calculate and override value
+    if (isFunc(window.dynamicPosition)) {
+      let args = {
+        position: newPos, 
+        window, 
+        windowManager, 
+        containerSize
+      };
+      newPos = window.dynamicPosition(args)
+    }
     setPosition(newPos);
     setSize(newSize);
     //*
@@ -604,6 +618,7 @@ const DragWindow = withResizeDetector(function(props) {
 
   const childArgs = {
     window: windowManager.getWindow(window.id),
+    windowManager: windowManager,
     containerSize,
     size: getSize(),
     position: getPosition(),
@@ -725,21 +740,20 @@ const DragWindow = withResizeDetector(function(props) {
     );
   }
 
-  
-
-
   let childContents = "";
   const contentsSize = useCachedSize();
+  const [childCacheProp, setChildCacheProp] = useState();
+  const [childCacheValue, setChildCachevalue] = useState();
   if (isDef(children)) {
     // If children is function/component wrap with ResizeDetector
     if (isFunc(children)) {
       // Convert function to component
       let Temp = children;
       // Wrap child component in size cache component
-      let Temp2 = ({width, height, ...otherProps}) => {
+      let Temp2 = ({ width, height, ...otherProps }) => {
         //let cachedSize = contentsSize.process({width, height});
-        return <Temp contentSize={{width, height}} {...otherProps}/>;
-      }
+        return <Temp contentSize={{ width, height }} {...otherProps} />;
+      };
       // Feed the component the it's size
       let Child = withResizeDetector(Temp2);
       childContents = <Child {...childArgs} />;
@@ -755,6 +769,10 @@ const DragWindow = withResizeDetector(function(props) {
   if (window.isOpen) {
     animateState = "visible";
   } else {
+    animateState = "hidden";
+  }
+
+  if(visibility == "hidden") {
     animateState = "hidden";
   }
   const variants = {
@@ -785,6 +803,20 @@ const DragWindow = withResizeDetector(function(props) {
   let left = anchorPosX;
   let width = winSizeX;
   let height = winSizeY;
+
+
+
+
+  let windowVisibilityClasses = ( 
+      visibility === "solid" 
+      ? ["solid"] 
+      : visibility === "semi-solid" 
+      ? ["semi-solid"] 
+      : [""]
+    );
+
+
+
   // Draw Window
   return (
     <motion.div
@@ -796,6 +828,7 @@ const DragWindow = withResizeDetector(function(props) {
       }}
       {...classes(
         "window",
+        ...windowVisibilityClasses,
         classNames,
         getIsChangingLocation() ? "dragging" : ""
       )}
@@ -841,11 +874,11 @@ const DragWindow = withResizeDetector(function(props) {
             backgroundColor: motionValue.backgroundColor,
           }}
         >
-          <div {...classes("window-shell", "grow")}>
+          <div {...classes("window-shell", "grow", ...windowVisibilityClasses)}>
             {dragHandleContents}
             <div {...classes(["inner-content", "grow", "column"])}>
               <FillContainer>
-                {!hideTitle && <FillHeader>{headerContents}</FillHeader>}
+                {!isTitleHidden && <FillHeader>{headerContents}</FillHeader>}
 
                 <FillContent
                   classNames={[

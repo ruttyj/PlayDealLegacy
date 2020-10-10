@@ -660,6 +660,12 @@ function Game(ref) {
     return readyCount === personCount;
   }
 
+  function getPersonCount(){
+    // @WATNING might include disconnected people
+    let personOrder = reduxState.get(["people", "order"], []);
+    return personOrder.length;
+  }
+
   function getPerson(personId) {
     let path = ["people", "items", personId];
     return reduxState.get(path, null);
@@ -1810,6 +1816,10 @@ function Game(ref) {
   function getAllPlayerIds() {
     return reduxState.get(["game", "players", "order"], []);
   }
+
+  function amIPlayer() {
+    return getAllPlayerIds().map(i => String(i)).includes(String(myId()));
+  }
   
   function getAllPlayers() {
     let playerOrder = getAllPlayerIds();
@@ -2416,6 +2426,7 @@ function Game(ref) {
     getPersonStatusLabel,
     getMyStatus,
     isEveryoneReady,
+    getPersonCount,
     toggleReady,
     player: {
       hand: {
@@ -2466,6 +2477,7 @@ function Game(ref) {
     amIReady,
     isMyId,
     amIHost,
+    amIPlayer,
     getMyHand,
     myHand: {
       getCardIds: getMyHandCardIds,

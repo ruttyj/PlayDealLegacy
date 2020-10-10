@@ -249,7 +249,6 @@ pre {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #ffffff40;
   width: 500px;
   .header {
     width: 100%;
@@ -277,26 +276,17 @@ pre {
     }
   }
   .tint-bkgd {
-    background-color: #00000066;
+    .semi-solid {
+      background-color: #00000066;
+    }
+    .solid {
+      background-color: #000000ff;
+    }
   }
   .body {
     width: 100%;
     box-sizing: border-box;
   }
-}
-
-.window-shell {
-  padding: 4px;
-  background-color: #00000033;
-}
-
-.window-shell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  z-index: 3;
 }
 
 /* ==================================================

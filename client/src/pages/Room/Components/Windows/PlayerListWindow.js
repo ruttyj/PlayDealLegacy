@@ -269,6 +269,16 @@ function createSetUsernameWindow(props) {
       );
 
       let amIReady = game.isPersonReady(game.myId());
+      let amIPlayer = game.amIPlayer();
+      let buttonText = "Ready Up";
+
+      if(amIReady) {
+        if(amIPlayer){
+          buttonText = "I'm Playing!";
+        } else {
+          buttonText = "I'm Ready!";
+        }
+      }
 
       contents = (
         <FillContainer>
@@ -294,10 +304,12 @@ function createSetUsernameWindow(props) {
                       cursor: "pointer",
                     }}
                     onClick={() => {
-                      game.toggleReady();
+                      if (!game.isStarted()) {
+                        game.toggleReady();
+                      }
                     }}
                   >
-                    {amIReady ? "I'm Ready!" : "Ready Up"}
+                    {buttonText}
                   </div>
                 </div>
               </div>

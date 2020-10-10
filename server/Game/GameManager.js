@@ -1,21 +1,34 @@
 /**
- * TODO
+ * TODO NODE: Not Exaustive list
  *
- *    Play,
- *      play action card
- *        Request,
- *           request value
- *                "Debt Collector" Card
- *                "It's My Birthday" Card
- *                â Regular Rent Card (All People)
- *                â Any Rent Card (One Person)
- *          request property
- *             "Sly Deal" Card
- *          swap property
- *             "Forced Deal" Card
- *          request set
- *             "Deal Breaker" Card
- *           response
+ *    Room
+ *      People list
+ *      Chat
+ *        Send Text
+ *        Send Emoji - emoji search
+ *        Send Image
+ *        Send Sounds
+ *        Send Gif
+ *        Block people
+ *      Game
+ *        Config
+ *          Mode
+ *        Actions
+ *          ✅ Play action card
+ *            ✅ Request,
+ *               ✅ Request value
+ *                    ✅ "Debt Collector" Card
+ *                    ✅ "It's My Birthday" Card
+ *                    ✅  Regular Rent Card (All People)
+ *                    ✅  Any Rent Card (One Person)
+ *              ✅ Request property
+ *                 ✅ "Sly Deal" Card
+ *              ✅ swap property
+ *                 ✅ "Forced Deal" Card
+ *              ✅ Request set
+ *                 ✅ "Deal Breaker" Card
+ *              ✅ Responses
+ *            ❌ "Just say NO"
  */
 
 const pluralize = require("pluralize");
@@ -1125,6 +1138,27 @@ let GameManager = () => {
     return getCollectionManager().getCollectionThatHasCard(cardOrId);
   }
 
+
+  function serialize() {
+    //let configManager = getConfigManager
+    //let cardManager = getCardManager();
+    let playerManager = getPlayerManager();
+    let requestManager = getRequestManager();
+    let collectionManager = getCollectionManager();
+
+    let result = {
+      playerManager: playerManager.serialize(),
+      requestManager: requestManager.serialize(),
+      collectionManager: collectionManager.serialize(),
+    };
+
+    return result;
+  }
+
+  function unserialize(){
+
+  }
+
   const publicScope = {
     //====================================
     getPlayerManager,
@@ -1134,6 +1168,7 @@ let GameManager = () => {
     //====================================
 
     // Config
+
     updateConfig,
     getConfig,
     setConfigShuffledDeck,
@@ -1149,7 +1184,15 @@ let GameManager = () => {
 
     //====================================
 
+    //  Serialize / Unserialize
+
+    serialize,
+    unserialize,
+
+    //====================================
+
     // Life cycle
+
     canStartGame,
     newGame,
     startGame,
@@ -1157,6 +1200,7 @@ let GameManager = () => {
     //====================================
 
     // Turn
+
     isMyTurn,
     getCurrentTurn,
     nextPlayerTurn,
@@ -1165,6 +1209,7 @@ let GameManager = () => {
     //====================================
 
     // Filtering
+
     filterForTag,
     doesCardHaveTag,
     doesCardHaveClass,
@@ -1221,6 +1266,7 @@ let GameManager = () => {
     //====================================
 
     // Play
+
     canPreformActionById,
     playCardById,
     playCardFromHandToNewCollection,
@@ -1229,6 +1275,7 @@ let GameManager = () => {
     //====================================
 
     // Player
+
     canAddPlayer,
     createPlayer,
     hasPlayer,

@@ -34,6 +34,7 @@ import {
 } from "../Logic/fullscreen";
 
 import Input from "@material-ui/core/Input";
+import "./PlayerTurnWindow.scss";
 
 const WINDOW = window;
 const {
@@ -47,6 +48,32 @@ const {
   setImmutableValue,
 } = Utils;
 
+
+
+
+
+
+
+
+function styles (value) {
+  // @TODO return toCamelCase(fromKibabCase(split(";", value)))
+  return {}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function WindowFooter(props = {}) {
   const { children } = props;
   return (
@@ -56,27 +83,43 @@ function WindowFooter(props = {}) {
   );
 }
 
+
+
+
 function CreateWindow(props) {
-  let { windowManager, game, isFocused = true } = props;
+  let { windowManager, game, isFocused = true, key } = props;
 
   //=========================================
   // Define Window Data
   //=========================================
   let windowData = {
-    title: "Welcome",
-    key: "welcomeScreen",
+    title: "Player Turn",
+    key,
   };
 
-  const isFullSize = true;
-  const size = {
-    width: 400,
-    height: 400,
-  };
+  const isFullSize = false;
+ 
   const containerSize = windowManager.getContainerSize();
-  const position = {
-    left: containerSize.width / 2 - size.width / 2,
-    top: containerSize.height / 2 - size.height / 2,
+  const size = {
+    width: Math.max(400, containerSize.width*0.75),
+    height: 300,
   };
+  const position = {
+    left: containerSize.width * 0.5 - size.width * 0.5,
+    top: containerSize.height * 0.5 - size.height * 0.5,
+  };
+
+
+  
+  const dynamicPosition = ({containerSize, window}) => {
+    let size = window.size;
+    return {
+      left:   containerSize.width * 0.5 - size.width * 0.5,
+      top:    containerSize.height * 0.5 - size.height * 0.5,
+    };
+  }
+
+
 
   /////////////////////////////////////////////
   //             Window Contents
@@ -142,7 +185,7 @@ function CreateWindow(props) {
 
     const onNameKeyPress = (event) => {
       if (event.key === "Enter") {
-        onReadyUp();
+        onNameChangeConfirm();
       }
     };
 
@@ -188,43 +231,84 @@ function CreateWindow(props) {
         </div>
       );
 
+      let turn = {
+        current: {
+          person: game.turn.getPerson()
+        }
+      }
+
+      let currentTurnContents = "";
+      if (isDefNested(turn, ['current', 'person'])) {
+        if(game.turn.isMyTurn()) {
+          //getNested
+          currentTurnContents = (<div {...classes("column full center-center center")}>
+                                  <h3>Your turn!</h3>
+                                </div>);
+        } else {
+          currentTurnContents = (<div {...classes("column full center-center center")}>
+                                  <h3>{turn.current.person.name}'s turn</h3>
+                                </div>);
+        }
+      } else {
+
+        
+          let messageContents = '';
+          if (game.getPersonCount() < 2) {
+            messageContents = (
+                <h4>Waiting for players to join</h4>
+            );
+          } else {
+            if (!game.amIReady()) {
+              messageContents = (
+                <h4>I need to ready up</h4>
+              );
+            } else {
+              if (game.isEveryoneReady()) {
+                if (game.amIHost()) {
+                  messageContents = (
+                    <h3>Everyone is Ready!</h3>
+                  );
+                } else {
+                  messageContents = (
+                    <h3>Waiting to Start</h3>
+                  );
+                }
+              } else {
+                messageContents = (
+                    <h4>Waiting for people to ready up</h4>
+                );
+              }
+            }
+          }
+
+          currentTurnContents = (
+            <div {...classes("column full center-center center")}>
+              {messageContents}
+            </div>
+          );
+          
+        
+        
+      }
       contents = (
         <FillContainer>
           <WindowContent>
-            <div {...classes("full", "flex", "column", "grow", "column")}>
+            <div {...classes("full flex column grow column player-turn-notice no-select" )} onClick={() => { 
+                      console.log("Clicked");
+                      windowManager.setValue(window.id, "isOpen", false);
+                    }}>
               <div {...classes("column full ")}>
                 <div
-                  {...classes("column full center-center")}
+                  {...classes("column full center-center ")}
                   style={{ minHeight: "10px" }}
                 >
                   <div {...classes("column")}>
-                    <h3>Welcome Player!</h3>
-                    <div {...classes("center")} style={{ padding: "10px" }}>
-                      Enter your name to start
-                    </div>
-                  </div>
-                  <div {...classes("row")}>
-                    <Input
-                      {...classes("username-field")}
-                      variant="filled"
-                      autoFocus
-                      onKeyPress={onNameKeyPress}
-                      value={nameInputValue}
-                      onChange={onNameChange}
-                    />
+                    {currentTurnContents}
                   </div>
                 </div>
               </div>
             </div>
           </WindowContent>
-          <WindowFooter>
-            <FancyButton variant="secondary" onClick={onNameChangeConfirm}>
-              Enter room
-            </FancyButton>
-            <FancyButton variant="primary" onClick={onReadyUp}>
-              Ready Up
-            </FancyButton>
-          </WindowFooter>
         </FillContainer>
       );
     }
@@ -237,7 +321,11 @@ function CreateWindow(props) {
     ...windowData,
     isFocused,
     isFullSize: false,
+    isTitleHidden: true,
+    isResizeDisabled: true,
+    visibility: "transparent", // visible, solid, semiSolid, transparent, hidden
     position,
+    dynamicPosition,
     size,
     children: windowContents,
   });
