@@ -496,7 +496,7 @@ function Game(ref) {
 
       // Was not my turn on the previous update
       let previousTurnPersonId = getPeviousTurnPersonId();
-      if (isDef(previousTurnPersonId) && !isMyId(previousTurnPersonId)) {
+      if (!isDef(previousTurnPersonId) || !isMyId(previousTurnPersonId)) {
         return true;
       }
     }

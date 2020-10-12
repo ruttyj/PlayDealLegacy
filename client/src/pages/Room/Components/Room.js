@@ -428,12 +428,9 @@ class GameUI extends React.Component {
         if (game.isMyTurn()) {
           if (game.turn.isJustStartingMyTurn()){
             windowManager.invokeWindow("playerTurnOverlay");
-            console.log("MY TURN IS JUST STARTING !!");
-          } else {
-            console.log("HAS BEEN MY TURN");
           }
         } else {
-          console.log("NOT MY TURN");
+          windowManager.toggleWindow("playerTurnOverlay", false);
         }
       });
     });

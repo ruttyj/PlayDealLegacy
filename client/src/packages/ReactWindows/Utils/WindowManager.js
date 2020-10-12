@@ -371,7 +371,7 @@ function WindowManager(state) {
 
   function invokeWindow(name, ...args) {
 
-    if (!state.is([...keyDictionaryPath, name])) {
+    if (!state.get([...keyDictionaryPath, name], undefined)) {
       if (isFunc(registry[name])) {
         registry[name](...args);
       }
