@@ -29,6 +29,7 @@
  *                 ✅ "Deal Breaker" Card
  *              ✅ Responses
  *            ❌ "Just say NO"
+ *                  functional but bug exists on the 3rd consecutive response of a "Just say no".
  */
 
 const pluralize = require("pluralize");
@@ -49,6 +50,7 @@ const {
 const CardContainer = require("./card/cardContainer.js");
 const PlayerManager = require("./player/playerManager.js");
 const CardManager = require("./card/cardManager.js");
+
 
 let GameManager = () => {
   let mConfig = {

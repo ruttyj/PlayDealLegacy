@@ -25,12 +25,14 @@ app.set("port", port);
 
 var server = http.createServer(app);
 
-const attachSocketHandlers = require("../sockets/serverSocketHandlers");
+const PlayDealClientService = require("../sockets/serverSocketHandlers");
+const playDealClientService = new PlayDealClientService();
+playDealClientService.injectDeps();
 
 const io = require("socket.io")(server);
 io.on("connection", (thisClient) => {
   // Attach socket handlers
-  attachSocketHandlers(thisClient);
+  playDealClientService.connectClient(thisClient);
 
   // Associate socket to cookie
   let cookies = cookie.parse(thisClient.request.headers.cookie);

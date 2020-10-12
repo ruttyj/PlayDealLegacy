@@ -18,8 +18,10 @@ const gameConstants = require(`${playDealFolder}/config/constants.js`);
 const { CONFIG } = gameConstants;
 const checks = require(`../checks/`);
 const FakeHost = require(`${socketFolder}/FakeHost.js`);
-const attachServerSideHandlers = require(`${socketFolder}/serverSocketHandlers.js`);
+const PlayDealClientService = require(`${socketFolder}/serverSocketHandlers.js`);
 const createConnection = require(`${clientFolder}/src/utils/clientSocket.js`);
+
+
 
 const defaultProps = (roomCode, props = {}) => ({
   props: { roomCode, ...props },
@@ -30,7 +32,13 @@ describe("App", async function () {
   // TOGGLE EXECUTION
   let executeUnill = 150;
   let testNumber = 0;
-  const host = FakeHost(attachServerSideHandlers);
+
+
+  const playDealClientService = new PlayDealClientService();
+  playDealClientService.injectDeps();
+
+
+  const host = FakeHost(playDealClientService);
 
   let player1Con = createConnection(host.io());
   let player2Con = createConnection(host.io());
