@@ -1049,16 +1049,13 @@ class GameUI extends React.Component {
 
     function beforeOnClick(){
       const windowManager = self.windowManager;
-      console.log(windowManager.getWindowByKey("playerTurnOverlay"));
       let playerTurnOverlay = windowManager.getWindowByKey("playerTurnOverlay")
       if(isDef(playerTurnOverlay)){
         windowManager.toggleWindow(playerTurnOverlay.id, false);
       }
-      console.log("beforeOnClick");
     }
 
     function afterOnClick(){
-      console.log("afterOnClick");
     }
     
 
