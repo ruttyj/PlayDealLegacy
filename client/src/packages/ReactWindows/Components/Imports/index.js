@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Utils from "../../Utils/";
 import {
   motion,
@@ -30,6 +30,7 @@ import wallpaperNames from "../../Data/WallpaperNames";
 import PhotoSizeSelectActualIcon from "@material-ui/icons/PhotoSizeSelectActual";
 import TextField from "@material-ui/core/TextField";
 import PublicIcon from "@material-ui/icons/Public";
+import { useDebouncedCallback } from 'use-debounce';
 import {
   createDebugger,
   createTrooperIframe,
@@ -42,6 +43,8 @@ export {
   React,
   useState,
   useEffect,
+  useMemo,
+  useDebouncedCallback,
   Utils,
   motion,
   useSpring,

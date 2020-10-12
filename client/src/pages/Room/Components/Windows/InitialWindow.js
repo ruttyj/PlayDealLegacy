@@ -25,8 +25,6 @@ import FillHeader from "../../../../packages/ReactWindows/Components/Containers/
 import WindowContent from "../../../../packages/ReactWindows/Components/Window/WindowContent";
 import FancyButton from "../../../../components/buttons/FancyButton";
 
-import makeContents from "./BackgroundPicker/Contents";
-
 import {
   getIsFullScreen,
   toggleFullScreen,
@@ -160,7 +158,6 @@ function CreateWindow(props) {
     //=========================================
     // Decide the contents of the window
     //=========================================
-    let BackgroundPicker = makeContents({ windowManager });
     let contents = null;
     if (isLoading) {
       contents = (
@@ -173,20 +170,6 @@ function CreateWindow(props) {
         </FillContainer>
       );
     } else {
-      let backgorundPicker = (
-        <div {...classes("column full")}>
-          <div
-            {...classes("row full  center-center")}
-            style={{ height: "calc(100% - 500px)" }}
-          >
-            <BackgroundPicker
-              height={height - 300}
-              width={width}
-              {...props}
-            ></BackgroundPicker>
-          </div>
-        </div>
-      );
 
       contents = (
         <FillContainer>

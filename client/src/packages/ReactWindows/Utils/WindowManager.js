@@ -43,7 +43,7 @@ function WindowManager(state) {
 
   // create a window instance
   function _makeWindow(props) {
-    const { children, ...childProps } = props;
+    
     let { key, title } = props;
     let {
       isOpen = false,
@@ -55,6 +55,7 @@ function WindowManager(state) {
       isTitleHidden = false,
       position = null,
       dynamicPosition = null,
+      dynamicSize = null,
       zIndex = 1,
       size = null,
       actions = null,
@@ -81,13 +82,7 @@ function WindowManager(state) {
     const setValue = (path, value) =>
       selfManager.windowSetValue(id, path, value);
 
-    let childContents = "";
-    if (isFunc(children)) {
-      const Temp = children;
-      childContents = (cprops) => children(cprops);
-    } else {
-      childContents = children;
-    }
+    
 
     //selfManager.
     return {
@@ -101,6 +96,7 @@ function WindowManager(state) {
       position,
       dynamicPosition,
       size,
+      dynamicSize,
       isFocused,
       isFullSize,
       isDragging: false,
@@ -110,14 +106,22 @@ function WindowManager(state) {
       isResizeDisabled,
       disablePointerEventsOnBlur,
       isTempDisablePointerEvents: false,
-      children: childContents,
       actions,
     };
   }
 
   // create a window and add to manager
   function createWindow(props = {}) {
+    const { children } = props;
     let window = _makeWindow(props);
+
+    let windowContents = "";
+    if (isFunc(children)) {
+      windowContents = (cprops) => children(cprops);
+    } else {
+      windowContents = children;
+    }
+    state.set(["windows", "contents", window.id], windowContents);
     state.set(["windows", "items", window.id], window);
     state.set([...keyDictionaryPath, window.key], window.id);
     state.push(taskbarOrderPath, window.id);
@@ -167,6 +171,12 @@ function WindowManager(state) {
     let _path = isArr(path) ? path : [path];
     state.set(["windows", "items", id, ..._path], value);
   }
+
+  function getValue(id, path, fallback) {
+    let _path = isArr(path) ? path : [path];
+    return state.get(["windows", "items", id, ..._path], fallback);
+  }
+
   // @alias setValue
   function windowSetValue(...args) {
     return setValue(...args);
@@ -360,8 +370,13 @@ function WindowManager(state) {
   }
 
   function invokeWindow(name, ...args) {
-    if (isFunc(registry[name])) {
-      registry[name](...args);
+
+    if (!state.is([...keyDictionaryPath, name])) {
+      if (isFunc(registry[name])) {
+        registry[name](...args);
+      }
+    } else {
+      toggleWindow(name, true);
     }
   }
 
@@ -432,6 +447,10 @@ function WindowManager(state) {
     }
   }
 
+  function getWindowChildren(id){
+    return state.get(["windows", "contents", id], null);
+  }
+
   const publicScope = {
     getState,
     createWindow,
@@ -442,6 +461,7 @@ function WindowManager(state) {
     getWindow,
     setWindow,
     setValue,
+    getValue,
     windowSetValue,
     getOrderedWindows,
     getAllWindows,
@@ -462,6 +482,7 @@ function WindowManager(state) {
     setContainerSize,
     getContainerSize,
     getMaxZ,
+    getWindowChildren,
   };
 
   function getPublic() {

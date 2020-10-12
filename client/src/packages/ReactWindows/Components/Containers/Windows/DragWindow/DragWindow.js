@@ -22,6 +22,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import "./DragWindow.scss";
 const {
   getNestedValue,
+  isDefNested,
   classes,
   setImmutableValue,
   isFunc,
@@ -30,8 +31,13 @@ const {
   els,
 } = Utils;
 let ef = () => {}; // empty function
-/*
- * Please excuse the mess
+
+
+/* ======================================
+ *
+ *    Please excuse the mess.... LOL
+ * 
+ * ======================================
  */
 
 const DragWindow = withResizeDetector(function(props) {
@@ -62,9 +68,6 @@ const DragWindow = withResizeDetector(function(props) {
     onUp: handleOnUp = ef,
     onToggleWindow: handleOnToggleWindow,
     setSnapIndicator = ef,
-    onSnapEnter = ef,
-    onSnapLeave = ef,
-    onSnapRelease = ef,
   } = props;
   const [menuAnchorElement, setMenuAnchorElement] = useState(null);
   const [cachedDragHandleContents, setCachedDragHandleContents] = useState();
@@ -204,9 +207,27 @@ const DragWindow = withResizeDetector(function(props) {
     };
   };
 
-  // Get size from motion value to make butery smooth
-  const anchorPosY = useMotionValue(window.position.top);
-  const anchorPosX = useMotionValue(window.position.left);
+
+
+
+
+  
+  let windowPos = window.position || null;
+  if (isFunc(window.dynamicPosition)) {
+    let args = {
+      position: windowPos, 
+      window, 
+      windowManager, 
+      containerSize
+    };
+    let temp = window.dynamicPosition(args)
+    if(isDef(temp)){
+      windowPos = temp
+    }
+  }
+  windowPos = windowPos || {left: 0, top: 0};
+  const anchorPosY = useMotionValue(windowPos.top);
+  const anchorPosX = useMotionValue(windowPos.left);
   const getPosition = () => {
     let currentPos = {
       left: anchorPosX.get(),
@@ -215,13 +236,36 @@ const DragWindow = withResizeDetector(function(props) {
     return currentPos;
   };
   const setPosition = (newValue) => {
-    anchorPosY.set(newValue.top);
-    anchorPosX.set(newValue.left);
+    if(anchorPosY.get() !== newValue.top){
+      anchorPosY.set(newValue.top);
+    }
+    if(anchorPosX.get() !== newValue.left){
+      anchorPosX.set(newValue.left);
+    }   
     onSetPosition(newValue);
   };
 
-  const winSizeY = useMotionValue(window.size.height);
-  const winSizeX = useMotionValue(window.size.width);
+
+
+
+
+
+  let windowSize = window.size || null;
+  if (isFunc(window.dynamicSize)) {
+    let args = {
+      position: windowSize, 
+      window, 
+      windowManager, 
+      containerSize
+    };
+    let temp = window.dynamicSize(args)
+    if(isDef(temp)){
+      windowSize = temp;
+    }
+  }
+  windowSize = windowSize || {width: 0, height: 0};
+  const winSizeY = useMotionValue(windowSize.height);
+  const winSizeX = useMotionValue(windowSize.width);
   const getSize = () => {
     return {
       height: winSizeY.get(),
@@ -229,15 +273,20 @@ const DragWindow = withResizeDetector(function(props) {
     };
   };
   const setSize = (newValue) => {
-    winSizeY.set(newValue.height);
-    winSizeX.set(newValue.width);
-    if (
-      newValue.height !== window.size.height ||
-      newValue.width !== window.size.width
-    ) {
-      onSetSize(newValue);
+    if(winSizeY.get() !== newValue.height){
+      winSizeY.set(newValue.height);
     }
+    if(winSizeX.get() !== newValue.width){
+      winSizeX.set(newValue.width);
+    }
+    onSetSize(newValue);
   };
+
+
+
+
+
+
 
   const setFocused = (newValue) => {
     onSetFocus(newValue);
@@ -343,10 +392,30 @@ const DragWindow = withResizeDetector(function(props) {
         windowManager, 
         containerSize
       };
-      newPos = window.dynamicPosition(args)
+      let temp = window.dynamicPosition(args)
+      if(isDef(temp)){
+        newPos = temp
+      }
     }
     setPosition(newPos);
+
+
+    // If dynamic size override size 
+    if (isFunc(window.dynamicSize)) {
+      let args = {
+        position: newPos, 
+        window, 
+        windowManager, 
+        containerSize
+      };
+      let temp = window.dynamicSize(args)
+      if(isDef(temp)){
+        newSize = temp;
+      }
+    }
     setSize(newSize);
+
+
     //*
     let boundaries = {
       w: newPos.left,
@@ -797,8 +866,7 @@ const DragWindow = withResizeDetector(function(props) {
     isTempDisablePointerEvents ||
     (disablePointerEventsOnBlur && !isFocused);
 
-  const windowSize = getSize();
-  const windowPos = getPosition();
+  const maxWindowSize = getSize();
   let top = anchorPosY;
   let left = anchorPosX;
   let width = winSizeX;
@@ -861,8 +929,8 @@ const DragWindow = withResizeDetector(function(props) {
           : {
               width,
               height,
-              maxHeight: windowSize.height,
-              maxWidth: windowSize.width,
+              maxHeight: maxWindowSize.height,
+              maxWidth: maxWindowSize.width,
             }),
       }}
       transition={{ type: "spring", stiffness: 200 }}

@@ -415,23 +415,27 @@ class GameUI extends React.Component {
       });
       
 
-      //-----------------------------------------------------
-      //          Creeate these windows initially
-      //  @Note: Most recent invoked will be on top
 
-
+      // When joining the room - check if we should display the welcome screen
       game.on(["ROOM", "I_JOINED_ROOM"], async (data) => {
         if (!game.isStarted()) {
           windowManager.invokeWindow("welcomeScreen");
-          console.log("I JOINED THE ROOM");
-        } else {
-          windowManager.invokeWindow("playerTurnOverlay");
-        }
+        } 
       })
-  
-      //windowManager.invokeWindow("customScreen");
-      //windowManager.invokeWindow("playerList");
-      //windowManager.invokeWindow("RoomLobby");
+
+      windowManager.invokeWindow("playerTurnOverlay");
+      game.on(["PLAYER_TURN", `${"GET"}__STORE_UPDATED`], async () => {
+        if (game.isMyTurn()) {
+          if (game.turn.isJustStartingMyTurn()){
+            windowManager.invokeWindow("playerTurnOverlay");
+            console.log("MY TURN IS JUST STARTING !!");
+          } else {
+            console.log("HAS BEEN MY TURN");
+          }
+        } else {
+          console.log("NOT MY TURN");
+        }
+      });
     });
 
     this.stateBuffer.set("theme", {
@@ -3023,6 +3027,7 @@ class GameUI extends React.Component {
     );
 
     const windowsChildContents = mainPanel;
+    let childIndex = 0;
     const windowContents = (
       <>
         <RelLayer>
@@ -3031,6 +3036,7 @@ class GameUI extends React.Component {
               <WindowContainer
                 windowManager={windowManager}
                 children={({ containerSize }) => {
+                  ++childIndex;
                   windowManager.setContainerSize(containerSize);
 
                   return (
@@ -3103,12 +3109,12 @@ class GameUI extends React.Component {
                                   }
                                   windowManager={windowManager}
                                   containerSize={containerSize}
-                                  children={window.children}
+                                  children={windowManager.getWindowChildren(window.id)}
                                   actions={window.actions}
                                 />
                               );
                             return (
-                              <AnimatePresence key={window.id}>
+                              <AnimatePresence key={`${childIndex}_${window.id}`}>
                                 {contents}
                               </AnimatePresence>
                             );

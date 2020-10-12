@@ -88,6 +88,9 @@ function Game(ref) {
       requestSound: true,
     };
 
+    
+    
+
     // When the player's turn updates
     on(["PLAYER_TURN", `${"GET"}__STORE_UPDATED`], async () => {
       const game = getPublic();
@@ -153,12 +156,10 @@ function Game(ref) {
         canTrigger.requestSound = true;
       }
 
-      let previousTurnPersonId = getPeviousTurnPersonId();
-      let currentTurnPersonId = getCurrentTurnPersonId();
-
+      let currentTurnPersonId = game.turn.getPersonId();
       if (game.isMyTurn()) {
-        // If is my turn now
-        if (!isDef(previousTurnPersonId) || !isMyId(previousTurnPersonId)) {
+
+        if (isJustStartingMyTurn()) {
           sounds.yourTurn.play();
         }
 
@@ -482,9 +483,25 @@ function Game(ref) {
 
   //===============================
 
-  // PHASE
+  // PHASE / TURN
   
   //#region
+
+  function isJustStartingMyTurn() {
+    let game = getPublic();
+
+    // Is not my turn
+    if (game.isMyTurn()) {
+      // If is my turn now
+
+      // Was not my turn on the previous update
+      let previousTurnPersonId = getPeviousTurnPersonId();
+      if (isDef(previousTurnPersonId) && !isMyId(previousTurnPersonId)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   function getPeviousTurnPersonId() {
     return reduxState.get(["game", "playerTurnPrevious", "playerKey"], null);
@@ -2409,13 +2426,18 @@ function Game(ref) {
       canDiscardCards,
     },
 
+    
     // TURN
     turn: {
       isMyTurn,
+      isJustStartingMyTurn,
       get: getPlayerTurnData,
       getPhaseKey: getCurrentPhaseKey,
       getPersonId: () => getCurrentTurnPersonId(),
       getPerson: () => getPublic().person.get(getCurrentTurnPersonId()),
+      previous: {
+        getPersonId: getPeviousTurnPersonId,
+      }
     },
 
     // PLAYERS

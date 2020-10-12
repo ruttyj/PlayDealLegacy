@@ -25,8 +25,6 @@ import FillHeader from "../../../../packages/ReactWindows/Components/Containers/
 import WindowContent from "../../../../packages/ReactWindows/Components/Window/WindowContent";
 import FancyButton from "../../../../components/buttons/FancyButton";
 
-import makeContents from "./BackgroundPicker/Contents";
-
 import {
   getIsFullScreen,
   toggleFullScreen,
@@ -88,36 +86,49 @@ function WindowFooter(props = {}) {
 
 function CreateWindow(props) {
   let { windowManager, game, isFocused = true, key } = props;
+  const containerSize = windowManager.getContainerSize();
 
   //=========================================
   // Define Window Data
   //=========================================
   let windowData = {
     title: "Player Turn",
-    key,
-  };
-
-  const isFullSize = false;
- 
-  const containerSize = windowManager.getContainerSize();
-  const size = {
-    width: Math.max(400, containerSize.width*0.75),
-    height: 300,
-  };
-  const position = {
-    left: containerSize.width * 0.5 - size.width * 0.5,
-    top: containerSize.height * 0.5 - size.height * 0.5,
+    key: "playerTurnOverlay",
   };
 
 
-  
-  const dynamicPosition = ({containerSize, window}) => {
-    let size = window.size;
+  /////////////////////////////////////////////
+  //          Attribute Functions
+  /////////////////////////////////////////////
+  const dynamicSize = ({containerSize}) => {
+    containerSize = containerSize || {width:100, height: 100};
     return {
-      left:   containerSize.width * 0.5 - size.width * 0.5,
-      top:    containerSize.height * 0.5 - size.height * 0.5,
+      width:    containerSize.width,
+      height:   200,
     };
   }
+
+  const dynamicPosition = ({containerSize, window, size}) => {
+    containerSize = containerSize || {width:100, height: 100};
+    let widnowSize = size || window.size || {width:100, height: 100};
+    return {
+      left:   containerSize.width * 0.5 - widnowSize.width * 0.5,
+      top:    containerSize.height * 0.5 - widnowSize.height * 0.5,
+    };
+  }
+  
+
+  /////////////////////////////////////////////
+  //             Window Attributes
+  /////////////////////////////////////////////
+  const size = dynamicSize({containerSize});
+  const position = dynamicPosition({containerSize, size});
+
+  console.log({
+    position,
+    size
+  });
+  const isFullSize = false;
 
 
 
@@ -203,7 +214,6 @@ function CreateWindow(props) {
     //=========================================
     // Decide the contents of the window
     //=========================================
-    let BackgroundPicker = makeContents({ windowManager });
     let contents = null;
     if (isLoading) {
       contents = (
@@ -216,21 +226,6 @@ function CreateWindow(props) {
         </FillContainer>
       );
     } else {
-      let backgorundPicker = (
-        <div {...classes("column full")}>
-          <div
-            {...classes("row full  center-center")}
-            style={{ height: "calc(100% - 500px)" }}
-          >
-            <BackgroundPicker
-              height={height - 300}
-              width={width}
-              {...props}
-            ></BackgroundPicker>
-          </div>
-        </div>
-      );
-
       let turn = {
         current: {
           person: game.turn.getPerson()
@@ -294,8 +289,8 @@ function CreateWindow(props) {
         <FillContainer>
           <WindowContent>
             <div {...classes("full flex column grow column player-turn-notice no-select" )} onClick={() => { 
-                      console.log("Clicked");
-                      windowManager.setValue(window.id, "isOpen", false);
+                      console.log("Clicked", window);
+                      windowManager.toggleWindow(window.id, false);
                     }}>
               <div {...classes("column full ")}>
                 <div
@@ -316,6 +311,12 @@ function CreateWindow(props) {
     return contents;
   };
 
+
+
+
+  /////////////////////////////////////////////
+  //             Define Window
+  /////////////////////////////////////////////
   // Dragable Lists window
   let windowId = windowManager.createWindow({
     ...windowData,
@@ -326,10 +327,13 @@ function CreateWindow(props) {
     visibility: "transparent", // visible, solid, semiSolid, transparent, hidden
     position,
     dynamicPosition,
+    dynamicSize,
     size,
     children: windowContents,
   });
 
+  // Once Initialized properly set size / focus
+  // @TODO move this shared logic to common location
   if (isFullSize) {
     windowManager.toggleWindowFullSize(windowId, isFullSize);
   }
@@ -337,6 +341,8 @@ function CreateWindow(props) {
   if (isFocused) {
     windowManager.setFocused(windowId);
   }
+
+
   return windowId;
 }
 
