@@ -18,7 +18,7 @@ const gameConstants = require(`${playDealFolder}/config/constants.js`);
 const { CONFIG } = gameConstants;
 const checks = require(`../checks/`);
 const FakeHost = require(`${socketFolder}/FakeHost.js`);
-const PlayDealClientService = require(`${socketFolder}/serverSocketHandlers.js`);
+const PlayDealClientService = require(`${socketFolder}/PlayDealClientService.js`);
 const createConnection = require(`${clientFolder}/src/utils/clientSocket.js`);
 
 

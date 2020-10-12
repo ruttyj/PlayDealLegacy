@@ -25,7 +25,7 @@ app.set("port", port);
 
 var server = http.createServer(app);
 
-const PlayDealClientService = require("../sockets/serverSocketHandlers");
+const PlayDealClientService = require("../sockets/PlayDealClientService");
 const playDealClientService = new PlayDealClientService();
 playDealClientService.injectDeps();
 
