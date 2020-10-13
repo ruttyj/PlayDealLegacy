@@ -109,7 +109,7 @@ let GameInstance = () => {
   let mDiscardPile;
   let mDeck;
 
-  
+
   //--------------------------------
 
   //          Composition
@@ -1189,8 +1189,12 @@ let GameInstance = () => {
     return result;
   }
 
-  function unserialize(){
-
+  function unserialize(serializedState){
+    if (isDef(serializedState)){
+      let playerManager = getPlayerManager();
+      playerManager.unserialize(serializedState.playerManager);
+      
+    }
   }
 
   const publicScope = {

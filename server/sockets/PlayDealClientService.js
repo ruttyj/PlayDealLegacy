@@ -193,7 +193,6 @@ class PlayDealClientService {
       gameInstance.updateConfig({
         [CONFIG.SHUFFLE_DECK]: true,
         [CONFIG.ALTER_SET_COST_ACTION]: false,
-        [CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION]: true,
       });
 
       room.setGame(gameInstance);

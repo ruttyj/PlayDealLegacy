@@ -31,13 +31,16 @@ describe("App", async function () {
     // @TODO
 
     let game;
+    let gameState;
+    let gameDump;
+    let gameJson;
     
     game = GameInstance();
     game.newGame();
     game.updateConfig({
       [CONFIG.SHUFFLE_DECK]: true,
       [CONFIG.ALTER_SET_COST_ACTION]: false,
-      [CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION]: true,
+      //[CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION]: true,
     });
 
     game.createPlayer("A");
@@ -59,14 +62,22 @@ describe("App", async function () {
     game.playerTurnStartingDraw(game.getCurrentTurn().getPlayerKey());
     game.nextPlayerTurn();
 
-    let gameDump = game.serialize();
-
-
-    let gameState = JSON.stringify(gameDump, null, 2);
-    console.log("@@@@@", gameState);
-
+    let template = game.serialize();
+    console.log("@@@@@", JSON.stringify(template, null, 2));
 
     
+    game = GameInstance();
+    game.newGame();
+    game.createPlayer("E");
+    game.createPlayer("F");
+    game.createPlayer("G");
+    game.startGame();
+    game.nextPlayerTurn();
+    game.unserialize(template);
+    console.log("@@@@@", JSON.stringify(game.serialize(), null, 2));
+
+    
+
 
     // make a game
     // serialize game

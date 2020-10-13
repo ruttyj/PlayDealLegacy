@@ -1386,7 +1386,7 @@ describe("App", async function () {
         "MY_TURN",
         "FINISH_TURN",
         defaultProps(roomCode)
-      );
+      ); 
 
       let confirm = responses.find(
         (r) => r.subject === "MY_TURN" && r.action === "FINISH_TURN"

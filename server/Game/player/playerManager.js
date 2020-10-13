@@ -277,6 +277,14 @@ function PlayerManager(gameRef = null) {
     };
   }
 
+  function unserialize(serializedState) {
+
+  }
+
+  function reset() {
+    
+  }
+
   const publicScope = {
     getGameRef,
     destory,
@@ -308,7 +316,9 @@ function PlayerManager(gameRef = null) {
     getAllCollectionIdsForPlayer,
     transferCollectionOwnership,
 
+    reset,
     serialize,
+    unserialize,
   };
 
   function getPublic() {
