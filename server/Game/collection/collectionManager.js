@@ -71,6 +71,13 @@ function CollectionManager(gameRef) {
     return null;
   }
 
+
+  function serialize(){
+    return {
+      collections: mCollections.serialize()
+    }
+  }
+
   const publicScope = {
     createCollection,
     getCollection,
@@ -81,6 +88,7 @@ function CollectionManager(gameRef) {
     hasCollection: mCollections.has,
     removeCollection: mCollections.remove,
     filterUnassignedCollections,
+    serialize,
   };
 
   function getPublic() {

@@ -242,7 +242,39 @@ function PlayerManager(gameRef = null) {
 
 
   function serialize() {
-    return {};
+
+    let playerKeys = getAllPlayerKeys();
+
+    let currentTurn = getCurrentTurn();
+    let turnState = null;
+    if(isDef(currentTurn)){
+      turnState = currentTurn.serialize()
+    }
+
+
+    let playerHands = {};
+    let playerCollections = {};
+    let playerBanks = {};
+    getAllPlayers().forEach((player) => {
+      let playerKey = player.getKey();
+      playerHands[playerKey] = player.getHand().serialize();
+      playerCollections[playerKey] = player.getAllCollectionIds();
+      playerBanks[playerKey] = player.getBank().serialize();
+    })
+
+
+    return {
+      players: {
+        order: playerKeys,
+      },
+      playerHands,
+      playerCollections,
+      playerBanks,
+      playerRequests: "@TODO",
+      turn: {
+        current: turnState
+      }
+    };
   }
 
   const publicScope = {

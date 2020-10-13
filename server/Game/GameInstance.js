@@ -52,7 +52,43 @@ const PlayerManager = require("./player/playerManager.js");
 const CardManager = require("./card/cardManager.js");
 
 
-let GameManager = () => {
+/*
+  class GameConfig {
+
+    let mConfig = {
+      mMinPlayerCount
+      mMinPlayerCount
+      mInitialCardCount
+      mMaxCardCount
+
+      drawCardCountAtTurnStart: 2,
+
+      shuffleDeck: false,
+      canWinBySetsOfSameColor: false,
+      alterSetCostAction: false,
+      testMode: false,
+    };
+
+
+    constructor() {}
+
+    serialize(){
+      return JSON.parse(JSON.stringify(mConfig))
+    }
+
+    unserialize(){
+
+    }
+
+  }
+
+
+  class DeckTemplate {}
+*/
+
+
+
+let GameInstance = () => {
   let mConfig = {
     shuffleDeck: false,
     canWinBySetsOfSameColor: false,
@@ -72,15 +108,8 @@ let GameManager = () => {
   let mActivePile;
   let mDiscardPile;
   let mDeck;
-  const mCurrency = {
-    TEN: 10,
-    FIVE: 5,
-    FOUR: 4,
-    THREE: 3,
-    TWO: 2,
-    ONE: 1,
-  };
 
+  
   //--------------------------------
 
   //          Composition
@@ -212,13 +241,12 @@ let GameManager = () => {
     let playerHand;
     let player;
     let playerIndex = 0;
-    let giveCards;
     player = players[playerIndex];
     playerHand = player.getHand();
 
     // @CHEAT
     /*
-    giveCards = [
+    let giveCards = [
       "PROPERTY_BROWN_1",
       "PROPERTY_BROWN_2",
       "PROPERTY_BLUE_1",
@@ -1152,6 +1180,10 @@ let GameManager = () => {
       playerManager: playerManager.serialize(),
       requestManager: requestManager.serialize(),
       collectionManager: collectionManager.serialize(),
+      //cardManager: getCardManager().serialize(),
+      //deck: getDeck().serialize(),
+      activePile: getActivePile().serialize(),
+      discardPile: getDiscardPile().serialize(),
     };
 
     return result;
@@ -1295,4 +1327,4 @@ let GameManager = () => {
   return getPublic();
 };
 
-module.exports = GameManager;
+module.exports = GameInstance;
