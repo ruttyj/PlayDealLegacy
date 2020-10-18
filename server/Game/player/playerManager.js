@@ -252,25 +252,23 @@ function PlayerManager(gameRef = null) {
     }
 
 
-    let playerHands = {};
-    let playerCollections = {};
-    let playerBanks = {};
+    // @TODO playerRequests
+    let players = {}
     getAllPlayers().forEach((player) => {
       let playerKey = player.getKey();
-      playerHands[playerKey] = player.getHand().serialize();
-      playerCollections[playerKey] = player.getAllCollectionIds();
-      playerBanks[playerKey] = player.getBank().serialize();
-    })
 
+      players[playerKey] = {
+        hand: player.getHand().serialize(),
+        bank: player.getBank().serialize(),
+        collections: player.getAllCollectionIds(),
+      }
+    })
 
     return {
       players: {
         order: playerKeys,
+        items: players
       },
-      playerHands,
-      playerCollections,
-      playerBanks,
-      playerRequests: "@TODO",
       turn: {
         current: turnState
       }
@@ -282,7 +280,7 @@ function PlayerManager(gameRef = null) {
   }
 
   function reset() {
-    
+
   }
 
   const publicScope = {

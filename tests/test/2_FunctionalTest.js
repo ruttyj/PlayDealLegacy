@@ -78,6 +78,18 @@ describe("App", async function () {
 
     
 
+    let playerManager = game.getPlayerManager();
+    let activePlayer = game.getPlayer(game.getCurrentTurn().getPlayerKey());
+    let activeTurnHand = activePlayer.getHand().getAllCards();
+    
+    //let hand = activePlayer.getHand();
+    console.log(JSON.stringify({
+      //currentTurn: currentTurn.serialize(),
+      activePlayer: activePlayer.serialize(),
+      activeTurnHand,
+    }, null, 2));
+
+
 
     // make a game
     // serialize game

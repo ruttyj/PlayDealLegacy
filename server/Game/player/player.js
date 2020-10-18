@@ -38,8 +38,15 @@ function Player(playerManagerRef) {
     return mState.bank;
   }
 
+  function serialize(){
+    return {
+      key: playerKey.get(),
+    }
+  }
+
   const publicScope = {
-    ...mState,
+    hand: mState.hand,
+    bank: mState.bank,
     setPlayerManager: playerManager.set,
     getAllCollectionIds: mCollectionIds.toArray,
     addCollectionId: mCollectionIds.push,
@@ -51,6 +58,7 @@ function Player(playerManagerRef) {
     removeKey: playerKey.remove,
     getBank,
     getHand,
+    serialize,
   };
 
   function getPublic() {

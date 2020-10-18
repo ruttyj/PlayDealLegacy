@@ -1040,6 +1040,11 @@ let GameInstance = () => {
     return getPlayerManager().getPlayer(playerOrId);
   }
 
+  function getCurrentTurnPlayer() {
+    return getPlayerManager().getPlayer(getCurrentTurn().getPlayerKey());
+  }
+  
+
   function getUselessPropertySetKey() {
     return constants.USELESS_PROPERTY_SET_KEY;
   }
@@ -1318,6 +1323,7 @@ let GameInstance = () => {
     createPlayer,
     hasPlayer,
     getPlayer,
+    getCurrentTurnPlayer,
     getPlayerHand,
     getPlayerBank,
     playerTurnStartingDraw,

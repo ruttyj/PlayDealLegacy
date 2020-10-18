@@ -1033,6 +1033,7 @@ class GameUI extends React.Component {
     await game.resetUi();
     await game.updateDisplayMode(SCREENS.REQUESTS);
   }
+  
   //########################################
 
   //               RENDER
