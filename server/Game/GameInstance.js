@@ -89,26 +89,43 @@ const CardManager = require("./card/cardManager.js");
 
 
 let GameInstance = () => {
-  let mConfig = {
-    shuffleDeck: false,
-    canWinBySetsOfSameColor: false,
-    alterSetCostAction: false,
-    testMode: false,
-  };
 
-  const mMaxPlayerCount = 5;
-  const mMinPlayerCount = 2;
-  const mInitialCardCount = 5;
-  const mMaxCardCount = 7;
+
+  let mConfig;
+  let mMaxPlayerCount;
+  let mMinPlayerCount;
+  let mInitialCardCount;
+  let mMaxCardCount;
   let mIsGameStarted;
   let mPlayerManager;
   let mCardManager;
-  let mIsGameOver = false;
-  let mWinningCondition = null;
+  let mIsGameOver;
+  let mWinningCondition;
   let mActivePile;
   let mDiscardPile;
   let mDeck;
 
+
+  function reset() {
+    mConfig = {
+      shuffleDeck:              false,
+      canWinBySetsOfSameColor:  false,
+      alterSetCostAction:       false,
+      testMode:                 false,
+    };
+    mMaxPlayerCount = 5;
+    mMinPlayerCount = 2;
+    mInitialCardCount = 5;
+    mMaxCardCount = 7;
+    mIsGameStarted = false;
+    mPlayerManager = PlayerManager(getPublic());
+    mCardManager = CardManager(getPublic());
+    mIsGameOver = false;
+    mWinningCondition = null;
+    initActivePile();
+    initDiscardPile();
+    initDeck();
+  }
 
   //--------------------------------
 
@@ -120,7 +137,17 @@ let GameInstance = () => {
   }
 
   function getRequestManager() {
-    return getPlayerManager().getCurrentTurn().getRequestManager();
+    let playerManager = getPlayerManager();
+    if (isDef(playerManager)){
+      let currentTurn = playerManager.getCurrentTurn();
+      if(isDef(currentTurn)){
+        let requestManager = currentTurn.getRequestManager();
+        if(isDef(requestManager)){
+          return requestManager;
+        }
+      }
+    }
+    return null;
   }
 
   //--------------------------------
@@ -128,18 +155,7 @@ let GameInstance = () => {
   //          Life cycle
 
   //--------------------------------
-  function resetGame() {
-    mIsGameStarted = false;
-    mIsGameOver = false;
-    initActivePile();
-    initDiscardPile();
-    mCardManager = CardManager(getPublic());
-    mPlayerManager = PlayerManager(getPublic());
-    mCardManager.generateCards();
-
-    mDeck = CardContainer(getPublic());
-    mDeck.replaceAllCards(mCardManager.getAllCards());
-  }
+  
 
   function setConfigShuffledDeck(val = true) {
     updateConfig({
@@ -173,7 +189,7 @@ let GameInstance = () => {
   }
 
   function newGame() {
-    resetGame();
+    reset();
   }
 
   function isGameOver() {
@@ -388,6 +404,12 @@ let GameInstance = () => {
   //         Deck Related
 
   //--------------------------------
+  function initDeck() {
+    mCardManager.generateCards();
+    mDeck = CardContainer(getPublic());
+    mDeck.replaceAllCards(mCardManager.getAllCards());
+  }
+
   function getDeck() {
     return mDeck;
   }
@@ -1176,19 +1198,24 @@ let GameInstance = () => {
 
   function serialize() {
     //let configManager = getConfigManager
-    //let cardManager = getCardManager();
     let playerManager = getPlayerManager();
     let requestManager = getRequestManager();
     let collectionManager = getCollectionManager();
+    let cardManager = getCardManager();
+    let deck = getDeck(); 
+    let activePile = getActivePile();
+    let discardPile = getDiscardPile();
+
+
 
     let result = {
-      playerManager: playerManager.serialize(),
-      requestManager: requestManager.serialize(),
-      collectionManager: collectionManager.serialize(),
-      //cardManager: getCardManager().serialize(),
-      //deck: getDeck().serialize(),
-      activePile: getActivePile().serialize(),
-      discardPile: getDiscardPile().serialize(),
+      playerManager:      isDef(playerManager)      ? playerManager.serialize()     : null,
+      requestManager:     isDef(requestManager)     ? requestManager.serialize()    : null,
+      collectionManager:  isDef(collectionManager)  ? collectionManager.serialize() : null,
+      //cardManager:      isDef(cardManager)        ? cardManager.serialize()       : null,
+      //deck:             isDef(deck)               ? deck.serialize()              : null,
+      activePile:         isDef(activePile)         ? getActivePile().serialize()   : null,
+      discardPile:        isDef(discardPile)         ? getDiscardPile().serialize()  : null,
     };
 
     return result;
@@ -1196,9 +1223,43 @@ let GameInstance = () => {
 
   function unserialize(serializedState){
     if (isDef(serializedState)){
-      let playerManager = getPlayerManager();
-      playerManager.unserialize(serializedState.playerManager);
-      
+      reset();
+
+      // Load Game Config
+      // @TODO
+
+      // Load Player Manager
+      let newPlayerManager = getPlayerManager();
+      let playerManagerData = serializedState.playerManager;
+      newPlayerManager.unserialize(playerManagerData);
+
+      // Load Collection Manager
+      let newCollectionManager = getCollectionManager();
+      newCollectionManager.unserialize(serializedState.collectionManager);
+
+      // Player has Collection
+      // The collection data should be moved from the player manager, elsewhere
+      playerManagerData.players.order.forEach(playerKey => {
+        let playerCollectionData = playerManagerData.players.items[playerKey].collections;
+        if (playerCollectionData.length) {
+          playerCollectionData.forEach(collectionId => {
+            newPlayerManager.associateCollectionToPlayer(collectionId, playerKey);
+          })
+        }
+      })
+
+      // Load Active Pile
+      // @TODO
+
+      // Load Discard Pile
+      // @TODO
+
+      // Load Deck
+      // @TODO
+
+      // Load Card Manager
+      // @TODO
+
     }
   }
 

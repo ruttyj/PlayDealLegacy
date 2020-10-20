@@ -1,4 +1,4 @@
-const { isDef, makeMap, getKeyFromProp } = require("../utils.js");
+const { isDef, isDefNested, isObj, isArr, makeMap, getKeyFromProp } = require("../utils.js");
 const PlayerTurn = require("./playerTurn.js");
 const CollectionManager = require("../collection/collectionManager.js");
 const Player = require("./player.js");
@@ -17,14 +17,27 @@ const constants = require("../config/constants.js");
 function PlayerManager(gameRef = null) {
   let mGameRef = gameRef;
 
-  let mState = {};
-
-  let mCurrentTurnPlayerIndex = 0;
+  let mState;
+  let mCurrentTurnPlayerIndex;
   let mCurrentTurn;
-  let mPlayers = makeMap(mState, "players");
-  let mPlayerKeys = [];
-  let mCanProceedNextTurn = true;
-  let mCollectionManager = CollectionManager(mGameRef);
+  let mPlayers;
+  let mPlayerKeys;
+  let mCanProceedNextTurn;
+  let mCollectionManager;
+
+  reset();
+
+  function reset() {
+    mState = {};
+    mCurrentTurnPlayerIndex = 0;
+    mPlayers = makeMap(mState, "players");
+    mPlayerKeys = [];
+    mCanProceedNextTurn = true;
+    mCollectionManager = CollectionManager(mGameRef);
+    initializePlayerTurn();
+  }
+  
+
 
   //--------------------------------
 
@@ -199,7 +212,7 @@ function PlayerManager(gameRef = null) {
 
   function setCanProceedToNextTurn(val) {
     mCanProceedNextTurn = val;
-  }
+  }``
 
   function initializePlayerTurn() {
     if (isDef(mCurrentTurn)) {
@@ -276,11 +289,46 @@ function PlayerManager(gameRef = null) {
   }
 
   function unserialize(serializedState) {
+    reset();
 
-  }
+    // Load players
+    if(isObj(serializedState) ){
+      if(isDefNested(serializedState, ['players', 'order'])){
+        let playerKeys = serializedState.players.order;
 
-  function reset() {
+        // add player
+        playerKeys.forEach(playerKey => {
+          createPlayer(playerKey);
+        })
 
+        // load player data
+        if(isDefNested(serializedState, ['players', 'items'])){
+          playerKeys.forEach(playerKey => {
+
+            // load hand
+            let newPlayerHand = getPlayer(playerKey).getHand();
+            if(isDefNested(serializedState, ['players', 'items', playerKey, 'hand', 'cardIds'])){
+              serializedState.players.items[playerKey].hand.cardIds.forEach(cardId => {
+                newPlayerHand.addCard(cardId);
+              })
+            }
+
+            // load bank
+            let newPlayerBank = getPlayer(playerKey).getBank();
+            if(isDefNested(serializedState, ['players', 'items', playerKey, 'bank', 'cardIds'])){
+              serializedState.players.items[playerKey].bank.cardIds.forEach(cardId => {
+                newPlayerBank.addCard(cardId);
+              })
+            }
+
+            // load collections
+
+
+
+          })
+        }
+      }
+    } // end load players
   }
 
   const publicScope = {
