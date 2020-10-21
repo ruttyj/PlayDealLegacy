@@ -423,14 +423,14 @@ class GameUI extends React.Component {
         } 
       })
 
-      windowManager.invokeWindow("playerTurnOverlay");
+      //windowManager.invokeWindow("playerTurnOverlay");
       game.on(["PLAYER_TURN", `${"GET"}__STORE_UPDATED`], async () => {
         if (game.isMyTurn()) {
           if (game.turn.isJustStartingMyTurn()){
-            windowManager.invokeWindow("playerTurnOverlay");
+            //windowManager.invokeWindow("playerTurnOverlay");
           }
         } else {
-          windowManager.toggleWindow("playerTurnOverlay", false);
+          //windowManager.toggleWindow("playerTurnOverlay", false);
         }
       });
     });
@@ -944,12 +944,21 @@ class GameUI extends React.Component {
     }
 
     function canSelectCard(cardId) {
+      let actionCardId = game.getDisplayData(["actionCardId"], 0);
       if (isMyHand) {
         //if (isDonePhase) {
         //  return true;
         //}
         if (actionCardId === cardId) {
           return true;
+        } else {
+          let card = game.card.get(cardId)
+          let tags = isDef(card) ? card.tags : [];
+          let actionCardIsRent = game.card.hasTag(actionCardId, "rent");
+          let rentAugment = game.card.hasTag(cardId, "rentAugment");
+          if(actionCardIsRent && rentAugment){
+            return true;
+          }
         }
       }
       if (isCollection) {
@@ -965,10 +974,9 @@ class GameUI extends React.Component {
 
     function isCardNotApplicable(cardId) {
       if (isMyHand) {
-        //if (isDonePhase) {
-        //  return true;
-        //}
         if (actionCardId === cardId) {
+          return false;
+        } else if(canSelectCard(cardId)) {
           return false;
         }
       }
@@ -1052,7 +1060,7 @@ class GameUI extends React.Component {
       const windowManager = self.windowManager;
       let playerTurnOverlay = windowManager.getWindowByKey("playerTurnOverlay")
       if(isDef(playerTurnOverlay)){
-        windowManager.toggleWindow(playerTurnOverlay.id, false);
+        //windowManager.toggleWindow(playerTurnOverlay.id, false);
       }
     }
 

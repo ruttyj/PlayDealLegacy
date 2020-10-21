@@ -632,7 +632,7 @@ function Game(ref) {
 
   function doesCardHaveTag(cardOrId, tag) {
     let card = getCard(cardOrId);
-    return isArr(card.tags) ? card.tags.includes(tag) : false;
+    return isDef(card) && isArr(card.tags) ? card.tags.includes(tag) : false;
   }
 
   function isDrawCard(cardOrId) {

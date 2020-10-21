@@ -264,12 +264,12 @@ let GameInstance = () => {
     playerHand = player.getHand();
 
     // @CHEAT
-    /*
+    //*
     let giveCards = [
       "PROPERTY_BROWN_1",
       "PROPERTY_BROWN_2",
       "PROPERTY_BLUE_1",
-      "PROPERTY_BLUE_2",
+      "PROPERTY_GREEN_2",
       "PROPERTY_PINK_1",
       "PROPERTY_PINK_2",
     ];
@@ -285,8 +285,8 @@ let GameInstance = () => {
       "DEBT_COLLECTOR",
       "DEAL_BREAKER",
       "DOUBLE_THE_RENT",
-      "DOUBLE_THE_RENT",
-      "ITS_MY_BIRTHDAY",
+      "PROPERTY_BLUE_2",
+      "RENT_BLUE_GREEN",
     ];
     giveCards.forEach((cardKey) => {
       playerHand.addCard(
