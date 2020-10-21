@@ -14,12 +14,16 @@ const {
 } = require("../config/constants.js");
 
 function CardManager() {
-  const mState = {};
-  const mExcludeKeys = ["gameRef"];
 
-  let mPropertySetMap = makeMap(mState, "propertySetMap");
-  let mCardOrder = makeList(mState, "cardOrder");
-  let mCardMap = makeMap(mState, "cardMap");
+  // static variables
+  let mExcludeKeys = ["gameRef"];
+
+  // Instance varaibles
+  let mState;
+  let mPropertySetMap;
+  let mCardOrder;
+  let mCardMap;
+
 
   // CARD RELATED
 
@@ -254,9 +258,11 @@ function CardManager() {
   function getPropertySetChoicesForCard(cardOrId) {
     let card = getCard(cardOrId);
     if (isDef(card)) {
-      if (isArr(card.sets)) return [...card.sets];
-      else if (isDef(card.set)) return [card.set];
-    } else {
+      if (isArr(card.sets)) {
+        return [...card.sets];
+      } else if (isDef(card.set)) {
+        return [card.set];
+      }
     }
     return [];
   }
@@ -284,38 +290,70 @@ function CardManager() {
 
   // MANAGER RELATED
 
-  function serialize() {
-    return stateSerialize(mState, mExcludeKeys);
+  function reset() {
+    mState          = {};
+    mPropertySetMap = makeMap(mState, "propertySetMap");
+    mCardOrder      = makeList(mState, "cardOrder");
+    mCardMap        = makeMap(mState, "cardMap");
   }
 
-  const pubicInterface = {
-    generateCards,
-    hasCard,
-    getCard,
-    getAllCards,
-    getAllCardIds,
-    getAllCardsKeyed,
-    setCardActivePropertySet,
-    getAllPropertySetsKeyed,
-    getPropertySetChoicesForCard,
-    getPropertySet,
-    getAllPropertySets,
-    getAllPropertySetKeys,
-    serialize,
+  function serialize() {
+    return {
+      propertySets: {
+        order: mPropertySetMap.keys(),
+        items: mPropertySetMap.getKeyed(),
+      },
+      cards: {
+        order: mCardOrder.toArray(),
+        items: mCardMap.getKeyed(),
+      }
+    };
+  }
 
-    allCards: mCardMap.toArray,
-    cardCount: mCardMap.count,
-    findCard: mCardMap.find,
-    mapCards: mCardMap.map,
-    forEachCard: mCardMap.forEach,
-    filterCards: mCardMap.filter,
-    filterCardsKeyed: mCardMap.filterKeyed,
-  };
+  function unserialize(data) {
+    reset();
+    // Load property sets
+    data.propertySets.order.forEach(propertySetKey => {
+      mPropertySetMap.set(propertySetKey, data.propertySets.items[propertySetKey]);
+    });
+
+    // Load cards
+    data.cards.order.forEach(propertySetKey => {
+      mCardOrder.push(propertySetKey);
+      mCardMap.set(propertySetKey, data.cards.items[propertySetKey]);
+    });
+  }
 
   function getPublic() {
-    return { ...pubicInterface };
+    return {
+      generateCards,
+      hasCard,
+      getCard,
+      getAllCards,
+      getAllCardIds,
+      getAllCardsKeyed,
+      setCardActivePropertySet,
+      getAllPropertySetsKeyed,
+      getPropertySetChoicesForCard,
+      getPropertySet,
+      getAllPropertySets,
+      getAllPropertySetKeys,
+  
+      allCards: mCardMap.toArray,
+      cardCount: mCardMap.count,
+      findCard: mCardMap.find,
+      mapCards: mCardMap.map,
+      forEachCard: mCardMap.forEach,
+      filterCards: mCardMap.filter,
+      filterCardsKeyed: mCardMap.filterKeyed,
+  
+      reset, 
+      serialize,
+      unserialize,
+    };
   }
 
+  reset();
   return getPublic();
 }
 

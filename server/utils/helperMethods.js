@@ -617,6 +617,7 @@ const makeMap = function (
     getItems,
     remove,
     toObject,
+    getKeyed: toObject,
     getCount,
     count: getCount,
     isEmpty,

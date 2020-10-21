@@ -1,5 +1,6 @@
 const { isDef, isDefNested, isObj, isArr, makeMap, getKeyFromProp } = require("../utils.js");
 const PlayerTurn = require("./playerTurn.js");
+const TurnManager = require("./turnManager.js");
 const CollectionManager = require("../collection/collectionManager.js");
 const Player = require("./player.js");
 const constants = require("../config/constants.js");
@@ -18,6 +19,7 @@ function PlayerManager(gameRef = null) {
   let mGameRef = gameRef;
 
   let mState;
+  let mTurnManager;
   let mCurrentTurnPlayerIndex;
   let mCurrentTurn;
   let mPlayers;
@@ -25,19 +27,7 @@ function PlayerManager(gameRef = null) {
   let mCanProceedNextTurn;
   let mCollectionManager;
 
-  reset();
-
-  function reset() {
-    mState = {};
-    mCurrentTurnPlayerIndex = 0;
-    mPlayers = makeMap(mState, "players");
-    mPlayerKeys = [];
-    mCanProceedNextTurn = true;
-    mCollectionManager = CollectionManager(mGameRef);
-    initializePlayerTurn();
-  }
   
-
 
   //--------------------------------
 
@@ -212,7 +202,10 @@ function PlayerManager(gameRef = null) {
 
   function setCanProceedToNextTurn(val) {
     mCanProceedNextTurn = val;
-  }``
+  }
+
+
+  
 
   function initializePlayerTurn() {
     if (isDef(mCurrentTurn)) {
@@ -253,7 +246,21 @@ function PlayerManager(gameRef = null) {
     }
   }
 
+  function reset() {
+    mState = {};
+    mCurrentTurnPlayerIndex = 0;
+    mPlayers = makeMap(mState, "players");
+    mPlayerKeys = [];
+    mCanProceedNextTurn = true;
+    mCollectionManager = CollectionManager(mGameRef);
 
+    mTurnManager = TurnManager();
+    mTurnManager.injectDeps({
+      playerManager: getPublic()
+    })
+    initializePlayerTurn();
+  }
+  
   function serialize() {
 
     let playerKeys = getAllPlayerKeys();
@@ -283,6 +290,7 @@ function PlayerManager(gameRef = null) {
         items: players
       },
       turn: {
+        currentTurnPlayerIndex: mCurrentTurnPlayerIndex,
         current: turnState
       }
     };
@@ -307,18 +315,14 @@ function PlayerManager(gameRef = null) {
 
             // load hand
             let newPlayerHand = getPlayer(playerKey).getHand();
-            if(isDefNested(serializedState, ['players', 'items', playerKey, 'hand', 'cardIds'])){
-              serializedState.players.items[playerKey].hand.cardIds.forEach(cardId => {
-                newPlayerHand.addCard(cardId);
-              })
+            if(isDefNested(serializedState, ['players', 'items', playerKey, 'hand'])){
+              newPlayerHand.unserialize(serializedState.players.items[playerKey].hand);
             }
 
             // load bank
             let newPlayerBank = getPlayer(playerKey).getBank();
-            if(isDefNested(serializedState, ['players', 'items', playerKey, 'bank', 'cardIds'])){
-              serializedState.players.items[playerKey].bank.cardIds.forEach(cardId => {
-                newPlayerBank.addCard(cardId);
-              })
+            if(isDefNested(serializedState, ['players', 'items', playerKey, 'bank'])){
+              newPlayerBank.unserialize(serializedState.players.items[playerKey].bank);
             }
 
             // load collections
@@ -331,46 +335,45 @@ function PlayerManager(gameRef = null) {
     } // end load players
   }
 
-  const publicScope = {
-    getGameRef,
-    destory,
-
-    createPlayer,
-    getPlayer,
-    hasPlayer,
-    getAllPlayers,
-    getAllPlayerKeys,
-    getPlayerCount,
-
-    getCurrentTurnPlayerKey,
-    getCurrentTurn,
-
-    getCanProceedToNextTurn,
-    setCanProceedToNextTurn,
-
-    nextPlayerTurn,
-
-    // Collections
-    getCollection,
-    removeCollection,
-    getCollectionManager,
-    createNewCollectionForPlayer,
-    disassociateCollectionFromPlayer,
-    associateCollectionToPlayer,
-    getOrCreateUselessCollectionForPlayer,
-    getAllCollectionsForPlayer,
-    getAllCollectionIdsForPlayer,
-    transferCollectionOwnership,
-
-    reset,
-    serialize,
-    unserialize,
-  };
-
   function getPublic() {
-    return { ...publicScope };
+    return {
+      // Self
+      getGameRef,
+      destory,
+      reset,
+      serialize,
+      unserialize,
+  
+      // Players
+      createPlayer,
+      getPlayer,
+      hasPlayer,
+      getAllPlayers,
+      getAllPlayerKeys,
+      getPlayerCount,
+  
+      // Player Turn
+      getCurrentTurnPlayerKey,
+      getCurrentTurn,
+      nextPlayerTurn,
+      getCanProceedToNextTurn,
+      setCanProceedToNextTurn,
+  
+      // Collections
+      getCollection,
+      removeCollection,
+      getCollectionManager,
+      createNewCollectionForPlayer,
+      disassociateCollectionFromPlayer,
+      associateCollectionToPlayer,
+      getOrCreateUselessCollectionForPlayer,
+      getAllCollectionsForPlayer,
+      getAllCollectionIdsForPlayer,
+      transferCollectionOwnership,
+    };
   }
 
+  reset();
   return getPublic();
 }
 

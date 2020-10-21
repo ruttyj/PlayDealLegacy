@@ -14,17 +14,27 @@ const utils = require("./cardUtils.js");
 const { INCLUDE_DEBUG_DATA } = require("../config/constants.js");
 
 const CardContainer = function (gameRef) {
-  let mState = {};
+  let mState;
+  let mGameRef;
+  let incTotalValue;
+  let decTotalValue;
+  let getTotalValue;
+  let mCardOrder;
 
-  let mGameRef = gameRef;
+  reset();
 
-  const {
-    inc: incTotalValue,
-    dec: decTotalValue,
-    get: getTotalValue,
-  } = makeVar(mState, "totalValue", 0);
+  function reset(){
+    mState = {};
+    mGameRef = gameRef;
 
-  const mCardOrder = makeList(mState, "cardOrder", []);
+    mCardOrder = makeList(mState, "cardOrder", []);
+    
+    totalValue = makeVar(mState, "totalValue", 0);
+    incTotalValue = totalValue.inc;
+    decTotalValue = totalValue.dec;
+    getTotalValue = totalValue.get;
+  }
+
 
   function _shuffleCards(cards) {
     let temp = [...cards];
@@ -212,6 +222,12 @@ const CardContainer = function (gameRef) {
     return result;
   }
 
+  function unserialize(data) {
+    if (isDef(data.cardIds)){
+      addCards(data.cardIds)
+    }
+  }
+
   function findCard(fn) {
     let selfRef = getPublic();
     let result = null;
@@ -258,7 +274,9 @@ const CardContainer = function (gameRef) {
 
     replaceAllCards,
 
+    reset,
     serialize,
+    unserialize,
   };
 
   function getPublic() {

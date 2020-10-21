@@ -125,6 +125,7 @@ let GameInstance = () => {
     initActivePile();
     initDiscardPile();
     initDeck();
+    
   }
 
   //--------------------------------
@@ -195,9 +196,11 @@ let GameInstance = () => {
   function isGameOver() {
     return mIsGameOver;
   }
+
   function gameOver() {
     mIsGameOver = true;
   }
+  
   function getMinPlayerCount() {
     return mMinPlayerCount;
   }
@@ -405,8 +408,12 @@ let GameInstance = () => {
 
   //--------------------------------
   function initDeck() {
-    mCardManager.generateCards();
     mDeck = CardContainer(getPublic());
+    populateDeck();
+  }
+
+  function populateDeck() {
+    mCardManager.generateCards();
     mDeck.replaceAllCards(mCardManager.getAllCards());
   }
 
@@ -1206,23 +1213,21 @@ let GameInstance = () => {
     let activePile = getActivePile();
     let discardPile = getDiscardPile();
 
-
-
     let result = {
       playerManager:      isDef(playerManager)      ? playerManager.serialize()     : null,
       requestManager:     isDef(requestManager)     ? requestManager.serialize()    : null,
       collectionManager:  isDef(collectionManager)  ? collectionManager.serialize() : null,
-      //cardManager:      isDef(cardManager)        ? cardManager.serialize()       : null,
-      //deck:             isDef(deck)               ? deck.serialize()              : null,
+      cardManager:        isDef(cardManager)        ? cardManager.serialize()       : null,
+      deck:               isDef(deck)               ? deck.serialize()              : null,
       activePile:         isDef(activePile)         ? getActivePile().serialize()   : null,
-      discardPile:        isDef(discardPile)         ? getDiscardPile().serialize()  : null,
+      discardPile:        isDef(discardPile)        ? getDiscardPile().serialize()  : null,
     };
 
     return result;
   }
 
-  function unserialize(serializedState){
-    if (isDef(serializedState)){
+  function unserialize(data){
+    if (isDef(data)){
       reset();
 
       // Load Game Config
@@ -1230,12 +1235,12 @@ let GameInstance = () => {
 
       // Load Player Manager
       let newPlayerManager = getPlayerManager();
-      let playerManagerData = serializedState.playerManager;
+      let playerManagerData = data.playerManager;
       newPlayerManager.unserialize(playerManagerData);
 
       // Load Collection Manager
       let newCollectionManager = getCollectionManager();
-      newCollectionManager.unserialize(serializedState.collectionManager);
+      newCollectionManager.unserialize(data.collectionManager);
 
       // Player has Collection
       // The collection data should be moved from the player manager, elsewhere
@@ -1249,150 +1254,160 @@ let GameInstance = () => {
       })
 
       // Load Active Pile
-      // @TODO
+      let activePile = getActivePile();
+      activePile.unserialize(data.activePile);
 
       // Load Discard Pile
-      // @TODO
+      let discardPile = getDiscardPile();
+      discardPile.unserialize(data.discardPile);
 
       // Load Deck
-      // @TODO
+      let deck = getDeck(); 
+      deck.unserialize(data.deck);
 
       // Load Card Manager
+      let cardManager = getCardManager();
+      cardManager.unserialize(data.cardManager);
+
+      // Load Current Turn
       // @TODO
 
+      // Load Request Manager
+      // @TODO
+
+      // Dump Dev data
+      //console.log(JSON.stringify(cardManager.serialize(), null, 2));
     }
   }
 
-  const publicScope = {
-    //====================================
-    getPlayerManager,
-    getRequestManager,
-    getCollectionManager,
-
-    //====================================
-
-    // Config
-
-    updateConfig,
-    getConfig,
-    setConfigShuffledDeck,
-    getConfigShuffledDeck,
-    getConfigAlteringSetCostAction,
-    getMinPlayerCount,
-    getWinningCondition,
-    getMaxPlayerCount,
-
-    isAcceptablePlayerCount,
-    isGameStarted,
-    isGameOver,
-
-    //====================================
-
-    //  Serialize / Unserialize
-
-    serialize,
-    unserialize,
-
-    //====================================
-
-    // Life cycle
-
-    canStartGame,
-    newGame,
-    startGame,
-
-    //====================================
-
-    // Turn
-
-    isMyTurn,
-    getCurrentTurn,
-    nextPlayerTurn,
-    checkWinConditionForPlayer,
-
-    //====================================
-
-    // Filtering
-
-    filterForTag,
-    doesCardHaveTag,
-    doesCardHaveClass,
-    canCardBeAddedToBank,
-    isRentCard,
-    isCardProperty,
-    isActionCard,
-    isCardSetAugment,
-    isCardRentAugment,
-    isRequestCard,
-    lookUpCardById,
-    updateCardSet,
-    getSetChoicesForCard,
-    getCard,
-    getCards,
-    getAllCardsKeyed,
-    getAllCardIds,
-    card: {
-      getActionAugment: getCardActionAugment,
-    },
-
-    // Deck
-    getDeck,
-    getDeckCardCount,
-    getActivePile,
-    getDiscardPile,
-
-    // Properties
-    getPropertySets,
-    getPropertySet,
-    getAllPropertySetKeys,
-
-    //====================================
-
-    // Collections
-
-    getCollectionThatHasCard,
-    canApplyAugmentToSet,
-    canAddCardToCollection,
-    cleanUpFromCollection,
-
-    // Distinct collections
-    getUselessCollectionForPlayer,
-    getUselessPropertySetKey,
-
-    isCollectionComplete,
-    getRentValueOfCollection,
-    playCardToExistingCollection,
-
-    // Request Cards
-    applyActionValueAugment,
-    canApplyRequestAugment,
-
-    //====================================
-
-    // Play
-
-    canPreformActionById,
-    playCardById,
-    playCardFromHandToNewCollection,
-    drawNCards,
-
-    //====================================
-
-    // Player
-
-    canAddPlayer,
-    createPlayer,
-    hasPlayer,
-    getPlayer,
-    getCurrentTurnPlayer,
-    getPlayerHand,
-    getPlayerBank,
-    playerTurnStartingDraw,
-    getHandMaxCardCount,
-  };
-
   function getPublic() {
-    return { ...publicScope };
+    return {
+      //====================================
+      getPlayerManager,
+      getRequestManager,
+      getCollectionManager,
+  
+      //====================================
+  
+      // Config
+  
+      updateConfig,
+      getConfig,
+      setConfigShuffledDeck,
+      getConfigShuffledDeck,
+      getConfigAlteringSetCostAction,
+      getMinPlayerCount,
+      getWinningCondition,
+      getMaxPlayerCount,
+  
+      isAcceptablePlayerCount,
+      isGameStarted,
+      isGameOver,
+  
+      //====================================
+  
+      //  Serialize / Unserialize
+  
+      serialize,
+      unserialize,
+  
+      //====================================
+  
+      // Life cycle
+  
+      canStartGame,
+      newGame,
+      startGame,
+  
+      //====================================
+  
+      // Turn
+  
+      isMyTurn,
+      getCurrentTurn,
+      nextPlayerTurn,
+      checkWinConditionForPlayer,
+  
+      //====================================
+  
+      // Filtering
+  
+      filterForTag,
+      doesCardHaveTag,
+      doesCardHaveClass,
+      canCardBeAddedToBank,
+      isRentCard,
+      isCardProperty,
+      isActionCard,
+      isCardSetAugment,
+      isCardRentAugment,
+      isRequestCard,
+      lookUpCardById,
+      updateCardSet,
+      getSetChoicesForCard,
+      getCard,
+      getCards,
+      getAllCardsKeyed,
+      getAllCardIds,
+      card: {
+        getActionAugment: getCardActionAugment,
+      },
+  
+      // Deck
+      getDeck,
+      getDeckCardCount,
+      getActivePile,
+      getDiscardPile,
+  
+      // Properties
+      getPropertySets,
+      getPropertySet,
+      getAllPropertySetKeys,
+  
+      //====================================
+  
+      // Collections
+  
+      getCollectionThatHasCard,
+      canApplyAugmentToSet,
+      canAddCardToCollection,
+      cleanUpFromCollection,
+  
+      // Distinct collections
+      getUselessCollectionForPlayer,
+      getUselessPropertySetKey,
+  
+      isCollectionComplete,
+      getRentValueOfCollection,
+      playCardToExistingCollection,
+  
+      // Request Cards
+      applyActionValueAugment,
+      canApplyRequestAugment,
+  
+      //====================================
+  
+      // Play
+  
+      canPreformActionById,
+      playCardById,
+      playCardFromHandToNewCollection,
+      drawNCards,
+  
+      //====================================
+  
+      // Player
+  
+      canAddPlayer,
+      createPlayer,
+      hasPlayer,
+      getPlayer,
+      getCurrentTurnPlayer,
+      getPlayerHand,
+      getPlayerBank,
+      playerTurnStartingDraw,
+      getHandMaxCardCount,
+    };
   }
 
   return getPublic();

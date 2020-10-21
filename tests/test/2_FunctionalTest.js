@@ -76,19 +76,14 @@ describe("App", async function () {
 
       game.startGame();
       game.nextPlayerTurn();
-      
-      //playerManager = game.getPlayerManager();
-      //activePlayer = game.getPlayer(currentPlayerKey);
-      //activeTurnHand = activePlayer.getHand().getAllCards();
-      currentPlayerKey = game.getCurrentTurn().getPlayerKey();
-      
-      collection = game.playCardFromHandToNewCollection(currentPlayerKey, 93);
 
-      dump({collectionManager: game.getCollectionManager().serialize()});
+      // Add card to collection
+      currentPlayerKey = game.getCurrentTurn().getPlayerKey();
+      collection = game.playCardFromHandToNewCollection(currentPlayerKey, 93);
+      
+      template = game.serialize();
+      //dump({collectionManager: game.getCollectionManager().serialize()});
     }
-  
-    template = game.serialize();
-    //console.log("@@@@@", JSON.stringify(template, null, 2));
 
    
     // ===================================

@@ -159,14 +159,8 @@ class PlayDealClientService {
       return null;
     }
 
-    function getAllPlayerIds({ game, personManager }) {
-      return personManager
-        .getConnectedPeople()
-        .filter((person) => {
-          let pId = person.getId();
-          return game.hasPlayer(pId);
-        })
-        .map((person) => person.getId());
+    function getAllPlayerIds({ game }) {
+      return game.getPlayerManager().getAllPlayerKeys();
     }
 
     function getAllPlayers(game, personManager) {
@@ -1967,8 +1961,6 @@ class PlayDealClientService {
   
               let status = "";
               let payload = null;
-  
-              console.log("isDef(game) person", isDef(game), person);
   
               if (isDef(person)) {
                 let personId = person.getId();
