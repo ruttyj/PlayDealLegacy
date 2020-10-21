@@ -2855,7 +2855,7 @@ class GameUI extends React.Component {
       </FlexRow>
     );
 
-    const fullScreenButtonContents = (
+    const fullScreenButtonContents = null /*(
       <FlexRow
         style={{ flexShrink: 0, cursor: "pointer" }}
         onClick={toggleFullScreen}
@@ -2867,6 +2867,7 @@ class GameUI extends React.Component {
         )}
       </FlexRow>
     );
+    */
 
     let gameContents = null;
     gameContents = (
