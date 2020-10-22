@@ -264,7 +264,7 @@ let GameInstance = () => {
     playerHand = player.getHand();
 
     // @CHEAT
-    //*
+    /*
     let giveCards = [
       "PROPERTY_BROWN_1",
       "PROPERTY_BROWN_2",
