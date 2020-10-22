@@ -28,13 +28,9 @@ Install basic packages
 
     npm install
 
-Build client source code
-
-    npm run build
-
 Run server
 
-    npm run start
+    npm run dev
 
 [
 ![Gameplay screen shot](https://i.ibb.co/W03H335/screenshot.png)
