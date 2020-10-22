@@ -773,7 +773,7 @@ class PlayDealClientService {
           let { roomCode, game, personManager, thisPersonId } = consumerData;
   
           let currentTurn = game.getCurrentTurn();
-          let phaseKey = currentTurn.getCurrentPhase();
+          let phaseKey = currentTurn.getPhaseKey();
           let requestManager = currentTurn.getRequestManager();
           let actionNum = currentTurn.getActionCount();
   
@@ -848,7 +848,7 @@ class PlayDealClientService {
                     request.close(request.getStatus());
                     if (
                       requestManager.isAllRequestsClosed() &&
-                      currentTurn.getCurrentPhase() === "request"
+                      currentTurn.getPhaseKey() === "request"
                     ) {
                       currentTurn.proceedToNextPhase();
                       affected.turn = true;
@@ -1012,7 +1012,7 @@ class PlayDealClientService {
           let { roomCode, game, personManager, thisPersonId } = consumerData;
   
           let currentTurn = game.getCurrentTurn();
-          let phaseKey = currentTurn.getCurrentPhase();
+          let phaseKey = currentTurn.getPhaseKey();
           let requestManager = currentTurn.getRequestManager();
           let actionNum = currentTurn.getActionCount();
   
@@ -1097,7 +1097,7 @@ class PlayDealClientService {
                       request.close(request.getStatus());
                       if (
                         requestManager.isAllRequestsClosed() &&
-                        currentTurn.getCurrentPhase() === "request"
+                        currentTurn.getPhaseKey() === "request"
                       ) {
                         currentTurn.proceedToNextPhase();
                         affected.turn = true;
@@ -1271,7 +1271,7 @@ class PlayDealClientService {
   
             // Is action phase?
             checkpoints.set("action", false);
-            if (currentTurn.getCurrentPhase() === "action") {
+            if (currentTurn.getPhaseKey() === "action") {
               checkpoints.set("action", true);
               let hand = game.getPlayerHand(thisPersonId);
               let card = game.getCard(cardId);
@@ -1437,7 +1437,7 @@ class PlayDealClientService {
   
             // Is action phase?
             checkpoints.set("action", false);
-            if (currentTurn.getCurrentPhase() === "action") {
+            if (currentTurn.getPhaseKey() === "action") {
               let collectionManager = game.getCollectionManager();
               checkpoints.set("action", true);
   
@@ -2787,7 +2787,7 @@ class PlayDealClientService {
   
               let { cardId } = props2;
               let { hand, roomCode, game, personManager, thisPersonId } = props2;
-              if (game.getCurrentTurn().getCurrentPhase() === "action") {
+              if (game.getCurrentTurn().getPhaseKey() === "action") {
                 checkpoints.set("isActionPhase", true);
   
                 let card = hand.getCardById(cardId);
@@ -3022,7 +3022,7 @@ class PlayDealClientService {
               checkpoints.set("cardMatchesPropertySet", false);
               checkpoints.set("isWithinActionLimit", false);
   
-              if (currentTurn.getCurrentPhase() === "action") {
+              if (currentTurn.getPhaseKey() === "action") {
                 checkpoints.set("isActionPhase", true);
   
                 if (isDef(collectionId)) {
@@ -3167,7 +3167,7 @@ class PlayDealClientService {
               checkpoints.set("isSetAugmentCard", false);
               checkpoints.set("canApplyAugment", false);
   
-              if (currentTurn.getCurrentPhase() === "action") {
+              if (currentTurn.getPhaseKey() === "action") {
                 checkpoints.set("isActionPhase", true);
   
                 if (isDef(collectionId)) {
@@ -3268,7 +3268,7 @@ class PlayDealClientService {
               checkpoints.set("isDrawCard", false);
               checkpoints.set("canPlayCard", false);
   
-              if (currentTurn.getCurrentPhase() === "action") {
+              if (currentTurn.getPhaseKey() === "action") {
                 checkpoints.set("isActionPhase", true);
                 // CARD IS PASS GO
                 if (card.type === "action" && card.class === "draw") {
@@ -3982,15 +3982,15 @@ class PlayDealClientService {
               //                       Game logic
   
               //-------------------------------------------------------
-              if (currentTurn.getCurrentPhase() === "draw") {
+              if (currentTurn.getPhaseKey() === "draw") {
                 status = "draw";
               }
   
-              if (currentTurn.getCurrentPhase() === "action") {
+              if (currentTurn.getPhaseKey() === "action") {
                 currentTurn.proceedToNextPhase(true);
               }
   
-              if (currentTurn.getCurrentPhase() === "discard") {
+              if (currentTurn.getPhaseKey() === "discard") {
                 let remaining = hand.getCount() - game.getHandMaxCardCount();
                 //Have person discard extra cards
                 if (remaining > 0) {
@@ -4004,7 +4004,7 @@ class PlayDealClientService {
                 }
               }
   
-              if (currentTurn.getCurrentPhase() === "done") {
+              if (currentTurn.getPhaseKey() === "done") {
                 socketResponses.addToBucket(
                   "everyone",
                   PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
@@ -4046,7 +4046,7 @@ class PlayDealClientService {
   
               // If additional data required let player know
               /*
-              switch (currentTurn.getCurrentPhase()) {
+              switch (currentTurn.getPhaseKey()) {
                 case "discard":
                   payload = currentTurn.getPhaseData();
                   status = "discard";
@@ -4929,7 +4929,7 @@ class PlayDealClientService {
               let payload = null;
   
               let currentTurn = game.getCurrentTurn();
-              let phaseKey = currentTurn.getCurrentPhase();
+              let phaseKey = currentTurn.getPhaseKey();
               let requestManager = currentTurn.getRequestManager();
   
               let validResponseKeys = ["accept", "decline", "counter"];
@@ -6890,7 +6890,7 @@ class PlayDealClientService {
               let { game, thisPersonId } = consumerData;
               let currentTurn = game.getCurrentTurn();
   
-              if (currentTurn.getCurrentPhase() === "discard") {
+              if (currentTurn.getPhaseKey() === "discard") {
                 let thisPlayerHand = game.getPlayerHand(thisPersonId);
                 let remaining =
                   thisPlayerHand.getCount() - game.getHandMaxCardCount();

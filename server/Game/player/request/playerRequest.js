@@ -21,120 +21,48 @@ const PlayerRequest = function (
   onCounter = emptyFunction,
   description = ""
 ) {
-  let mRef = {};
+  let mState = {};
 
-  const { get: getId, set: setId } = makeVar(mRef, "id", null);
+  let mId           = makeVar(mState, "id", null);
+  let mParentId     = makeVar(mState, "parentId", null);
+  let mRootId       = makeVar(mState, "rootId", null);
+  let mManagerRef   = makeVar(mState, "managerRef", null);
+  let mAuthorKey    = makeVar(mState, "authorKey", null);
+  let mTargetKey    = makeVar(mState, "targetKey", null);
+  let mActionNum    = makeVar(mState, "actionNum", actionNum);
+  let mType         = makeVar(mState, "type", null);
+  let mDescription  = makeVar(mState, "description", description);
+  let mIsClosed     = makeVar(mState, "isClosed", false);
+  let mHasResponse  = makeVar(mState, "hasResponse", false);
+  let mStatus       = makeVar(mState, "status", "open");
+  let mHasTargetSatisfied = makeVar(mState, "hasTargetSatisfied", false);
 
-  const { get: getParentId, set: setParentId } = makeVar(
-    mRef,
-    "parentId",
-    null
-  );
-
-  const { get: getRootId, set: setRootId } = makeVar(mRef, "rootId", null);
-
-  const { get: getManagerRef, set: setManagerRef } = makeVar(
-    mRef,
-    "managerRef",
-    null
-  );
-
-  const { get: getAuthorKey, set: setAuthorKey } = makeVar(
-    mRef,
-    "authorKey",
-    null
-  );
-
-  const { get: getTargetKey, set: setTargetKey } = makeVar(
-    mRef,
-    "targetKey",
-    null
-  );
-
-  const { get: getActionNum, set: setActionNum } = makeVar(
-    mRef,
-    "actionNum",
-    actionNum
-  );
-
-  const { get: getType, set: setType } = makeVar(mRef, "type", null);
-
-  const { get: getDescription, set: setDescription } = makeVar(
-    mRef,
-    "description",
-    description
-  );
-
-  const { get: isClosed, set: setIsClosed } = makeVar(mRef, "isClosed", false);
-
-  const { get: hasResponse, set: setHasResponse } = makeVar(
-    mRef,
-    "hasResponse",
-    false
-  );
-
-  const { get: getStatus, set: setStatus } = makeVar(mRef, "status", "open");
-
-  const { get: getTargetSatisfied, set: setTargetSatisfied } = makeVar(
-    mRef,
-    "hasTargetSatisfied",
-    false
-  );
-
-  const { get: _getPayload, set: setPayload, has: hasPayload } = makeVar(
-    mRef,
-    "payload",
-    null
-  );
-  //const { get: _getHiddenPayload, set: setHiddenPayload, has: hasHiddenPayload } = makeVar(mRef, "hiddenPayload", null);
+  let mPayload      = makeVar(mState, "payload", payload);
+  //let { get: _getHiddenPayload, set: setHiddenPayload, has: hasHiddenPayload } = makeVar(mState, "hiddenPayload", null);
 
   //Methods called - crutial to the core operation
-  const {
-    get: getOnAcceptFn,
-    set: setOnAcceptFn,
-    has: hasOnAcceptFn,
-  } = makeVar(mRef, "onAccept", onAccept);
-  const {
-    get: getOnDeclineFn,
-    set: setOnDeclineFn,
-    has: hasOnDeclineFn,
-  } = makeVar(mRef, "onDecline", onDecline);
-  const { get: getOnCloseFn, set: setOnCloseFn } = makeVar(
-    mRef,
-    "onClose",
-    onClose
-  );
-  const { get: getOnCounterFn, set: setOnCounterFn } = makeVar(
-    mRef,
-    "onCounter",
-    onCounter
-  );
+  let mOnAcceptFn   = makeVar(mState, "onAccept", onAccept);
+  let mOnDeclineFn  = makeVar(mState, "onDecline", onDecline);
+  let mOnCloseFn    = makeVar( mState, "onClose", onClose);
+  let mOnCounterFn  = makeVar( mState, "onCounter", onCounter);
 
   // These will only get executed at the end of the request chain IE:  Request Property: SayNo -> SayNo -> SayNo -> accept
-  const {
-    get: getOnAcceptCallback,
-    set: setOnAcceptCallback,
-    has: hasOnAcceptCallback,
-  } = makeVar(mRef, "onAcceptCallback", onAcceptCallback);
-  const {
-    get: getOnDeclineCallback,
-    set: setOnDeclineCallback,
-    has: hasOnDeclineCallback,
-  } = makeVar(mRef, "onDeclineCallback", onDeclineCallback);
+  let mOnAcceptCallback   = makeVar(mState, "onAcceptCallback", onAcceptCallback);
+  let mOnDeclineCallback  = makeVar(mState, "onDeclineCallback", onDeclineCallback);
 
-  setId(id);
-  setType(requestType);
+  mId.set(id);
+  mType.set(requestType);
 
   function close(status) {
-    setIsClosed(true);
-    setStatus(status);
-    getOnCloseFn()(getPublic());
+    mIsClosed.set(true);
+    mStatus.set(status);
+    mOnCloseFn.get()(getPublic());
   }
 
   function accept(...args) {
-    setHasResponse(true);
-    if (hasOnAcceptFn()) {
-      let acceptFn = getOnAcceptFn();
+    mHasResponse.set(true);
+    if (mOnAcceptFn.has()) {
+      let acceptFn = mOnAcceptFn.get();
       let result = acceptFn(getPublic(), ...args);
 
       return result;
@@ -142,23 +70,27 @@ const PlayerRequest = function (
   }
 
   function decline(...args) {
-    setHasResponse(true);
-    if (hasOnDeclineFn()) return getOnDeclineFn()(getPublic(), ...args);
+    mHasResponse.set(true);
+    if (mOnDeclineFn.has()) return mOnDeclineFn.get()(getPublic(), ...args);
   }
 
   function counter(...args) {
-    setHasResponse(true);
-    return getOnCounterFn()(getPublic(), ...args);
+    mHasResponse.set(true);
+    return mOnCounterFn.get()(getPublic(), ...args);
   }
 
   function getPayload(_path = [], fallback = null) {
     let path = isArr(_path) ? _path : [_path];
-    let payload = _getPayload();
+    let payload = mPayload.get();
     if (path.length === 0) {
       return payload;
     } else {
       return getNestedValue(payload, path, fallback);
     }
+  }
+
+  function reset() {
+
   }
 
   function serialize() {
@@ -175,98 +107,105 @@ const PlayerRequest = function (
     );
 
     return {
-      id: getId(),
-      type: getType(),
-      description: getDescription(),
-      actionNum: getActionNum(),
-      status: getStatus(),
-      authorKey: getAuthorKey(),
-      targetKey: getTargetKey(),
-      isClosed: isClosed(),
-      hasTargetSatisfied: getTargetSatisfied(),
-      hasResponse: hasResponse(),
-      parentId: getParentId(),
-      hasOnAcceptFn,
-      hasOnDeclineFn,
-      hasOnCounterFn: getOnCounterFn() !== emptyFunction,
-      hasOnCloseFn: getOnCloseFn() !== emptyFunction,
+      id: mId.get(),
+      type: mType.get(),
+      description: mDescription.get(),
+      actionNum: mActionNum.get(),
+      status: mStatus.get(),
+      authorKey: mAuthorKey.get(),
+      targetKey: mTargetKey.get(),
+      isClosed: mIsClosed.get(),
+      hasTargetSatisfied: mHasTargetSatisfied.get(),
+      hasResponse: mHasResponse.get(),
+      parentId: mParentId.get(),
+      hasOnAcceptFn: mOnAcceptFn.has(),
+      hasOnDeclineFn: mOnDeclineFn.has,
+      hasOnCounterFn: mOnCounterFn.get() !== emptyFunction,
+      hasOnCloseFn: mOnCloseFn.get() !== emptyFunction,
       payload: serializePayload,
     };
   }
 
+  function unserialize(data) {
+
+  }
+
   function getParent() {
-    let manager = getManagerRef();
-    let parentId = getParentId();
+    let manager = mManagerRef.get();
+    let parentId = mParentId.get();
     if (isDef(manager) && isDef(parentId)) {
       return manager.getRequestById(parentId);
     }
     return null;
   }
 
-  const publicScope = {
-    getId,
-
-    getParentId,
-    setParentId,
-    getParent,
-
-    getRootId,
-    setRootId,
-
-    getManagerRef,
-    setManagerRef,
-
-    getAuthorKey,
-    setAuthorKey,
-
-    getTargetKey,
-    setTargetKey,
-    getTargetSatisfied,
-    setTargetSatisfied,
-
-    getActionNum,
-    setActionNum,
-
-    setType,
-    getType,
-
-    getDescription,
-    setDescription,
-
-    getStatus,
-    setStatus,
-
-    getPayload,
-    setPayload,
-    hasPayload,
-
-    isClosed,
-    setOnCloseFn,
-
-    setOnAcceptFn,
-    setOnDeclineFn,
-    setOnCounterFn,
-
-    hasOnAcceptCallback,
-    setOnAcceptCallback,
-    getOnAcceptCallback,
-
-    hasOnDeclineCallback,
-    setOnDeclineCallback,
-    getOnDeclineCallback,
-
-    accept,
-    decline,
-    counter,
-    close,
-
-    serialize,
-  };
   function getPublic() {
     // do not allow the modification of the interface
-    return { ...publicScope };
+    return {
+      getId: mId.get,
+  
+      getParentId: mParentId.get,
+      setParentId: mParentId.set,
+      getParent,
+  
+      getRootId: mRootId.get,
+      setRootId: mRootId.set,
+  
+      getManagerRef: mManagerRef.get,
+      setManagerRef: mManagerRef.set,
+  
+      getAuthorKey: mAuthorKey.get,
+      setAuthorKey: mAuthorKey.set,
+  
+      getTargetKey: mTargetKey.get,
+      setTargetKey: mTargetKey.set,
+      getTargetSatisfied: mHasTargetSatisfied.get,
+      setTargetSatisfied: mHasTargetSatisfied.set,
+  
+      getActionNum: mActionNum.get,
+      setActionNum: mActionNum.set,
+  
+      setType: mType.set,
+      getType: mType.get,
+  
+      getDescription: mDescription.get,
+      setDescription: mDescription.set,
+  
+      getStatus: mStatus.get,
+      setStatus: mStatus.set,
+  
+      getPayload,
+      setPayload: mPayload.set,
+      hasPayload: mPayload.has,
+  
+      isClosed: mIsClosed.get,
+      setOnCloseFn: mOnCloseFn.set,
+  
+      setOnAcceptFn: mOnAcceptFn.set,
+      setOnDeclineFn: mOnDeclineFn.set,
+      setOnCounterFn: mOnCounterFn.set,
+  
+      hasOnAcceptCallback: mOnAcceptCallback.has,
+      setOnAcceptCallback: mOnAcceptCallback.set,
+      getOnAcceptCallback: mOnAcceptCallback.get,
+  
+      hasOnDeclineCallback: mOnDeclineCallback.has,
+      setOnDeclineCallback: mOnDeclineCallback.set,
+      getOnDeclineCallback: mOnDeclineCallback.get,
+  
+      accept,
+      decline,
+      counter,
+      close,
+  
+      reset,
+      serialize,
+      unserialize,
+    };
   }
-  return publicScope;
+
+  reset();
+  return getPublic();
 };
 
 module.exports = PlayerRequest;

@@ -1,4 +1,4 @@
-const { identity } = require("../../server/utils");
+const { identity, isObj, nDeep } = require("../../server/utils");
 
 const rootFolder = `../..`;
 const serverFolder = `${rootFolder}/server`;
@@ -80,9 +80,12 @@ describe("App", async function () {
       // Add card to collection
       currentPlayerKey = game.getCurrentTurn().getPlayerKey();
       collection = game.playCardFromHandToNewCollection(currentPlayerKey, 93);
-      
+      game.nextPlayerTurn();
+
+
       template = game.serialize();
-      //dump({collectionManager: game.getCollectionManager().serialize()});
+
+      //dump(nDeep(template, 2));
     }
 
    
@@ -100,6 +103,7 @@ describe("App", async function () {
 
       // Attempt to reset game and load previous one
       game.unserialize(template);
+      //dump(nDeep(game.serialize(), 2));
 
       //dump({playerManager: game.getPlayerManager().serialize()});
       //dump({collectionManager: game.getCollectionManager().serialize()});

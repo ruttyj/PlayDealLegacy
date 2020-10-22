@@ -20,8 +20,6 @@ function PlayerManager(gameRef = null) {
 
   let mState;
   let mTurnManager;
-  let mCurrentTurnPlayerIndex;
-  let mCurrentTurn;
   let mPlayers;
   let mPlayerKeys;
   let mCanProceedNextTurn;
@@ -196,59 +194,16 @@ function PlayerManager(gameRef = null) {
     return mPlayerKeys.length;
   }
 
-  function getCanProceedToNextTurn() {
-    return mCanProceedNextTurn;
-  }
-
-  function setCanProceedToNextTurn(val) {
-    mCanProceedNextTurn = val;
-  }
-
-
-  
-
-  function initializePlayerTurn() {
-    if (isDef(mCurrentTurn)) {
-      mCurrentTurn.destroy();
-    }
-    let playerKeys = getAllPlayerKeys();
-    if (playerKeys.length > 0) {
-      mCurrentTurn = PlayerTurn(mGameRef, playerKeys[mCurrentTurnPlayerIndex]);
-    }
-  }
-
-  function nextPlayerTurn() {
-    if (getCanProceedToNextTurn()) {
-      let numPlayers = getPlayerCount();
-      mCurrentTurnPlayerIndex = (mCurrentTurnPlayerIndex + 1) % numPlayers;
-      initializePlayerTurn();
-
-      return mPlayerKeys[mCurrentTurnPlayerIndex];
-    }
-    return undefined;
-  }
-
-  function getCurrentTurnPlayerKey() {
-    return mPlayerKeys[mCurrentTurnPlayerIndex];
-  }
-
-  function getCurrentTurn() {
-    return mCurrentTurn;
+  function getTurnManager(){
+    return mTurnManager;
   }
 
   function getGameRef() {
     return mGameRef;
   }
 
-  function destory() {
-    if (isDef(mCurrentTurn)) {
-      mCurrentTurn.destroy();
-    }
-  }
-
   function reset() {
     mState = {};
-    mCurrentTurnPlayerIndex = 0;
     mPlayers = makeMap(mState, "players");
     mPlayerKeys = [];
     mCanProceedNextTurn = true;
@@ -256,27 +211,23 @@ function PlayerManager(gameRef = null) {
 
     mTurnManager = TurnManager();
     mTurnManager.injectDeps({
-      playerManager: getPublic()
+      playerManager:  getPublic(),
+      gameRef:        getGameRef(),
     })
-    initializePlayerTurn();
+    mTurnManager.newTurn()
   }
   
   function serialize() {
 
     let playerKeys = getAllPlayerKeys();
 
-    let currentTurn = getCurrentTurn();
-    let turnState = null;
-    if(isDef(currentTurn)){
-      turnState = currentTurn.serialize()
-    }
+    
 
 
     // @TODO playerRequests
     let players = {}
     getAllPlayers().forEach((player) => {
       let playerKey = player.getKey();
-
       players[playerKey] = {
         hand: player.getHand().serialize(),
         bank: player.getBank().serialize(),
@@ -289,10 +240,6 @@ function PlayerManager(gameRef = null) {
         order: playerKeys,
         items: players
       },
-      turn: {
-        currentTurnPlayerIndex: mCurrentTurnPlayerIndex,
-        current: turnState
-      }
     };
   }
 
@@ -339,7 +286,6 @@ function PlayerManager(gameRef = null) {
     return {
       // Self
       getGameRef,
-      destory,
       reset,
       serialize,
       unserialize,
@@ -351,13 +297,6 @@ function PlayerManager(gameRef = null) {
       getAllPlayers,
       getAllPlayerKeys,
       getPlayerCount,
-  
-      // Player Turn
-      getCurrentTurnPlayerKey,
-      getCurrentTurn,
-      nextPlayerTurn,
-      getCanProceedToNextTurn,
-      setCanProceedToNextTurn,
   
       // Collections
       getCollection,

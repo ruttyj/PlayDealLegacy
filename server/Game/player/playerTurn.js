@@ -1,36 +1,57 @@
-const { jsonLog, isDef, makeListener, makeVar } = require("../utils.js");
+const { jsonLog, isDef, makeVar } = require("../utils.js");
 const PlayerRequestManager = require("./request/playerRequestManager.js");
 
 function PlayerTurn(gameRef, playerKey = null) {
+  let mGameRef = gameRef;
+  let mState;
+
   let mPlayerKey;
-  let mCanDrawTurnStartingCards = true;
-  const mState = {};
-  const {
-    get: getPhaseData,
-    set: setPhaseData,
-    remove: removePhaseData,
-  } = makeVar(mState, "phaseData", null);
-  const mActionLimit = 3;
-  const mCardsPlayed = [];
-  const mActionsPreformed = [];
-  const mTurnRequestManager = PlayerRequestManager();
-  mTurnRequestManager.setGameInstance(gameRef);
-  mTurnRequestManager.events.allRequestSatisfied.on(() => {
-    // Alert possible phase change when requests satisfied
-    proceedToNextPhase();
-  });
+  let mCanDrawTurnStartingCards;
+
+  let getPhaseData;
+  let setPhaseData;
+  let removePhaseData;
+  let mActionLimit;
+  let mActionsPreformed;
+  let mTurnRequestManager;
+  let mTurnPhases;
+  let mCurrentPhase;
 
   //==================================================
 
   //                  PHASE LOGIC
 
   //==================================================
-  const mTurnPhases = ["draw", "action", "request", "discard", "done"];
-  let mInitialPhase = "draw";
-  let mCurrentPhase;
-  const mPhaseChangeEvent = makeListener();
 
-  function getCurrentPhase() {
+  function reset(){
+    mState = {};
+    mCanDrawTurnStartingCards = true;
+
+    let phaseData = makeVar(mState, "phaseData", null);;
+    getPhaseData = phaseData.get;
+    setPhaseData = phaseData.set;
+    removePhaseData = phaseData.remove;
+
+    mActionLimit = 3;
+    mActionsPreformed = [];
+    mTurnRequestManager = PlayerRequestManager();
+    mTurnRequestManager.setGameInstance(mGameRef);
+    mTurnRequestManager.events.allRequestSatisfied.on(() => {
+      // Alert possible phase change when requests satisfied
+      proceedToNextPhase();
+    });
+  
+    //==================================================
+  
+    //                  PHASE LOGIC
+  
+    //==================================================
+    mTurnPhases = ["draw", "action", "request", "discard", "done"];
+    // Set intial phase
+    setPhaseKey("draw");
+  }
+
+  function getPhaseKey() {
     return mCurrentPhase;
   }
 
@@ -38,19 +59,18 @@ function PlayerTurn(gameRef, playerKey = null) {
     return mTurnPhases;
   }
 
-  function setToPhase(phaseKey) {
+  function setPhaseKey(phaseKey) {
     mCurrentPhase = phaseKey;
-    mPhaseChangeEvent.emit(getPublic());
   }
 
   function proceedToNextPhase(force = false) {
-    let currentPhase = getCurrentPhase();
+    let currentPhase = getPhaseKey();
     if (currentPhase !== "done") {
       let goToEnd = false;
       // Can still play?
       if (isWithinActionLimit()) {
         if (["draw", "request"].includes(currentPhase)) {
-          setToPhase("action");
+          setPhaseKey("action");
         } else if (force) {
           goToEnd = true;
         }
@@ -63,9 +83,9 @@ function PlayerTurn(gameRef, playerKey = null) {
       if (goToEnd && isAllClosed) {
         // should discard?
         if (shouldDiscardCards()) {
-          setToPhase("discard");
+          setPhaseKey("discard");
         } else {
-          setToPhase("done");
+          setPhaseKey("done");
         }
       }
     }
@@ -109,17 +129,16 @@ function PlayerTurn(gameRef, playerKey = null) {
     return mActionLimit;
   }
 
+  function setActionLimit(value) {
+    mActionLimit = value;
+  }
+
   function getActionCount() {
     return mActionsPreformed.length;
   }
 
   function isWithinActionLimit() {
     return getActionCount() < getActionLimit();
-  }
-
-  // Any card played - could be in response to a request - @TODO add who played card  - transfer to game logs after turn
-  function setCardPlayed(card) {
-    mCardsPlayed.push(card);
   }
 
   // Cards played which take up an action
@@ -132,19 +151,19 @@ function PlayerTurn(gameRef, playerKey = null) {
     */
     mActionsPreformed.push(card);
     if (actionType === "REQUEST") {
-      setToPhase("request");
+      setPhaseKey("request");
     } else {
       proceedToNextPhase();
     }
   }
 
+  function setActionsPreformed(actions) {
+    mActionsPreformed = [...actions];
+  }
   function getActionsPreformed() {
     return [...mActionsPreformed];
   }
 
-  function getCardsPlayed() {
-    return [...mCardsPlayed];
-  }
 
   function shouldDiscardCards() {
     let hand = gameRef.getPlayerHand(getPlayerKey());
@@ -154,13 +173,21 @@ function PlayerTurn(gameRef, playerKey = null) {
   function serialize() {
     return {
       playerKey: getPlayerKey(),
-      phase: getCurrentPhase(),
+      phase: getPhaseKey(),
       phaseData: getPhaseData(),
-      actionCount: getActionCount(),
+      actionsPreformed: getActionsPreformed(),
       actionLimit: getActionLimit(),
-      //cardsPlayed: getCardsPlayed(),
-      //actionsPreformed: getActionsPreformed()
+      actionCount: getActionCount(),
     };
+  }
+
+  function unserialize(data) {
+    setPlayerKey(data.playerKey);
+    setPhaseKey(data.phase);
+    setPhaseData(data.phaseData);
+    setActionsPreformed(data.actionsPreformed);
+    setActionLimit(data.actionLimit);
+    //actionCount calculated
   }
 
   function destroy() {
@@ -169,51 +196,44 @@ function PlayerTurn(gameRef, playerKey = null) {
 
   if (isDef(playerKey)) setPlayerKey(playerKey);
 
-  const publicScope = {
-    getRequestManager,
-    destroy,
-
-    setPlayerKey,
-    getPlayerKey,
-
-    getPhaseData,
-    setPhaseData,
-    removePhaseData,
-
-    //Phase
-    getCurrentPhase,
-    proceedToNextPhase,
-    isDone,
-    getPossiblePhases,
-    shouldDiscardCards,
-    setHasDrawnStartingCards,
-    canDrawTurnStartingCards,
-
-    // Actions
-    getActionCount,
-    getActionLimit,
-    isWithinActionLimit,
-    canPlayerPreformAction,
-    setActionPreformed,
-    getActionsPreformed,
-
-    setCardPlayed, // deprecated
-    getCardsPlayed, // deprecated
-
-    events: {
-      phaseChange: mPhaseChangeEvent,
-    },
-
-    serialize,
-  };
-
   function getPublic() {
-    return { ...publicScope };
+    return {
+      getRequestManager,
+      destroy,
+  
+      setPlayerKey,
+      getPlayerKey,
+  
+      getPhaseData,
+      setPhaseData,
+      removePhaseData,
+  
+      //Phase
+      getCurrentPhase: getPhaseKey,
+      getPhaseKey,
+      proceedToNextPhase,
+      isDone,
+      getPossiblePhases,
+      shouldDiscardCards,
+      setHasDrawnStartingCards,
+      canDrawTurnStartingCards,
+  
+      // Actions
+      getActionCount,
+      getActionLimit,
+      isWithinActionLimit,
+      canPlayerPreformAction,
+      setActionPreformed,
+      getActionsPreformed,
+  
+      reset,
+      serialize,
+      unserialize,
+    };
   }
 
-  // Set intial phase
-  setToPhase(mInitialPhase);
-
+  
+  reset();
   return getPublic();
 }
 module.exports = PlayerTurn;

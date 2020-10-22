@@ -50,6 +50,7 @@ const {
 const CardContainer = require("./card/cardContainer.js");
 const PlayerManager = require("./player/playerManager.js");
 const CardManager = require("./card/cardManager.js");
+const TurnManager = require("./player/turnManager.js");
 
 
 /*
@@ -125,6 +126,9 @@ let GameInstance = () => {
     initActivePile();
     initDiscardPile();
     initDeck();
+    initTurnManager();
+
+    
     
   }
 
@@ -137,15 +141,16 @@ let GameInstance = () => {
     return mPlayerManager;
   }
 
+  function getTurnManager() {
+    return mTurnManager;
+  }
+
   function getRequestManager() {
-    let playerManager = getPlayerManager();
-    if (isDef(playerManager)){
-      let currentTurn = playerManager.getCurrentTurn();
-      if(isDef(currentTurn)){
-        let requestManager = currentTurn.getRequestManager();
-        if(isDef(requestManager)){
-          return requestManager;
-        }
+    let currentTurn = getCurrentTurn();
+    if(isDef(currentTurn)){
+      let requestManager = currentTurn.getRequestManager();
+      if(isDef(requestManager)){
+        return requestManager;
       }
     }
     return null;
@@ -240,16 +245,27 @@ let GameInstance = () => {
     return mIsGameOver;
   }
 
+  function initTurnManager() {
+    mTurnManager = TurnManager();
+    mTurnManager.injectDeps({
+      playerManager:  getPlayerManager(),
+      gameRef:        getPublic(),
+    })
+    mTurnManager.newTurn();
+  }
+
   function getCurrentTurn() {
-    let playerManager = getPlayerManager();
-    if (isDef(playerManager)) return playerManager.getCurrentTurn();
+    let turnManager = getTurnManager();
+    if (isDef(turnManager)) {
+      return turnManager.getCurrentTurn();
+    }
     return null;
   }
 
   function nextPlayerTurn() {
-    let playerManager = getPlayerManager();
-    if (isDef(playerManager)) {
-      return playerManager.nextPlayerTurn();
+    let turnManager = getTurnManager();
+    if (isDef(turnManager)) {
+      return turnManager.nextPlayerTurn();
     }
     return null;
   }
@@ -562,11 +578,6 @@ let GameInstance = () => {
       return !mIsGameStarted;
     }
     return false;
-  }
-
-  function getCurrentTurn() {
-    let playerManager = getPlayerManager();
-    return isDef(playerManager) ? playerManager.getCurrentTurn() : null;
   }
 
   function canPreformActionById(cardOrId) {
@@ -985,8 +996,7 @@ let GameInstance = () => {
 
   //--------------------------------
   function handlePlayingCard(playerKey, card, collectionId = null) {
-    let playerManager = getPlayerManager();
-    let currentTurn = playerManager.getCurrentTurn();
+    let currentTurn = getCurrentTurn();
     if (card.type === "cash") {
       currentTurn.setActionPreformed("BANK", card);
       let playerBank = getPlayerBank(playerKey);
@@ -1070,7 +1080,7 @@ let GameInstance = () => {
   }
 
   function getCurrentTurnPlayer() {
-    return getPlayerManager().getPlayer(getCurrentTurn().getPlayerKey());
+    return getTurnManager().getCurrentTurnPlayer();
   }
   
 
@@ -1212,9 +1222,11 @@ let GameInstance = () => {
     let deck = getDeck(); 
     let activePile = getActivePile();
     let discardPile = getDiscardPile();
+    let turnManager = getTurnManager();
 
     let result = {
       playerManager:      isDef(playerManager)      ? playerManager.serialize()     : null,
+      turnManager:        isDef(turnManager)        ? turnManager.serialize()       : null,
       requestManager:     isDef(requestManager)     ? requestManager.serialize()    : null,
       collectionManager:  isDef(collectionManager)  ? collectionManager.serialize() : null,
       cardManager:        isDef(cardManager)        ? cardManager.serialize()       : null,
@@ -1226,6 +1238,10 @@ let GameInstance = () => {
     return result;
   }
 
+  /**
+   * 
+   * @param object data  decoded json object containing the serialized state to reconstruct
+   */
   function unserialize(data){
     if (isDef(data)){
       reset();
@@ -1271,6 +1287,9 @@ let GameInstance = () => {
 
       // Load Current Turn
       // @TODO
+      let turnManager = getTurnManager();
+      turnManager.unserialize(data.turnManager);
+      
 
       // Load Request Manager
       // @TODO
@@ -1284,6 +1303,7 @@ let GameInstance = () => {
     return {
       //====================================
       getPlayerManager,
+      getTurnManager,
       getRequestManager,
       getCollectionManager,
   

@@ -11,16 +11,16 @@ const {
 const Transaction = require("./transfer/Transaction.js");
 
 const PlayerRequestManager = function () {
-  const mState = {};
-  const mRequests = makeMap(mState, "requests");
-  const mAuthorRequests = makeMap(mState, "authorRequests");
-  const mTargetRequests = makeMap(mState, "targetRequests");
-  let mGameInstance = null;
 
-  const mAllRequestSatisfiedEvent = makeListener();
+  let mState;
+  let mGameInstance;
+  let mRequests;
+  let mAuthorRequests;
+  let mTargetRequests;
+  let mAllRequestSatisfiedEvent;
+  let mTopId;
 
-  // Top Id
-  const { get: getTopId, inc: incTopId } = makeVar(mState, "topId", 0);
+
   /**
    * Request types:
    *
@@ -43,8 +43,8 @@ const PlayerRequestManager = function () {
     onDecline = null,
     onCounter = emptyFunc,
   }) {
-    incTopId();
-    let topId = getTopId();
+    mTopId.inc();
+    let topId = mTopId.get();
     let playerRequest = PlayerRequest(topId, type);
     playerRequest.setPayload(payload);
     playerRequest.setManagerRef(getPublic());
@@ -294,6 +294,19 @@ const PlayerRequestManager = function () {
 
   function destroy() {}
 
+  function reset(resetRefs = true) {
+    if (resetRefs) {
+      mGameInstance = null;
+      mAllRequestSatisfiedEvent = makeListener();
+    }
+
+    mState = {};
+    mTopId = makeVar(mState, "topId", 0);
+    mRequests = makeMap(mState, "requests");
+    mAuthorRequests = makeMap(mState, "authorRequests");
+    mTargetRequests = makeMap(mState, "targetRequests");
+  }
+  
   function serialize() {
     let serializedResultItems = {};
     let requestIds = getAllRequestIds();
@@ -313,35 +326,43 @@ const PlayerRequestManager = function () {
     return result;
   }
 
-  const publicScope = {
-    createRequest,
-    loadRequest,
-    makeJustSayNo,
-    getRequest: getRequestById,
-    getRequestById,
-    hasRequest,
-    getAllRequestIds,
-    getAllRequestIdsForPlayer,
-    setGameInstance,
-    getGameInstance,
-    isAllRequestsSatisfied,
-    isAllRequestsClosed,
-    getRequestsForAuthor,
-    getRequestsForTarget,
-    getAnOpenTargetRequst,
-    serializeAllRequests,
-    serialize,
-
-    events: {
-      allRequestSatisfied: mAllRequestSatisfiedEvent,
-    },
-
-    destroy,
-  };
+  function unserialize(data){
+    reset(false);
+    
+  }
 
   function getPublic() {
-    return { ...publicScope };
+    return {
+      createRequest,
+      loadRequest,
+      makeJustSayNo,
+      getRequest: getRequestById,
+      getRequestById,
+      hasRequest,
+      getAllRequestIds,
+      getAllRequestIdsForPlayer,
+      setGameInstance,
+      getGameInstance,
+      isAllRequestsSatisfied,
+      isAllRequestsClosed,
+      getRequestsForAuthor,
+      getRequestsForTarget,
+      getAnOpenTargetRequst,
+      serializeAllRequests,
+
+      reset,
+      serialize,
+      unserialize,
+      destroy,
+  
+      events: {
+        allRequestSatisfied: mAllRequestSatisfiedEvent,
+      },
+  
+    };
   }
+
+  reset();
   return getPublic();
 };
 
