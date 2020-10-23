@@ -413,6 +413,10 @@ const makeVar = function (
     set(original - value);
   }
 
+  function serialize() {
+    return get()
+  }
+
   set(defaultVal);
 
   return {
@@ -424,6 +428,7 @@ const makeVar = function (
     decrement: dec,
     inc,
     dec,
+    serialize,
   };
 };
 
@@ -697,9 +702,13 @@ const makeList = function (
     return mList.findIndex((item) => item === mutator(value)) > -1;
   }
 
-  function get(index, defaultVal = null) {
-    if (has(index)) return mList[index];
-    return defaultVal;
+  function get(index=null, defaultVal = null) {
+    if(isDef(index)){
+      if (isDef(mList[index])) 
+        return mList[index];
+      return defaultVal;
+    }
+    return toArray();
   }
 
   function set(index, value) {

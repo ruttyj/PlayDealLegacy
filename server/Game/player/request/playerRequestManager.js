@@ -328,7 +328,6 @@ const PlayerRequestManager = function () {
 
   function unserialize(data){
     reset(false);
-    
   }
 
   function getPublic() {

@@ -3458,7 +3458,6 @@ class PlayDealClientService {
                       augmentCardsIds: newAugmentIds,
                     });
   
-                    //let newRequest
                     affected.requests = true;
                     affectedIds.requests.push(request.getId());
                     affectedIds.playerRequests.push(request.getAuthorKey());

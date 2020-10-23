@@ -23,28 +23,26 @@ const PlayerRequest = function (
 ) {
   let mState = {};
 
-  let mId           = makeVar(mState, "id", null);
-  let mParentId     = makeVar(mState, "parentId", null);
-  let mRootId       = makeVar(mState, "rootId", null);
-  let mManagerRef   = makeVar(mState, "managerRef", null);
-  let mAuthorKey    = makeVar(mState, "authorKey", null);
-  let mTargetKey    = makeVar(mState, "targetKey", null);
-  let mActionNum    = makeVar(mState, "actionNum", actionNum);
-  let mType         = makeVar(mState, "type", null);
-  let mDescription  = makeVar(mState, "description", description);
-  let mIsClosed     = makeVar(mState, "isClosed", false);
-  let mHasResponse  = makeVar(mState, "hasResponse", false);
-  let mStatus       = makeVar(mState, "status", "open");
+  let mId                 = makeVar(mState, "id", null);
+  let mParentId           = makeVar(mState, "parentId", null);
+  let mRootId             = makeVar(mState, "rootId", null);
+  let mManagerRef         = makeVar(mState, "managerRef", null);
+  let mAuthorKey          = makeVar(mState, "authorKey", null);
+  let mTargetKey          = makeVar(mState, "targetKey", null);
+  let mActionNum          = makeVar(mState, "actionNum", actionNum);
+  let mType               = makeVar(mState, "type", null);
+  let mDescription        = makeVar(mState, "description", description);
+  let mIsClosed           = makeVar(mState, "isClosed", false);
+  let mHasResponse        = makeVar(mState, "hasResponse", false);
+  let mStatus             = makeVar(mState, "status", "open");
   let mHasTargetSatisfied = makeVar(mState, "hasTargetSatisfied", false);
-
-  let mPayload      = makeVar(mState, "payload", payload);
-  //let { get: _getHiddenPayload, set: setHiddenPayload, has: hasHiddenPayload } = makeVar(mState, "hiddenPayload", null);
+  let mPayload            = makeVar(mState, "payload", payload);
 
   //Methods called - crutial to the core operation
-  let mOnAcceptFn   = makeVar(mState, "onAccept", onAccept);
-  let mOnDeclineFn  = makeVar(mState, "onDecline", onDecline);
-  let mOnCloseFn    = makeVar( mState, "onClose", onClose);
-  let mOnCounterFn  = makeVar( mState, "onCounter", onCounter);
+  let mOnAcceptFn         = makeVar(mState, "onAccept", onAccept);
+  let mOnDeclineFn        = makeVar(mState, "onDecline", onDecline);
+  let mOnCloseFn          = makeVar( mState, "onClose", onClose);
+  let mOnCounterFn        = makeVar( mState, "onCounter", onCounter);
 
   // These will only get executed at the end of the request chain IE:  Request Property: SayNo -> SayNo -> SayNo -> accept
   let mOnAcceptCallback   = makeVar(mState, "onAcceptCallback", onAcceptCallback);
@@ -90,7 +88,7 @@ const PlayerRequest = function (
   }
 
   function reset() {
-
+    // @TODO
   }
 
   function serialize() {
@@ -107,27 +105,27 @@ const PlayerRequest = function (
     );
 
     return {
-      id: mId.get(),
-      type: mType.get(),
-      description: mDescription.get(),
-      actionNum: mActionNum.get(),
-      status: mStatus.get(),
-      authorKey: mAuthorKey.get(),
-      targetKey: mTargetKey.get(),
-      isClosed: mIsClosed.get(),
+      id:                 mId.get(),
+      type:               mType.get(),
+      description:        mDescription.get(),
+      actionNum:          mActionNum.get(),
+      status:             mStatus.get(),
+      authorKey:          mAuthorKey.get(),
+      targetKey:          mTargetKey.get(),
+      isClosed:           mIsClosed.get(),
       hasTargetSatisfied: mHasTargetSatisfied.get(),
-      hasResponse: mHasResponse.get(),
-      parentId: mParentId.get(),
-      hasOnAcceptFn: mOnAcceptFn.has(),
-      hasOnDeclineFn: mOnDeclineFn.has,
-      hasOnCounterFn: mOnCounterFn.get() !== emptyFunction,
-      hasOnCloseFn: mOnCloseFn.get() !== emptyFunction,
-      payload: serializePayload,
+      hasResponse:        mHasResponse.get(),
+      parentId:           mParentId.get(),
+      hasOnAcceptFn:      mOnAcceptFn.has(),
+      hasOnDeclineFn:     mOnDeclineFn.has,
+      hasOnCounterFn:     mOnCounterFn.get() !== emptyFunction,
+      hasOnCloseFn:       mOnCloseFn.get() !== emptyFunction,
+      payload:            serializePayload,
     };
   }
 
   function unserialize(data) {
-
+    // @TODO
   }
 
   function getParent() {
