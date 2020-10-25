@@ -66,6 +66,20 @@ function Game(ref) {
       sounds.startGame.play();
     });
 
+    on(["CHAT", "RECEIVE_MESSAGE"], async (data) => {
+
+      /*
+      na_na_poo_poo
+      super_genius
+      wise_guy_eh
+      shazaam
+      annoying_excuse_me
+      */
+      console.log("na_na_poo_poo", data);
+      sounds.na_na_poo_poo.play();
+
+    });
+
     // When a person draws cards
     on(["PLAYERS", "PERSON_DREW_CARDS_KEYED"], async (data) => {
       const game = getPublic();
@@ -2300,12 +2314,19 @@ function Game(ref) {
     return getNestedValue(card, "sets", []);
   }
 
+  async function sendSound(soundKey){
+    await props().sendSound(connection(), getRoomCode(), soundKey);
+  }
+
   //respondToPropertyTransfer
   const publicScope = {
     // REQUESTS
     getAllPreviousRequestsData,
     getAllRequestsData: getAllRequestData,
     getAllPlayerRequestData,
+
+    // SOUNDS
+    sendSound,
 
     // COLLECTIONS
     getAllCollectionData,

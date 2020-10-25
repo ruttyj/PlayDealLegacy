@@ -97,6 +97,7 @@ const addCardToMyBank = (con, roomCode, cardId) => async (dispatch) => {
   );
 };
 
+
 const addCardEmptySetFromHand = (con, roomCode, cardId) => async (dispatch) => {
   await con.emitSingleRequest(
     "MY_TURN",
@@ -736,6 +737,19 @@ const setCards = (value) => (dispatch) => {
   return Promise.resolve();
 };
 
+
+const sendSound = (con, roomCode, soundKey) => async (dispatch) => {
+  await con.emitSingleRequest(
+    "CHAT",
+    "SEND_MESSAGE",
+    defaultProps(roomCode, {
+      type: "sound",
+      value: soundKey,
+    })
+  );
+};
+
+
 const attachGameListeners = (con) => (dispatch) => {
   let listnerTree = con.listnerTree;
 
@@ -787,7 +801,6 @@ const resetGameData = (value) => (dispatch) => {
 
 export default {
   resetGameData,
-
   setPreviousRequests,
 
   //Game life cycle
@@ -798,6 +811,9 @@ export default {
 
   // Start turn
   drawTurnStartingCards,
+
+  // Chat
+  sendSound,
 
   // Property actions
   changeWildPropertySetKey,

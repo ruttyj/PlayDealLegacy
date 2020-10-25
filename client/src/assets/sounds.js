@@ -348,6 +348,14 @@ let sounds = {
       main: [0, 1750, false],
     },
   }),
+  na_na_poo_poo: Sound({
+    src: "/audio/reactions/na-na-na-na-poo-poo.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+
   super_genius: Sound({
     src: "/audio/reactions/super-genius.mp3",
     rate: 1,
@@ -369,7 +377,7 @@ let sounds = {
     rate: 1,
     loop: false,
     overlap: 100,
-    volume: 0.5,
+    volume: 1,
   }),
 
   whats_the_big_idea: Sound({
@@ -387,5 +395,6 @@ let sounds = {
     volume: 0.5,
   }),
 };
+
 
 export default sounds;

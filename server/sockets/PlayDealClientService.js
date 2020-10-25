@@ -4,6 +4,17 @@ const serverSocketFolder = `${serverFolder}/sockets`;
 const gameFolder = `${serverFolder}/Game`;
 const CookieTokenManager = require("../CookieTokenManager/");
 
+/**
+ * 
+ * TODO #$%^&$#^&$%#^&%$^&%$#%^&$%
+ * if discard and actions still remain offer them to play remaining actions
+ * When accepting payment from rent place in set if can be placed in set (when no previous set existed)
+ * Change color of set / move cards around at "done" phase
+ * 
+ */
+
+
+
 const {
   els,
   isDef,
@@ -2266,6 +2277,67 @@ class PlayDealClientService {
             },
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
+        },
+      },
+      CHAT: {
+        SEND_MESSAGE: (props) => {
+          const [subject, action] = ["CHAT", "SEND_MESSAGE"];
+          const socketResponses = SocketResponseBuckets();
+          return handlePerson(
+            props,
+            (props2) => {
+              let { type, value } = props2;
+
+              let status = "success";
+              let payload = {
+                type,
+                value
+              };
+  
+              socketResponses.addToBucket(
+                "everyone",
+                makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
+              );
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+        /**
+         * @param userIds
+         */
+        RECEIVE_MESSAGE: () => {
+          // emit to user
+          // roomCode
+          const [subject, action] = ["CHAT", "RECEIVE_MESSAGE"];
+          const socketResponses = SocketResponseBuckets();
+          return handlePerson(
+            props,
+            (props2) => {
+              let { message } = props2;
+
+              let status = "success";
+              let payload = {
+                type: "text",
+                message
+              };
+  
+              socketResponses.addToBucket(
+                "everyoneElse",
+                makeResponse({ subject, action, status, payload })
+              );
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+        /**
+         * 
+         */
+        GET_ALL_MESSAGES: (props) => {
+          //
         },
       },
       PEOPLE: {

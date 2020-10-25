@@ -220,11 +220,17 @@ class RequestChain extends Base {
           currentChanged = true;
         } else if (response === 'REVERSE') {
           // @TODO
+        } else if (response === 'ACCEPT') {
+          // @TODO
         }
       } else if(currentActionType === 'NOTHING') {
-        this.mPreviousAction.set(this.mCurrentAction.get());
-        this.mCurrentAction.set(new Request({ type: rootActionType}));
-        currentChanged = true;
+        if (response === 'SAY_NO') {
+          this.mPreviousAction.set(this.mCurrentAction.get());
+          this.mCurrentAction.set(new Request({ type: rootActionType}));
+          currentChanged = true;
+        } else if (response === 'ACCEPT') {
+          currentChanged = true;
+        }
       }
 
       // Log in history
@@ -277,6 +283,11 @@ describe("", async function () {
 
     mRequestChain.applyResponse('SAY_NO');
     console.log("I Said NO!!!!",
+        mRequestChain.serialize()
+    )
+
+    mRequestChain.applyResponse('ACCEPT');
+    console.log("Awwww, NO SET FOR YOU",
         mRequestChain.serialize()
     )
 

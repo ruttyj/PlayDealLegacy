@@ -2855,7 +2855,14 @@ class GameUI extends React.Component {
       </FlexRow>
     );
 
-    const fullScreenButtonContents = null /*(
+    const fullScreenButtonContents = (
+      <FlexRow
+        style={{ flexShrink: 0, cursor: "pointer" }}
+        onClick={() => game.sendSound("na_na_poo_poo")}
+      >
+        Na-Na
+      </FlexRow>
+      /*
       <FlexRow
         style={{ flexShrink: 0, cursor: "pointer" }}
         onClick={toggleFullScreen}
@@ -2866,8 +2873,9 @@ class GameUI extends React.Component {
           <FullscreenIcon />
         )}
       </FlexRow>
+      */
     );
-    */
+  
 
     let gameContents = null;
     gameContents = (
