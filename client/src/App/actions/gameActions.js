@@ -749,6 +749,14 @@ const sendSound = (con, roomCode, soundKey) => async (dispatch) => {
   );
 };
 
+const emit = (con, roomCode, subject, action, payload) => async (dispatch) => {
+  await con.emitSingleRequest(
+    subject,
+    action,
+    defaultProps(roomCode, payload)
+  );
+};
+
 
 const attachGameListeners = (con) => (dispatch) => {
   let listnerTree = con.listnerTree;
@@ -814,6 +822,7 @@ export default {
 
   // Chat
   sendSound,
+  emit,
 
   // Property actions
   changeWildPropertySetKey,

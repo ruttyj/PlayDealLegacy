@@ -2366,6 +2366,14 @@ function Game(ref) {
     await props().sendSound(connection(), getRoomCode(), soundKey);
   }
 
+  async function sendPrivateSound(playerKey, soundKey){
+    await props().emit(connection(), getRoomCode(), 'CHAT', 'SEND_PRIVATE_MESSAGE', {
+      type: "sound",
+      value: soundKey,
+      playerKey: playerKey,
+    })
+  }
+
   //respondToPropertyTransfer
   const publicScope = {
     // REQUESTS
@@ -2374,7 +2382,9 @@ function Game(ref) {
     getAllPlayerRequestData,
 
     // SOUNDS
+    sounds,
     sendSound,
+    sendPrivateSound,
 
     // COLLECTIONS
     getAllCollectionData,

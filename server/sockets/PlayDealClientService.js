@@ -2280,6 +2280,36 @@ class PlayDealClientService {
         },
       },
       CHAT: {
+        SEND_PRIVATE_MESSAGE: (props) => {
+          const [subject, action] = ["CHAT", "SEND_PRIVATE_MESSAGE"];
+          const socketResponses = SocketResponseBuckets();
+          return handlePerson(
+            props,
+            (props2) => {
+              let { type, value, playerKey, thisPersonId } = props2;
+              let { personManager } = props2;
+
+              let status = "success";
+              let payload = {
+                type,
+                visibility: "private",
+                from: thisPersonId,
+                value
+              };
+
+              let receivingPerson = personManager.getPerson(playerKey);
+              if (isDef(receivingPerson)) {
+                socketResponses.addToSpecific(
+                  receivingPerson.getClientId(),
+                  makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
+                );
+              }
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
         SEND_MESSAGE: (props) => {
           const [subject, action] = ["CHAT", "SEND_MESSAGE"];
           const socketResponses = SocketResponseBuckets();
@@ -2287,10 +2317,13 @@ class PlayDealClientService {
             props,
             (props2) => {
               let { type, value } = props2;
+              let { thisPersonId } = props2;
 
               let status = "success";
               let payload = {
                 type,
+                visibility: "public",
+                from: thisPersonId,
                 value
               };
   

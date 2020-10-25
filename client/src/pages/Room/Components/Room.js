@@ -2747,8 +2747,10 @@ class GameUI extends React.Component {
           return (
             <PersonListItem
               key={person.name}
+              id={person.id}
               name={person.name}
               isMe={isMe}
+              game={game}
               isHost={game.person.isHost(person.id)}
               isReady={game.isPersonReady(person.id)}
               statusLabel={game.getPersonStatusLabel(person.id)}
@@ -2868,15 +2870,15 @@ class GameUI extends React.Component {
           </div>
         </ArrowToolTip>
 
-        <ArrowToolTip title="not_bad" placement="bottom">
-          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("not_bad")}>
-          🤔
-          </div>
-        </ArrowToolTip>
-
         <ArrowToolTip title="Mocking" placement="bottom">
           <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("na_na")}>
           🤪
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="not_bad" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("not_bad")}>
+          🤔
           </div>
         </ArrowToolTip>
 
@@ -2889,12 +2891,6 @@ class GameUI extends React.Component {
         <ArrowToolTip title="shazaam" placement="bottom">
           <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("shazaam")}>
           ⚡️
-          </div>
-        </ArrowToolTip>
-        
-        <ArrowToolTip title="annoying_excuse_me" placement="bottom">
-          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("annoying_excuse_me")}>
-          🗣
           </div>
         </ArrowToolTip>
 
@@ -2916,12 +2912,7 @@ class GameUI extends React.Component {
           </div>
         </ArrowToolTip>
         
-        
-        
-        
-        
-        
-        
+      
       </FlexRow>
       /*
       <FlexRow

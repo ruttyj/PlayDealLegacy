@@ -23,6 +23,7 @@ import {
   FlexCenter,
   FullFlexCenter,
   FullFlexColumn,
+  FullFlexColumnCenter,
   FullFlexRow,
 } from "../Flex";
 
@@ -716,9 +717,12 @@ const RequestScreen = (props) => {
 
         if (!isGood) {
           requestStatusContent = (
-            <FullFlexCenter
+            <FullFlexColumnCenter
               style={{ minWidth: "200px" }}
-            >{`${fromTargetName} ${isTense} responding...`}</FullFlexCenter>
+            >
+              {`${fromTargetName} ${isTense} responding...`}
+              {!amITarget && (<div><br/><div style={{cursor: "pointer"}} onClick={() => {game.sounds.annoying_excuse_me.play(); game.sendPrivateSound(targetId, "annoying_excuse_me");}}>Nudge 🗣</div></div>)}
+            </FullFlexColumnCenter>
           );
         } else {
           requestStatusContent = (

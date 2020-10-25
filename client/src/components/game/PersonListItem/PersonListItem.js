@@ -27,8 +27,9 @@ function PersonListItem(props) {
     onNameChange,
     isEditingName = false,
     nameInputValue,
+    game,
   } = props;
-  let { name, isMe, isReady, isHost, statusLabel } = props;
+  let { id, name, isMe, isReady, isHost, statusLabel } = props;
 
   return (
     <ListItem
