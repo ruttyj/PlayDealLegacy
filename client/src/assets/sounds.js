@@ -118,6 +118,18 @@ let confirmSprite1 = Sound({
   volume: 0.05,
 });
 
+
+
+let booSprite = Sound({
+  src: "/audio/booo.mp3",
+  sprite: {
+    normal: [0, 4000, false],
+  },
+  rate: 1,
+  overlap: 50,
+  volume: 0.4,
+});
+
 let birthdaySprite = Sound({
   src: "/audio/birthday_trumpets.mp3",
   sprite: {
@@ -234,6 +246,11 @@ let sounds = {
     overlap: 50,
     volume: 0.5,
   }),
+  boo: {
+    play(num = 1) {
+      booSprite.play(num, "normal");
+    }
+  },
   birthday: {
     play(num = 1) {
       birthdaySprite.play(num, "normal");
@@ -266,7 +283,7 @@ let sounds = {
     src: "/audio/awww.mp3",
     rate: 1,
     overlap: 50,
-    volume: 0.1,
+    volume: 1,
   }),
   quietAcceptChime: {
     play(num = 1) {
@@ -320,7 +337,7 @@ let sounds = {
     volume: 0.5,
     sprite: {
       v1: [0, 1000, false],
-      v2: [1500, 3500, false],
+      v2: [1500, 3000, false],
       v3: [4000, 5000, false],
     },
   }),
@@ -361,7 +378,7 @@ let sounds = {
     rate: 1,
     loop: false,
     overlap: 100,
-    volume: 0.5,
+    volume: 0.4,
   }),
 
   wise_guy_eh: Sound({

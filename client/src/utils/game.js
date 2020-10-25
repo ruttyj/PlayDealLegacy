@@ -68,6 +68,9 @@ function Game(ref) {
 
     on(["CHAT", "RECEIVE_MESSAGE"], async (data) => {
 
+      let payload = data.payload;
+      let value = payload.value;
+      let type  = payload.type;
       /*
       na_na_poo_poo
       super_genius
@@ -75,8 +78,53 @@ function Game(ref) {
       shazaam
       annoying_excuse_me
       */
-      console.log("na_na_poo_poo", data);
-      sounds.na_na_poo_poo.play();
+     //sounds.farting.play(1, "v1")
+     console.log({value, type});
+
+      if (type === "sound") {
+        switch(value) {
+
+          case "annoying_excuse_me":
+            sounds.annoying_excuse_me.play();
+            break;
+
+          case "boo":
+            sounds.boo.play(1, "normal");
+            break;
+
+          case "not_bad":
+            sounds.not_bad.play(1);
+            break;
+            
+          case "shazaam":
+            sounds.shazaam.play(1);
+            break;
+
+          case "super_genius":
+            sounds.super_genius.play(1);
+            break;
+          case "na_na":
+            sounds.na_na.play(1, "main");
+            break;
+          case "na_na_poo_poo":
+            sounds.na_na_poo_poo.play();
+            break;
+          case "awww":
+            sounds.awww.play();
+            break;
+          case "farting":
+            let num = Math.floor(Math.random() * 3) + 1;
+            let v = `v${num}`;
+            sounds.farting.play(1, v);
+            break;
+          default:
+            // code block
+        }
+      
+      }
+
+      console.log(["CHAT", "RECEIVE_MESSAGE"], data);
+      
 
     });
 

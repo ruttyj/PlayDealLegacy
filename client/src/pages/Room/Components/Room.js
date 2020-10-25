@@ -2857,10 +2857,71 @@ class GameUI extends React.Component {
 
     const fullScreenButtonContents = (
       <FlexRow
-        style={{ flexShrink: 0, cursor: "pointer" }}
-        onClick={() => game.sendSound("na_na_poo_poo")}
+        style={{ flexShrink: 0 }}
       >
-        Na-Na
+        
+
+
+        <ArrowToolTip title="NaNaNa-PooPoo" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("na_na_poo_poo")}>
+            😜
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="not_bad" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("not_bad")}>
+          🤔
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="Mocking" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("na_na")}>
+          🤪
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="Super genious" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("super_genius")}>
+          🧑‍🎓
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="shazaam" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("shazaam")}>
+          ⚡️
+          </div>
+        </ArrowToolTip>
+        
+        <ArrowToolTip title="annoying_excuse_me" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("annoying_excuse_me")}>
+          🗣
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="Awww" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("awww")}>
+            😢
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="Fart" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("farting")}>
+            🌬️
+          </div>
+        </ArrowToolTip>
+
+        <ArrowToolTip title="Boo" placement="bottom">
+          <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("boo")}>
+          👎
+          </div>
+        </ArrowToolTip>
+        
+        
+        
+        
+        
+        
+        
       </FlexRow>
       /*
       <FlexRow
