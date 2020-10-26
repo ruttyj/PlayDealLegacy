@@ -6041,14 +6041,39 @@ class PlayDealClientService {
   
                 checkpoints.set("success", false);
   
+
+                let doTheDecline = function ({
+                  request,
+                  affected,
+                  affectedIds,
+                }) {
+                  request.decline(consumerData);
+                  request.setTargetSatisfied(true);
+                  request.close(responseKey);
+                  affected.requests = true;
+                  affected.requests = true;
+                  affectedIds.requests.push(request.getId());
+                };
+
+
+                let doTheAccept = function({
+                  request,
+                  affected,
+                  affectedIds,
+                }){
+                  request.accept(consumerData);
+                  request.setTargetSatisfied(true);
+                  request.close(responseKey);
+                  affected.requests = true;
+                  affectedIds.requests.push(request.getId());
+                }
                 switch (responseKey) {
                   case "accept":
-                    request.accept(consumerData);
-  
-                    request.setTargetSatisfied(true);
-                    request.close(responseKey);
-                    affected.requests = true;
-                    affectedIds.requests.push(request.getId());
+                    doTheAccept({
+                      request,
+                      affected,
+                      affectedIds
+                    })
                     checkpoints.set("success", true);
   
                     break;
@@ -6062,18 +6087,7 @@ class PlayDealClientService {
                       affected.hand = true;
                       affected.activePile = true;
   
-                      let doTheDecline = function ({
-                        request,
-                        affected,
-                        affectedIds,
-                      }) {
-                        request.decline(consumerData);
-                        request.setTargetSatisfied(true);
-                        request.close(responseKey);
-                        affected.requests = true;
-                        affected.requests = true;
-                        affectedIds.requests.push(request.getId());
-                      };
+                      
                       doTheDecline({
                         request,
                         affected,

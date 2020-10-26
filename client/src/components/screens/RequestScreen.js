@@ -716,12 +716,21 @@ const RequestScreen = (props) => {
         let requestStatusContent = "";
 
         if (!isGood) {
+          let nudgeContents = null;
+          if (!amITarget) {
+            let callback = () => {
+              game.sounds.annoying_excuse_me.play(); 
+              game.sendPrivateSound(targetId, "annoying_excuse_me");
+            }
+            nudgeContents = <div><br/><div style={{cursor: "pointer"}} onClick={callback}>Nudge 🗣</div></div>;
+          }
+
           requestStatusContent = (
             <FullFlexColumnCenter
               style={{ minWidth: "200px" }}
             >
               {`${fromTargetName} ${isTense} responding...`}
-              {!amITarget && (<div><br/><div style={{cursor: "pointer"}} onClick={() => {game.sounds.annoying_excuse_me.play(); game.sendPrivateSound(targetId, "annoying_excuse_me");}}>Nudge 🗣</div></div>)}
+              {nudgeContents}
             </FullFlexColumnCenter>
           );
         } else {

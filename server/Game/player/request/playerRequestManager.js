@@ -110,7 +110,7 @@ const PlayerRequestManager = function () {
     thisRequest,
     { affected, affectedIds, checkpoints }
   ) {
-    // sure it did go away.... but its baccccck
+    // sure, it did go away.... but its baccccck
     let reconstruct = thisRequest.getPayload("reconstruct");
     let newRequest = loadRequest(reconstruct);
     newRequest.setOnAcceptCallback(
@@ -154,9 +154,21 @@ const PlayerRequestManager = function () {
     let handleOnAccept = _justSayNoClose;
     let handleOnDecline = _justSayNoTransitive;
     let isJustSayNo = request.getType() === "justSayNo";
+    let grandParentId = request.getParentId();
+    let grandParent = isDef(grandParentId) ? getRequestById(grandParentId) : null;
+    let grandParentTypeIsJustSayNo = isDef(grandParent) ? grandParent.getType() === "justSayNo" : false;
     if (isJustSayNo) {
       handleOnAccept = _reconstructRequest;
       handleOnDecline = _justSayNoTransitive;
+
+      // I know this is a horrible solution to the 3rd "just say no" problem      
+      if(grandParentTypeIsJustSayNo) {
+        handleOnAccept = _justSayNoClose;
+        handleOnDecline = _reconstructRequest;
+      } else {
+        handleOnAccept = _reconstructRequest;
+        handleOnDecline = _justSayNoTransitive;
+      }
       payload.reconstruct = request.getPayload("reconstruct");
       payload.activeOnAccept = request.getPayload("reconstructOnDecline");
       payload.reconstructOnAccept = request.getPayload("reconstructOnAccept");
@@ -193,6 +205,7 @@ const PlayerRequestManager = function () {
       authorKey: request.getTargetKey(),
       targetKey: request.getAuthorKey(),
       status: "open",
+      parentId: request.getId(),
       payload: {
         // store data to reconstruct original request
         ...payload,
