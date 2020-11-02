@@ -4,7 +4,6 @@ const socketFolder = `${serverFolder}/sockets`;
 const clientFolder = `${rootFolder}/client`;
 const utilsFolder = `${serverFolder}/utils`;
 const playDealFolder = `${serverFolder}/Game`;
-
 const assert = require("chai").assert;
 const {
   isDef,
@@ -20,6 +19,7 @@ const checks = require(`../checks/`);
 const FakeHost = require(`${socketFolder}/FakeHost.js`);
 const PlayDealClientService = require(`${socketFolder}/PlayDealClientService.js`);
 const createConnection = require(`${clientFolder}/src/utils/clientSocket.js`);
+const fs = require('fs');
 
 
 
@@ -47,6 +47,9 @@ describe("Sample Game", async function () {
   const intialDrawPileSize = 96;
   let runningDrawPileSize = intialDrawPileSize;
 
+
+
+  
   const roomCode = "AAAA";
   const player1Name = "Peter";
   const player2Name = "Merry";
@@ -478,6 +481,7 @@ describe("Sample Game", async function () {
         true,
         "Player 1 can start the game"
       );
+      //fs.writeFile(`test_${testNumber}.json`, JSON.stringify(template), () => {});
     });
 
   let otherResp = null;
@@ -2770,18 +2774,14 @@ describe("Sample Game", async function () {
       );
 
       confirm = responses.find(
-        (r) =>
-          r.subject === "RESPONSES" && r.action === "RESPOND_TO_COLLECT_VALUE"
+        (r) => r.subject === "RESPONSES" && r.action === "RESPOND_TO_COLLECT_VALUE"
       );
       assert.equal(confirm.status, "success", "action should succeed");
 
       let playerBank = responses.find(
         (r) => r.subject === "PLAYER_BANKS" && r.action === "GET_KEYED"
       );
-      assert.exists(
-        playerBank.payload.items[thisPersonId],
-        "player bank has been sent"
-      );
+      assert.exists(playerBank.payload.items[thisPersonId], "player bank has been sent");
       assert.notInclude(
         playerBank.payload.items[thisPersonId].cardIds,
         payWithCardId,
@@ -2793,8 +2793,7 @@ describe("Sample Game", async function () {
       );
 
       assert.include(
-        request.payload.items[requestId].payload.transaction.items.toAuthor
-          .items.bank.items,
+        request.payload.items[requestId].payload.transaction.items.toAuthor.items.bank.items,
         payWithCardId,
         "card is flagged to be transfered to author"
       );

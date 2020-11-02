@@ -2374,8 +2374,18 @@ function Game(ref) {
     })
   }
 
+  async function dumpState(){
+    await props().emit(connection(), getRoomCode(), "CHEAT", "DUMP_STATE",  {})
+  }
+
+
+
   //respondToPropertyTransfer
   const publicScope = {
+
+    // Misc
+    dumpState,
+
     // REQUESTS
     getAllPreviousRequestsData,
     getAllRequestsData: getAllRequestData,

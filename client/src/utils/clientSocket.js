@@ -95,6 +95,10 @@ function createSocketConnection(socket) {
           if (isDef(response)) {
             let subject = els(response.subject, null);
             let action = els(response.action, null);
+
+            if (subject === "CHEAT") {
+              console.log(subject, action, response);
+            }
             let payload = els(response.payload, null);
             if (isDef(mRetreived[subject])) {
               listnerTree.emit([subject, action], { payload, subject, action });

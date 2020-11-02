@@ -2770,6 +2770,7 @@ class GameUI extends React.Component {
   }
 
   render(ans) {
+    window.dumpState = game.dumpState;
     let state = this.stateBuffer;
     let contentSize = {
       width: this.props.width || -1,
@@ -2861,8 +2862,6 @@ class GameUI extends React.Component {
       <FlexRow
         style={{ flexShrink: 0 }}
       >
-        
-
 
         <ArrowToolTip title="NaNaNa-PooPoo" placement="bottom">
           <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("na_na_poo_poo")}>

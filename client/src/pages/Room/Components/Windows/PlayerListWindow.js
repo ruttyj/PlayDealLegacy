@@ -2,20 +2,7 @@ import {
   React,
   useState,
   Utils,
-  FillFooter,
-  DragListH,
-  DragListV,
-  wallpapers,
-  wallpaperNames,
-  SizeBackgroundColor,
-  motion,
-  useSpring,
-  useTransform,
-  motionValue,
 } from "../../../../packages/ReactWindows/Components/Imports/";
-import ReactScrollWheelHandler from "react-scroll-wheel-handler";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 import FillContainer from "../../../../packages/ReactWindows/Components/Containers/FillContainer/FillContainer";
@@ -29,31 +16,12 @@ import { ArrowToolTip } from "../../../../packages/ReactWindows/Exports/Exports"
 import List from "@material-ui/core/List";
 import Divider from "@material-ui/core/Divider";
 
-import ListItemText from "@material-ui/core/ListItemText";
-import ListSubheader from "@material-ui/core/ListSubheader";
-import PersonListItem from "../../../../components/game/PersonListItem/";
 import { deepOrange, green, grey } from "@material-ui/core/colors";
 import CreateIcon from "@material-ui/icons/Create";
-
-import Input from "@material-ui/core/Input";
 const {
-  els,
   isDef,
-  isArr,
-  isFunc,
   classes,
-  getNestedValue,
-  setImmutableValue,
 } = Utils;
-
-function WindowFooter(props = {}) {
-  const { children } = props;
-  return (
-    <FillFooter height={40} classNames={["footer", "actions", "center-center"]}>
-      {children}
-    </FillFooter>
-  );
-}
 
 function createSetUsernameWindow(props) {
   let { windowManager, game, action, isFocused = true } = props;

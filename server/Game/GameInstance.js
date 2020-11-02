@@ -39,6 +39,7 @@ const {
   log,
   els,
   isDef,
+  isArr,
   isDefNested,
   jsonLog,
   getNestedValue,
@@ -52,6 +53,7 @@ const PlayerManager = require("./player/playerManager.js");
 const CardManager = require("./card/cardManager.js");
 const TurnManager = require("./player/turnManager.js");
 
+const Transaction = require(`./player/request/transfer/Transaction.js`);
 
 /*
   class GameConfig {
@@ -1295,10 +1297,568 @@ let GameInstance = () => {
     }
   }
 
+
+
+  function requestRent(theGoods) {
+    const game = getPublic();
+    const currentTurn = getCurrentTurn();
+    const requestManager = getRequestManager();
+
+    const { thisPersonId, affectedIds, affected, checkpoints } = theGoods;
+    
+    const {
+      cardId, 
+      collectionId,
+      baseValue,
+      targetPeopleIds,
+      validAugmentCardsIds,
+    } = theGoods;
+
+    let hand = game.getPlayerHand(thisPersonId);
+    let activePile = game.getActivePile();
+    activePile.addCard(hand.giveCard(cardId));
+    affected.activePile = true;
+    currentTurn.setActionPreformed("REQUEST", game.getCard(cardId));
+    let augmentUsesActionCount = game.getConfig(CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION, true);
+    if (augmentUsesActionCount) {
+      validAugmentCardsIds.forEach((augCardId) => {
+        currentTurn.setActionPreformed(
+          "REQUEST",
+          game.getCard(augCardId)
+        );
+        activePile.addCard(hand.giveCard(augCardId));
+      });
+    }
+
+    function onCancelCallback(req, { affectedIds, affected }) {
+      // If augmented remove an augment
+
+      // data may be stored in differnt locations depending if it was a decline card
+      let serializedData;
+      let isJustSayNo = req.getType() === "justSayNo";
+      if (isJustSayNo) {
+        serializedData = req.getPayload("reconstruct");
+      } else {
+        serializedData = req.serialize();
+      }
+
+      if (isDef(serializedData)) {
+        let authorKey = getNestedValue(serializedData, "authorKey");
+        let targetKey = getNestedValue(serializedData, "targetKey");
+        let baseValue = getNestedValue(
+          serializedData,
+          ["payload", "baseValue"],
+          0
+        );
+        let actionNum = getNestedValue(serializedData, [
+          "payload",
+          "actionNum",
+        ]);
+        let originalAugmentIds = getNestedValue(
+          serializedData,
+          ["payload", "augmentCardIds"],
+          []
+        );
+        let actionCardId = getNestedValue(serializedData, [
+          "payload",
+          "actionCardId",
+        ]);
+        let actionCollectionId = getNestedValue(serializedData, [
+          "payload",
+          "actionCollectionId",
+        ]);
+
+        if (
+          isDef(authorKey) &&
+          isDef(targetKey) &&
+          isDef(actionCollectionId) &&
+          isDef(actionNum) &&
+          isDef(actionCardId) &&
+          originalAugmentIds.length > 0 &&
+          isDef(baseValue)
+        ) {
+
+          let shouldRemoveAugment = originalAugmentIds.length > 0;
+
+          // if augment was presant remove (1) augment
+          if (shouldRemoveAugment) {
+            let newAugmentIds = originalAugmentIds.slice(1); // return all excluding first element
+            let request = createRequest({
+              authorKey: authorKey,
+              targetKey: targetKey,
+              actionNum: actionNum,
+              baseValue: baseValue,
+              augmentCardsIds: newAugmentIds,
+            });
+
+            affected.requests = true;
+            affectedIds.requests.push(request.getId());
+            affectedIds.playerRequests.push(request.getAuthorKey());
+            affectedIds.playerRequests.push(request.getTargetKey());
+          }
+        } else {
+          console.log("wont make new request", [
+            isDef(actionCollectionId),
+            isDef(actionNum),
+            isDef(actionCardId),
+            originalAugmentIds.length > 0,
+            isDef(baseValue),
+          ]);
+        }
+      }
+    }
+
+    function createRequest({
+      authorKey,
+      targetKey,
+      actionNum,
+      baseValue = 0,
+      augmentCardsIds = [],
+    }) {
+      let chargeValue = baseValue;
+      let validAugmentCardsIds = [];
+      let augments = {};
+      if (isArr(augmentCardsIds)) {
+        augmentCardsIds.forEach((augCardId) => {
+          let canApply = game.canApplyRequestAugment(
+            cardId,
+            augCardId,
+            validAugmentCardsIds,
+            augmentCardsIds
+          );
+          if (canApply) {
+            validAugmentCardsIds.push(augCardId);
+            let card = game.getCard(augCardId);
+            augments[augCardId] = getNestedValue(
+              card,
+              ["action", "agument"],
+              {}
+            );
+          }
+        });
+      }
+
+      chargeValue = game.applyActionValueAugment(
+        validAugmentCardsIds,
+        chargeValue
+      );
+      let transaction = Transaction();
+      let request = requestManager.createRequest({
+        type: "collectValue",
+        authorKey: authorKey,
+        targetKey: targetKey,
+        status: "open",
+        actionNum: actionNum,
+        payload: {
+          actionCardId: cardId,
+          actionCollectionId: collectionId,
+          actionNum: actionNum,
+          baseValue: baseValue,
+          amountDue: chargeValue,
+          amountRemaining: chargeValue,
+          transaction: transaction,
+          augments: augments,
+          augmentCardIds: validAugmentCardsIds, // deprecated
+        },
+        onAcceptCallback: (req, args) => {},
+        onDeclineCallback: onCancelCallback,
+        description: `Charge value in rent`,
+      });
+
+      return request;
+    }
+
+    let actionNum = currentTurn.getActionCount();
+    targetPeopleIds.forEach((targetPersonId) => {
+      // Create a transaction to transfer to author
+      let request = createRequest({
+        authorKey: thisPersonId,
+        targetKey: targetPersonId,
+        actionNum: actionNum,
+        baseValue: baseValue,
+        augmentCardsIds: validAugmentCardsIds,
+      });
+      affectedIds.requests.push(request.getId());
+      affected.requests = true;
+      affected.activePile = true;
+    });
+
+    checkpoints.set("success", true);
+  }
+
+
+  function declineCollectValueRequest ({
+    request,
+    checkpoints,
+    game,
+    thisPersonId,
+    cardId,
+    affected,
+    affectedIds,
+  }) {
+
+    let consumerData = {
+      request,
+      affected,
+      affectedIds,
+      thisPersonId,
+    }
+    
+    let requestManager = getRequestManager();
+
+    request.setStatus("decline");
+
+    let hand = game.getPlayerHand(thisPersonId);
+    checkpoints.set("isCardInHand", false);
+
+    if (hand.hasCard(cardId)) {
+      checkpoints.set("isCardInHand", true);
+
+      //can the card decline the request
+      if (
+        game.doesCardHaveTag(cardId, "declineRequest")
+      ) {
+        game
+          .getActivePile()
+          .addCard(
+            game
+              .getPlayerHand(thisPersonId)
+              .giveCard(cardId)
+          );
+        affected.hand = true;
+
+        affected.activePile = true;
+        let doTheDecline = function ({
+          affected,
+          affectedIds,
+          request,
+          checkpoints,
+        }) {
+          let requestPayload = request.getPayload();
+          let transaction = requestPayload.transaction;
+          let done = transaction
+            .getOrCreate("done")
+            .getOrCreate("done");
+          done.add("done");
+          done.confirm("done");
+          checkpoints.set("success", true);
+          request.setTargetSatisfied(true);
+          request.decline(consumerData);
+          request.close("decline");
+          affected.requests = true;
+          affectedIds.requests.push(request.getId());
+        };
+
+        if (
+          game.doesCardHaveTag(cardId, "contestable")
+        ) {
+
+          let sayNoRequest = requestManager.makeJustSayNo(
+            request,
+            cardId
+          );
+          affectedIds.requests.push(
+            sayNoRequest.getId()
+          );
+          affectedIds.playerRequests.push(
+            sayNoRequest.getTargetKey()
+          );
+
+          doTheDecline({
+            request,
+            affected,
+            affectedIds,
+            checkpoints,
+          });
+        } else {
+          doTheDecline({
+            request,
+            affected,
+            affectedIds,
+            checkpoints,
+          });
+        }
+      }
+    }
+  }
+
+  function acceptCollectValueRequest({
+    player,
+    request,
+    affected,
+    affectedIds,
+    payWithBank,
+    payWithProperty,
+    thisPersonId,
+  }){
+
+
+    let game = getPublic();
+    let consumerData = {
+      request,
+      affected,
+      affectedIds,
+      thisPersonId,
+      player,
+    }
+
+    request.setStatus("accept");
+    let affectedCollections = {};
+
+    let requestPayload = request.getPayload();
+    let transaction = requestPayload.transaction; // assumes is created with request
+    let { amountRemaining } = requestPayload;
+
+
+    // Pay with bank
+    if (isArr(payWithBank)) {
+      let playerBank = player.getBank();
+      payWithBank.forEach((source) => {
+        let { cardId } = source;
+
+        if (playerBank.hasCard(cardId)) {
+          if (amountRemaining > 0) {
+            let transferBank = transaction
+              .getOrCreate("toAuthor")
+              .getOrCreate("bank");
+            affected.bank = true;
+
+            let card = playerBank.getCard(cardId);
+            let cardValue = card.value;
+
+            let affectsValue = false;
+            if (
+              [Infinity, "Infinity"].includes(cardValue)
+            ) {
+              amountRemaining = 0;
+              affectsValue = true;
+            } else {
+              if (cardValue > 0) {
+                amountRemaining -= cardValue;
+                affectsValue = true;
+              }
+            }
+
+            if (affectsValue) {
+              playerBank.removeCard(cardId);
+              transferBank.add(cardId);
+            }
+          }
+        }
+      });
+    }
+
+    // Pay with property
+    if (isArr(payWithProperty)) {
+      let collectionManager = game.getCollectionManager();
+      payWithProperty.forEach((source) => {
+        let { collectionId, cardId } = source;
+
+        // required data defiend
+        if (isDef(collectionId) && isDef(cardId)) {
+          if (player.hasCollectionId(collectionId)) {
+            let collection = collectionManager.getCollection(
+              collectionId
+            );
+
+            if (collection.hasCard(cardId)) {
+              let transferProperty = transaction
+                .getOrCreate("toAuthor")
+                .getOrCreate("property");
+              // is valid card in collection
+              let card = collection.getCard(cardId);
+              let cardValue = getNestedValue(
+                card,
+                "value",
+                0
+              );
+
+              let affectsValue = false;
+              if (
+                [Infinity, "Infinity"].includes(
+                  cardValue
+                )
+              ) {
+                amountRemaining = 0;
+                affectsValue = true;
+              } else {
+                if (cardValue > 0) {
+                  amountRemaining -= cardValue;
+                  affectsValue = true;
+                }
+              }
+              //card has a value
+              if (affectsValue) {
+                collection.removeCard(cardId);
+                game.cleanUpFromCollection(thisPersonId, collection);
+                transferProperty.add(card.id);
+                affectedCollections[collection.getId()] = true;
+              }
+            }
+          }
+        }
+      });
+    }
+
+    if (amountRemaining <= 0) {
+      status = "success";
+    } else {
+      // Player has nothing on the table of value
+      let collectionManager = game.getCollectionManager();
+      let allMyCollectionIds = player.getAllCollectionIds();
+      let hasPayableProperty = false;
+      if (allMyCollectionIds.length > 0) {
+        allMyCollectionIds.forEach((collectionId) => {
+          let collection = collectionManager.getCollection(
+            collectionId
+          );
+          let collectionCards = collection.getAllCards();
+          if (collectionCards.length > 0) {
+            for (
+              let i = 0;
+              i < collectionCards.length;
+              ++i
+            ) {
+              let card = collectionCards[i];
+              if (isDef(card.value) && card.value > 0) {
+                hasPayableProperty = true;
+                break;
+              }
+            }
+          }
+        });
+      }
+
+      let hasBank =
+        player.getBank().getTotalValue() > 0;
+      if (!hasPayableProperty && !hasBank) {
+        status = "success";
+      }
+    }
+
+    if (status === "success") {
+      request.setTargetSatisfied(true);
+      request.accept(consumerData);
+    }
+
+
+    // If collections were affected emit updates
+    affectedIds.collections = Object.keys(affectedCollections);
+
+    
+    return status;
+  }
+
+
+  function respondToJustSayNo(consumerData) {
+    let { cardId, requestId, responseKey } = consumerData;
+    let game = getPublic();
+    let {
+      affected,
+      affectedIds,
+      checkpoints,
+      thisPersonId,
+    } = consumerData;
+
+    let validResponses = {
+      accept: 1,
+      decline: 1,
+    };
+
+    let currentTurn = game.getCurrentTurn();
+    let requestManager = currentTurn.getRequestManager();
+    let request = requestManager.getRequest(requestId);
+
+    if (
+      isDef(request) &&
+      !request.getTargetSatisfied() &&
+      request.getTargetKey() === thisPersonId &&
+      request.getType() === "justSayNo"
+    ) {
+      checkpoints.set("isValidResponseKey", false);
+      if (isDef(responseKey) && isDef(validResponses[responseKey])) {
+        checkpoints.set("isValidResponseKey", true);
+
+        checkpoints.set("success", false);
+
+
+        let doTheDecline = function ({
+          request,
+          affected,
+          affectedIds,
+        }) {
+          request.decline(consumerData);
+          request.setTargetSatisfied(true);
+          request.close(responseKey);
+          affected.requests = true;
+          affected.requests = true;
+          affectedIds.requests.push(request.getId());
+        };
+
+
+        let doTheAccept = function({
+          request,
+          affected,
+          affectedIds,
+        }){
+          request.accept(consumerData);
+          request.setTargetSatisfied(true);
+          request.close(responseKey);
+          affected.requests = true;
+          affectedIds.requests.push(request.getId());
+        }
+        switch (responseKey) {
+          case "accept":
+            doTheAccept({
+              request,
+              affected,
+              affectedIds
+            })
+            checkpoints.set("success", true);
+
+            break;
+          case "decline":
+            if (game.doesCardHaveTag(cardId, "declineRequest")) {
+              game
+                .getActivePile()
+                .addCard(
+                  game.getPlayerHand(thisPersonId).giveCard(cardId)
+                );
+              affected.hand = true;
+              affected.activePile = true;
+
+              
+              doTheDecline({
+                request,
+                affected,
+                affectedIds,
+                checkpoints,
+              });
+
+              checkpoints.set("success", true);
+            }
+            break;
+          default:
+        }
+      }
+    }
+  }
+  
+
   function getPublic() {
     return {
+
+      // MISC
+      requestRent,
+      declineCollectValueRequest,
+      acceptCollectValueRequest,
+      respondToJustSayNo,
+
+
+
       //====================================
       getPlayerManager,
+      getCardManager,
       getTurnManager,
       getRequestManager,
       getCollectionManager,

@@ -259,6 +259,7 @@ class RequestChain extends Base {
 
 describe("", async function () {
   it(`Do the thing`, async () => {
+    /*
     let responses = ['SAY_NO'];
     let doActionTokens = ['DEALBREAKER', 'NOTHING'];
 
@@ -290,6 +291,6 @@ describe("", async function () {
     console.log("Awwww, NO SET FOR YOU",
         mRequestChain.serialize()
     )
-
+    //*/
   });
 }); 
