@@ -1,4 +1,7 @@
 function buildOrderedTree() {
+    let itemField = 'items';
+    let orderField = 'order';
+
     /**
      * Ordered Tree
      * 
@@ -117,13 +120,18 @@ function buildOrderedTree() {
         {
             let _isNode = this._isNode;
             function _recursive(ref) {
-                let result = {};
+                let result = {
+                    [itemField]:  {},
+                    [orderField]: [],
+                };
                 ref.forEach((value, key) => {
                     if (_isNode(value)) {
-                        result[key] = _recursive(value);
+                        result[itemField][key] = _recursive(value);
                     } else {
-                        result[key] = value;
+                        result[itemField][key] = value;
                     }
+                    result[orderField].push(key);
+
                 })
                 return result;
             }

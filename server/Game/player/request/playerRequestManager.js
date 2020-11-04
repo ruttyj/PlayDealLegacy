@@ -10,6 +10,12 @@ const {
 } = require("../../utils.js");
 const Transaction = require("./transfer/Transaction.js");
 
+const serverFolder = '../../..';
+const buildAffected = require(`${serverFolder}/Lib/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+const OrderedTree = buildOrderedTree();
+const Affected = buildAffected({OrderedTree});
+
 const PlayerRequestManager = function () {
 
   let mState;
@@ -108,7 +114,7 @@ const PlayerRequestManager = function () {
 
   function _reconstructRequest(
     thisRequest,
-    { affected, affectedIds, checkpoints }
+    { affected, affectedIds, _Affected, checkpoints }
   ) {
     // sure, it did go away.... but its baccccck
     let reconstruct = thisRequest.getPayload("reconstruct");
@@ -120,28 +126,44 @@ const PlayerRequestManager = function () {
       thisRequest.getPayload("reconstructOnDecline")
     );
 
-    affected.requests = true;
-    affectedIds.requests.push(newRequest.getId());
-    affectedIds.playerRequests.push(newRequest.getAuthorKey());
-    affectedIds.playerRequests.push(newRequest.getTargetKey());
+    if (isDef(_Affected)){
+      _Affected.setAffected('REQUEST', newRequest.getId(), Affected.ACTION.UPDATE);
+      _Affected.setAffected('PLAYER_REQUEST', newRequest.getAuthorKey(), Affected.ACTION.UPDATE);
+      _Affected.setAffected('PLAYER_REQUEST', newRequest.getTargetKey(), Affected.ACTION.UPDATE);
+      _Affected.setAffected('REQUEST', thisRequest.getId(), Affected.ACTION.UPDATE);
+
+    } else {
+      affected.requests = true;
+      affectedIds.requests.push(newRequest.getId());
+      affectedIds.playerRequests.push(newRequest.getAuthorKey());
+      affectedIds.playerRequests.push(newRequest.getTargetKey());
+      affectedIds.requests.push(thisRequest.getId());
+    }
 
     _justSayNoClose(thisRequest);
-
-    affectedIds.requests.push(thisRequest.getId());
   }
+
 
   function _justSayNoTransitive(
     thisRequest,
-    { cardId, affected, affectedIds, checkpoints }
+    { cardId, affected, affectedIds, _Affected, checkpoints }
   ) {
     let counterJustSayNo = makeJustSayNo(thisRequest, cardId);
 
-    affectedIds.requests.push(thisRequest.getId());
 
-    affected.requests = true;
-    affectedIds.requests.push(counterJustSayNo.getId());
-    affectedIds.playerRequests.push(counterJustSayNo.getAuthorKey());
-    affectedIds.playerRequests.push(counterJustSayNo.getTargetKey());
+    if (isDef(_Affected)) {
+      _Affected.setAffected('REQUEST', thisRequest.getId(), Affected.ACTION.UPDATE);
+      _Affected.setAffected('REQUEST', counterJustSayNo.getId(), Affected.ACTION.UPDATE);
+      _Affected.setAffected('PLAYER_REQUEST', counterJustSayNo.getAuthorKey(), Affected.ACTION.UPDATE);
+      _Affected.setAffected('PLAYER_REQUEST', counterJustSayNo.getTargetKey(), Affected.ACTION.UPDATE);
+    } else {
+      affected.requests = true;
+      affectedIds.requests.push(thisRequest.getId());
+      affectedIds.requests.push(counterJustSayNo.getId());
+      affectedIds.playerRequests.push(counterJustSayNo.getAuthorKey());
+      affectedIds.playerRequests.push(counterJustSayNo.getTargetKey());
+    }
+    
   }
 
   function makeJustSayNo(request, cardId) {

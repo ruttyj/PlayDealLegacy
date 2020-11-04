@@ -23,10 +23,19 @@ const {
   makeVar,
   jsonLog,
 } = require(`${utilsFolder}`);
+
+
+const buildAffected = require(`${serverFolder}/Lib/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+
+
+const OrderedTree = buildOrderedTree();
+const Affected = buildAffected({OrderedTree});
+
 let dump = (template) => console.log("@@@@@", JSON.stringify(template, null, 2));
 
-describe("App", async function () {
-  it(`Tripple just say no`, async () => {
+describe("Just Say No", async function () {
+  it(`Tripple JSN`, async () => {
 
     let game;
     let template;
@@ -43,6 +52,7 @@ describe("App", async function () {
     // Play "RENT_BLUE_GREEN" 53
     if (1) {
       let checkpoints = new Map();
+      let _Affected = new Affected();
       let affected = {
         requests: false,
       };
@@ -63,6 +73,7 @@ describe("App", async function () {
         validAugmentCardsIds,
         thisPersonId, 
         affectedIds, 
+        _Affected,
         affected, 
         checkpoints,
       })
@@ -74,6 +85,7 @@ describe("App", async function () {
       let checkpoints = new Map();
       let thisPersonId = 2;
       let cardId = 24;// 23, 24, 25
+      let _Affected = new Affected();
       
       let affected = {
         hand: false,
@@ -94,6 +106,7 @@ describe("App", async function () {
         game,
         thisPersonId,
         cardId,
+        _Affected,
         affected,
         affectedIds,
       })
@@ -108,6 +121,8 @@ describe("App", async function () {
 
       let request = requestManager.getRequest(requestId);
       let checkpoints = new Map();
+      let _Affected = new Affected();
+
       let affected = {
         hand: false,
         bank: false,
@@ -125,6 +140,7 @@ describe("App", async function () {
         cardId, 
         requestId, 
         responseKey, 
+        _Affected,
         affected,
         affectedIds,
         checkpoints,
@@ -142,6 +158,8 @@ describe("App", async function () {
 
       let request = requestManager.getRequest(requestId);
       let checkpoints = new Map();
+      let _Affected = new Affected();
+
       let affected = {
         hand: false,
         bank: false,
@@ -159,6 +177,7 @@ describe("App", async function () {
         cardId, 
         requestId, 
         responseKey, 
+        _Affected,
         affected,
         affectedIds,
         checkpoints,
@@ -176,6 +195,8 @@ describe("App", async function () {
 
       let request = requestManager.getRequest(requestId);
       let checkpoints = new Map();
+      let _Affected = new Affected();
+
       let affected = {
         hand: false,
         bank: false,
@@ -193,6 +214,7 @@ describe("App", async function () {
         cardId, 
         requestId, 
         responseKey, 
+        _Affected,
         affected,
         affectedIds,
         checkpoints,
@@ -226,6 +248,10 @@ describe("App", async function () {
     //*/
   });
 
-  it(`Just say no`, async () => {});
+  it(`JSN to Rent`, async () => {/* @TODO */});
+  it(`JSN to Birthday`, async () => {/* @TODO */});
+  it(`JSN to Swap Property`, async () => {/* @TODO */});
+  it(`JSN to Steal Property`, async () => {/* @TODO */});
+  it(`JSN to Steal Collection`, async () => {/* @TODO */});
 
 }); // end App description

@@ -1,4 +1,4 @@
-function buildAffected({isDef, isDefNested, setNestedValue, getNestedValue, OrderedTree}) {
+function buildAffected({OrderedTree}) {
 
     /**
      * Affected
@@ -36,7 +36,7 @@ function buildAffected({isDef, isDefNested, setNestedValue, getNestedValue, Orde
         getKeys(path) {
             let result = [];
             let children = this.mRoot.get(path, null);
-            if (isDef(children)) {
+            if (children !== null) {
                 children.forEach((value, key) => {
                     result.push(key);
                 })
@@ -61,6 +61,11 @@ function buildAffected({isDef, isDefNested, setNestedValue, getNestedValue, Orde
                     this.mRoot.set(actionPath, true);
                 }
             }
+        }
+        
+        isAffected(entityKey)
+        {
+            return this.wasEntityAffected(entityKey);
         }
 
         wasEntityAffected(entityKey) {
@@ -92,7 +97,6 @@ function buildAffected({isDef, isDefNested, setNestedValue, getNestedValue, Orde
                 return false;
             })
         }
-
 
         serialize() 
         {

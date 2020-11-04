@@ -4,6 +4,15 @@ const serverSocketFolder = `${serverFolder}/sockets`;
 const gameFolder = `${serverFolder}/Game`;
 const CookieTokenManager = require("../CookieTokenManager/");
 
+const buildAffected = require(`${serverFolder}/Lib/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+
+
+const OrderedTree = buildOrderedTree();
+const Affected = buildAffected({OrderedTree});
+
+
+
 /**
  * 
  * TODO #$%^&$#^&$%#^&%$^&%$#%^&$%
@@ -823,28 +832,16 @@ class PlayDealClientService {
                   checkpoints.set("isApplicable", true);
   
                   // Log what is to be reported back to the user
-                  let affected = {
-                    turn: true,
-                    hand: false,
-                    bank: false,
-                    playerRequests: false,
-                    requests: false,
-                    playerCollections: false,
-                    collections: false,
-                  };
-                  let affectedIds = {
-                    playerRequests: [thisPersonId],
-                    requests: [requestId],
-                    playerCollections: [],
-                    collections: [],
-                  };
+                  let _Affected = new Affected();
+                  
   
                   // DO THE THING
                   checkpoints.set("success", false);
                   theThing({
+                    thisPersonId,
                     actionNum,
-                    affected,
-                    affectedIds,
+                    _Affected,
+                    request,
                     player,
                     playerBank,
                     transaction,
@@ -862,11 +859,13 @@ class PlayDealClientService {
                       currentTurn.getPhaseKey() === "request"
                     ) {
                       currentTurn.proceedToNextPhase();
-                      affected.turn = true;
+                      _Affected.setAffected('TURN');
                     }
                   }
   
-                  if (affected.hand) {
+                  
+  
+                  if (_Affected.isAffected('HAND')) {
                     let allPlayerIds = getAllPlayerIds({
                       game,
                       personManager,
@@ -882,22 +881,12 @@ class PlayDealClientService {
                     );
                   }
   
-                  // COLLECTIONS
-                  if (
-                    affected.collections &&
-                    affectedIds.collections.length > 0
-                  ) {
-                    let updatedCollectionIds = [];
-                    let removedCollectionIds = [];
   
-                    let collectionManager = game.getCollectionManager();
-                    affectedIds.collections.forEach((id) => {
-                      if (collectionManager.hasCollection(id)) {
-                        updatedCollectionIds.push(id);
-                      } else {
-                        removedCollectionIds.push(id);
-                      }
-                    });
+                  
+                  // COLLECTIONS
+                  if (_Affected.isAffected('COLLECTION')) {
+                    let updatedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE);
+                    let removedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE);
   
                     if (updatedCollectionIds.length > 0) {
                       socketResponses.addToBucket(
@@ -921,47 +910,46 @@ class PlayDealClientService {
                       );
                     }
                   }
+  
+  
                   // PLAYER COLLECTIONS
-                  if (
-                    affected.playerCollections &&
-                    affectedIds.playerCollections.length > 0
-                  ) {
+                  if (_Affected.isAffected('PLAYER_COLLECTION')) {
                     // Update who has what collection
                     socketResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                         makeProps(consumerData, {
-                          peopleIds: affectedIds.playerCollections,
+                          peopleIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
                         })
                       )
                     );
                   }
   
                   // REQUESTS
-                  if (affected.requests && isDef(affectedIds.requests)) {
+                  if (_Affected.isAffected('REQUEST')) {
                     socketResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                         makeProps(consumerData, {
-                          requestIds: affectedIds.requests,
+                          requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
                         })
                       )
                     );
                   }
   
-                  if (affectedIds.playerRequests.length > 0) {
+                  if (_Affected.isAffected('PLAYER_REQUEST')) {
                     socketResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                         makeProps(consumerData, {
-                          peopleIds: affectedIds.playerRequests,
+                          peopleIds: _Affected.getIdsAffectedByAction("PLAYER_REQUEST", Affected.ACTION_GROUP.CHANGE),
                         })
                       )
                     );
                   }
   
                   // BANK
-                  if (affected.bank) {
+                  if (_Affected.isAffected('BANK')) {
                     let attendingPeople = personManager.filterPeople(
                       (person) =>
                         person.isConnected() && person.getStatus() === "ready"
@@ -981,7 +969,7 @@ class PlayDealClientService {
                   }
   
                   // PLAYER TURN
-                  if (affected.turn) {
+                  if (_Affected.isAffected('TURN')) {
                     socketResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
@@ -1558,14 +1546,7 @@ class PlayDealClientService {
                         // targetPeopleIds allPlayerIds augmentCardsIds  validAugmentCardsIds
                         //==========================================================
   
-                        let affected = {
-                          requests: false,
-                          activePile: false,
-                        };
-                        let affectedIds = {
-                          requests: [],
-                        };
-  
+                        let _Affected = new Affected();
                         checkpoints.set("success", false);
   
                         doTheThing({
@@ -1579,8 +1560,7 @@ class PlayDealClientService {
                             items: augments,
                           },
                           actionNum,
-                          affected,
-                          affectedIds,
+                          _Affected,
                           targetPeopleIds,
                           currentTurn,
                           collectionId,
@@ -1593,6 +1573,7 @@ class PlayDealClientService {
                           status = "success";
                         }
   
+                        // Player Hands
                         let allPlayerIds = getAllPlayerIds({
                           game,
                           personManager,
@@ -1606,7 +1587,9 @@ class PlayDealClientService {
                             })
                           )
                         );
-                        if (affected.activePile) {
+  
+                        // Active Pile
+                        if (_Affected.isAffected('ACTIVE_PILE')) {
                           socketResponses.addToBucket(
                             "everyone",
                             PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
@@ -1615,10 +1598,8 @@ class PlayDealClientService {
                           );
                         }
   
-                        if (
-                          affected.requests &&
-                          affectedIds.requests.length > 0
-                        ) {
+                        // Requests
+                        if (_Affected.isAffected('REQUEST')) {
                           socketResponses.addToBucket(
                             "everyone",
                             PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
@@ -1631,11 +1612,13 @@ class PlayDealClientService {
                             "everyone",
                             PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                               makeProps(consumerData, {
-                                requestIds: affectedIds.requests,
+                                requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
                               })
                             )
                           );
                         }
+  
+                        // Player Turn
                         socketResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
@@ -3469,7 +3452,6 @@ class PlayDealClientService {
           );
         },
   
-        //@TODO remove totalValue, augments,  from  handleCollectionBasedRequestCreation
         CHARGE_RENT: (props) => {
           const subject = "MY_TURN";
           const action = "CHARGE_RENT";
@@ -4837,314 +4819,279 @@ class PlayDealClientService {
       },
       RESPONSES: {
         RESPOND_TO_COLLECT_VALUE: (props) => {
-          const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
-          const socketResponses = SocketResponseBuckets();
+    const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
+    const socketResponses = SocketResponseBuckets();
 
-          const doTheThing = (consumerData, checkpoints) => {
-            let {
-              cardId,
-              requestId,
-              responseKey,
-              payWithProperty,
-              payWithBank,
-            } = consumerData;
-            let { game, personManager, thisPersonId } = consumerData;
+    const doTheThing = (consumerData, checkpoints) => {
+      let {
+        cardId,
+        requestId,
+        responseKey,
+        payWithProperty,
+        payWithBank,
+      } = consumerData;
+      let { game, personManager, thisPersonId } = consumerData;
 
-            let status = "failure";
-            let payload = null;
+      let status = "failure";
+      let payload = null;
 
-            let currentTurn = game.getCurrentTurn();
-            let phaseKey = currentTurn.getPhaseKey();
-            let requestManager = currentTurn.getRequestManager();
+      let currentTurn = game.getCurrentTurn();
+      let phaseKey = currentTurn.getPhaseKey();
+      let requestManager = currentTurn.getRequestManager();
 
-            let validResponseKeys = ["accept", "decline", "counter"];
+      let validResponseKeys = ["accept", "decline", "counter"];
 
-            // Request manager exists
-            checkpoints.set("requestManagerExists", false);
-            if (isDef(currentTurn) && isDef(requestManager)) {
-              checkpoints.set("requestManagerExists", true);
+      // Request manager exists
+      checkpoints.set("requestManagerExists", false);
+      if (isDef(currentTurn) && isDef(requestManager)) {
+        checkpoints.set("requestManagerExists", true);
 
-              // Is request phase
-              checkpoints.set("isRequestPhase", false);
-              if (phaseKey === "request") {
-                checkpoints.set("isRequestPhase", true);
+        // Is request phase
+        checkpoints.set("isRequestPhase", false);
+        if (phaseKey === "request") {
+          checkpoints.set("isRequestPhase", true);
 
-                // Request exists
-                if (isDef(requestId) && requestManager.hasRequest(requestId)) {
-                  let request = requestManager.getRequest(requestId);
-                  let targetKey = request.getTargetKey();
+          // Request exists
+          if (isDef(requestId) && requestManager.hasRequest(requestId)) {
+            let request = requestManager.getRequest(requestId);
+            let targetKey = request.getTargetKey();
 
-                  // Is request targeting me?
-                  checkpoints.set("isTargetingMe", true);
-                  if (String(targetKey) === String(thisPersonId)) {
-                    checkpoints.set("isTargetingMe", false);
+            // Is request targeting me?
+            checkpoints.set("isTargetingMe", true);
+            if (String(targetKey) === String(thisPersonId)) {
+              checkpoints.set("isTargetingMe", false);
 
-                    // Is request still open
-                    checkpoints.set("isRequestOpen", false);
-                    if (!request.isClosed()) {
-                      checkpoints.set("isRequestOpen", true);
+              // Is request still open
+              checkpoints.set("isRequestOpen", false);
+              if (!request.isClosed()) {
+                checkpoints.set("isRequestOpen", true);
 
-                      // valid response key
-                      checkpoints.set("isValidResponseKey", false);
-                      if (
-                        isDef(responseKey) &&
-                        validResponseKeys.includes(responseKey)
-                      ) {
-                        checkpoints.set("isValidResponseKey", true);
+                // valid response key
+                checkpoints.set("isValidResponseKey", false);
+                if (
+                  isDef(responseKey) &&
+                  validResponseKeys.includes(responseKey)
+                ) {
+                  checkpoints.set("isValidResponseKey", true);
 
-                        let player = game.getPlayer(thisPersonId);
-                        let affected = {
-                          hand: false,
-                          bank: false,
-                          requests: false,
-                          collections: false,
-                        };
-                        let affectedIds = {
-                          requests: [],
-                          playerRequests: [],
-                          collections: [],
-                          playerCollections: [],
-                        };
+                  let player = game.getPlayer(thisPersonId);
+                  let _Affected = new Affected();
 
-                        if (responseKey === "accept") {
+                  if (responseKey === "accept") {
 
-                          status = game.acceptCollectValueRequest({
-                            player,
-                            request,
-                            affected,
-                            affectedIds,
-                            payWithBank,
-                            payWithProperty,
-                            thisPersonId,
-                          });
+                    status = game.acceptCollectValueRequest({
+                      player,
+                      request,
+                      _Affected,
+                      payWithBank,
+                      payWithProperty,
+                      thisPersonId,
+                    });
 
-                          // If bank was affected emit updates
-                          if (affected.bank) {
-                            let attendingPeople = personManager.filterPeople(
-                              (person) =>
-                                person.isConnected() &&
-                                person.getStatus() === "ready"
-                            );
-                            let peopleIds = attendingPeople.map((person) =>
-                              person.getId()
-                            );
-                            socketResponses.addToBucket(
-                              "default",
-                              PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
-                                makeProps(consumerData, {
-                                  peopleIds: thisPersonId,
-                                  receivingPeopleIds: peopleIds,
-                                })
-                              )
-                            );
-                          }
+                    // If bank was affected emit updates
+                    if (_Affected.isAffected('BANK')) {
+                      let attendingPeople = personManager.filterPeople(
+                        (person) =>
+                          person.isConnected() &&
+                          person.getStatus() === "ready"
+                      );
+                      let peopleIds = attendingPeople.map((person) =>
+                        person.getId()
+                      );
+                      socketResponses.addToBucket(
+                        "default",
+                        PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
+                          makeProps(consumerData, {
+                            peopleIds: thisPersonId,
+                            receivingPeopleIds: peopleIds,
+                          })
+                        )
+                      );
+                    }
 
-                          let affectedCollectionIds = affectedIds.collections;
-                          if (affectedCollectionIds.length > 0) {
-                            let collectionChanges = {
-                              updated: [],
-                              removed: [],
-                            };
+                    if (_Affected.isAffected('COLLECTION')) {
+                      let collectionChanges = {
+                        updated: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
+                        removed: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE),
+                      };
 
-                            affectedCollectionIds.forEach((collectionId) => {
-                              if (player.hasCollectionId(collectionId)) {
-                                collectionChanges.updated.push(collectionId);
-                              } else {
-                                collectionChanges.removed.push(collectionId);
-                              }
-                            });
+                      // Add updated collections to be GET
+                      if (collectionChanges.updated.length > 0) {
+                        socketResponses.addToBucket(
+                          "everyone",
+                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
+                            makeProps(consumerData, {
+                              personId: thisPersonId,
+                              collectionIds: collectionChanges.updated,
+                            })
+                          )
+                        );
+                      }
 
-                            // Add updated collections to be GET
-                            if (collectionChanges.updated.length > 0) {
-                              socketResponses.addToBucket(
-                                "everyone",
-                                PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
-                                  makeProps(consumerData, {
-                                    personId: thisPersonId,
-                                    collectionIds: collectionChanges.updated,
-                                  })
-                                )
-                              );
-                            }
-
-                            // Add removed collections to REMOVE
-                            if (collectionChanges.removed.length > 0) {
-                              socketResponses.addToBucket(
-                                "everyone",
-                                PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
-                                  makeProps(consumerData, {
-                                    personId: thisPersonId,
-                                    collectionIds: collectionChanges.removed,
-                                  })
-                                )
-                              );
-                            }
-                          }
-
-
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                              makeProps(consumerData, {
-                                personId: thisPersonId,
-                              })
-                            )
-                          );
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                              makeProps(consumerData, {
-                                requestId: request.getId(),
-                              })
-                            )
-                          );
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_TURN.GET(
-                              makeProps(consumerData)
-                            )
-                          );
-                        } // end accept
-                        else if (responseKey === "decline") {
-                          game.declineCollectValueRequest({
-                            request,
-                            checkpoints,
-                            game,
-                            thisPersonId,
-                            cardId,
-                            affected,
-                            affectedIds,
-                          });
-
-
-                          let allPlayerIds = getAllPlayerIds({
-                            game,
-                            personManager,
-                          });
-                          socketResponses.addToBucket(
-                            "default",
-                            PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                              makeProps(consumerData, {
-                                personId: thisPersonId,
-                                receivingPeopleIds: allPlayerIds,
-                              })
-                            )
-                          );
-                          if (affected.activePile) {
-                            socketResponses.addToBucket(
-                              "everyone",
-                              PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
-                                makeProps(consumerData)
-                              )
-                            );
-                          }
-
-                          if (affected.hand) {
-                            let allPlayerIds = getAllPlayerIds({
-                              game,
-                              personManager,
-                            });
-                            socketResponses.addToBucket(
-                              "default",
-                              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                                makeProps(consumerData, {
-                                  personId: thisPersonId,
-                                  receivingPeopleIds: allPlayerIds,
-                                })
-                              )
-                            );
-                          }
-                          if (
-                            affected.collections &&
-                            affectedIds.collections.length > 0
-                          ) {
-                            socketResponses.addToBucket(
-                              "everyone",
-                              PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
-                                makeProps(consumerData, {
-                                  collectionIds: affectedIds.collections,
-                                })
-                              )
-                            );
-                          }
-
-                          if (
-                            affected.playerCollections &&
-                            affectedIds.playerCollections.length > 0
-                          ) {
-                            // Update who has what collection
-                            socketResponses.addToBucket(
-                              "everyone",
-                              PUBLIC_SUBJECTS[
-                                "PLAYER_COLLECTIONS"
-                              ].GET_KEYED(
-                                makeProps(consumerData, {
-                                  peopleIds:
-                                    affectedIds.playerCollections,
-                                })
-                              )
-                            );
-                          }
-
-                          if (
-                            affected.requests &&
-                            affectedIds.requests.length > 0
-                          ) {
-                            socketResponses.addToBucket(
-                              "everyone",
-                              PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                                makeProps(consumerData, {
-                                  peopleIds: affectedIds.playerRequests,
-                                })
-                              )
-                            );
-                            socketResponses.addToBucket(
-                              "everyone",
-                              PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                                makeProps(consumerData, {
-                                  requestIds: affectedIds.requests,
-                                })
-                              )
-                            );
-                          }
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_TURN.GET(
-                              makeProps(consumerData)
-                            )
-                          );
-                        } // end decline
+                      // Add removed collections to REMOVE
+                      if (collectionChanges.removed.length > 0) {
+                        socketResponses.addToBucket(
+                          "everyone",
+                          PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
+                            makeProps(consumerData, {
+                              personId: thisPersonId,
+                              collectionIds: collectionChanges.removed,
+                            })
+                          )
+                        );
                       }
                     }
-                  }
+
+
+                    socketResponses.addToBucket(
+                      "everyone",
+                      PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                        makeProps(consumerData, {
+                          personId: thisPersonId,
+                        })
+                      )
+                    );
+                    socketResponses.addToBucket(
+                      "everyone",
+                      PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
+                        makeProps(consumerData, {
+                          requestId: request.getId(),
+                        })
+                      )
+                    );
+                    socketResponses.addToBucket(
+                      "everyone",
+                      PUBLIC_SUBJECTS.PLAYER_TURN.GET(
+                        makeProps(consumerData)
+                      )
+                    );
+                  } // end accept
+                  else if (responseKey === "decline") {
+                    game.declineCollectValueRequest({
+                        request,
+                        checkpoints,
+                        game,
+                        thisPersonId,
+                        cardId,
+                        _Affected,
+                    });
+
+
+                    let allPlayerIds = getAllPlayerIds({
+                        game,
+                        personManager,
+                    });
+                    socketResponses.addToBucket(
+                        "default",
+                        PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                            makeProps(consumerData, {
+                                personId: thisPersonId,
+                                receivingPeopleIds: allPlayerIds,
+                            })
+                        )
+                    );
+
+
+                    
+                    if (_Affected.isAffected('ACTIVE_PILE')) {
+                        socketResponses.addToBucket(
+                            "everyone",
+                            PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
+                            makeProps(consumerData)
+                            )
+                        );
+                    }
+
+                    if (_Affected.isAffected('HAND')) {
+                        let allPlayerIds = getAllPlayerIds({
+                            game,
+                            personManager,
+                        });
+                        socketResponses.addToBucket(
+                            "default",
+                            PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                                makeProps(consumerData, {
+                                    personId: thisPersonId,
+                                    receivingPeopleIds: allPlayerIds,
+                                })
+                            )
+                        );
+                    }
+                    if (_Affected.isAffected('COLLECTION')) {
+                        socketResponses.addToBucket(
+                            "everyone",
+                            PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
+                                makeProps(consumerData, {
+                                    collectionIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
+                                })
+                            )
+                        );
+                    }
+
+
+                    if (_Affected.isAffected('REQUEST')) {
+                      
+                        socketResponses.addToBucket(
+                            "everyone",
+                            PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
+                                makeProps(consumerData, {
+                                    requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
+                                })
+                            )
+                        );
+                    }
+
+
+                    if (_Affected.isAffected('PLAYER_REQUEST')) {
+                        socketResponses.addToBucket(
+                            "everyone",
+                            PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                                makeProps(consumerData, {
+                                peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.PLAYER_REQUEST.CHANGE),
+                                })
+                            )
+                        );
+                    }
+
+
+                    socketResponses.addToBucket(
+                        "everyone",
+                        PUBLIC_SUBJECTS.PLAYER_TURN.GET(
+                            makeProps(consumerData)
+                        )
+                    );
+                  } // end decline
                 }
               }
             }
-
-            payload = {
-              checkpoints: packageCheckpoints(checkpoints),
-            };
-            socketResponses.addToBucket(
-              "default",
-              makeResponse({ subject, action, status, payload })
-            );
-
-            if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
-                "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
-              );
-            }
-
-            return socketResponses;
           }
+        }
+      }
 
-          return handleGame(
-            props,
-            doTheThing,
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
+      payload = {
+        checkpoints: packageCheckpoints(checkpoints),
+      };
+      socketResponses.addToBucket(
+        "default",
+        makeResponse({ subject, action, status, payload })
+      );
+
+      if (game.checkWinConditionForPlayer(thisPersonId)) {
+        socketResponses.addToBucket(
+          "everyone",
+          PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+        );
+      }
+
+      return socketResponses;
+    }
+
+    return handleGame(
+      props,
+      doTheThing,
+      makeConsumerFallbackResponse({ subject, action, socketResponses })
+    );
+  },
   
         COLLECT_CARD_TO_BANK_AUTO: (props) => {
           let doTheThing = function (consumerData) {
@@ -5190,12 +5137,12 @@ class PlayDealClientService {
   
         ACKNOWLEDGE_COLLECT_NOTHING: (props) => {
           let doTheThing = function (consumerData) {
-            let { affected, checkpoints } = consumerData;
-            affected.requests = true;
-            affected.bank = true;
+            let { _Affected, checkpoints, request, thisPersonId } = consumerData;
+            _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
+            _Affected.setAffected('BANK', thisPersonId, Affected.ACTION.UPDATE);
             checkpoints.set("success", true);
           };
-  
+      
           return handleTransactionResponse(
             PUBLIC_SUBJECTS,
             "RESPONSES",
@@ -5204,6 +5151,7 @@ class PlayDealClientService {
             doTheThing
           );
         },
+      
   
         COLLECT_CARD_TO_BANK: (props) => {
           let doTheThing = function (consumerData) {
@@ -5412,23 +5360,22 @@ class PlayDealClientService {
           let doTheThing = function (consumerData) {
             let { cardId, requestId, responseKey } = consumerData;
             let {
-              affected,
-              affectedIds,
+              _Affected,
+              thisPersonId,
               checkpoints,
               game,
-              thisPersonId,
             } = consumerData;
-  
+      
             let validResponses = {
               accept: 1,
               decline: 1,
             };
-  
+      
             let currentTurn = game.getCurrentTurn();
             let requestManager = currentTurn.getRequestManager();
-  
+      
             let request = requestManager.getRequest(requestId);
-  
+      
             if (
               isDef(request) &&
               !request.getTargetSatisfied() &&
@@ -5439,17 +5386,17 @@ class PlayDealClientService {
               if (isDef(responseKey) && isDef(validResponses[responseKey])) {
                 checkpoints.set("isValidResponseKey", true);
                 let { transaction } = request.getPayload();
-  
+      
                 checkpoints.set("isTransactionDefined", false);
                 if (isDef(transaction)) {
                   checkpoints.set("isTransactionDefined", true);
-  
+      
                   if (responseKey === "decline") {
                     let hand = game.getPlayerHand(thisPersonId);
                     checkpoints.set("isCardInHand", false);
                     if (hand.hasCard(cardId)) {
                       checkpoints.set("isCardInHand", true);
-  
+      
                       //can the card decline the request
                       if (game.doesCardHaveTag(cardId, "declineRequest")) {
                         game
@@ -5457,12 +5404,11 @@ class PlayDealClientService {
                           .addCard(
                             game.getPlayerHand(thisPersonId).giveCard(cardId)
                           );
-                        affected.hand = true;
-                        affected.activePile = true;
-  
+                        _Affected.setAffected('HAND', thisPersonId, Affected.ACTION.UPDATE);
+                        _Affected.setAffected('ACTIVE_PILE', thisPersonId, Affected.ACTION.UPDATE);
+      
                         let doTheDecline = function ({
-                          affected,
-                          affectedIds,
+                          _Affected,
                           request,
                           checkpoints,
                         }) {
@@ -5471,42 +5417,39 @@ class PlayDealClientService {
                             .get("fromAuthor")
                             .get("property");
                           fromAuthor.confirm(fromAuthor.getRemainingList());
-  
+      
                           let fromTarget = transaction
                             .get("fromTarget")
                             .get("property");
                           fromTarget.confirm(fromTarget.getRemainingList());
-  
+      
                           checkpoints.set("success", true);
-  
+      
                           request.setTargetSatisfied(true);
                           request.decline(consumerData);
                           request.close("decline");
-                          affected.requests = true;
-                          affectedIds.requests.push(requestId);
+      
+                          _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
                         };
-  
+      
                         if (game.doesCardHaveTag(cardId, "contestable")) {
                           let sayNoRequest = requestManager.makeJustSayNo(
                             request,
                             cardId
                           );
-                          affectedIds.requests.push(sayNoRequest.getId());
-                          affectedIds.playerRequests.push(
-                            sayNoRequest.getTargetKey()
-                          );
-  
+      
+                          _Affected.setAffected('REQUEST', sayNoRequest.getId(), Affected.ACTION.CREATE);
+                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getTargetKey(), Affected.ACTION.CREATE);
+      
                           doTheDecline({
+                            _Affected,
                             request,
-                            affected,
-                            affectedIds,
                             checkpoints,
                           });
                         } else {
                           doTheDecline({
                             request,
-                            affected,
-                            affectedIds,
+                            _Affected,
                             checkpoints,
                           });
                         }
@@ -5519,7 +5462,7 @@ class PlayDealClientService {
                         .get("fromAuthor")
                         .get("property")
                         .getRemainingList();
-  
+      
                       authorPropertyIds.forEach((authorPropertyId) => {
                         let collection = game.getCollectionThatHasCard(
                           authorPropertyId
@@ -5538,16 +5481,12 @@ class PlayDealClientService {
                             .getOrCreate("toTarget")
                             .getOrCreate("property")
                             .add(authorPropertyId);
-  
-                          affected.collections = true;
-                          affectedIds.collections.push(collection.getId());
-                          affected.playerCollections = true;
-                          affectedIds.playerCollections.push(
-                            collection.getPlayerKey()
-                          );
+      
+                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
+                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
                         }
                       });
-  
+      
                       let targetPropertyIds = transaction
                         .get("fromTarget")
                         .get("property")
@@ -5570,21 +5509,19 @@ class PlayDealClientService {
                             .getOrCreate("toAuthor")
                             .getOrCreate("property")
                             .add(targetPropertyId);
-  
-                          affected.collections = true;
-                          affectedIds.collections.push(collection.getId());
-                          affected.playerCollections = true;
-                          affectedIds.playerCollections.push(
-                            collection.getPlayerKey()
-                          );
+      
+                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
+                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
+      
                         }
                       });
-  
+      
                       request.setTargetSatisfied(true);
                       request.setStatus("accept");
                       request.accept(consumerData);
-                      affected.requests = true;
-                      affectedIds.requests.push(requestId);
+      
+                      _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
+      
                       checkpoints.set("success", true);
                     }
                   }
@@ -5592,7 +5529,7 @@ class PlayDealClientService {
               }
             }
           };
-  
+      
           let result = handleTransactionResponse(
             PUBLIC_SUBJECTS,
             "RESPONSES",
@@ -5652,23 +5589,22 @@ class PlayDealClientService {
           let doTheThing = function (consumerData) {
             let { cardId, requestId, responseKey } = consumerData;
             let {
-              affected,
-              affectedIds,
               checkpoints,
               game,
               thisPersonId,
+              _Affected,
             } = consumerData;
-  
+      
             let validResponses = {
               accept: 1,
               decline: 1,
             };
-  
+      
             let currentTurn = game.getCurrentTurn();
             let requestManager = currentTurn.getRequestManager();
-  
+      
             let request = requestManager.getRequest(requestId);
-  
+      
             if (
               isDef(request) &&
               !request.getTargetSatisfied() &&
@@ -5679,26 +5615,26 @@ class PlayDealClientService {
               if (isDef(responseKey) && isDef(validResponses[responseKey])) {
                 checkpoints.set("isValidResponseKey", true);
                 let { transaction } = request.getPayload();
-  
+      
                 checkpoints.set("isTransactionDefined", false);
                 if (isDef(transaction)) {
                   checkpoints.set("isTransactionDefined", true);
-  
+      
                   if (responseKey === "decline") {
                     let hand = game.getPlayerHand(thisPersonId);
                     checkpoints.set("isCardInHand", false);
                     if (hand.hasCard(cardId)) {
                       checkpoints.set("isCardInHand", true);
-  
+      
                       //can the card decline the request
                       if (game.doesCardHaveTag(cardId, "declineRequest")) {
                         game.getActivePile().addCard(hand.giveCard(cardId));
-                        affected.activePile = true;
-                        affected.hand = true;
-  
+      
+                        _Affected.setAffected('ACTIVE_PILE');
+                        _Affected.setAffected('HAND', thisPersonId, Affected.ACTION.UPDATE);
+      
                         let doTheDecline = function ({
-                          affected,
-                          affectedIds,
+                          _Affected,
                           request,
                           checkpoints,
                         }) {
@@ -5711,31 +5647,30 @@ class PlayDealClientService {
                           request.setTargetSatisfied(true);
                           request.decline(consumerData);
                           request.close("decline");
-                          affected.requests = true;
-                          affectedIds.requests.push(request.getId());
+      
+                          _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
                         };
-  
+      
                         if (game.doesCardHaveTag(cardId, "contestable")) {
                           let sayNoRequest = requestManager.makeJustSayNo(
                             request,
                             cardId
                           );
-                          affectedIds.requests.push(sayNoRequest.getId());
-                          affectedIds.playerRequests.push(
-                            sayNoRequest.getTargetKey()
-                          );
-  
+      
+                          _Affected.setAffected('REQUEST', sayNoRequest.getId(), Affected.ACTION.CREATE);
+                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getTargetKey(), Affected.ACTION.CREATE);
+                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getAuthorKey(), Affected.ACTION.CREATE);
+      
+      
                           doTheDecline({
+                            _Affected,
                             request,
-                            affected,
-                            affectedIds,
                             checkpoints,
                           });
                         } else {
                           doTheDecline({
+                            _Affected,
                             request,
-                            affected,
-                            affectedIds,
                             checkpoints,
                           });
                         }
@@ -5744,7 +5679,7 @@ class PlayDealClientService {
                   } else {
                     if (responseKey === "accept") {
                       // Move proposed properties to their colleciton areas
-  
+      
                       let targetPropertyIds = transaction
                         .get("fromTarget")
                         .get("property")
@@ -5767,21 +5702,18 @@ class PlayDealClientService {
                             .getOrCreate("toAuthor")
                             .getOrCreate("property")
                             .add(targetPropertyId);
-  
-                          affected.collections = true;
-                          affectedIds.collections.push(collection.getId());
-                          affected.playerCollections = true;
-                          affectedIds.playerCollections.push(
-                            collection.getPlayerKey()
-                          );
+      
+                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
+                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
+      
                         }
                       });
-  
+      
                       request.setTargetSatisfied(true);
                       request.accept(consumerData);
                       request.setStatus("accept");
-                      affected.requests = true;
-                      affectedIds.requests.push(requestId);
+      
+                      _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
                       checkpoints.set("success", true);
                     }
                   }
@@ -5789,7 +5721,7 @@ class PlayDealClientService {
               }
             }
           };
-  
+      
           let result = handleTransactionResponse(
             PUBLIC_SUBJECTS,
             "RESPONSES",
@@ -5804,23 +5736,22 @@ class PlayDealClientService {
           let doTheThing = function (consumerData) {
             let { cardId, requestId, responseKey } = consumerData;
             let {
-              affected,
-              affectedIds,
+              _Affected,
               checkpoints,
               game,
               thisPersonId,
             } = consumerData;
-  
+      
             let validResponses = {
               accept: 1,
               decline: 1,
             };
-  
+      
             let currentTurn = game.getCurrentTurn();
             let requestManager = currentTurn.getRequestManager();
-  
+      
             let request = requestManager.getRequest(requestId);
-  
+      
             if (
               isDef(request) &&
               !request.getTargetSatisfied() &&
@@ -5831,26 +5762,27 @@ class PlayDealClientService {
               if (isDef(responseKey) && isDef(validResponses[responseKey])) {
                 checkpoints.set("isValidResponseKey", true);
                 let { transaction } = request.getPayload();
-  
+      
                 checkpoints.set("isTransactionDefined", false);
                 if (isDef(transaction)) {
                   checkpoints.set("isTransactionDefined", true);
                   if (responseKey === "decline") {
                     let hand = game.getPlayerHand(thisPersonId);
                     checkpoints.set("isCardInHand", false);
-  
+      
                     if (hand.hasCard(cardId)) {
                       checkpoints.set("isCardInHand", true);
-  
+      
                       //can the card decline the request
                       if (game.doesCardHaveTag(cardId, "declineRequest")) {
+      
+      
                         game.getActivePile().addCard(hand.giveCard(cardId));
-                        affected.hand = true;
-                        affected.activePile = true;
-  
+                        _Affected.setAffected('HAND', thisPersonId, Affected.ACTION.UPDATE);
+                        _Affected.setAffected('ACTIVE_PILE');
+      
                         let doTheDecline = function ({
-                          affected,
-                          affectedIds,
+                          _Affected,
                           request,
                           checkpoints,
                         }) {
@@ -5863,31 +5795,30 @@ class PlayDealClientService {
                           request.setTargetSatisfied(true);
                           request.decline(consumerData);
                           request.close("decline");
-                          affected.requests = true;
-                          affectedIds.requests.push(request.getId());
+      
+                          _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
                         };
-  
+      
                         if (game.doesCardHaveTag(cardId, "contestable")) {
                           let sayNoRequest = requestManager.makeJustSayNo(
                             request,
                             cardId
                           );
-                          affectedIds.requests.push(sayNoRequest.getId());
-                          affectedIds.playerRequests.push(
-                            sayNoRequest.getTargetKey()
-                          );
-  
+      
+                          _Affected.setAffected('REQUEST', sayNoRequest.getId(), Affected.ACTION.CREATE);
+                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getTargetKey(), Affected.ACTION.CREATE);
+      
+      
+      
                           doTheDecline({
                             request,
-                            affected,
-                            affectedIds,
+                            _Affected,
                             checkpoints,
                           });
                         } else {
                           doTheDecline({
                             request,
-                            affected,
-                            affectedIds,
+                            _Affected,
                             checkpoints,
                           });
                         }
@@ -5896,12 +5827,12 @@ class PlayDealClientService {
                   } else {
                     if (responseKey === "accept") {
                       // Move proposed properties to their colleciton areas
-  
+      
                       let targetIds = transaction
                         .get("fromTarget")
                         .get("collection")
                         .getRemainingList();
-  
+      
                       targetIds.forEach((collectionId) => {
                         let collection = game
                           .getCollectionManager()
@@ -5910,7 +5841,7 @@ class PlayDealClientService {
                           game
                             .getPlayerManager()
                             .disassociateCollectionFromPlayer(collection);
-  
+      
                           transaction
                             .get("fromTarget")
                             .get("collection")
@@ -5919,21 +5850,19 @@ class PlayDealClientService {
                             .getOrCreate("toAuthor")
                             .getOrCreate("collection")
                             .add(collectionId);
-  
-                          affected.collections = true;
-                          affectedIds.collections.push(collection.getId());
-                          affected.playerCollections = true;
-                          affectedIds.playerCollections.push(
-                            collection.getPlayerKey()
-                          );
+      
+                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
+                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
+      
                         }
                       });
-  
+      
                       request.setTargetSatisfied(true);
                       request.accept(consumerData);
                       request.setStatus("accept");
-                      affected.requests = true;
-                      affectedIds.requests.push(requestId);
+      
+                      _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
+      
                       checkpoints.set("success", true);
                     }
                   }
@@ -5941,7 +5870,7 @@ class PlayDealClientService {
               }
             }
           };
-  
+      
           let result = handleTransactionResponse(
             PUBLIC_SUBJECTS,
             "RESPONSES",

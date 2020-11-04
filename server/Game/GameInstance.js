@@ -55,6 +55,14 @@ const TurnManager = require("./player/turnManager.js");
 
 const Transaction = require(`./player/request/transfer/Transaction.js`);
 
+const serverFolder = '..';
+const buildAffected = require(`${serverFolder}/Lib/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+
+
+const OrderedTree = buildOrderedTree();
+const Affected = buildAffected({OrderedTree});
+
 /*
   class GameConfig {
 
@@ -1298,13 +1306,18 @@ let GameInstance = () => {
   }
 
 
-
+  //========================================
+  // Request Rent
   function requestRent(theGoods) {
     const game = getPublic();
     const currentTurn = getCurrentTurn();
     const requestManager = getRequestManager();
 
-    const { thisPersonId, affectedIds, affected, checkpoints } = theGoods;
+    const { 
+        thisPersonId,
+        _Affected,
+        checkpoints 
+    } = theGoods;
     
     const {
       cardId, 
@@ -1317,7 +1330,7 @@ let GameInstance = () => {
     let hand = game.getPlayerHand(thisPersonId);
     let activePile = game.getActivePile();
     activePile.addCard(hand.giveCard(cardId));
-    affected.activePile = true;
+    _Affected.setAffected('ACTIVE_PILE');
     currentTurn.setActionPreformed("REQUEST", game.getCard(cardId));
     let augmentUsesActionCount = game.getConfig(CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION, true);
     if (augmentUsesActionCount) {
@@ -1329,8 +1342,8 @@ let GameInstance = () => {
         activePile.addCard(hand.giveCard(augCardId));
       });
     }
-
-    function onCancelCallback(req, { affectedIds, affected }) {
+    
+    function onCancelCallback(req, { _Affected }) {
       // If augmented remove an augment
 
       // data may be stored in differnt locations depending if it was a decline card
@@ -1391,10 +1404,9 @@ let GameInstance = () => {
               augmentCardsIds: newAugmentIds,
             });
 
-            affected.requests = true;
-            affectedIds.requests.push(request.getId());
-            affectedIds.playerRequests.push(request.getAuthorKey());
-            affectedIds.playerRequests.push(request.getTargetKey());
+            _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.CREATE);
+            _Affected.setAffected('PLAYER_REQUEST', request.getAuthorKey(), Affected.ACTION.CREATE);
+            _Affected.setAffected('PLAYER_REQUEST', request.getTargetKey(), Affected.ACTION.CREATE);
           }
         } else {
           console.log("wont make new request", [
@@ -1478,29 +1490,32 @@ let GameInstance = () => {
         baseValue: baseValue,
         augmentCardsIds: validAugmentCardsIds,
       });
-      affectedIds.requests.push(request.getId());
-      affected.requests = true;
-      affected.activePile = true;
+
+      _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.CREATE);
+      _Affected.setAffected('ACTIVE_PILE');
     });
 
     checkpoints.set("success", true);
   }
 
+  //________________________________________
 
+
+
+  //========================================
+  // Collect Rent Value
   function declineCollectValueRequest ({
     request,
     checkpoints,
     game,
     thisPersonId,
     cardId,
-    affected,
-    affectedIds,
+    _Affected,
   }) {
 
     let consumerData = {
       request,
-      affected,
-      affectedIds,
+      _Affected,
       thisPersonId,
     }
     
@@ -1525,12 +1540,13 @@ let GameInstance = () => {
               .getPlayerHand(thisPersonId)
               .giveCard(cardId)
           );
-        affected.hand = true;
+        _Affected.setAffected('HAND', thisPersonId);
 
-        affected.activePile = true;
+
+        _Affected.setAffected('ACTIVE_PILE', thisPersonId);
+
         let doTheDecline = function ({
-          affected,
-          affectedIds,
+          _Affected,
           request,
           checkpoints,
         }) {
@@ -1545,8 +1561,7 @@ let GameInstance = () => {
           request.setTargetSatisfied(true);
           request.decline(consumerData);
           request.close("decline");
-          affected.requests = true;
-          affectedIds.requests.push(request.getId());
+          _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
         };
 
         if (
@@ -1557,24 +1572,18 @@ let GameInstance = () => {
             request,
             cardId
           );
-          affectedIds.requests.push(
-            sayNoRequest.getId()
-          );
-          affectedIds.playerRequests.push(
-            sayNoRequest.getTargetKey()
-          );
+          _Affected.setAffected('REQUEST', sayNoRequest.getId(), Affected.ACTION.CREATE);
+          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getTargetKey(), Affected.ACTION.CREATE);
 
           doTheDecline({
             request,
-            affected,
-            affectedIds,
+            _Affected,
             checkpoints,
           });
         } else {
           doTheDecline({
             request,
-            affected,
-            affectedIds,
+            _Affected,
             checkpoints,
           });
         }
@@ -1585,25 +1594,21 @@ let GameInstance = () => {
   function acceptCollectValueRequest({
     player,
     request,
-    affected,
-    affectedIds,
+    _Affected,
     payWithBank,
     payWithProperty,
     thisPersonId,
   }){
-
-
+    
     let game = getPublic();
     let consumerData = {
       request,
-      affected,
-      affectedIds,
+      _Affected,
       thisPersonId,
       player,
     }
 
     request.setStatus("accept");
-    let affectedCollections = {};
 
     let requestPayload = request.getPayload();
     let transaction = requestPayload.transaction; // assumes is created with request
@@ -1618,10 +1623,10 @@ let GameInstance = () => {
 
         if (playerBank.hasCard(cardId)) {
           if (amountRemaining > 0) {
+
             let transferBank = transaction
               .getOrCreate("toAuthor")
               .getOrCreate("bank");
-            affected.bank = true;
 
             let card = playerBank.getCard(cardId);
             let cardValue = card.value;
@@ -1639,9 +1644,11 @@ let GameInstance = () => {
               }
             }
 
+            // Affects the bank balance
             if (affectsValue) {
               playerBank.removeCard(cardId);
               transferBank.add(cardId);
+              _Affected.setAffected('BANK', thisPersonId, Affected.ACTION.UPDATE);
             }
           }
         }
@@ -1692,7 +1699,7 @@ let GameInstance = () => {
                 collection.removeCard(cardId);
                 game.cleanUpFromCollection(thisPersonId, collection);
                 transferProperty.add(card.id);
-                affectedCollections[collection.getId()] = true;
+                _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
               }
             }
           }
@@ -1742,20 +1749,19 @@ let GameInstance = () => {
     }
 
 
-    // If collections were affected emit updates
-    affectedIds.collections = Object.keys(affectedCollections);
-
     
     return status;
   }
+   //________________________________________
 
 
+  //========================================
+  // Just say NO!
   function respondToJustSayNo(consumerData) {
     let { cardId, requestId, responseKey } = consumerData;
     let game = getPublic();
     let {
-      affected,
-      affectedIds,
+      _Affected,
       checkpoints,
       thisPersonId,
     } = consumerData;
@@ -1784,35 +1790,30 @@ let GameInstance = () => {
 
         let doTheDecline = function ({
           request,
-          affected,
-          affectedIds,
+          _Affected,
         }) {
           request.decline(consumerData);
           request.setTargetSatisfied(true);
           request.close(responseKey);
-          affected.requests = true;
-          affected.requests = true;
-          affectedIds.requests.push(request.getId());
+
+          _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
         };
 
 
         let doTheAccept = function({
           request,
-          affected,
-          affectedIds,
+          _Affected,
         }){
           request.accept(consumerData);
           request.setTargetSatisfied(true);
           request.close(responseKey);
-          affected.requests = true;
-          affectedIds.requests.push(request.getId());
+          _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
         }
         switch (responseKey) {
           case "accept":
             doTheAccept({
               request,
-              affected,
-              affectedIds
+              _Affected,
             })
             checkpoints.set("success", true);
 
@@ -1824,14 +1825,14 @@ let GameInstance = () => {
                 .addCard(
                   game.getPlayerHand(thisPersonId).giveCard(cardId)
                 );
-              affected.hand = true;
-              affected.activePile = true;
+
+              _Affected.setAffected('HAND', thisPersonId, Affected.ACTION.UPDATE);
+              _Affected.setAffected('ACTIVE_PILE');
 
               
               doTheDecline({
                 request,
-                affected,
-                affectedIds,
+                _Affected,
                 checkpoints,
               });
 
@@ -1843,6 +1844,7 @@ let GameInstance = () => {
       }
     }
   }
+  //________________________________________
   
 
   function getPublic() {
