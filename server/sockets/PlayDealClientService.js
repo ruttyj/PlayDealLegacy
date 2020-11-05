@@ -1009,17 +1009,17 @@ class PlayDealClientService {
         (consumerData, checkpoints) => {
           let { requestId } = consumerData;
           let { roomCode, game, personManager, thisPersonId } = consumerData;
-  
+    
           let currentTurn = game.getCurrentTurn();
           let phaseKey = currentTurn.getPhaseKey();
           let requestManager = currentTurn.getRequestManager();
           let actionNum = currentTurn.getActionCount();
-  
+    
           // Request manager exists
           checkpoints.set("requestManagerExists", false);
           if (isDef(currentTurn) && isDef(requestManager)) {
             checkpoints.set("requestManagerExists", true);
-  
+    
             // Is request phase
             let player = game.getPlayer(thisPersonId);
             let playerBank = player.getBank();
@@ -1027,14 +1027,14 @@ class PlayDealClientService {
             checkpoints.set("isRequestDefined", false);
             if (isDef(request)) {
               checkpoints.set("isRequestDefined", true);
-  
+    
               let requestPayload = request.getPayload();
               let transaction = requestPayload.transaction;
-  
+    
               checkpoints.set("hasTransaction", false);
               if (isDef(transaction)) {
                 checkpoints.set("hasTransaction", true);
-  
+    
                 let isApplicable = false;
                 let isAuthor = request.getAuthorKey() === thisPersonId;
                 let isTarget = request.getTargetKey() === thisPersonId;
@@ -1046,39 +1046,25 @@ class PlayDealClientService {
                   transferField = "toTarget";
                   isApplicable = true;
                 }
-  
+    
                 // If is related to request
                 checkpoints.set("isApplicable", false);
                 if (isApplicable) {
                   if (transaction.has(transferField)) {
                     checkpoints.set("isApplicable", true);
-  
+    
                     // Get what is being transferd to me
                     let transfering = transaction.get(transferField);
-  
+    
                     // Log what is to be reported back to the user
-                    let affected = {
-                      turn: true,
-                      hand: false,
-                      bank: false,
-                      playerRequests: false,
-                      requests: false,
-                      playerCollections: false,
-                      collections: false,
-                    };
-                    let affectedIds = {
-                      playerRequests: [],
-                      requests: [requestId],
-                      playerCollections: [],
-                      collections: [],
-                    };
-  
+                    let _Affected = new Affected();
+    
                     // DO THE THING
                     checkpoints.set("success", false);
                     theThing({
+                      request,
                       requestId,
-                      affected,
-                      affectedIds,
+                      _Affected,
                       actionNum,
                       player,
                       playerBank,
@@ -1088,9 +1074,9 @@ class PlayDealClientService {
                       checkpoints,
                       ...consumerData,
                     });
-  
+    
                     if (checkpoints.get("success")) status = "success";
-  
+    
                     // If request is completed
                     if (transaction.isComplete() || transaction.isEmpty()) {
                       request.close(request.getStatus());
@@ -1099,11 +1085,12 @@ class PlayDealClientService {
                         currentTurn.getPhaseKey() === "request"
                       ) {
                         currentTurn.proceedToNextPhase();
-                        affected.turn = true;
+                        _Affected.setAffected('TURN');
                       }
                     }
-  
-                    if (affected.hand) {
+    
+                    
+                    if (_Affected.isAffected('HAND')) {
                       let allPlayerIds = getAllPlayerIds({
                         game,
                         personManager,
@@ -1118,24 +1105,13 @@ class PlayDealClientService {
                         )
                       );
                     }
-  
+    
                     // COLLECTIONS
-  
-                    if (
-                      affected.collections &&
-                      affectedIds.collections.length > 0
-                    ) {
-                      let updatedCollectionIds = [];
-                      let removedCollectionIds = [];
-                      affectedIds.collections.forEach((id) => {
-                        let collectionManager = game.getCollectionManager();
-                        if (collectionManager.hasCollection(id)) {
-                          updatedCollectionIds.push(id);
-                        } else {
-                          removedCollectionIds.push(id);
-                        }
-                      });
-  
+                    
+                    if (_Affected.isAffected('COLLECTION')) {
+                      let updatedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE);
+                      let removedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE);
+    
                       if (updatedCollectionIds.length > 0) {
                         socketResponses.addToBucket(
                           "everyone",
@@ -1146,7 +1122,7 @@ class PlayDealClientService {
                           )
                         );
                       }
-  
+    
                       if (removedCollectionIds.length > 0) {
                         socketResponses.addToBucket(
                           "everyone",
@@ -1159,28 +1135,25 @@ class PlayDealClientService {
                       }
                     }
                     // PLAYER COLLECTIONS
-                    if (
-                      affected.playerCollections &&
-                      affectedIds.playerCollections.length > 0
-                    ) {
+                    if (_Affected.isAffected('PLAYER_COLLECTION')) {
                       // Update who has what collection
                       socketResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                           makeProps(consumerData, {
-                            peopleIds: affectedIds.playerCollections,
+                            peopleIds: _Affected.getIdsAffectedByAction("PLAYER_COLLECTIONS", Affected.ACTION_GROUP.CHANGE),
                           })
                         )
                       );
                     }
-  
+    
                     // REQUESTS
-                    if (affected.requests && isDef(affectedIds.requests)) {
+                    if (_Affected.isAffected('REQUEST')) {
                       socketResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                           makeProps(consumerData, {
-                            requestIds: affectedIds.requests,
+                            requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
                           })
                         )
                       );
@@ -1191,9 +1164,9 @@ class PlayDealClientService {
                         )
                       ); // maybe have to include other people
                     }
-  
+    
                     // BANK
-                    if (affected.bank) {
+                    if (_Affected.isAffected('BANK')) {
                       let attendingPeople = personManager.filterPeople(
                         (person) =>
                           person.isConnected() && person.getStatus() === "ready"
@@ -1211,9 +1184,9 @@ class PlayDealClientService {
                         )
                       );
                     }
-  
+    
                     // PLAYER TURN
-                    if (affected.turn) {
+                    if (_Affected.isAffected('TURN')) {
                       socketResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
@@ -1224,7 +1197,7 @@ class PlayDealClientService {
               }
             }
           }
-  
+    
           payload = {
             checkpoints: packageCheckpoints(checkpoints),
           };
@@ -1232,7 +1205,7 @@ class PlayDealClientService {
             "default",
             makeResponse({ subject, action, status, payload })
           );
-  
+    
           return socketResponses;
         },
         makeConsumerFallbackResponse({ subject, action, socketResponses })
@@ -5096,7 +5069,8 @@ class PlayDealClientService {
         COLLECT_CARD_TO_BANK_AUTO: (props) => {
           let doTheThing = function (consumerData) {
             let {
-              affected,
+              request,
+              _Affected,
               playerBank,
               transfering,
               checkpoints,
@@ -5113,11 +5087,11 @@ class PlayDealClientService {
                   playerBank.addCard(cardId);
                   transfering.get("bank").confirm(cardId);
                 });
-  
-              affected.requests = true;
-              affected.bank = true;
+
+              _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
+              _Affected.setAffected('BANK');
               checkpoints.set("success", true);
-  
+
               if (game.checkWinConditionForPlayer(thisPersonId)) {
                 socketResponses.addToBucket(
                   "everyone",
@@ -5156,7 +5130,7 @@ class PlayDealClientService {
         COLLECT_CARD_TO_BANK: (props) => {
           let doTheThing = function (consumerData) {
             let { cardId } = consumerData;
-            let { affected, playerBank, transfering, checkpoints } = consumerData;
+            let { _Affected, thisPersonId, playerBank, transfering, checkpoints, request } = consumerData;
             if (transfering.has("bank")) {
               let cardExists = transfering
                 .get("bank")
@@ -5166,13 +5140,14 @@ class PlayDealClientService {
                 playerBank.addCard(cardId);
                 transfering.get("bank").confirm(cardId);
               }
-  
-              affected.requests = true;
-              affected.bank = true;
+      
+              _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
+              _Affected.setAffected('BANK', thisPersonId);
+      
               checkpoints.set("success", true);
             }
           };
-  
+      
           return handleTransferResponse(
             PUBLIC_SUBJECTS,
             "RESPONSES",
@@ -5181,13 +5156,12 @@ class PlayDealClientService {
             doTheThing
           );
         },
-  
+      
         COLLECT_CARD_TO_COLLECTION: (props) => {
           let doTheThing = function (consumerData) {
             let { cardId, requestId, collectionId } = consumerData;
             let {
-              affected,
-              affectedIds,
+              _Affected,
               transfering,
               checkpoints,
               game,
@@ -5198,7 +5172,7 @@ class PlayDealClientService {
             } = consumerData;
             let playerManager = game.getPlayerManager();
             let status = "failure";
-  
+      
             // if card is in list of transfer cards and has not already been processed
             checkpoints.set("isValidTransferCard", false);
             if (transfering.has("property")) {
@@ -5206,16 +5180,16 @@ class PlayDealClientService {
               let cardIds = transferPropertiesToMe.getRemainingList();
               if (cardIds.includes(cardId)) {
                 checkpoints.set("isValidTransferCard", true);
-  
+      
                 let card = game.getCard(cardId);
                 let collection;
-  
+      
                 // If my collection is specified to transfer to
                 if (isDef(collectionId)) {
                   checkpoints.set("isMyCollection", false);
                   if (player.hasCollectionId(collectionId)) {
                     checkpoints.set("isMyCollection", true);
-  
+      
                     let transformCollection = game.canAddCardToCollection(
                       cardId,
                       collectionId
@@ -5223,7 +5197,7 @@ class PlayDealClientService {
                     let decidedPropertySetKey =
                       transformCollection.newPropertySetKey;
                     let canBeAdded = transformCollection.canBeAdded;
-  
+      
                     if (canBeAdded) {
                       collection = game
                         .getCollectionManager()
@@ -5255,19 +5229,16 @@ class PlayDealClientService {
                   transferPropertiesToMe.confirm(cardId);
                   status = "success";
                 }
-  
+      
                 if (isDef(collection) && status === "success") {
-                  affected.requests = true;
-                  affectedIds.requests.push(requestId);
-  
-                  affected.collections = true;
-  
-                  affected.playerCollections = true;
-                  affectedIds.collections.push(collection.getId());
-                  affectedIds.playerCollections.push(collection.getPlayerKey());
-  
+      
+                  // @TODO move this above to correctly reflect create / update
+                  _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
+                  _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
+                  _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
+      
                   checkpoints.set("success", true);
-  
+      
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
                     socketResponses.addToBucket(
                       "everyone",
@@ -5278,7 +5249,7 @@ class PlayDealClientService {
               }
             }
           };
-  
+      
           let result = handleTransferResponse(
             PUBLIC_SUBJECTS,
             "RESPONSES",
@@ -5293,8 +5264,7 @@ class PlayDealClientService {
           let doTheThing = function (consumerData) {
             let { requestId } = consumerData;
             let {
-              affected,
-              affectedIds,
+              _Affected,
               transfering,
               checkpoints,
               game,
@@ -5303,13 +5273,13 @@ class PlayDealClientService {
               socketResponses,
             } = consumerData;
             let playerManager = game.getPlayerManager();
-  
+      
             // if card is in list of transfer cards and has not already been processed
             checkpoints.set("isValidTransferCard", false);
             if (transfering.has("collection")) {
               let transferToMe = transfering.get("collection");
               let collectionIds = transferToMe.getRemainingList();
-  
+      
               collectionIds.forEach((collectionId) => {
                 let collection = game
                   .getCollectionManager()
@@ -5317,26 +5287,21 @@ class PlayDealClientService {
                 if (isDef(collection)) {
                   // should already be dissacoated but make sure
                   playerManager.disassociateCollectionFromPlayer(collectionId);
-  
+      
                   //add to new player
                   playerManager.associateCollectionToPlayer(
                     collectionId,
                     thisPersonId
                   );
                   transferToMe.confirm(collectionId);
-  
+      
                   checkpoints.set("success", true);
-                  affected.requests = true;
-                  affectedIds.requests.push(requestId);
-  
-                  affected.collections = true;
-                  affectedIds.collections.push(collection.getId());
-  
-                  affected.playerCollections = true;
-                  affectedIds.playerCollections.push(collection.getPlayerKey());
+                  _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
+                  _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
+                  _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
                 }
               });
-  
+      
               if (game.checkWinConditionForPlayer(thisPersonId)) {
                 socketResponses.addToBucket(
                   "everyone",
@@ -5345,7 +5310,7 @@ class PlayDealClientService {
               }
             }
           };
-  
+      
           let result = handleTransferResponse(
             PUBLIC_SUBJECTS,
             "RESPONSES",
