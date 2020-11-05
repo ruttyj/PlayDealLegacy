@@ -1263,27 +1263,15 @@ class PlayDealClientService {
                 }
   
                 //==========================================================
-  
-                let affected = {
-                  requests: false,
-                  activePile: false,
-                  collections: false,
-                  playerCollections: false,
-                };
-                let affectedIds = {
-                  requests: [],
-                  collections: [],
-                  playerCollections: [],
-                };
-  
+                let _Affected = new Affected();
+                
                 checkpoints.set("success", false);
                 doTheThing({
                   ...consumerData,
                   actionNum,
                   requestManager,
                   checkpoints,
-                  affected,
-                  affectedIds,
+                  _Affected,
                   targetPeopleIds,
                   currentTurn,
                   thisPersonId,
@@ -1309,55 +1297,57 @@ class PlayDealClientService {
                     })
                   )
                 );
-                if (affected.activePile) {
+                if (_Affected.isAffected('ACTIVE_PILE')) {
                   socketResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
                   );
                 }
   
-                if (affected.collections && affectedIds.collections.length > 0) {
+                if (_Affected.isAffected('COLLECTION')) {
                   socketResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                       makeProps(consumerData, {
-                        collectionIds: affectedIds.collections,
+                        collectionIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
                       })
                     )
                   );
                 }
   
-                if (
-                  affected.playerCollections &&
-                  affectedIds.playerCollections.length > 0
-                ) {
+                if (_Affected.isAffected('PLAYER_COLLECTION')) {
                   // Update who has what collection
                   socketResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                       makeProps(consumerData, {
-                        peopleIds: affectedIds.playerCollections,
+                        peopleIds: _Affected.getIdsAffectedByAction("PLAYER_COLLECTION", Affected.ACTION_GROUP.CHANGE),
                       })
                     )
                   );
                 }
   
-                if (affected.requests && affectedIds.requests.length > 0) {
+                if (_Affected.isAffected('PLAYER_REQUEST')) {
                   socketResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                       makeProps(consumerData, { peopleIds: targetPeopleIds })
                     )
                   );
+                }
+  
+  
+                if (_Affected.isAffected('REQUEST')) {
                   socketResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                       makeProps(consumerData, {
-                        requestIds: affectedIds.requests,
+                        requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
                       })
                     )
                   );
                 }
+  
                 socketResponses.addToBucket(
                   "everyone",
                   PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
@@ -3449,16 +3439,16 @@ class PlayDealClientService {
         VALUE_COLLECTION: (props) => {
           function doTheThing(theGoods) {
             let { cardId } = theGoods;
-            let { thisPersonId, affectedIds, affected, checkpoints } = theGoods;
-  
+            let { thisPersonId, _Affected, checkpoints } = theGoods;
+      
             let { game, requestManager, currentTurn } = theGoods;
             let { augments, targetPeopleIds } = theGoods;
-  
+      
             let hand = game.getPlayerHand(thisPersonId);
             let activePile = game.getActivePile();
             activePile.addCard(hand.giveCard(game.getCard(cardId)));
-            affected.activePile = true;
-  
+            _Affected.setAffected('ACTIVE_PILE');
+      
             currentTurn.setActionPreformed("REQUEST", game.getCard(cardId));
             //let augmentUsesActionCount = game.getConfig(CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION, true);
             //if(augmentUsesActionCount){
@@ -3467,7 +3457,7 @@ class PlayDealClientService {
             //  })
             //}
             let actionNum = currentTurn.getActionCount();
-  
+      
             let card = game.getCard(cardId);
             if (isDefNested(card, ["action", "collectValue"])) {
               targetPeopleIds.forEach((targetPersonId) => {
@@ -3492,18 +3482,14 @@ class PlayDealClientService {
                     },
                     description: `Collect Debt`,
                   });
-                  affectedIds.requests.push(request.getId());
-                  affected.requests = true;
-                  affected.activePile = true;
+                  
+                  _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
                   checkpoints.set("success", true);
                 }
               });
             }
-  
-            if (checkpoints.get("success") === true) {
-            }
           }
-  
+      
           return handleRequestCreation(
             PUBLIC_SUBJECTS,
             "MY_TURN",
@@ -3516,25 +3502,25 @@ class PlayDealClientService {
         SWAP_PROPERTY: (props) => {
           function doTheThing(theGoods) {
             let { cardId, myPropertyCardId, theirPropertyCardId } = theGoods;
-            let { thisPersonId, affectedIds, affected, checkpoints } = theGoods;
-  
+            let { thisPersonId, _Affected, checkpoints } = theGoods;
+      
             let { game, requestManager, currentTurn } = theGoods;
-  
+      
             let hand = game.getPlayerHand(thisPersonId);
             let activePile = game.getActivePile();
-  
+      
             //let augmentUsesActionCount = game.getConfig(CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION, true);
             //if(augmentUsesActionCount){
             //  validAugmentCardsIds.forEach(augCardId => {
             //    currentTurn.setActionPreformed("REQUEST", game.getCard(cardId));
             //  })
             //}
-  
+      
             let actionCard = game.getCard(cardId);
             checkpoints.set("isValidSwapPropertyActionCard", false);
             if (game.doesCardHaveTag(cardId, "swapProperty")) {
               checkpoints.set("isValidSwapPropertyActionCard", true);
-  
+      
               // My collection?
               let myCollection = game.getCollectionThatHasCard(myPropertyCardId);
               checkpoints.set("isMyCollection", false);
@@ -3543,7 +3529,7 @@ class PlayDealClientService {
                   String(myCollection.getPlayerKey()) === String(thisPersonId)
                 ) {
                   checkpoints.set("isMyCollection", true);
-  
+      
                   // Their collection?
                   let theirCollection = game.getCollectionThatHasCard(
                     theirPropertyCardId
@@ -3555,25 +3541,25 @@ class PlayDealClientService {
                       String(thisPersonId)
                     ) {
                       checkpoints.set("isTheirCollection", true);
-  
+      
                       // Are valid cards? Augments might affect this in the future
                       let isValidCards = true;
                       checkpoints.set("isValidCards", false);
-  
+      
                       checkpoints.set("isTheirCollectionNotFull", false);
                       if (!theirCollection.isFull()) {
                         checkpoints.set("isTheirCollectionNotFull", true);
                       }
-  
+      
                       checkpoints.set("isMyCollectionNotFull", false);
                       if (!myCollection.isFull()) {
                         checkpoints.set("isMyCollectionNotFull", true);
                       }
-  
+      
                       isValidCards =
                         checkpoints.get("isTheirCollectionNotFull") &&
                         checkpoints.get("isMyCollectionNotFull");
-  
+      
                       // are they tagged as property?
                       if (isValidCards) {
                         let isMyCardProperty = game.doesCardHaveTag(
@@ -3584,14 +3570,14 @@ class PlayDealClientService {
                           theirPropertyCardId,
                           "property"
                         );
-  
+      
                         checkpoints.set("isMyCardProperty", false);
                         if (isMyCardProperty) {
                           checkpoints.set("isMyCardProperty", true);
                         } else {
                           isValidCards = false;
                         }
-  
+      
                         checkpoints.set("isTheirCardProperty", false);
                         if (isTheirCardProperty) {
                           checkpoints.set("isTheirCardProperty", true);
@@ -3599,20 +3585,20 @@ class PlayDealClientService {
                           isValidCards = false;
                         }
                       }
-  
+      
                       if (isValidCards) {
                         checkpoints.set("isValidCards", true);
-  
+      
                         activePile.addCard(hand.giveCard(game.getCard(cardId)));
-                        affected.activePile = true;
-  
+                        _Affected.setAffected('ACTIVE_PILE');
+      
                         currentTurn.setActionPreformed(
                           "REQUEST",
                           game.getCard(cardId)
                         );
                         // Log action preformed
                         let actionNum = currentTurn.getActionCount();
-  
+      
                         let transaction = Transaction();
                         transaction
                           .getOrCreate("fromTarget")
@@ -3622,7 +3608,7 @@ class PlayDealClientService {
                           .getOrCreate("fromAuthor")
                           .getOrCreate("property")
                           .add(myPropertyCardId);
-  
+      
                         let request = requestManager.createRequest({
                           type: "swapProperty",
                           authorKey: thisPersonId,
@@ -3636,9 +3622,10 @@ class PlayDealClientService {
                           },
                           description: `Swap properties`,
                         });
-                        affectedIds.requests.push(request.getId());
-                        affected.requests = true;
-                        affected.activePile = true;
+      
+                        _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE)
+                        _Affected.setAffected('ACTIVE_PILE');
+      
                         checkpoints.set("success", true);
                       }
                     }
@@ -3647,7 +3634,7 @@ class PlayDealClientService {
               }
             }
           }
-  
+      
           return handleRequestCreation(
             PUBLIC_SUBJECTS,
             "MY_TURN",
@@ -3660,17 +3647,17 @@ class PlayDealClientService {
         STEAL_PROPERTY: (props) => {
           function doTheThing(theGoods) {
             let { cardId, myPropertyCardId, theirPropertyCardId } = theGoods;
-            let { thisPersonId, affectedIds, affected, checkpoints } = theGoods;
-  
+            let { thisPersonId, _Affected, checkpoints } = theGoods;
+      
             let { game, requestManager, currentTurn } = theGoods;
-  
+      
             let hand = game.getPlayerHand(thisPersonId);
             let activePile = game.getActivePile();
-  
+      
             checkpoints.set("isValidSwapPropertyActionCard", false);
             if (game.doesCardHaveTag(cardId, "stealProperty")) {
               checkpoints.set("isValidSwapPropertyActionCard", true);
-  
+      
               // Their collection?
               let theirCollection = game.getCollectionThatHasCard(
                 theirPropertyCardId
@@ -3681,25 +3668,25 @@ class PlayDealClientService {
                   String(theirCollection.getPlayerKey()) !== String(thisPersonId)
                 ) {
                   checkpoints.set("isTheirCollection", true);
-  
+      
                   // Are valid cards? Augments might affect this in the future
                   let isValidCards = true;
                   checkpoints.set("isValidCards", false);
-  
+      
                   checkpoints.set("isTheirCollectionNotFull", false);
                   if (!theirCollection.isFull()) {
                     checkpoints.set("isTheirCollectionNotFull", true);
                   }
-  
+      
                   isValidCards = checkpoints.get("isTheirCollectionNotFull");
-  
+      
                   // are they tagged as property?
                   if (isValidCards) {
                     let isTheirCardProperty = game.doesCardHaveTag(
                       theirPropertyCardId,
                       "property"
                     );
-  
+      
                     checkpoints.set("isTheirCardProperty", false);
                     if (isTheirCardProperty) {
                       checkpoints.set("isTheirCardProperty", true);
@@ -3707,26 +3694,26 @@ class PlayDealClientService {
                       isValidCards = false;
                     }
                   }
-  
+      
                   if (isValidCards) {
                     checkpoints.set("isValidCards", true);
-  
+      
                     activePile.addCard(hand.giveCard(game.getCard(cardId)));
-                    affected.activePile = true;
-  
+                    _Affected.setAffected('ACTIVE_PILE');
+      
                     currentTurn.setActionPreformed(
                       "REQUEST",
                       game.getCard(cardId)
                     );
                     // Log action preformed
                     let actionNum = currentTurn.getActionCount();
-  
+      
                     let transaction = Transaction();
                     transaction
                       .getOrCreate("fromTarget")
                       .getOrCreate("property")
                       .add(theirPropertyCardId);
-  
+      
                     let request = requestManager.createRequest({
                       type: "stealProperty",
                       authorKey: thisPersonId,
@@ -3740,16 +3727,16 @@ class PlayDealClientService {
                       },
                       description: `Steal properties`,
                     });
-                    affectedIds.requests.push(request.getId());
-                    affected.requests = true;
-                    affected.activePile = true;
+                   
+                    _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE)
+                    _Affected.setAffected('ACTIVE_PILE');
                     checkpoints.set("success", true);
                   }
                 }
               }
             }
           }
-  
+      
           return handleRequestCreation(
             PUBLIC_SUBJECTS,
             "MY_TURN",
@@ -3762,17 +3749,17 @@ class PlayDealClientService {
         STEAL_COLLECTION: (props) => {
           function doTheThing(theGoods) {
             let { cardId, theirCollectionId } = theGoods;
-            let { thisPersonId, affectedIds, affected, checkpoints } = theGoods;
-  
+            let { thisPersonId, _Affected, checkpoints } = theGoods;
+      
             let { game, requestManager, currentTurn } = theGoods;
-  
+      
             let hand = game.getPlayerHand(thisPersonId);
             let activePile = game.getActivePile();
-  
+      
             checkpoints.set("isValidActionCard", false);
             if (game.doesCardHaveTag(cardId, "stealCollection")) {
               checkpoints.set("isValidActionCard", true);
-  
+      
               let theirCollection = game
                 .getCollectionManager()
                 .getCollection(theirCollectionId);
@@ -3780,7 +3767,7 @@ class PlayDealClientService {
               checkpoints.set("isValidCollection", false);
               if (String(collectionOwnerId) !== String(thisPersonId)) {
                 checkpoints.set("isValidCollection", true);
-  
+      
                 checkpoints.set("isValidPropertySetKey", false);
                 if (
                   !NON_PROPERTY_SET_KEYS.includes(
@@ -3788,28 +3775,28 @@ class PlayDealClientService {
                   )
                 ) {
                   checkpoints.set("isValidPropertySetKey", true);
-  
+      
                   checkpoints.set("isCompleteCollection", false);
                   if (theirCollection.isFull()) {
                     checkpoints.set("isCompleteCollection", true);
-  
+      
                     // Use card
                     activePile.addCard(hand.giveCard(game.getCard(cardId)));
                     currentTurn.setActionPreformed(
                       "REQUEST",
                       game.getCard(cardId)
                     );
-                    affected.activePile = true;
-  
+                    _Affected.setAffected('ACTIVE_PILE');
+      
                     // Log action preformed
                     let actionNum = currentTurn.getActionCount();
-  
+      
                     let transaction = Transaction();
                     transaction
                       .getOrCreate("fromTarget")
                       .getOrCreate("collection")
                       .add(theirCollectionId);
-  
+      
                     let request = requestManager.createRequest({
                       type: "stealCollection",
                       authorKey: thisPersonId,
@@ -3823,16 +3810,17 @@ class PlayDealClientService {
                       },
                       description: `Steal collection`,
                     });
-                    affectedIds.requests.push(request.getId());
-                    affected.requests = true;
-                    affected.activePile = true;
+                    
+                    _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
+                    _Affected.setAffected('ACTIVE_PILE');
+      
                     checkpoints.set("success", true);
                   }
                 }
               }
             }
           }
-  
+      
           return handleRequestCreation(
             PUBLIC_SUBJECTS,
             "MY_TURN",
