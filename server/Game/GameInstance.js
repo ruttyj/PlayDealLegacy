@@ -573,6 +573,12 @@ let GameInstance = () => {
     return null;
   }
 
+  function getAllPlayerKeys() {
+    let playerManager = getPlayerManager();
+    if (isDef(playerManager)) return playerManager.getAllPlayerKeys();
+    return [];
+  }
+
   function canAddPlayer() {
     let playerManager = getPlayerManager();
 
@@ -1850,6 +1856,10 @@ let GameInstance = () => {
   function getPublic() {
     return {
 
+      get constants(){
+        return constants;
+      },
+
       // MISC
       requestRent,
       declineCollectValueRequest,
@@ -1976,6 +1986,7 @@ let GameInstance = () => {
   
       // Player
   
+      getAllPlayerKeys,
       canAddPlayer,
       createPlayer,
       hasPlayer,
