@@ -1,53 +1,16 @@
-const serverFolder = '../../';
-const buildCoreFuncs = require(`${serverFolder}/Lib/Actions/ActionsCore`);
-const BaseAction = require(`./BaseAction`);
-
-
-
 function buildStealCollectionAction({ 
-    // Helper methods
-    isDef, isArr, isFunc, getArrFromProp,
-
     // Objects
-    Affected, SocketResponseBuckets, Transaction,
-
-    // Dependencies
-    roomManager, 
-    
-    // Props linked to socket instance
-    myClientId, 
-
-    // Formatters
-    packageCheckpoints,
-
-    // Socket Methods
-    PUBLIC_SUBJECTS
-  }) {
-
-  
-  let {
+    Affected, Transaction, 
+    // Wrappers - provide data and 
     handleRequestCreation,
-  } = buildCoreFuncs({
-    isDef, isArr, isFunc, getArrFromProp,
-    Affected, SocketResponseBuckets,
-    roomManager, myClientId,
-    packageCheckpoints,
-    PUBLIC_SUBJECTS
-  })
-
-  class StealCollectionAction extends BaseAction {
-
-      constructor() {
-          super();
-      }
-
-      execute(handlerProps) 
-      {
+  }) {
+  function StealCollectionAction (handlerProps) {
         function doTheThing(props) {
           let { 
             game, 
             requestManager, currentTurn,
             cardId, theirCollectionId, thisPersonId,
+            // Wrapper will act on these
             _Affected, checkpoints,
           } = props;
     
@@ -127,7 +90,6 @@ function buildStealCollectionAction({
         );
       }
 
-  }
 
   return StealCollectionAction;
 }

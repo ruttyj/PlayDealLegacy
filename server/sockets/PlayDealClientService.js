@@ -4,12 +4,13 @@ const serverSocketFolder = `${serverFolder}/sockets`;
 const gameFolder = `${serverFolder}/Game`;
 const CookieTokenManager = require("../CookieTokenManager/");
 
+const buildCoreFuncs = require(`${serverFolder}/Lib/Actions/ActionsCore`);
 const buildAffected = require(`${serverFolder}/Lib/Affected`);
 const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
 const buildStealCollectionAction = require(`${serverFolder}/Lib/Actions/StealCollectionAction`);
 const buildChargeRentAction = require(`${serverFolder}/Lib/Actions/ChargeRentAction`);
-
-
+const buildRespondToCollectValueAction = require(`${serverFolder}/Lib/Actions/RespondToCollectValueAction`);
+const buildRespondToJustSayNoAction = require(`${serverFolder}/Lib/Actions/RespondToJustSayNoAction`);
 
 const OrderedTree = buildOrderedTree();
 const Affected = buildAffected({OrderedTree});
@@ -3418,27 +3419,6 @@ class PlayDealClientService {
           );
         },
   
-        CHARGE_RENT: (props) => {
-          const subject = "MY_TURN";
-          const action = "CHARGE_RENT";
-          const socketResponses = SocketResponseBuckets();
-
-          return handleGame(
-            props,
-            (consumerData, checkpoints) => {
-              let { game, personManager, thisPersonId } = consumerData;
-              return handleCollectionBasedRequestCreation(
-                PUBLIC_SUBJECTS,
-                subject,
-                action,
-                props,
-                game.requestRent
-              );
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-  
         VALUE_COLLECTION: (props) => {
           function doTheThing(theGoods) {
             let { cardId } = theGoods;
@@ -4974,7 +4954,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-  
         COLLECT_CARD_TO_BANK_AUTO: (props) => {
           let doTheThing = function (consumerData) {
             let {
@@ -6841,17 +6820,38 @@ class PlayDealClientService {
       roomManager, 
     }
 
-    const StealCollectionAction = buildStealCollectionAction(commonDeps);
-    let stealCollectionAction = new StealCollectionAction();
 
-    const ChargeRentAction = buildChargeRentAction(commonDeps);
-    let chargeRentAction = new ChargeRentAction();
+    const coreDeps = buildCoreFuncs({
+      isDef, isArr, isFunc, getArrFromProp,
+      Affected, SocketResponseBuckets, 
+      myClientId: mStrThisClientId,
+      roomManager, 
+      packageCheckpoints,
+      PUBLIC_SUBJECTS
+    })
 
-    PUBLIC_SUBJECTS['MY_TURN']['STEAL_COLLECTION']  = stealCollectionAction.execute;
-    //PUBLIC_SUBJECTS['MY_TURN']['CHARGE_RENT']       = chargeRentAction.execute;
+    PUBLIC_SUBJECTS['MY_TURN']['STEAL_COLLECTION']            = buildStealCollectionAction({
+                                                                  ...commonDeps,
+                                                                  handleRequestCreation: coreDeps.handleRequestCreation,
+                                                                })
+                                                              
+                                                              
+    PUBLIC_SUBJECTS['MY_TURN']['CHARGE_RENT']                 = buildChargeRentAction({
+                                                                  ...commonDeps,
+                                                                  makeConsumerFallbackResponse:         coreDeps.makeConsumerFallbackResponse,
+                                                                  handleGame:                           coreDeps.handleGame,
+                                                                  handleCollectionBasedRequestCreation,
+                                                                  makeConsumerFallbackResponse,
+                                                                })
 
-
-
+                                                                /*
+    PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_COLLECT_VALUE']  = buildRespondToJustSayNoAction({
+                                                                  ...commonDeps,
+                                                                  handleGame, 
+                                                                  makeConsumerFallbackResponse,
+                                                                  handleTransactionResponse,
+                                                                })
+                                                           //*/        
 
     //==================================================
   

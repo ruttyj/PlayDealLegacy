@@ -35,7 +35,7 @@ describe("Affected", async function () {
   const OrderedTree = buildOrderedTree();
   const Affected = buildAffected({OrderedTree});
 
-
+  /*
   const PUBLIC_SUBJECTS = {};
   const StealCollectionAction = buildStealCollectionAction({
     isDef, isArr, isFunc,
@@ -46,7 +46,7 @@ describe("Affected", async function () {
 
   const mStealCollectionAction = new StealCollectionAction();
 
-  mStealCollectionAction.execute({
+  StealCollectionAction({
     props: {
       roomCode: "AAAA",
     }
@@ -55,6 +55,6 @@ describe("Affected", async function () {
   it(`should do something`, async () => {
     assert.equal(1,1);
   });
-
+  //*/
 
 }); // end App description
