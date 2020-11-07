@@ -23,7 +23,7 @@ function buildChargeRentAction({
             subject,
             action,
             props,
-            game.requestRent
+            game.requestRent,
           );
         },
         makeConsumerFallbackResponse({ subject, action, socketResponses })

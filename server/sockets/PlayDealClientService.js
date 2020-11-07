@@ -6844,14 +6844,13 @@ class PlayDealClientService {
                                                                   makeConsumerFallbackResponse,
                                                                 })
 
-                                                                /*
-    PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_COLLECT_VALUE']  = buildRespondToJustSayNoAction({
+    PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_COLLECT_VALUE']  = buildRespondToCollectValueAction({
                                                                   ...commonDeps,
                                                                   handleGame, 
                                                                   makeConsumerFallbackResponse,
                                                                   handleTransactionResponse,
+                                                                  makeResponse,
                                                                 })
-                                                           //*/        
 
     //==================================================
   
