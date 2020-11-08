@@ -1,15 +1,3 @@
-/*
-function buildRespondToCollectValueAction({})
-{
-    function respondToCollectValueAction(props)
-    {
-
-    }
-    return respondToCollectValueAction;
-}
-
-module.exports = buildRespondToCollectValueAction;
-/*/
 function buildRespondToCollectValueAction({
     isDef,
     makeConsumerFallbackResponse,

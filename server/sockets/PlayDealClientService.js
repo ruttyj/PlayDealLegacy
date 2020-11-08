@@ -11,6 +11,17 @@ const buildStealCollectionAction = require(`${serverFolder}/Lib/Actions/StealCol
 const buildChargeRentAction = require(`${serverFolder}/Lib/Actions/ChargeRentAction`);
 const buildRespondToCollectValueAction = require(`${serverFolder}/Lib/Actions/RespondToCollectValueAction`);
 const buildRespondToJustSayNoAction = require(`${serverFolder}/Lib/Actions/RespondToJustSayNoAction`);
+const buildRespondToStealCollection = require(`${serverFolder}/Lib/Actions/RespondToStealCollection`);
+const buildRespondToStealPropertyAction = require(`${serverFolder}/Lib/Actions/RespondToStealPropertyAction`);
+const buildCollectCardToBankAutoAction = require(`${serverFolder}/Lib/Actions/CollectCardToBankAutoAction`);
+const buildCollectCardToBankAction = require(`${serverFolder}/Lib/Actions/CollectCardToBankAction`);
+const buildCollectCardToCollectionAction = require(`${serverFolder}/Lib/Actions/CollectCardToCollectionAction`);
+const buildCollectCollectionAction = require(`${serverFolder}/Lib/Actions/CollectCollectionAction`);
+const buildRespondToPropertySwapAction = require(`${serverFolder}/Lib/Actions/RespondToPropertySwapAction`);
+const buildAcknowledgeCollectNothingAction = require(`${serverFolder}/Lib/Actions/AcknowledgeCollectNothingAction`);
+const buildStealPropertyAction = require(`${serverFolder}/Lib/Actions/StealPropertyAction`);
+const buildSwapPropertyAction = require(`${serverFolder}/Lib/Actions/SwapPropertyAction`);
+
 
 const OrderedTree = buildOrderedTree();
 const Affected = buildAffected({OrderedTree});
@@ -3481,254 +3492,6 @@ class PlayDealClientService {
             doTheThing
           );
         },
-  
-        SWAP_PROPERTY: (props) => {
-          function doTheThing(theGoods) {
-            let { cardId, myPropertyCardId, theirPropertyCardId } = theGoods;
-            let { thisPersonId, _Affected, checkpoints } = theGoods;
-      
-            let { game, requestManager, currentTurn } = theGoods;
-      
-            let hand = game.getPlayerHand(thisPersonId);
-            let activePile = game.getActivePile();
-      
-            //let augmentUsesActionCount = game.getConfig(CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION, true);
-            //if(augmentUsesActionCount){
-            //  validAugmentCardsIds.forEach(augCardId => {
-            //    currentTurn.setActionPreformed("REQUEST", game.getCard(cardId));
-            //  })
-            //}
-      
-            let actionCard = game.getCard(cardId);
-            checkpoints.set("isValidSwapPropertyActionCard", false);
-            if (game.doesCardHaveTag(cardId, "swapProperty")) {
-              checkpoints.set("isValidSwapPropertyActionCard", true);
-      
-              // My collection?
-              let myCollection = game.getCollectionThatHasCard(myPropertyCardId);
-              checkpoints.set("isMyCollection", false);
-              if (isDef(myCollection)) {
-                if (
-                  String(myCollection.getPlayerKey()) === String(thisPersonId)
-                ) {
-                  checkpoints.set("isMyCollection", true);
-      
-                  // Their collection?
-                  let theirCollection = game.getCollectionThatHasCard(
-                    theirPropertyCardId
-                  );
-                  checkpoints.set("isTheirCollection", false);
-                  if (isDef(theirCollection)) {
-                    if (
-                      String(theirCollection.getPlayerKey()) !==
-                      String(thisPersonId)
-                    ) {
-                      checkpoints.set("isTheirCollection", true);
-      
-                      // Are valid cards? Augments might affect this in the future
-                      let isValidCards = true;
-                      checkpoints.set("isValidCards", false);
-      
-                      checkpoints.set("isTheirCollectionNotFull", false);
-                      if (!theirCollection.isFull()) {
-                        checkpoints.set("isTheirCollectionNotFull", true);
-                      }
-      
-                      checkpoints.set("isMyCollectionNotFull", false);
-                      if (!myCollection.isFull()) {
-                        checkpoints.set("isMyCollectionNotFull", true);
-                      }
-      
-                      isValidCards =
-                        checkpoints.get("isTheirCollectionNotFull") &&
-                        checkpoints.get("isMyCollectionNotFull");
-      
-                      // are they tagged as property?
-                      if (isValidCards) {
-                        let isMyCardProperty = game.doesCardHaveTag(
-                          myPropertyCardId,
-                          "property"
-                        );
-                        let isTheirCardProperty = game.doesCardHaveTag(
-                          theirPropertyCardId,
-                          "property"
-                        );
-      
-                        checkpoints.set("isMyCardProperty", false);
-                        if (isMyCardProperty) {
-                          checkpoints.set("isMyCardProperty", true);
-                        } else {
-                          isValidCards = false;
-                        }
-      
-                        checkpoints.set("isTheirCardProperty", false);
-                        if (isTheirCardProperty) {
-                          checkpoints.set("isTheirCardProperty", true);
-                        } else {
-                          isValidCards = false;
-                        }
-                      }
-      
-                      if (isValidCards) {
-                        checkpoints.set("isValidCards", true);
-      
-                        activePile.addCard(hand.giveCard(game.getCard(cardId)));
-                        _Affected.setAffected('ACTIVE_PILE');
-      
-                        currentTurn.setActionPreformed(
-                          "REQUEST",
-                          game.getCard(cardId)
-                        );
-                        // Log action preformed
-                        let actionNum = currentTurn.getActionCount();
-      
-                        let transaction = Transaction();
-                        transaction
-                          .getOrCreate("fromTarget")
-                          .getOrCreate("property")
-                          .add(theirPropertyCardId);
-                        transaction
-                          .getOrCreate("fromAuthor")
-                          .getOrCreate("property")
-                          .add(myPropertyCardId);
-      
-                        let request = requestManager.createRequest({
-                          type: "swapProperty",
-                          authorKey: thisPersonId,
-                          targetKey: theirCollection.getPlayerKey(),
-                          status: "open",
-                          actionNum: actionNum,
-                          payload: {
-                            actionNum: actionNum,
-                            actionCardId: cardId,
-                            transaction: transaction,
-                          },
-                          description: `Swap properties`,
-                        });
-      
-                        _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE)
-                        _Affected.setAffected('ACTIVE_PILE');
-      
-                        checkpoints.set("success", true);
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-      
-          return handleRequestCreation(
-            PUBLIC_SUBJECTS,
-            "MY_TURN",
-            "SWAP_PROPERTY",
-            props,
-            doTheThing
-          );
-        },
-  
-        STEAL_PROPERTY: (props) => {
-          function doTheThing(theGoods) {
-            let { cardId, myPropertyCardId, theirPropertyCardId } = theGoods;
-            let { thisPersonId, _Affected, checkpoints } = theGoods;
-      
-            let { game, requestManager, currentTurn } = theGoods;
-      
-            let hand = game.getPlayerHand(thisPersonId);
-            let activePile = game.getActivePile();
-      
-            checkpoints.set("isValidSwapPropertyActionCard", false);
-            if (game.doesCardHaveTag(cardId, "stealProperty")) {
-              checkpoints.set("isValidSwapPropertyActionCard", true);
-      
-              // Their collection?
-              let theirCollection = game.getCollectionThatHasCard(
-                theirPropertyCardId
-              );
-              checkpoints.set("isTheirCollection", false);
-              if (isDef(theirCollection)) {
-                if (
-                  String(theirCollection.getPlayerKey()) !== String(thisPersonId)
-                ) {
-                  checkpoints.set("isTheirCollection", true);
-      
-                  // Are valid cards? Augments might affect this in the future
-                  let isValidCards = true;
-                  checkpoints.set("isValidCards", false);
-      
-                  checkpoints.set("isTheirCollectionNotFull", false);
-                  if (!theirCollection.isFull()) {
-                    checkpoints.set("isTheirCollectionNotFull", true);
-                  }
-      
-                  isValidCards = checkpoints.get("isTheirCollectionNotFull");
-      
-                  // are they tagged as property?
-                  if (isValidCards) {
-                    let isTheirCardProperty = game.doesCardHaveTag(
-                      theirPropertyCardId,
-                      "property"
-                    );
-      
-                    checkpoints.set("isTheirCardProperty", false);
-                    if (isTheirCardProperty) {
-                      checkpoints.set("isTheirCardProperty", true);
-                    } else {
-                      isValidCards = false;
-                    }
-                  }
-      
-                  if (isValidCards) {
-                    checkpoints.set("isValidCards", true);
-      
-                    activePile.addCard(hand.giveCard(game.getCard(cardId)));
-                    _Affected.setAffected('ACTIVE_PILE');
-      
-                    currentTurn.setActionPreformed(
-                      "REQUEST",
-                      game.getCard(cardId)
-                    );
-                    // Log action preformed
-                    let actionNum = currentTurn.getActionCount();
-      
-                    let transaction = Transaction();
-                    transaction
-                      .getOrCreate("fromTarget")
-                      .getOrCreate("property")
-                      .add(theirPropertyCardId);
-      
-                    let request = requestManager.createRequest({
-                      type: "stealProperty",
-                      authorKey: thisPersonId,
-                      targetKey: theirCollection.getPlayerKey(),
-                      status: "open",
-                      actionNum: actionNum,
-                      payload: {
-                        actionNum: actionNum,
-                        actionCardId: cardId,
-                        transaction: transaction,
-                      },
-                      description: `Steal properties`,
-                    });
-                   
-                    _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE)
-                    _Affected.setAffected('ACTIVE_PILE');
-                    checkpoints.set("success", true);
-                  }
-                }
-              }
-            }
-          }
-      
-          return handleRequestCreation(
-            PUBLIC_SUBJECTS,
-            "MY_TURN",
-            "STEAL_PROPERTY",
-            props,
-            doTheThing
-          );
-        },
-  
        
   
         FINISH_TURN: (props) => {
@@ -4680,719 +4443,6 @@ class PlayDealClientService {
         },
       },
       RESPONSES: {
-        RESPOND_TO_COLLECT_VALUE: (props) => {
-          const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
-          const socketResponses = SocketResponseBuckets();
-
-          const doTheThing = (consumerData, checkpoints) => {
-            let {
-              cardId,
-              requestId,
-              responseKey,
-              payWithProperty,
-              payWithBank,
-            } = consumerData;
-            let { game, personManager, thisPersonId } = consumerData;
-
-            let status = "failure";
-            let payload = null;
-
-            let currentTurn = game.getCurrentTurn();
-            let phaseKey = currentTurn.getPhaseKey();
-            let requestManager = currentTurn.getRequestManager();
-
-            let validResponseKeys = ["accept", "decline", "counter"];
-
-            // Request manager exists
-            checkpoints.set("requestManagerExists", false);
-            if (isDef(currentTurn) && isDef(requestManager)) {
-              checkpoints.set("requestManagerExists", true);
-
-              // Is request phase
-              checkpoints.set("isRequestPhase", false);
-              if (phaseKey === "request") {
-                checkpoints.set("isRequestPhase", true);
-
-                // Request exists
-                if (isDef(requestId) && requestManager.hasRequest(requestId)) {
-                  let request = requestManager.getRequest(requestId);
-                  let targetKey = request.getTargetKey();
-
-                  // Is request targeting me?
-                  checkpoints.set("isTargetingMe", true);
-                  if (String(targetKey) === String(thisPersonId)) {
-                    checkpoints.set("isTargetingMe", false);
-
-                    // Is request still open
-                    checkpoints.set("isRequestOpen", false);
-                    if (!request.isClosed()) {
-                      checkpoints.set("isRequestOpen", true);
-
-                      // valid response key
-                      checkpoints.set("isValidResponseKey", false);
-                      if (
-                        isDef(responseKey) &&
-                        validResponseKeys.includes(responseKey)
-                      ) {
-                        checkpoints.set("isValidResponseKey", true);
-
-                        let player = game.getPlayer(thisPersonId);
-                        let _Affected = new Affected();
-
-                        if (responseKey === "accept") {
-
-                          status = game.acceptCollectValueRequest({
-                            player,
-                            request,
-                            _Affected,
-                            payWithBank,
-                            payWithProperty,
-                            thisPersonId,
-                          });
-
-                          // If bank was affected emit updates
-                          if (_Affected.isAffected('BANK')) {
-                            let attendingPeople = personManager.filterPeople(
-                              (person) =>
-                                person.isConnected() &&
-                                person.getStatus() === "ready"
-                            );
-                            let peopleIds = attendingPeople.map((person) =>
-                              person.getId()
-                            );
-                            socketResponses.addToBucket(
-                              "default",
-                              PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
-                                makeProps(consumerData, {
-                                  peopleIds: thisPersonId,
-                                  receivingPeopleIds: peopleIds,
-                                })
-                              )
-                            );
-                          }
-
-                          if (_Affected.isAffected('COLLECTION')) {
-                            let collectionChanges = {
-                              updated: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
-                              removed: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE),
-                            };
-
-                            // Add updated collections to be GET
-                            if (collectionChanges.updated.length > 0) {
-                              socketResponses.addToBucket(
-                                "everyone",
-                                PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
-                                  makeProps(consumerData, {
-                                    personId: thisPersonId,
-                                    collectionIds: collectionChanges.updated,
-                                  })
-                                )
-                              );
-                            }
-
-                            // Add removed collections to REMOVE
-                            if (collectionChanges.removed.length > 0) {
-                              socketResponses.addToBucket(
-                                "everyone",
-                                PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
-                                  makeProps(consumerData, {
-                                    personId: thisPersonId,
-                                    collectionIds: collectionChanges.removed,
-                                  })
-                                )
-                              );
-                            }
-                          }
-
-
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                              makeProps(consumerData, {
-                                personId: thisPersonId,
-                              })
-                            )
-                          );
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                              makeProps(consumerData, {
-                                requestId: request.getId(),
-                              })
-                            )
-                          );
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_TURN.GET(
-                              makeProps(consumerData)
-                            )
-                          );
-                        } // end accept
-                        else if (responseKey === "decline") {
-                          game.declineCollectValueRequest({
-                              request,
-                              checkpoints,
-                              game,
-                              thisPersonId,
-                              cardId,
-                              _Affected,
-                          });
-
-
-                          let allPlayerIds = getAllPlayerIds({
-                              game,
-                              personManager,
-                          });
-                          socketResponses.addToBucket(
-                              "default",
-                              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                                  makeProps(consumerData, {
-                                      personId: thisPersonId,
-                                      receivingPeopleIds: allPlayerIds,
-                                  })
-                              )
-                          );
-
-
-                          
-                          if (_Affected.isAffected('ACTIVE_PILE')) {
-                              socketResponses.addToBucket(
-                                  "everyone",
-                                  PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
-                                  makeProps(consumerData)
-                                  )
-                              );
-                          }
-
-                          if (_Affected.isAffected('HAND')) {
-                              let allPlayerIds = getAllPlayerIds({
-                                  game,
-                                  personManager,
-                              });
-                              socketResponses.addToBucket(
-                                  "default",
-                                  PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                                      makeProps(consumerData, {
-                                          personId: thisPersonId,
-                                          receivingPeopleIds: allPlayerIds,
-                                      })
-                                  )
-                              );
-                          }
-                          if (_Affected.isAffected('COLLECTION')) {
-                              socketResponses.addToBucket(
-                                  "everyone",
-                                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
-                                      makeProps(consumerData, {
-                                          collectionIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
-                                      })
-                                  )
-                              );
-                          }
-
-
-                          if (_Affected.isAffected('REQUEST')) {
-                            
-                              socketResponses.addToBucket(
-                                  "everyone",
-                                  PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                                      makeProps(consumerData, {
-                                          requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
-                                      })
-                                  )
-                              );
-                          }
-
-
-                          if (_Affected.isAffected('PLAYER_REQUEST')) {
-                              socketResponses.addToBucket(
-                                  "everyone",
-                                  PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                                      makeProps(consumerData, {
-                                      peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.PLAYER_REQUEST.CHANGE),
-                                      })
-                                  )
-                              );
-                          }
-
-
-                          socketResponses.addToBucket(
-                              "everyone",
-                              PUBLIC_SUBJECTS.PLAYER_TURN.GET(
-                                  makeProps(consumerData)
-                              )
-                          );
-                        } // end decline
-                      }
-                    }
-                  }
-                }
-              }
-            }
-
-            payload = {
-              checkpoints: packageCheckpoints(checkpoints),
-            };
-            socketResponses.addToBucket(
-              "default",
-              makeResponse({ subject, action, status, payload })
-            );
-
-            if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
-                "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
-              );
-            }
-
-            return socketResponses;
-          }
-
-          return handleGame(
-            props,
-            doTheThing,
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        COLLECT_CARD_TO_BANK_AUTO: (props) => {
-          let doTheThing = function (consumerData) {
-            let {
-              request,
-              _Affected,
-              playerBank,
-              transfering,
-              checkpoints,
-              thisPersonId,
-              roomCode,
-              socketResponses,
-              game,
-            } = consumerData;
-            if (transfering.has("bank")) {
-              transfering
-                .get("bank")
-                .getRemainingList()
-                .forEach((cardId) => {
-                  playerBank.addCard(cardId);
-                  transfering.get("bank").confirm(cardId);
-                });
-
-              _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
-              _Affected.setAffected('BANK');
-              checkpoints.set("success", true);
-
-              if (game.checkWinConditionForPlayer(thisPersonId)) {
-                socketResponses.addToBucket(
-                  "everyone",
-                  PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
-                );
-              }
-            }
-          };
-          return handleTransferResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "COLLECT_CARD_TO_BANK_AUTO",
-            props,
-            doTheThing
-          );
-        },
-  
-        ACKNOWLEDGE_COLLECT_NOTHING: (props) => {
-          let doTheThing = function (consumerData) {
-            let { _Affected, checkpoints, request, thisPersonId } = consumerData;
-            _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
-            _Affected.setAffected('BANK', thisPersonId, Affected.ACTION.UPDATE);
-            checkpoints.set("success", true);
-          };
-      
-          return handleTransactionResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "ACKNOWLEDGE_COLLECT_NOTHING",
-            props,
-            doTheThing
-          );
-        },
-      
-  
-        COLLECT_CARD_TO_BANK: (props) => {
-          let doTheThing = function (consumerData) {
-            let { cardId } = consumerData;
-            let { _Affected, thisPersonId, playerBank, transfering, checkpoints, request } = consumerData;
-            if (transfering.has("bank")) {
-              let cardExists = transfering
-                .get("bank")
-                .getRemainingList()
-                .includes(cardId);
-              if (cardExists) {
-                playerBank.addCard(cardId);
-                transfering.get("bank").confirm(cardId);
-              }
-      
-              _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
-              _Affected.setAffected('BANK', thisPersonId);
-      
-              checkpoints.set("success", true);
-            }
-          };
-      
-          return handleTransferResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "COLLECT_CARD_TO_BANK",
-            props,
-            doTheThing
-          );
-        },
-      
-        COLLECT_CARD_TO_COLLECTION: (props) => {
-          let doTheThing = function (consumerData) {
-            let { cardId, requestId, collectionId } = consumerData;
-            let {
-              _Affected,
-              transfering,
-              checkpoints,
-              game,
-              thisPersonId,
-              player,
-              roomCode,
-              socketResponses,
-            } = consumerData;
-            let playerManager = game.getPlayerManager();
-            let status = "failure";
-      
-            // if card is in list of transfer cards and has not already been processed
-            checkpoints.set("isValidTransferCard", false);
-            if (transfering.has("property")) {
-              let transferPropertiesToMe = transfering.get("property");
-              let cardIds = transferPropertiesToMe.getRemainingList();
-              if (cardIds.includes(cardId)) {
-                checkpoints.set("isValidTransferCard", true);
-      
-                let card = game.getCard(cardId);
-                let collection;
-      
-                // If my collection is specified to transfer to
-                if (isDef(collectionId)) {
-                  checkpoints.set("isMyCollection", false);
-                  if (player.hasCollectionId(collectionId)) {
-                    checkpoints.set("isMyCollection", true);
-      
-                    let transformCollection = game.canAddCardToCollection(
-                      cardId,
-                      collectionId
-                    );
-                    let decidedPropertySetKey =
-                      transformCollection.newPropertySetKey;
-                    let canBeAdded = transformCollection.canBeAdded;
-      
-                    if (canBeAdded) {
-                      collection = game
-                        .getCollectionManager()
-                        .getCollection(collectionId);
-                      if (
-                        collection.getPropertySetKey() !== decidedPropertySetKey
-                      ) {
-                        collection.setPropertySetKey(decidedPropertySetKey);
-                      }
-                      collection.addCard(cardId);
-                      transferPropertiesToMe.confirm(cardId);
-                      status = "success";
-                    }
-                    // if is augment card and cannot be placed in specified set, add to junk set
-                    else if (game.isCardSetAugment(card)) {
-                      collection = game.getOrCreateUselessCollectionForPlayer(
-                        thisPersonId
-                      );
-                      collection.addCard(cardId);
-                      transferPropertiesToMe.confirm(cardId);
-                      status = "success";
-                    }
-                  }
-                } else {
-                  collection = playerManager.createNewCollectionForPlayer(
-                    thisPersonId
-                  );
-                  collection.addCard(cardId);
-                  transferPropertiesToMe.confirm(cardId);
-                  status = "success";
-                }
-      
-                if (isDef(collection) && status === "success") {
-      
-                  // @TODO move this above to correctly reflect create / update
-                  _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
-                  _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
-                  _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
-      
-                  checkpoints.set("success", true);
-      
-                  if (game.checkWinConditionForPlayer(thisPersonId)) {
-                    socketResponses.addToBucket(
-                      "everyone",
-                      PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
-                    );
-                  }
-                }
-              }
-            }
-          };
-      
-          let result = handleTransferResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "COLLECT_CARD_TO_COLLECTION",
-            props,
-            doTheThing
-          );
-          return result;
-        },
-  
-        COLLECT_COLLECTION: (props) => {
-          let doTheThing = function (consumerData) {
-            let { requestId } = consumerData;
-            let {
-              _Affected,
-              transfering,
-              checkpoints,
-              game,
-              thisPersonId,
-              roomCode,
-              socketResponses,
-            } = consumerData;
-            let playerManager = game.getPlayerManager();
-      
-            // if card is in list of transfer cards and has not already been processed
-            checkpoints.set("isValidTransferCard", false);
-            if (transfering.has("collection")) {
-              let transferToMe = transfering.get("collection");
-              let collectionIds = transferToMe.getRemainingList();
-      
-              collectionIds.forEach((collectionId) => {
-                let collection = game
-                  .getCollectionManager()
-                  .getCollection(collectionId);
-                if (isDef(collection)) {
-                  // should already be dissacoated but make sure
-                  playerManager.disassociateCollectionFromPlayer(collectionId);
-      
-                  //add to new player
-                  playerManager.associateCollectionToPlayer(
-                    collectionId,
-                    thisPersonId
-                  );
-                  transferToMe.confirm(collectionId);
-      
-                  checkpoints.set("success", true);
-                  _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
-                  _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
-                  _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
-                }
-              });
-      
-              if (game.checkWinConditionForPlayer(thisPersonId)) {
-                socketResponses.addToBucket(
-                  "everyone",
-                  PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
-                );
-              }
-            }
-          };
-      
-          let result = handleTransferResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "COLLECT_COLLECTION",
-            props,
-            doTheThing
-          );
-          return result;
-        },
-  
-        RESPOND_TO_PROPERTY_SWAP: (props) => {
-          let doTheThing = function (consumerData) {
-            let { cardId, requestId, responseKey } = consumerData;
-            let {
-              _Affected,
-              thisPersonId,
-              checkpoints,
-              game,
-            } = consumerData;
-      
-            let validResponses = {
-              accept: 1,
-              decline: 1,
-            };
-      
-            let currentTurn = game.getCurrentTurn();
-            let requestManager = currentTurn.getRequestManager();
-      
-            let request = requestManager.getRequest(requestId);
-      
-            if (
-              isDef(request) &&
-              !request.getTargetSatisfied() &&
-              request.getTargetKey() === thisPersonId &&
-              request.getType() === "swapProperty"
-            ) {
-              checkpoints.set("isValidResponseKey", false);
-              if (isDef(responseKey) && isDef(validResponses[responseKey])) {
-                checkpoints.set("isValidResponseKey", true);
-                let { transaction } = request.getPayload();
-      
-                checkpoints.set("isTransactionDefined", false);
-                if (isDef(transaction)) {
-                  checkpoints.set("isTransactionDefined", true);
-      
-                  if (responseKey === "decline") {
-                    let hand = game.getPlayerHand(thisPersonId);
-                    checkpoints.set("isCardInHand", false);
-                    if (hand.hasCard(cardId)) {
-                      checkpoints.set("isCardInHand", true);
-      
-                      //can the card decline the request
-                      if (game.doesCardHaveTag(cardId, "declineRequest")) {
-                        game
-                          .getActivePile()
-                          .addCard(
-                            game.getPlayerHand(thisPersonId).giveCard(cardId)
-                          );
-                        _Affected.setAffected('HAND', thisPersonId, Affected.ACTION.UPDATE);
-                        _Affected.setAffected('ACTIVE_PILE', thisPersonId, Affected.ACTION.UPDATE);
-      
-                        let doTheDecline = function ({
-                          _Affected,
-                          request,
-                          checkpoints,
-                        }) {
-                          let { transaction } = request.getPayload();
-                          let fromAuthor = transaction
-                            .get("fromAuthor")
-                            .get("property");
-                          fromAuthor.confirm(fromAuthor.getRemainingList());
-      
-                          let fromTarget = transaction
-                            .get("fromTarget")
-                            .get("property");
-                          fromTarget.confirm(fromTarget.getRemainingList());
-      
-                          checkpoints.set("success", true);
-      
-                          request.setTargetSatisfied(true);
-                          request.decline(consumerData);
-                          request.close("decline");
-      
-                          _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
-                        };
-      
-                        if (game.doesCardHaveTag(cardId, "contestable")) {
-                          let sayNoRequest = requestManager.makeJustSayNo(
-                            request,
-                            cardId
-                          );
-      
-                          _Affected.setAffected('REQUEST', sayNoRequest.getId(), Affected.ACTION.CREATE);
-                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getTargetKey(), Affected.ACTION.CREATE);
-      
-                          doTheDecline({
-                            _Affected,
-                            request,
-                            checkpoints,
-                          });
-                        } else {
-                          doTheDecline({
-                            request,
-                            _Affected,
-                            checkpoints,
-                          });
-                        }
-                      }
-                    }
-                  } else {
-                    if (responseKey === "accept") {
-                      // Move proposed properties to their colleciton areas
-                      let authorPropertyIds = transaction
-                        .get("fromAuthor")
-                        .get("property")
-                        .getRemainingList();
-      
-                      authorPropertyIds.forEach((authorPropertyId) => {
-                        let collection = game.getCollectionThatHasCard(
-                          authorPropertyId
-                        );
-                        if (isDef(collection)) {
-                          collection.removeCard(authorPropertyId);
-                          transaction
-                            .get("fromAuthor")
-                            .get("property")
-                            .confirm(authorPropertyId);
-                          game.cleanUpFromCollection(
-                            collection.getPlayerKey(),
-                            collection
-                          );
-                          transaction
-                            .getOrCreate("toTarget")
-                            .getOrCreate("property")
-                            .add(authorPropertyId);
-      
-                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
-                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
-                        }
-                      });
-      
-                      let targetPropertyIds = transaction
-                        .get("fromTarget")
-                        .get("property")
-                        .getRemainingList();
-                      targetPropertyIds.forEach((targetPropertyId) => {
-                        let collection = game.getCollectionThatHasCard(
-                          targetPropertyId
-                        );
-                        if (isDef(collection)) {
-                          collection.removeCard(targetPropertyId);
-                          transaction
-                            .get("fromTarget")
-                            .get("property")
-                            .confirm(targetPropertyId);
-                          game.cleanUpFromCollection(
-                            collection.getPlayerKey(),
-                            collection
-                          );
-                          transaction
-                            .getOrCreate("toAuthor")
-                            .getOrCreate("property")
-                            .add(targetPropertyId);
-      
-                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
-                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
-      
-                        }
-                      });
-      
-                      request.setTargetSatisfied(true);
-                      request.setStatus("accept");
-                      request.accept(consumerData);
-      
-                      _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
-      
-                      checkpoints.set("success", true);
-                    }
-                  }
-                }
-              }
-            }
-          };
-      
-          let result = handleTransactionResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "RESPOND_TO_PROPERTY_SWAP",
-            props,
-            doTheThing
-          );
-          return result;
-        },
-  
         TEST_NO: (props) => {
           const [subject, action] = ["RESPONSES", "TEST_NO"];
           const socketResponses = SocketResponseBuckets();
@@ -5417,321 +4467,6 @@ class PlayDealClientService {
             },
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
-        },
-  
-        RESPOND_TO_JUST_SAY_NO: (props) => {
-          let subject = "RESPONSES";
-          let action = "RESPOND_TO_JUST_SAY_NO";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            ({game}) => {
-              return handleTransactionResponse(
-                PUBLIC_SUBJECTS,
-                subject,
-                action,
-                props,
-                game.respondToJustSayNo
-              );
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-  
-        RESPOND_TO_STEAL_PROPERTY: (props) => {
-          let doTheThing = function (consumerData) {
-            let { cardId, requestId, responseKey } = consumerData;
-            let {
-              checkpoints,
-              game,
-              thisPersonId,
-              _Affected,
-            } = consumerData;
-      
-            let validResponses = {
-              accept: 1,
-              decline: 1,
-            };
-      
-            let currentTurn = game.getCurrentTurn();
-            let requestManager = currentTurn.getRequestManager();
-      
-            let request = requestManager.getRequest(requestId);
-      
-            if (
-              isDef(request) &&
-              !request.getTargetSatisfied() &&
-              request.getTargetKey() === thisPersonId &&
-              request.getType() === "stealProperty"
-            ) {
-              checkpoints.set("isValidResponseKey", false);
-              if (isDef(responseKey) && isDef(validResponses[responseKey])) {
-                checkpoints.set("isValidResponseKey", true);
-                let { transaction } = request.getPayload();
-      
-                checkpoints.set("isTransactionDefined", false);
-                if (isDef(transaction)) {
-                  checkpoints.set("isTransactionDefined", true);
-      
-                  if (responseKey === "decline") {
-                    let hand = game.getPlayerHand(thisPersonId);
-                    checkpoints.set("isCardInHand", false);
-                    if (hand.hasCard(cardId)) {
-                      checkpoints.set("isCardInHand", true);
-      
-                      //can the card decline the request
-                      if (game.doesCardHaveTag(cardId, "declineRequest")) {
-                        game.getActivePile().addCard(hand.giveCard(cardId));
-      
-                        _Affected.setAffected('ACTIVE_PILE');
-                        _Affected.setAffected('HAND', thisPersonId, Affected.ACTION.UPDATE);
-      
-                        let doTheDecline = function ({
-                          _Affected,
-                          request,
-                          checkpoints,
-                        }) {
-                          let { transaction } = request.getPayload();
-                          let fromTarget = transaction
-                            .get("fromTarget")
-                            .get("property");
-                          fromTarget.confirm(fromTarget.getRemainingList());
-                          checkpoints.set("success", true);
-                          request.setTargetSatisfied(true);
-                          request.decline(consumerData);
-                          request.close("decline");
-      
-                          _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
-                        };
-      
-                        if (game.doesCardHaveTag(cardId, "contestable")) {
-                          let sayNoRequest = requestManager.makeJustSayNo(
-                            request,
-                            cardId
-                          );
-      
-                          _Affected.setAffected('REQUEST', sayNoRequest.getId(), Affected.ACTION.CREATE);
-                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getTargetKey(), Affected.ACTION.CREATE);
-                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getAuthorKey(), Affected.ACTION.CREATE);
-      
-      
-                          doTheDecline({
-                            _Affected,
-                            request,
-                            checkpoints,
-                          });
-                        } else {
-                          doTheDecline({
-                            _Affected,
-                            request,
-                            checkpoints,
-                          });
-                        }
-                      }
-                    }
-                  } else {
-                    if (responseKey === "accept") {
-                      // Move proposed properties to their colleciton areas
-      
-                      let targetPropertyIds = transaction
-                        .get("fromTarget")
-                        .get("property")
-                        .getRemainingList();
-                      targetPropertyIds.forEach((targetPropertyId) => {
-                        let collection = game.getCollectionThatHasCard(
-                          targetPropertyId
-                        );
-                        if (isDef(collection)) {
-                          collection.removeCard(targetPropertyId);
-                          transaction
-                            .get("fromTarget")
-                            .get("property")
-                            .confirm(targetPropertyId);
-                          game.cleanUpFromCollection(
-                            collection.getPlayerKey(),
-                            collection
-                          );
-                          transaction
-                            .getOrCreate("toAuthor")
-                            .getOrCreate("property")
-                            .add(targetPropertyId);
-      
-                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
-                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
-      
-                        }
-                      });
-      
-                      request.setTargetSatisfied(true);
-                      request.accept(consumerData);
-                      request.setStatus("accept");
-      
-                      _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
-                      checkpoints.set("success", true);
-                    }
-                  }
-                }
-              }
-            }
-          };
-      
-          let result = handleTransactionResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "RESPOND_TO_STEAL_PROPERTY",
-            props,
-            doTheThing
-          );
-          return result;
-        },
-  
-        RESPOND_TO_STEAL_COLLECTION: (props) => {
-          let doTheThing = function (consumerData) {
-            let { cardId, requestId, responseKey } = consumerData;
-            let {
-              _Affected,
-              checkpoints,
-              game,
-              thisPersonId,
-            } = consumerData;
-      
-            let validResponses = {
-              accept: 1,
-              decline: 1,
-            };
-      
-            let currentTurn = game.getCurrentTurn();
-            let requestManager = currentTurn.getRequestManager();
-      
-            let request = requestManager.getRequest(requestId);
-      
-            if (
-              isDef(request) &&
-              !request.getTargetSatisfied() &&
-              request.getTargetKey() === thisPersonId &&
-              request.getType() === "stealCollection"
-            ) {
-              checkpoints.set("isValidResponseKey", false);
-              if (isDef(responseKey) && isDef(validResponses[responseKey])) {
-                checkpoints.set("isValidResponseKey", true);
-                let { transaction } = request.getPayload();
-      
-                checkpoints.set("isTransactionDefined", false);
-                if (isDef(transaction)) {
-                  checkpoints.set("isTransactionDefined", true);
-                  if (responseKey === "decline") {
-                    let hand = game.getPlayerHand(thisPersonId);
-                    checkpoints.set("isCardInHand", false);
-      
-                    if (hand.hasCard(cardId)) {
-                      checkpoints.set("isCardInHand", true);
-      
-                      //can the card decline the request
-                      if (game.doesCardHaveTag(cardId, "declineRequest")) {
-      
-      
-                        game.getActivePile().addCard(hand.giveCard(cardId));
-                        _Affected.setAffected('HAND', thisPersonId, Affected.ACTION.UPDATE);
-                        _Affected.setAffected('ACTIVE_PILE');
-      
-                        let doTheDecline = function ({
-                          _Affected,
-                          request,
-                          checkpoints,
-                        }) {
-                          let { transaction } = request.getPayload();
-                          let fromTarget = transaction
-                            .get("fromTarget")
-                            .get("collection");
-                          fromTarget.confirm(fromTarget.getRemainingList());
-                          checkpoints.set("success", true);
-                          request.setTargetSatisfied(true);
-                          request.decline(consumerData);
-                          request.close("decline");
-      
-                          _Affected.setAffected('REQUEST', request.getId(), Affected.ACTION.UPDATE);
-                        };
-      
-                        if (game.doesCardHaveTag(cardId, "contestable")) {
-                          let sayNoRequest = requestManager.makeJustSayNo(
-                            request,
-                            cardId
-                          );
-      
-                          _Affected.setAffected('REQUEST', sayNoRequest.getId(), Affected.ACTION.CREATE);
-                          _Affected.setAffected('PLAYER_REQUEST', sayNoRequest.getTargetKey(), Affected.ACTION.CREATE);
-      
-      
-      
-                          doTheDecline({
-                            request,
-                            _Affected,
-                            checkpoints,
-                          });
-                        } else {
-                          doTheDecline({
-                            request,
-                            _Affected,
-                            checkpoints,
-                          });
-                        }
-                      }
-                    }
-                  } else {
-                    if (responseKey === "accept") {
-                      // Move proposed properties to their colleciton areas
-      
-                      let targetIds = transaction
-                        .get("fromTarget")
-                        .get("collection")
-                        .getRemainingList();
-      
-                      targetIds.forEach((collectionId) => {
-                        let collection = game
-                          .getCollectionManager()
-                          .getCollection(collectionId);
-                        if (isDef(collection)) {
-                          game
-                            .getPlayerManager()
-                            .disassociateCollectionFromPlayer(collection);
-      
-                          transaction
-                            .get("fromTarget")
-                            .get("collection")
-                            .confirm(collectionId);
-                          transaction
-                            .getOrCreate("toAuthor")
-                            .getOrCreate("collection")
-                            .add(collectionId);
-      
-                          _Affected.setAffected('COLLECTION', collection.getId(), Affected.ACTION.UPDATE);
-                          _Affected.setAffected('PLAYER_COLLECTION', collection.getPlayerKey(), Affected.ACTION.UPDATE);
-      
-                        }
-                      });
-      
-                      request.setTargetSatisfied(true);
-                      request.accept(consumerData);
-                      request.setStatus("accept");
-      
-                      _Affected.setAffected('REQUEST', requestId, Affected.ACTION.UPDATE);
-      
-                      checkpoints.set("success", true);
-                    }
-                  }
-                }
-              }
-            }
-          };
-      
-          let result = handleTransactionResponse(
-            PUBLIC_SUBJECTS,
-            "RESPONSES",
-            "RESPOND_TO_STEAL_COLLECTION",
-            props,
-            doTheThing
-          );
-          return result;
         },
       },
       GAME: {
@@ -6807,19 +5542,6 @@ class PlayDealClientService {
     });
   
 
-    const commonDeps = {
-      isDef, isArr, isFunc, getArrFromProp,
-      Affected, 
-      SocketResponseBuckets,
-      Transaction,
-      packageCheckpoints,
-
-      PUBLIC_SUBJECTS,
-
-      myClientId: mStrThisClientId,
-      roomManager, 
-    }
-
 
     const coreDeps = buildCoreFuncs({
       isDef, isArr, isFunc, getArrFromProp,
@@ -6827,30 +5549,151 @@ class PlayDealClientService {
       myClientId: mStrThisClientId,
       roomManager, 
       packageCheckpoints,
-      PUBLIC_SUBJECTS
+      PUBLIC_SUBJECTS,
+      makeProps,
     })
 
-    PUBLIC_SUBJECTS['MY_TURN']['STEAL_COLLECTION']            = buildStealCollectionAction({
-                                                                  ...commonDeps,
-                                                                  handleRequestCreation: coreDeps.handleRequestCreation,
-                                                                })
-                                                              
-                                                              
-    PUBLIC_SUBJECTS['MY_TURN']['CHARGE_RENT']                 = buildChargeRentAction({
-                                                                  ...commonDeps,
-                                                                  makeConsumerFallbackResponse:         coreDeps.makeConsumerFallbackResponse,
-                                                                  handleGame:                           coreDeps.handleGame,
-                                                                  handleCollectionBasedRequestCreation,
-                                                                  makeConsumerFallbackResponse,
-                                                                })
 
-    PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_COLLECT_VALUE']  = buildRespondToCollectValueAction({
-                                                                  ...commonDeps,
-                                                                  handleGame, 
-                                                                  makeConsumerFallbackResponse,
-                                                                  handleTransactionResponse,
-                                                                  makeResponse,
-                                                                })
+    const commonDeps = {
+      // Reference
+      PUBLIC_SUBJECTS,
+      // Structures
+      Affected, 
+      Transaction,
+      SocketResponseBuckets,
+      // Helpers
+      isDef, isArr, isFunc, 
+      getArrFromProp, packageCheckpoints, makeProps,
+      // Props
+      myClientId: mStrThisClientId,
+      roomManager, 
+    }
+
+    // Enable Actions
+    //if (enabled.chargeRent)    
+    let enabled = {
+      requestValue: true,
+        chargeRent: true, // extends is requestValue
+      stealCollection: true,
+      collectCards: true,
+      justSayNo: true,
+      stealProperty: true,
+      swapProperty: true,
+    }
+
+    // REQUEST VALUE
+    if (enabled.requestValue) {
+      // CHARGE RENT
+      if (enabled.chargeRent) {
+        PUBLIC_SUBJECTS['MY_TURN']['CHARGE_RENT'] = 
+          buildChargeRentAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse:         coreDeps.makeConsumerFallbackResponse,
+          handleGame:                           coreDeps.handleGame,
+          handleCollectionBasedRequestCreation,
+          makeConsumerFallbackResponse,
+        })
+      }
+      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_COLLECT_VALUE'] = 
+        buildRespondToCollectValueAction({
+        ...commonDeps,
+        makeConsumerFallbackResponse,
+        makeResponse,
+        handleGame, 
+        handleTransactionResponse,
+      })
+    }
+
+    // REACT WITH JUST_SAY_NO
+    if (enabled.justSayNo) {
+      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_JUST_SAY_NO'] = 
+        buildRespondToJustSayNoAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          handleGame, 
+          handleTransactionResponse,
+        })
+    }
+
+    // STEAL COLLECTION
+    if (enabled.stealCollection) {
+      PUBLIC_SUBJECTS['MY_TURN']['STEAL_COLLECTION'] = 
+        buildStealCollectionAction({
+          ...commonDeps,
+          handleRequestCreation: coreDeps.handleRequestCreation,
+        })
+      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_STEAL_COLLECTION'] = 
+        buildRespondToStealCollection({
+          ...commonDeps,
+          handleTransactionResponse,
+        })     
+    }
+
+    // STEAL_PROPERTY
+    if (enabled.stealProperty) {
+      PUBLIC_SUBJECTS['MY_TURN']['STEAL_PROPERTY'] = 
+        buildStealPropertyAction({
+          ...commonDeps,
+          handleRequestCreation,
+        }) 
+
+      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_STEAL_PROPERTY'] = 
+        buildRespondToStealPropertyAction({
+          ...commonDeps,
+          handleTransactionResponse,
+        }) 
+    }
+
+    // SWAP_PROPERTY
+    if (enabled.swapProperty) {    
+      PUBLIC_SUBJECTS['MY_TURN']['SWAP_PROPERTY'] =
+        buildSwapPropertyAction({
+          ...commonDeps,
+          handleRequestCreation,
+        }) 
+        
+      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_PROPERTY_SWAP'] =
+        buildRespondToPropertySwapAction({
+          ...commonDeps,
+          handleTransactionResponse
+        }) 
+    }
+       
+    // COLLECT CARDS
+    if (enabled.collectCards) {
+      PUBLIC_SUBJECTS['RESPONSES']['ACKNOWLEDGE_COLLECT_NOTHING'] =
+        buildAcknowledgeCollectNothingAction({
+          ...commonDeps,
+          handleTransactionResponse
+        }) 
+
+      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_CARD_TO_BANK_AUTO'] = 
+        buildCollectCardToBankAutoAction({
+          ...commonDeps,
+          handleTransferResponse,
+        }) 
+
+      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_CARD_TO_BANK'] = 
+        buildCollectCardToBankAction({
+          ...commonDeps,
+          handleTransferResponse,
+        }) 
+      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_CARD_TO_COLLECTION'] = 
+        buildCollectCardToCollectionAction({
+          ...commonDeps,
+          handleTransferResponse,
+        }) 
+        
+      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_COLLECTION'] =
+        buildCollectCollectionAction({
+          ...commonDeps,
+          handleTransferResponse
+        }) 
+    }
+
+
+      
 
     //==================================================
   
