@@ -118,7 +118,7 @@ class Registry {
     }
   }
 
-  registerPrivate(identifier, fn)
+  private(identifier, fn)
   {
     if (isArr(identifier)) {
       let [subject, action] = identifier;
@@ -156,15 +156,25 @@ class PlayDealClientService {
   
   connectClient(thisClient)
   {
+
+    // Enable Actions
+    let enabled = {
+      requestValue: true,
+        chargeRent: true, // extends is requestValue
+      stealCollection: true,
+      collectCards: true,
+      justSayNo: true,
+      stealProperty: true,
+      swapProperty: true,
+    }
+
+
     const mThisClientId       = thisClient.id;
     const mStrThisClientId    = String(mThisClientId);
 
     const clientManager       = this.clientManager;
     const roomManager         = this.roomManager;
     const cookieTokenManager  = this.cookieTokenManager;
-
-
-
     const registry            = new Registry();
     this.todoMove.set(mStrThisClientId, registry);
     
@@ -176,8 +186,6 @@ class PlayDealClientService {
     //                  DEPENDENCIES
 
     //==================================================
-
-
     const PRIVATE_SUBJECTS = registry.PRIVATE_SUBJECTS;
     const PUBLIC_SUBJECTS  = registry.PUBLIC_SUBJECTS;
     let {
@@ -244,6 +252,26 @@ class PlayDealClientService {
     });
 
 
+
+
+    const commonDeps = {
+      // Helpers
+      isDef, isArr, isFunc, 
+      getArrFromProp, packageCheckpoints, makeProps,
+      // Reference
+      PUBLIC_SUBJECTS,
+      PRIVATE_SUBJECTS,
+      // Structures
+      Affected, 
+      Transaction,
+      SocketResponseBuckets,
+      // Props
+      myClientId: mStrThisClientId,
+      roomManager, 
+    }
+
+
+    // Mega list of all possible dependencies to provide when seperating so nothing breaks - to be reduced
     const kitchenSinkDeps = {
       els,
       isDef,
@@ -310,91 +338,45 @@ class PlayDealClientService {
 
     //=========================================================================
 
-    //                INTEGRATE GAME MANAGER TO REQUEST TREE 
+    //                  BUILD AVAILABLE EVENTS / RESPONSES
 
     //=========================================================================
-    /*
-      Each method focuses on preforming an action and bundleding information required by the UI 
-    */
-  
-
-    // These objects will be refactored into build methods 
-    Object.assign(PRIVATE_SUBJECTS, {
-      CLIENT: {
-        CONNECT:    (props) => {},
-        DISCONNECT: (props) => {},
-      },
-      PEOPLE: {
-        DISCONNECT: (props) => {
-          // when game is in progeress and the user loses connection or closes the browser
-          const socketResponses = SocketResponseBuckets();
-          const [subject, action] = ["PEOPLE", "DISCONNECT"];
-          let status = "failure";
-          let payload = {};
-          return handlePerson(
-            props,
-            (props2) => {
-              let { roomCode, personManager, thisPerson, thisPersonId } = props2;
-              let peopleIds = getArrFromProp(
-                props,
-                {
-                  plural: "peopleIds",
-                  singular: "personId",
-                },
-                thisPersonId
-              );
-  
-              // Foreach person beign removed
-              let disconnectedIds = [];
-              peopleIds.forEach((personId) => {
-                let person = personManager.getPerson(personId);
-                if (isDef(person)) {
-                  disconnectedIds.push(person.getId());
-                  person.disconnect();
-                }
-              });
-  
-              socketResponses.addToBucket(
-                "everyone",
-                PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
-                  peopleIds: disconnectedIds,
-                  roomCode,
-                })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
+    // Clients
+    if (1) {
+      Object.assign(PUBLIC_SUBJECTS, {
+        CLIENTS: {
+          GET_ONLINE_STATS: () => {
+            const socketResponses = SocketResponseBuckets();
+            const subject = "CLIENTS";
+            const action = "GET_ONLINE_STATS";
+            const status = "success";
+            const payload = {
+              peopleOnlineCount: clientManager.count(),
+            };
+    
+            socketResponses.addToBucket(
+              "default",
+              makeResponse({ subject, action, status, payload })
+            );
+    
+            const reducedResponses = SocketResponseBuckets();
+            reducedResponses.addToBucket(
+              socketResponses.reduce(mStrThisClientId, [mStrThisClientId])
+            );
+            return reducedResponses;
+          },
         },
-      },
-    });
-  
-    // @ WARNING These methods are callable by the client
-    // DO NOT MAKE AYTHING PUBLIC WHICH COULD ME USED TO SABOTAGE OTHER CLIENTS
+      });
+    
+      Object.assign(PRIVATE_SUBJECTS, {
+        CLIENT: {
+          CONNECT:    (props) => {},
+          DISCONNECT: (props) => {},
+        },
+      })
+    }
+    // Room
     Object.assign(PUBLIC_SUBJECTS, {
-      CLIENTS: {
-        GET_ONLINE_STATS: () => {
-          const socketResponses = SocketResponseBuckets();
-          const subject = "CLIENTS";
-          const action = "GET_ONLINE_STATS";
-          const status = "success";
-          const payload = {
-            peopleOnlineCount: clientManager.count(),
-          };
-  
-          socketResponses.addToBucket(
-            "default",
-            makeResponse({ subject, action, status, payload })
-          );
-  
-          const reducedResponses = SocketResponseBuckets();
-          reducedResponses.addToBucket(
-            socketResponses.reduce(mStrThisClientId, [mStrThisClientId])
-          );
-          return reducedResponses;
-        },
-      },
       ROOM: {
         // Get a random room code
         GET_RANDOM_CODE: (props) => {
@@ -591,430 +573,10 @@ class PlayDealClientService {
           );
         },
       },
-      CHAT: {
-        SEND_PRIVATE_MESSAGE: (props) => {
-          const [subject, action] = ["CHAT", "SEND_PRIVATE_MESSAGE"];
-          const socketResponses = SocketResponseBuckets();
-          return handlePerson(
-            props,
-            (props2) => {
-              let { type, value, playerKey, thisPersonId } = props2;
-              let { personManager } = props2;
+    });
 
-              let status = "success";
-              let payload = {
-                type,
-                visibility: "private",
-                from: thisPersonId,
-                value
-              };
-
-              let receivingPerson = personManager.getPerson(playerKey);
-              if (isDef(receivingPerson)) {
-                socketResponses.addToSpecific(
-                  receivingPerson.getClientId(),
-                  makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
-                );
-              }
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        SEND_MESSAGE: (props) => {
-          const [subject, action] = ["CHAT", "SEND_MESSAGE"];
-          const socketResponses = SocketResponseBuckets();
-          return handlePerson(
-            props,
-            (props2) => {
-              let { type, value } = props2;
-              let { thisPersonId } = props2;
-
-              let status = "success";
-              let payload = {
-                type,
-                visibility: "public",
-                from: thisPersonId,
-                value
-              };
-  
-              socketResponses.addToBucket(
-                "everyone",
-                makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        /**
-         * @param userIds
-         */
-        RECEIVE_MESSAGE: () => {
-          // emit to user
-          // roomCode
-          const [subject, action] = ["CHAT", "RECEIVE_MESSAGE"];
-          const socketResponses = SocketResponseBuckets();
-          return handlePerson(
-            props,
-            (props2) => {
-              let { message } = props2;
-
-              let status = "success";
-              let payload = {
-                type: "text",
-                message
-              };
-  
-              socketResponses.addToBucket(
-                "everyoneElse",
-                makeResponse({ subject, action, status, payload })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        /**
-         * 
-         */
-        GET_ALL_MESSAGES: (props) => {
-          //
-        },
-      },
-      PEOPLE: {
-        UPDATE_MY_NAME: (props) => {
-          // roomCode
-          const [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
-          const socketResponses = SocketResponseBuckets();
-          return handlePerson(
-            props,
-            (props2) => {
-              let { roomCode, thisPersonId, thisPerson, username } = props2;
-              let status = "failure";
-              let payload = null;
-  
-              let usernameMaxLength = 20;
-              if (isStr(username)) {
-                username = String(username).trim();
-                if (username.length < usernameMaxLength) {
-                  status = "success";
-                  thisPerson.setName(username);
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
-                      personId: thisPersonId,
-                      roomCode,
-                    })
-                  );
-                }
-              }
-  
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status, payload })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        ME: (props) => {
-          // roomCode
-          const [subject, action] = ["PEOPLE", "ME"];
-          const socketResponses = SocketResponseBuckets();
-          return handlePerson(
-            props,
-            (props2) => {
-              let { thisPersonId, thisPerson } = props2;
-  
-              let status = "success";
-              let payload = {
-                me: thisPersonId,
-              };
-  
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status, payload })
-              );
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        GET_HOST: (props) => {
-          // roomCode
-          const [subject, action] = ["PEOPLE", "GET_HOST"];
-          const socketResponses = SocketResponseBuckets();
-          return handlePerson(
-            props,
-            (props2) => {
-              let { personManager } = props2;
-  
-              let payload = {};
-              let status = "failure";
-              let host = null;
-              let hostPerson = personManager.findPerson((person) =>
-                person.hasTag("host")
-              );
-              if (isDef(hostPerson)) {
-                status = "success";
-                host = hostPerson.getId();
-              }
-  
-              payload.host = host;
-  
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status, payload })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        SET_HOST: (props) => {
-          // roomCode, personId
-          const [subject, action] = ["PEOPLE", "SET_HOST"];
-          const socketResponses = SocketResponseBuckets();
-          return handlePerson(
-            props,
-            (props2) => {
-              let { personId } = props;
-              let { roomCode, personManager, thisPerson } = props2;
-              let isCurrentHost = isDef(thisPerson) && thisPerson.hasTag("host");
-  
-              let payload = {};
-              let status = "failure";
-  
-              if (personManager.getConnectedPeopleCount() <= 1 || isCurrentHost) {
-                if (isDef(personId) && personManager.hasPerson(personId)) {
-                  let currentHost = personManager.findPerson((person) =>
-                    person.hasTag("host")
-                  );
-                  if (isDef(currentHost)) {
-                    currentHost.removeTag("host");
-                  }
-  
-                  let newHost = personManager.getPerson(personId);
-                  newHost.addTag("host");
-  
-                  status = "success";
-                  payload.host = personId;
-                  socketResponses.addToBucket(
-                    "everyone",
-                    makeResponse({ subject, action, status, payload })
-                  );
-                }
-              } else {
-                socketResponses.addToBucket(
-                  "default",
-                  makeResponse({ subject, action, status, payload })
-                );
-              }
-  
-              socketResponses.addToBucket(
-                "default",
-                PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
-                  roomCode,
-                })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        GET_ALL_KEYED: (props) => {
-          let subject = "PEOPLE";
-          let action = "GET_ALL_KEYED";
-          let status = "failure";
-  
-          let payload = null;
-          const socketResponses = SocketResponseBuckets();
-          let { roomCode } = props;
-          let room = roomManager.getRoomByCode(roomCode);
-          if (isDef(room)) {
-            status = "success";
-            let personManager = room.getPersonManager();
-            let peopleIds = personManager
-              .getConnectedPeople()
-              .map((person) => person.getId());
-  
-            socketResponses.addToBucket(
-              "default",
-              PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
-                peopleIds,
-                roomCode,
-              })
-            );
-          }
-          socketResponses.addToBucket(
-            "default",
-            makeResponse({ subject, action, status, payload })
-          );
-  
-          return socketResponses;
-        },
-        GET_KEYED: (props) => {
-          const socketResponses = SocketResponseBuckets();
-          const [subject, action] = ["PEOPLE", "GET_KEYED"];
-          let peopleIds = getArrFromProp(props, {
-            plural: "peopleIds",
-            singular: "personId",
-          });
-  
-          let payload = {
-            items: {},
-            order: [],
-          };
-  
-          return handleRoom(
-            props,
-            ({ room, personManager }) => {
-              let personFoundCount = 0;
-              peopleIds.forEach((personId) => {
-                let person = personManager.getPerson(personId);
-                if (isDef(person)) {
-                  ++personFoundCount;
-                  payload.items[personId] = person.serialize();
-                  payload.order.push(personId);
-                }
-              });
-  
-              let status = personFoundCount > 0 ? "success" : "failure";
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status, payload })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        REMOVE: (props) => {
-          const socketResponses = SocketResponseBuckets();
-          const [subject, action] = ["PEOPLE", "REMOVE"];
-          let message = "Failed to remove people.";
-  
-          return handlePerson(
-            props,
-            (props2) => {
-              let status = "failure";
-              let { roomCode, personManager, thisPerson, thisPersonId } = props2;
-  
-              let peopleIds = getArrFromProp(
-                props,
-                {
-                  plural: "peopleIds",
-                  singular: "personId",
-                },
-                thisPersonId
-              );
-              let payload = {
-                ids: [],
-              };
-  
-              // Foreach person beign removed
-              let removedPersonCount = 0;
-              let wasHostRemoved = false;
-              peopleIds.forEach((personId) => {
-                let person = personManager.getPerson(personId);
-                if (isDef(person)) {
-                  // Can I removed by this person
-                  if (canPersonRemoveOtherPerson(thisPerson, person)) {
-                    ++removedPersonCount;
-                    payload.ids.push(personId);
-  
-                    person.disconnect();
-                    personManager.removePersonById(person.getId());
-  
-                    // If it was the host who left, assing new host
-                    let wasHost = person.hasTag("host");
-                    if (wasHost) wasHostRemoved = true;
-                  }
-                }
-              });
-  
-              if (removedPersonCount > 0) {
-                status = "success";
-                message = `Removed ${removedPersonCount} people successfully.`;
-                socketResponses.addToBucket(
-                  "everyone",
-                  makeResponse({ subject, action, status, payload, message })
-                );
-              } else {
-                socketResponses.addToBucket(
-                  "default",
-                  makeResponse({ subject, action, status, payload, message })
-                );
-              }
-  
-              if (wasHostRemoved) {
-                let nextHost = personManager.findPerson((firstPerson) =>
-                  firstPerson.isConnected()
-                );
-                if (isDef(nextHost)) {
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
-                      roomCode,
-                      personId: nextHost.getId(),
-                    })
-                  );
-                }
-              }
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        UPDATE_MY_STATUS: (props) => {
-          const [subject, action] = ["PEOPLE", "UPDATE_MY_STATUS"];
-          const socketResponses = SocketResponseBuckets();
-          let payload = null;
-          let requestStatus = "failure";
-          return handlePerson(
-            props,
-            ({ roomCode, room, personManager, person, thisPersonId }) => {
-              let { status } = props;
-  
-              let allowedStatuses = ["ready", "not_ready"];
-              if (allowedStatuses.includes(status)) {
-                person.setStatus(String(status));
-              }
-  
-              requestStatus = "success";
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status: requestStatus, payload })
-              );
-  
-              socketResponses.addToBucket(
-                "everyone",
-                PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
-                  personId: thisPersonId,
-                  roomCode,
-                })
-              );
-  
-              socketResponses.addToBucket(
-                "default",
-                PUBLIC_SUBJECTS.GAME.CAN_START({ roomCode })
-              );
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-      },
+    // Game
+    Object.assign(PUBLIC_SUBJECTS, {
       GAME: {
         /**
          * @PROPS {String} roomCode
@@ -1320,6 +882,303 @@ class PlayDealClientService {
           );
         },
       },
+    });
+
+    // Requests
+    Object.assign(PUBLIC_SUBJECTS, {
+      REQUESTS: {
+        ...makeRegularGetKeyed({
+          SUBJECTS: PUBLIC_SUBJECTS,
+          subject: "REQUESTS",
+          singularKey: "requestId",
+          pluralKey: "requestIds",
+          makeGetDataFn: ({ game, subject, action }, checkpoints) => (
+            requestId
+          ) => {
+            let result = null;
+            let data = game
+              .getCurrentTurn()
+              .getRequestManager()
+              .getRequest(requestId);
+  
+            if (isDef(data)) {
+              checkpoints.set("requestExists", true);
+              result = data.serialize();
+            }
+            return result;
+          },
+          makeGetAllKeysFn: ({ game, subject, action }, checkpoints) => () => {
+            let result = game
+              .getCurrentTurn()
+              .getRequestManager()
+              .getAllRequestIds();
+            return result;
+          },
+          makeGetAlMyKeysFn: (
+            { game, thisPersonId, subject, action },
+            checkpoints
+          ) => () => {
+            let result = game
+              .getCurrentTurn()
+              .getRequestManager()
+              .getAllRequestIdsForPlayer(thisPersonId);
+            return result;
+          },
+        }),
+        REMOVE_ALL: (props) => {
+          let subject = "REQUESTS";
+          let action = "REMOVE_ALL";
+          let status = "failure";
+          let payload = null;
+          const socketResponses = SocketResponseBuckets();
+          return handleGame(
+            props,
+            (consumerData) => {
+              status = "success";
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({ subject, action, status, payload })
+              );
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+      },
+      PLAYER_REQUESTS: {
+        GET_KEYED: (props) => {
+          //props: { roomCode, (peopleIds|personId)}
+          let subject = "PLAYER_REQUESTS";
+          let action = "GET_KEYED";
+          const socketResponses = SocketResponseBuckets();
+  
+          return handleGame(
+            props,
+            (consumerData) => {
+              let { game } = consumerData;
+  
+              let myKeyedRequest = KeyedRequest();
+              myKeyedRequest.setAction(action);
+              myKeyedRequest.setSubject(subject);
+              myKeyedRequest.setPluralKey("peopleIds");
+              myKeyedRequest.setSingularKey("personId");
+              myKeyedRequest.setDataFn((personId) => {
+                return game
+                  .getRequestManager()
+                  .getAllRequestIdsForPlayer(personId);
+              });
+              myKeyedRequest.setProps(consumerData);
+  
+              //deliver data
+              socketResponses.addToBucket(
+                "default",
+                makeKeyedResponse(myKeyedRequest)
+              );
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+        REMOVE_ALL: (props) => {
+          let subject = "REQUESTS";
+          let action = "PLAYER_REQUESTS";
+          let status = "failure";
+          let payload = null;
+          const socketResponses = SocketResponseBuckets();
+          return handleGame(
+            props,
+            (consumerData) => {
+              status = "success";
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({ subject, action, status, payload })
+              );
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+      },
+    });
+
+    // Collections
+    Object.assign(PUBLIC_SUBJECTS, {
+      COLLECTIONS: {
+        ...makeRegularGetKeyed({
+          SUBJECTS: PUBLIC_SUBJECTS,
+          subject: "COLLECTIONS",
+          singularKey: "collectionId",
+          pluralKey: "collectionIds",
+          makeGetDataFn: ({ game }, checkpoints) => (collectionId) => {
+            let result = game.getCollectionManager().getCollection(collectionId);
+            if (isDef(result)) {
+              checkpoints.set("collectionExists", true);
+              return result.serialize();
+            }
+          },
+          makeGetAllKeysFn: ({ game }, checkpoints) => () => {
+            return game.getCollectionManager().getAllCollectionIds();
+          },
+          makeGetAlMyKeysFn: ({ game, thisPersonId }, checkpoints) => () => {
+            return game
+              .getPlayerManager()
+              .getAllCollectionIdsForPlayer(thisPersonId);
+          },
+        }),
+      },
+      PLAYER_COLLECTIONS: {
+        GET_KEYED: (props) => {
+          //props: { roomCode, (peopleIds|personId)}
+          let subject = "PLAYER_COLLECTIONS";
+          let action = "GET_KEYED";
+          const socketResponses = SocketResponseBuckets();
+          return handleGame(
+            props,
+            (consumerData) => {
+              let { game } = consumerData;
+  
+              let myKeyedRequest = KeyedRequest();
+              myKeyedRequest.setAction(action);
+              myKeyedRequest.setSubject(subject);
+              myKeyedRequest.setPluralKey("peopleIds");
+              myKeyedRequest.setSingularKey("personId");
+              myKeyedRequest.setDataFn((personId) => {
+                return game
+                  .getPlayerManager()
+                  .getAllCollectionIdsForPlayer(personId);
+              });
+              myKeyedRequest.setProps(consumerData);
+  
+              //deliver data
+              socketResponses.addToBucket(
+                "default",
+                makeKeyedResponse(myKeyedRequest)
+              );
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+        GET_ALL_KEYED: (props) => {
+          //props: {roomCode}
+          let subject = "PLAYER_COLLECTIONS";
+          let action = "GET_ALL_KEYED";
+          const socketResponses = SocketResponseBuckets();
+          return handleGame(
+            props,
+            (consumerData) => {
+              // Config
+              let { game, personManager } = consumerData;
+  
+              // confirm the all command
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({
+                  subject,
+                  action,
+                  status: "success",
+                  payload: null,
+                })
+              );
+  
+              let myKeyedRequest = KeyedRequest();
+              myKeyedRequest.setAction(action);
+              myKeyedRequest.setSubject(subject);
+              myKeyedRequest.setPluralKey("peopleIds");
+              myKeyedRequest.setSingularKey("personId");
+              myKeyedRequest.setProps(consumerData);
+              myKeyedRequest.setAllKeysFn(() =>
+                getAllPlayerIds({ game, personManager })
+              );
+  
+              // Get data
+              socketResponses.addToBucket(
+                "default",
+                getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
+              );
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+      },
+    });
+
+    // Piles
+    Object.assign(PUBLIC_SUBJECTS, {
+      DISCARD_PILE: {
+        GET: (props) => {
+          let subject = "DISCARD_PILE";
+          let action = "GET";
+          const socketResponses = SocketResponseBuckets();
+          return handleGame(
+            props,
+            (props2) => {
+              let { game } = props2;
+              let payload = game.getDiscardPile().serialize();
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({ subject, action, status: "success", payload })
+              );
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+      },
+      ACTIVE_PILE: {
+        GET: (props) => {
+          let subject = "ACTIVE_PILE";
+          let action = "GET";
+          const socketResponses = SocketResponseBuckets();
+          return handleGame(
+            props,
+            (props2) => {
+              let { game } = props2;
+              let payload = game.getActivePile().serialize();
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({ subject, action, status: "success", payload })
+              );
+  
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+      },
+      DRAW_PILE: {
+        GET: (props) => {
+          let subject = "DRAW_PILE";
+          let action = "GET";
+          const socketResponses = SocketResponseBuckets();
+          return handleGame(
+            props,
+            ({ game }) => {
+              // Takes no action
+              // Current count of card in deck
+              let payload = {
+                count: game.getDeckCardCount(),
+              };
+              socketResponses.addToBucket(
+                "default",
+                makeResponse({ subject, action, status: "success", payload })
+              );
+              //___________________________________________________________
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+      },
+    });
+
+    // Card related
+    Object.assign(PUBLIC_SUBJECTS, {
       PROPERTY_SETS: {
         GET_KEYED: (props) => {
           let subject = "PROPERTY_SETS";
@@ -1451,72 +1310,435 @@ class PlayDealClientService {
           );
         },
       },
-      DISCARD_PILE: {
-        GET: (props) => {
-          let subject = "DISCARD_PILE";
-          let action = "GET";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (props2) => {
-              let { game } = props2;
-              let payload = game.getDiscardPile().serialize();
+    });
+
+    // People in room
+    if (1) {
+      Object.assign(PUBLIC_SUBJECTS, {
+        PEOPLE: {
+          UPDATE_MY_NAME: (props) => {
+            // roomCode
+            const [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
+            const socketResponses = SocketResponseBuckets();
+            return handlePerson(
+              props,
+              (props2) => {
+                let { roomCode, thisPersonId, thisPerson, username } = props2;
+                let status = "failure";
+                let payload = null;
+    
+                let usernameMaxLength = 20;
+                if (isStr(username)) {
+                  username = String(username).trim();
+                  if (username.length < usernameMaxLength) {
+                    status = "success";
+                    thisPerson.setName(username);
+                    socketResponses.addToBucket(
+                      "everyone",
+                      PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                        personId: thisPersonId,
+                        roomCode,
+                      })
+                    );
+                  }
+                }
+    
+                socketResponses.addToBucket(
+                  "default",
+                  makeResponse({ subject, action, status, payload })
+                );
+    
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
+          ME: (props) => {
+            // roomCode
+            const [subject, action] = ["PEOPLE", "ME"];
+            const socketResponses = SocketResponseBuckets();
+            return handlePerson(
+              props,
+              (props2) => {
+                let { thisPersonId, thisPerson } = props2;
+    
+                let status = "success";
+                let payload = {
+                  me: thisPersonId,
+                };
+    
+                socketResponses.addToBucket(
+                  "default",
+                  makeResponse({ subject, action, status, payload })
+                );
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
+          GET_HOST: (props) => {
+            // roomCode
+            const [subject, action] = ["PEOPLE", "GET_HOST"];
+            const socketResponses = SocketResponseBuckets();
+            return handlePerson(
+              props,
+              (props2) => {
+                let { personManager } = props2;
+    
+                let payload = {};
+                let status = "failure";
+                let host = null;
+                let hostPerson = personManager.findPerson((person) =>
+                  person.hasTag("host")
+                );
+                if (isDef(hostPerson)) {
+                  status = "success";
+                  host = hostPerson.getId();
+                }
+    
+                payload.host = host;
+    
+                socketResponses.addToBucket(
+                  "default",
+                  makeResponse({ subject, action, status, payload })
+                );
+    
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
+          SET_HOST: (props) => {
+            // roomCode, personId
+            const [subject, action] = ["PEOPLE", "SET_HOST"];
+            const socketResponses = SocketResponseBuckets();
+            return handlePerson(
+              props,
+              (props2) => {
+                let { personId } = props;
+                let { roomCode, personManager, thisPerson } = props2;
+                let isCurrentHost = isDef(thisPerson) && thisPerson.hasTag("host");
+    
+                let payload = {};
+                let status = "failure";
+    
+                if (personManager.getConnectedPeopleCount() <= 1 || isCurrentHost) {
+                  if (isDef(personId) && personManager.hasPerson(personId)) {
+                    let currentHost = personManager.findPerson((person) =>
+                      person.hasTag("host")
+                    );
+                    if (isDef(currentHost)) {
+                      currentHost.removeTag("host");
+                    }
+    
+                    let newHost = personManager.getPerson(personId);
+                    newHost.addTag("host");
+    
+                    status = "success";
+                    payload.host = personId;
+                    socketResponses.addToBucket(
+                      "everyone",
+                      makeResponse({ subject, action, status, payload })
+                    );
+                  }
+                } else {
+                  socketResponses.addToBucket(
+                    "default",
+                    makeResponse({ subject, action, status, payload })
+                  );
+                }
+    
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
+                    roomCode,
+                  })
+                );
+    
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
+          GET_ALL_KEYED: (props) => {
+            let subject = "PEOPLE";
+            let action = "GET_ALL_KEYED";
+            let status = "failure";
+    
+            let payload = null;
+            const socketResponses = SocketResponseBuckets();
+            let { roomCode } = props;
+            let room = roomManager.getRoomByCode(roomCode);
+            if (isDef(room)) {
+              status = "success";
+              let personManager = room.getPersonManager();
+              let peopleIds = personManager
+                .getConnectedPeople()
+                .map((person) => person.getId());
+    
               socketResponses.addToBucket(
                 "default",
-                makeResponse({ subject, action, status: "success", payload })
+                PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                  peopleIds,
+                  roomCode,
+                })
               );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
+            }
+            socketResponses.addToBucket(
+              "default",
+              makeResponse({ subject, action, status, payload })
+            );
+    
+            return socketResponses;
+          },
+          GET_KEYED: (props) => {
+            const socketResponses = SocketResponseBuckets();
+            const [subject, action] = ["PEOPLE", "GET_KEYED"];
+            let peopleIds = getArrFromProp(props, {
+              plural: "peopleIds",
+              singular: "personId",
+            });
+    
+            let payload = {
+              items: {},
+              order: [],
+            };
+    
+            return handleRoom(
+              props,
+              ({ room, personManager }) => {
+                let personFoundCount = 0;
+                peopleIds.forEach((personId) => {
+                  let person = personManager.getPerson(personId);
+                  if (isDef(person)) {
+                    ++personFoundCount;
+                    payload.items[personId] = person.serialize();
+                    payload.order.push(personId);
+                  }
+                });
+    
+                let status = personFoundCount > 0 ? "success" : "failure";
+                socketResponses.addToBucket(
+                  "default",
+                  makeResponse({ subject, action, status, payload })
+                );
+    
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
+          REMOVE: (props) => {
+            const socketResponses = SocketResponseBuckets();
+            const [subject, action] = ["PEOPLE", "REMOVE"];
+            let message = "Failed to remove people.";
+    
+            return handlePerson(
+              props,
+              (props2) => {
+                let status = "failure";
+                let { roomCode, personManager, thisPerson, thisPersonId } = props2;
+    
+                let peopleIds = getArrFromProp(
+                  props,
+                  {
+                    plural: "peopleIds",
+                    singular: "personId",
+                  },
+                  thisPersonId
+                );
+                let payload = {
+                  ids: [],
+                };
+    
+                // Foreach person beign removed
+                let removedPersonCount = 0;
+                let wasHostRemoved = false;
+                peopleIds.forEach((personId) => {
+                  let person = personManager.getPerson(personId);
+                  if (isDef(person)) {
+                    // Can I removed by this person
+                    if (canPersonRemoveOtherPerson(thisPerson, person)) {
+                      ++removedPersonCount;
+                      payload.ids.push(personId);
+    
+                      person.disconnect();
+                      personManager.removePersonById(person.getId());
+    
+                      // If it was the host who left, assing new host
+                      let wasHost = person.hasTag("host");
+                      if (wasHost) wasHostRemoved = true;
+                    }
+                  }
+                });
+    
+                if (removedPersonCount > 0) {
+                  status = "success";
+                  message = `Removed ${removedPersonCount} people successfully.`;
+                  socketResponses.addToBucket(
+                    "everyone",
+                    makeResponse({ subject, action, status, payload, message })
+                  );
+                } else {
+                  socketResponses.addToBucket(
+                    "default",
+                    makeResponse({ subject, action, status, payload, message })
+                  );
+                }
+    
+                if (wasHostRemoved) {
+                  let nextHost = personManager.findPerson((firstPerson) =>
+                    firstPerson.isConnected()
+                  );
+                  if (isDef(nextHost)) {
+                    socketResponses.addToBucket(
+                      "everyone",
+                      PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
+                        roomCode,
+                        personId: nextHost.getId(),
+                      })
+                    );
+                  }
+                }
+    
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
+          UPDATE_MY_STATUS: (props) => {
+            const [subject, action] = ["PEOPLE", "UPDATE_MY_STATUS"];
+            const socketResponses = SocketResponseBuckets();
+            let payload = null;
+            let requestStatus = "failure";
+            return handlePerson(
+              props,
+              ({ roomCode, room, personManager, person, thisPersonId }) => {
+                let { status } = props;
+    
+                let allowedStatuses = ["ready", "not_ready"];
+                if (allowedStatuses.includes(status)) {
+                  person.setStatus(String(status));
+                }
+    
+                requestStatus = "success";
+                socketResponses.addToBucket(
+                  "default",
+                  makeResponse({ subject, action, status: requestStatus, payload })
+                );
+    
+                socketResponses.addToBucket(
+                  "everyone",
+                  PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                    personId: thisPersonId,
+                    roomCode,
+                  })
+                );
+    
+                socketResponses.addToBucket(
+                  "default",
+                  PUBLIC_SUBJECTS.GAME.CAN_START({ roomCode })
+                );
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
         },
-      },
-      ACTIVE_PILE: {
-        GET: (props) => {
-          let subject = "ACTIVE_PILE";
-          let action = "GET";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (props2) => {
-              let { game } = props2;
-              let payload = game.getActivePile().serialize();
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status: "success", payload })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
+      });
+      Object.assign(PRIVATE_SUBJECTS, {
+        
+        PEOPLE: {
+          DISCONNECT: (props) => {
+            // when game is in progeress and the user loses connection or closes the browser
+            const socketResponses = SocketResponseBuckets();
+            const [subject, action] = ["PEOPLE", "DISCONNECT"];
+            let status = "failure";
+            let payload = {};
+            return handlePerson(
+              props,
+              (props2) => {
+                let { roomCode, personManager, thisPerson, thisPersonId } = props2;
+                let peopleIds = getArrFromProp(
+                  props,
+                  {
+                    plural: "peopleIds",
+                    singular: "personId",
+                  },
+                  thisPersonId
+                );
+    
+                // Foreach person beign removed
+                let disconnectedIds = [];
+                peopleIds.forEach((personId) => {
+                  let person = personManager.getPerson(personId);
+                  if (isDef(person)) {
+                    disconnectedIds.push(person.getId());
+                    person.disconnect();
+                  }
+                });
+    
+                socketResponses.addToBucket(
+                  "everyone",
+                  PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                    peopleIds: disconnectedIds,
+                    roomCode,
+                  })
+                );
+    
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
         },
-      },
-      DRAW_PILE: {
-        GET: (props) => {
-          let subject = "DRAW_PILE";
-          let action = "GET";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            ({ game }) => {
-              // Takes no action
-              // Current count of card in deck
-              let payload = {
-                count: game.getDeckCardCount(),
-              };
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status: "success", payload })
-              );
-              //___________________________________________________________
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
+      });
+
+      // Current Turn
+      Object.assign(PUBLIC_SUBJECTS, {
+        PLAYER_TURN: {
+          GET: (props) => {
+            let subject = "PLAYER_TURN";
+            let action = "GET";
+            const socketResponses = SocketResponseBuckets();
+            return handleGame(
+              props,
+              (consumerData) => {
+                let { game, thisPersonId } = consumerData;
+                let currentTurn = game.getCurrentTurn();
+    
+                if (currentTurn.getPhaseKey() === "discard") {
+                  let thisPlayerHand = game.getPlayerHand(thisPersonId);
+                  let remaining =
+                    thisPlayerHand.getCount() - game.getHandMaxCardCount();
+                  if (remaining > 0) {
+                    currentTurn.setPhaseData({
+                      remainingCountToDiscard: remaining,
+                    });
+                  }
+                }
+    
+                let payload = game.getCurrentTurn().serialize();
+    
+                socketResponses.addToBucket(
+                  "default",
+                  makeResponse({ subject, action, status: "success", payload })
+                );
+    
+                //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData)));
+                //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData)));
+    
+                return socketResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, socketResponses })
+            );
+          },
         },
-      },
+      })
+    }
+
+    // Players
+    Object.assign(PUBLIC_SUBJECTS, {
       PLAYERS: {
         GET: (props) => {
           const [subject, action] = ["PLAYERS", "GET"];
@@ -1585,44 +1807,7 @@ class PlayDealClientService {
           );
         }, // end PLAYERS.PERSON_DREW_CARDS_KEYED
       },
-      PLAYER_TURN: {
-        GET: (props) => {
-          let subject = "PLAYER_TURN";
-          let action = "GET";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData) => {
-              let { game, thisPersonId } = consumerData;
-              let currentTurn = game.getCurrentTurn();
-  
-              if (currentTurn.getPhaseKey() === "discard") {
-                let thisPlayerHand = game.getPlayerHand(thisPersonId);
-                let remaining =
-                  thisPlayerHand.getCount() - game.getHandMaxCardCount();
-                if (remaining > 0) {
-                  currentTurn.setPhaseData({
-                    remainingCountToDiscard: remaining,
-                  });
-                }
-              }
-  
-              let payload = game.getCurrentTurn().serialize();
-  
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status: "success", payload })
-              );
-  
-              //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData)));
-              //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData)));
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-      },
+      
       PLAYER_HANDS: {
         /**
          * GET PLAYER HAND
@@ -1780,34 +1965,61 @@ class PlayDealClientService {
           );
         },
       },
-      PLAYER_REQUESTS: {
-        GET_KEYED: (props) => {
-          //props: { roomCode, (peopleIds|personId)}
-          let subject = "PLAYER_REQUESTS";
-          let action = "GET_KEYED";
+    })
+
+    // Chat & Sounds
+    Object.assign(PUBLIC_SUBJECTS, {
+      CHAT: {
+        SEND_PRIVATE_MESSAGE: (props) => {
+          const [subject, action] = ["CHAT", "SEND_PRIVATE_MESSAGE"];
           const socketResponses = SocketResponseBuckets();
-  
-          return handleGame(
+          return handlePerson(
             props,
-            (consumerData) => {
-              let { game } = consumerData;
+            (props2) => {
+              let { type, value, playerKey, thisPersonId } = props2;
+              let { personManager } = props2;
+
+              let status = "success";
+              let payload = {
+                type,
+                visibility: "private",
+                from: thisPersonId,
+                value
+              };
+
+              let receivingPerson = personManager.getPerson(playerKey);
+              if (isDef(receivingPerson)) {
+                socketResponses.addToSpecific(
+                  receivingPerson.getClientId(),
+                  makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
+                );
+              }
   
-              let myKeyedRequest = KeyedRequest();
-              myKeyedRequest.setAction(action);
-              myKeyedRequest.setSubject(subject);
-              myKeyedRequest.setPluralKey("peopleIds");
-              myKeyedRequest.setSingularKey("personId");
-              myKeyedRequest.setDataFn((personId) => {
-                return game
-                  .getRequestManager()
-                  .getAllRequestIdsForPlayer(personId);
-              });
-              myKeyedRequest.setProps(consumerData);
+              return socketResponses;
+            },
+            makeConsumerFallbackResponse({ subject, action, socketResponses })
+          );
+        },
+        SEND_MESSAGE: (props) => {
+          const [subject, action] = ["CHAT", "SEND_MESSAGE"];
+          const socketResponses = SocketResponseBuckets();
+          return handlePerson(
+            props,
+            (props2) => {
+              let { type, value } = props2;
+              let { thisPersonId } = props2;
+
+              let status = "success";
+              let payload = {
+                type,
+                visibility: "public",
+                from: thisPersonId,
+                value
+              };
   
-              //deliver data
               socketResponses.addToBucket(
-                "default",
-                makeKeyedResponse(myKeyedRequest)
+                "everyone",
+                makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
               );
   
               return socketResponses;
@@ -1815,186 +2027,46 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-        REMOVE_ALL: (props) => {
-          let subject = "REQUESTS";
-          let action = "PLAYER_REQUESTS";
-          let status = "failure";
-          let payload = null;
+        /**
+         * @param userIds
+         */
+        RECEIVE_MESSAGE: () => {
+          // emit to user
+          // roomCode
+          const [subject, action] = ["CHAT", "RECEIVE_MESSAGE"];
           const socketResponses = SocketResponseBuckets();
-          return handleGame(
+          return handlePerson(
             props,
-            (consumerData) => {
-              status = "success";
+            (props2) => {
+              let { message } = props2;
+
+              let status = "success";
+              let payload = {
+                type: "text",
+                message
+              };
+  
               socketResponses.addToBucket(
-                "default",
+                "everyoneElse",
                 makeResponse({ subject, action, status, payload })
               );
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-      },
-      REQUESTS: {
-        ...makeRegularGetKeyed({
-          SUBJECTS: PUBLIC_SUBJECTS,
-          subject: "REQUESTS",
-          singularKey: "requestId",
-          pluralKey: "requestIds",
-          makeGetDataFn: ({ game, subject, action }, checkpoints) => (
-            requestId
-          ) => {
-            let result = null;
-            let data = game
-              .getCurrentTurn()
-              .getRequestManager()
-              .getRequest(requestId);
-  
-            if (isDef(data)) {
-              checkpoints.set("requestExists", true);
-              result = data.serialize();
-            }
-            return result;
-          },
-          makeGetAllKeysFn: ({ game, subject, action }, checkpoints) => () => {
-            let result = game
-              .getCurrentTurn()
-              .getRequestManager()
-              .getAllRequestIds();
-            return result;
-          },
-          makeGetAlMyKeysFn: (
-            { game, thisPersonId, subject, action },
-            checkpoints
-          ) => () => {
-            let result = game
-              .getCurrentTurn()
-              .getRequestManager()
-              .getAllRequestIdsForPlayer(thisPersonId);
-            return result;
-          },
-        }),
-        REMOVE_ALL: (props) => {
-          let subject = "REQUESTS";
-          let action = "REMOVE_ALL";
-          let status = "failure";
-          let payload = null;
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData) => {
-              status = "success";
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status, payload })
-              );
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-      },
-      PLAYER_COLLECTIONS: {
-        GET_KEYED: (props) => {
-          //props: { roomCode, (peopleIds|personId)}
-          let subject = "PLAYER_COLLECTIONS";
-          let action = "GET_KEYED";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData) => {
-              let { game } = consumerData;
-  
-              let myKeyedRequest = KeyedRequest();
-              myKeyedRequest.setAction(action);
-              myKeyedRequest.setSubject(subject);
-              myKeyedRequest.setPluralKey("peopleIds");
-              myKeyedRequest.setSingularKey("personId");
-              myKeyedRequest.setDataFn((personId) => {
-                return game
-                  .getPlayerManager()
-                  .getAllCollectionIdsForPlayer(personId);
-              });
-              myKeyedRequest.setProps(consumerData);
-  
-              //deliver data
-              socketResponses.addToBucket(
-                "default",
-                makeKeyedResponse(myKeyedRequest)
-              );
   
               return socketResponses;
             },
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-        GET_ALL_KEYED: (props) => {
-          //props: {roomCode}
-          let subject = "PLAYER_COLLECTIONS";
-          let action = "GET_ALL_KEYED";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData) => {
-              // Config
-              let { game, personManager } = consumerData;
-  
-              // confirm the all command
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({
-                  subject,
-                  action,
-                  status: "success",
-                  payload: null,
-                })
-              );
-  
-              let myKeyedRequest = KeyedRequest();
-              myKeyedRequest.setAction(action);
-              myKeyedRequest.setSubject(subject);
-              myKeyedRequest.setPluralKey("peopleIds");
-              myKeyedRequest.setSingularKey("personId");
-              myKeyedRequest.setProps(consumerData);
-              myKeyedRequest.setAllKeysFn(() =>
-                getAllPlayerIds({ game, personManager })
-              );
-  
-              // Get data
-              socketResponses.addToBucket(
-                "default",
-                getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
+        /**
+         * 
+         */
+        GET_ALL_MESSAGES: (props) => {
+          //
         },
       },
-      COLLECTIONS: {
-        ...makeRegularGetKeyed({
-          SUBJECTS: PUBLIC_SUBJECTS,
-          subject: "COLLECTIONS",
-          singularKey: "collectionId",
-          pluralKey: "collectionIds",
-          makeGetDataFn: ({ game }, checkpoints) => (collectionId) => {
-            let result = game.getCollectionManager().getCollection(collectionId);
-            if (isDef(result)) {
-              checkpoints.set("collectionExists", true);
-              return result.serialize();
-            }
-          },
-          makeGetAllKeysFn: ({ game }, checkpoints) => () => {
-            return game.getCollectionManager().getAllCollectionIds();
-          },
-          makeGetAlMyKeysFn: ({ game, thisPersonId }, checkpoints) => () => {
-            return game
-              .getPlayerManager()
-              .getAllCollectionIdsForPlayer(thisPersonId);
-          },
-        }),
-      },
+    })
+
+    // Cheat & debug
+    Object.assign(PUBLIC_SUBJECTS, {
       CHEAT: {
         DUMP_STATE: (props) => {
           const [subject, action] = ["CHEAT", "DUMP_STATE"];
@@ -2020,43 +2092,10 @@ class PlayDealClientService {
           );
         },
       },
-    });
+    })
 
 
-    //==================================================
   
-    //                  BUILD ACTIONS
-  
-    //==================================================
-
-    const commonDeps = {
-      // Helpers
-      isDef, isArr, isFunc, 
-      getArrFromProp, packageCheckpoints, makeProps,
-      // Reference
-      PUBLIC_SUBJECTS,
-      PRIVATE_SUBJECTS,
-      // Structures
-      Affected, 
-      Transaction,
-      SocketResponseBuckets,
-      // Props
-      myClientId: mStrThisClientId,
-      roomManager, 
-    }
-
-    // Enable Actions
-    //if (enabled.chargeRent)    
-    let enabled = {
-      requestValue: true,
-        chargeRent: true, // extends is requestValue
-      stealCollection: true,
-      collectCards: true,
-      justSayNo: true,
-      stealProperty: true,
-      swapProperty: true,
-    }
-
     // REQUEST VALUE
     if (enabled.requestValue) {
       // CHARGE RENT
