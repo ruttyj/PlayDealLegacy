@@ -1,8 +1,19 @@
 /**
  * @SEARCH_REPLACE : TemplateAction | templateAction
- * const buildTemplateAction = require(`${serverFolder}/Lib/Actions/TemplateAction`);
+ * const buildTemplateAction = require(`${serverFolder}/Lib/Room/TemplateAction`);
  */
-function buildTemplateAction({})
+function buildTemplateAction({
+    makeConsumerFallbackResponse,
+    PUBLIC_SUBJECTS,
+    makeResponse,
+    packageCheckpoints,
+    isDef,
+    SocketResponseBuckets,
+    handleMyTurn,
+    els,
+    roomManager,
+    createGameInstance,
+})
 {
     function templateAction(props)
     {

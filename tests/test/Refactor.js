@@ -9,7 +9,7 @@ const SocketResponseBuckets = require(`${serverFolder}/sockets/socketResponseBuc
 
 const buildAffected = require(`${serverFolder}/Lib/Affected`);
 const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
-const buildStealCollectionAction = require(`${serverFolder}/Lib/Actions/StealCollectionAction`);
+//const buildStealCollectionAction = require(`${serverFolder}/Lib/Actions/StealCollection/StealCollectionAction`);
 
 
 
