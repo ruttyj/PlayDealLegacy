@@ -1,20 +1,34 @@
-const rootFolder = `../..`;
-const serverFolder = `${rootFolder}/server`;
-const serverSocketFolder = `${serverFolder}/sockets`;
-const gameFolder = `${serverFolder}/Game`;
-const CookieTokenManager = require("../CookieTokenManager/");
+const rootFolder          = `../..`;
+const serverFolder        = `${rootFolder}/server`;
+const serverSocketFolder  = `${serverFolder}/sockets`;
+const gameFolder          = `${serverFolder}/Game`;
+const CookieTokenManager  = require("../CookieTokenManager/");
 
-const buildAffected = require(`${serverFolder}/Lib/Affected`);
-const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+const buildAffected       = require(`${serverFolder}/Lib/Affected`);
+const buildOrderedTree    = require(`${serverFolder}/Lib/OrderedTree`);
 
-const buildCoreFuncs = require(`${serverFolder}/Lib/Actions/ActionsCore`);
+const OrderedTree             = buildOrderedTree();
+const Affected                = buildAffected({OrderedTree});
+const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
+const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
+const GameInstance            = require(`${gameFolder}/`);
 
+// Import generic logic for indexed game data
+const KeyedRequest            = require(`${serverSocketFolder}/container/keyedRequest.js`);
+const SocketResponseBuckets   = require(`${serverSocketFolder}/socketResponseBuckets.js`); // @TODO rename AddressedResponse
+const Transaction             = require(`${gameFolder}/player/request/transfer/Transaction.js`);
+
+const buildDeps               = require(`./Deps.js`);
+
+// Room
+const buildCreateRoom         = require(`${serverFolder}/Lib/Room/CreateRoom`);
+const buildJoinRoom           = require(`${serverFolder}/Lib/Room/JoinRoom`);
+const buildCheckExists        = require(`${serverFolder}/Lib/Room/CheckExists`);
 
 // Turn based
-const buildTurnStartingDrawAction         = require(`${serverFolder}/Lib/Actions/TurnPhase/TurnStartingDrawAction`);
-const buildAttemptFinishTurnAction        = require(`${serverFolder}/Lib/Actions/TurnPhase/AttemptFinishTurnAction`);
-const buildDiscardToHandLimitAction       = require(`${serverFolder}/Lib/Actions/TurnPhase/DiscardToHandLimitAction`);
-
+const buildTurnStartingDrawAction           = require(`${serverFolder}/Lib/Actions/TurnPhase/TurnStartingDrawAction`);
+const buildAttemptFinishTurnAction          = require(`${serverFolder}/Lib/Actions/TurnPhase/AttemptFinishTurnAction`);
+const buildDiscardToHandLimitAction         = require(`${serverFolder}/Lib/Actions/TurnPhase/DiscardToHandLimitAction`);
 
 // Request Value
 const buildChargeRentAction                 = require(`${serverFolder}/Lib/Actions/RequestValue/ChargeRentAction`);
@@ -61,14 +75,6 @@ const buildTransferPropertyToExistingCollectionFromExistingAction     = require(
 const buildTransferSetAugmentToExistingCollectionFromExistingAction   = require(`${serverFolder}/Lib/Actions/FromCollection/TransferSetAugmentToExistingCollectionFromExistingAction`);
 const buildTransferSetAugmentToNewCollectionFromExistingAction        = require(`${serverFolder}/Lib/Actions/FromCollection/TransferSetAugmentToNewCollectionFromExistingAction`);
 
-// Room
-const buildCreateRoom         = require(`${serverFolder}/Lib/Room/CreateRoom`);
-const buildJoinRoom           = require(`${serverFolder}/Lib/Room/JoinRoom`);
-const buildCheckExists        = require(`${serverFolder}/Lib/Room/CheckExists`);
-
-const OrderedTree = buildOrderedTree();
-const Affected = buildAffected({OrderedTree});
-
 
 
 /**
@@ -79,9 +85,6 @@ const Affected = buildAffected({OrderedTree});
  * Change color of set / move cards around at "done" phase
  * 
  */
-
-
-
 const {
   els,
   isDef,
@@ -90,1603 +93,235 @@ const {
   isStr,
   isArr,
   getNestedValue,
-  setNestedValue,
   log,
-  jsonLog,
   jsonEncode,
   getArrFromProp,
 } = require("./utils.js");
 
-const ClientManager = require(`${serverSocketFolder}/client/clientManager.js`);
-const RoomManager = require(`${serverSocketFolder}/room/roomManager.js`);
-const GameInstance = require(`${gameFolder}/`);
-const cookieTokenManager = CookieTokenManager.getInstance();
 
-// Import generic logic for indexed game data
-const KeyedRequest = require(`${serverSocketFolder}/container/keyedRequest.js`);
-const SocketResponseBuckets = require(`${serverSocketFolder}/socketResponseBuckets.js`);
-const Transaction = require(`${gameFolder}/player/request/transfer/Transaction.js`);
+class Registry {
 
-const {
-  CONFIG, // CONFIG Options
-  IS_TEST_MODE,
-  AMBIGUOUS_SET_KEY,
-  NON_PROPERTY_SET_KEYS,
-} = require(`${gameFolder}/config/constants.js`);
+  constructor()
+  {
+    this.PRIVATE_SUBJECTS = {};
+    this.PUBLIC_SUBJECTS  = {};
+  }
+
+  public(identifier, fn)
+  {
+    if (isArr(identifier)) {
+      let [subject, action] = identifier;
+      if (!isDef(this.PUBLIC_SUBJECTS[subject])){
+        this.PUBLIC_SUBJECTS[subject] = {};
+      }
+      this.PUBLIC_SUBJECTS[subject][action] = fn;
+    }
+  }
+
+  registerPrivate(identifier, fn)
+  {
+    if (isArr(identifier)) {
+      let [subject, action] = identifier;
+      if (!isDef(this.PRIVATE_SUBJECTS[subject])){
+        this.PRIVATE_SUBJECTS[subject] = {};
+      }
+      
+      this.PRIVATE_SUBJECTS[subject][action] = fn;
+    }
+  }
+}
 
 
 
 class PlayDealClientService {
   
-  constructor() { 
-    this.deps = {};
+  constructor()
+  {
   }
 
-  injectDeps() {
-    let clientManager = ClientManager();
-    let roomManager = RoomManager(); // @TODO Still needs to remove rooms
-    roomManager.setClientManager(clientManager);
+  injectDeps()
+  {
+    let clientManager         = ClientManager();
+    let roomManager           = RoomManager();
+                                roomManager.setClientManager(clientManager);
 
-    this.deps.clientManager = clientManager;
-    this.deps.roomManager = roomManager;
+    this.clientManager        = clientManager;
+    this.roomManager          = roomManager;
+    this.cookieTokenManager   = CookieTokenManager.getInstance();
+
+    // Right now all thelistener events are duplicated for every single client instance
+    this.todoMove = new Map();
   }
   
-  connectClient(thisClient) {
-    let clientManager = this.deps.clientManager;
-    let roomManager = this.deps.roomManager;
+  
+  connectClient(thisClient)
+  {
+    const mThisClientId       = thisClient.id;
+    const mStrThisClientId    = String(mThisClientId);
 
+    const clientManager       = this.clientManager;
+    const roomManager         = this.roomManager;
+    const cookieTokenManager  = this.cookieTokenManager;
+
+
+
+    const registry            = new Registry();
+    this.todoMove.set(mStrThisClientId, registry);
+    
 
     
+
     //==================================================
 
     //                  DEPENDENCIES
 
     //==================================================
 
-    // #region DEPENDENCIES
-    function makeProps(props, data = {}) {
-      return { roomCode: props.roomCode, ...data };
-    }
 
-    function makeResponse({ status, subject, action, payload, message }) {
-      let result = {
-        status: status,
-        subject: subject,
-        action: action,
-        payload: payload,
-      };
+    const PRIVATE_SUBJECTS = registry.PRIVATE_SUBJECTS;
+    const PUBLIC_SUBJECTS  = registry.PUBLIC_SUBJECTS;
+    let {
+      makeProps,
+      makeResponse,
+      makeKeyedResponse,
 
-      if (isDef(message)) {
-        result.message = message;
-      }
+      getAllKeyedResponse,
+      packageCheckpoints,
+      getAllPlayerIds,
+      getAllPlayers,
+      canGameStart,
+      createGameInstance,
+      canPersonRemoveOtherPerson,
 
-      return result;
-    }
+      makePersonSpecificResponses,
+      makeConsumerFallbackResponse,
+      makeRegularGetKeyed,
 
-    function makeKeyedResponse(keyedRequest) {
-      var subject, action, props, nomenclature, getData, fallback;
+      handleRoom,
+      handlePerson,
 
-      subject = keyedRequest.getSubject();
-      action = keyedRequest.getAction();
-      props = keyedRequest.getProps();
-      getData = keyedRequest.getDataFn();
-      nomenclature = {
-        plural: keyedRequest.getPluralKey(),
-        singular: keyedRequest.getSingularKey(),
-      };
-      fallback = keyedRequest.getFallback();
+      handleGame,
 
-      fallback = els(fallback, undefined);
-      const socketResponses = SocketResponseBuckets();
+      _myTurnConsumerBase,
+      handleMyTurn,
+      handCardConsumer,
+      makeConsumer,
+      handleTransactionResponse,
+      handleTransferResponse,
+      handleRequestCreation,
+      handleCollectionBasedRequestCreation,
+    } = buildDeps({
+      els,
+      isDef,
+      isDefNested,
+      isFunc,
+      isStr,
+      isArr,
+      getNestedValue,
+      log,
+      jsonEncode,
+      getArrFromProp,
 
-      let keys = getArrFromProp(props, nomenclature, fallback);
-
-      let status = "failure";
-      let payload = {
-        items: {},
-        order: [],
-      };
-      keys.forEach((key) => {
-        payload.items[key] = getData(key);
-        payload.order.push(key);
-      });
-      if (payload.order.length > 0) {
-        status = "success";
-      }
-
-      socketResponses.addToBucket(
-        "default",
-        makeResponse({ subject, action, status, payload })
-      );
-      return socketResponses;
-    }
-
-    function getAllKeyedResponse(PUBLIC_SUBJECTS, keyedRequest) {
-      var subject, action, props, propName, getAllKeys;
-      subject = keyedRequest.getSubject();
-      action = keyedRequest.getAction();
-      props = keyedRequest.getProps();
-      propName = keyedRequest.getPluralKey();
-      getAllKeys = keyedRequest.getAllKeysFn();
-
-      const socketResponses = SocketResponseBuckets();
-      socketResponses.addToSpecific(
-        "default",
-        makeResponse({ subject, action, status: "success", payload: null })
-      );
-      let getProps = {
-        subject,
-        action,
-        ...props,
-      };
-      getProps[propName] = getAllKeys();
-      socketResponses.addToBucket(
-        "default",
-        PUBLIC_SUBJECTS[subject].GET_KEYED(getProps)
-      );
-
-      return socketResponses;
-    }
-
-    function packageCheckpoints(checkpoints) {
-      if (isDef(checkpoints)) {
-        let dumpCheckpoint = {};
-        checkpoints.forEach((value, message) => (dumpCheckpoint[message] = value));
-        return dumpCheckpoint;
-      }
-      return null;
-    }
-
-    function getAllPlayerIds({ game }) {
-      return game.getPlayerManager().getAllPlayerKeys();
-    }
-
-    function getAllPlayers(game, personManager) {
-      return personManager.getConnectedPeople().filter((person) => {
-        let pId = person.getId();
-        return game.hasPlayer(pId);
-      });
-    }
-
-    function canGameStart(game, personManager) {
-      let readyPeople = personManager.filterPeople((person) => {
-        return person.isConnected() && person.getStatus() === "ready";
-      });
-      return (
-        personManager.doesAllPlayersHaveTheSameStatus("ready") &&
-        game.isAcceptablePlayerCount(readyPeople.length)
-      );
-    }
-
-    function createGameInstance(room) {
-      let gameInstance = GameInstance();
-
-      gameInstance.newGame();
-      gameInstance.updateConfig({
-        [CONFIG.SHUFFLE_DECK]: true,
-        [CONFIG.ALTER_SET_COST_ACTION]: false,
-      });
-
-      room.setGame(gameInstance);
-
-      return gameInstance;
-    }
-
-    function canPersonRemoveOtherPerson(thisPerson, otherPerson) {
-      return (
-        thisPerson.hasTag("host") ||
-        String(otherPerson.getId()) === String(thisPerson.getId())
-      );
-    }
-
-    // Will generate resposnes for each respective person regarding the relevent information
-    /**
-     * @param {function} getMyData      data for the owner of the info              IE: cards in my hand
-     * @param {function} getOtherData   data from the perspective of other people   IE: card count of my opponents
-     * @param.props[receivingPeopleIds|receivingPersonId] {array|string}   People who will receive the information
-     * @param.props[peopleIds|personId] {array|string}                     The players who's information changed - assumed this person by default
-     */
-    function makePersonSpecificResponses({
-      subject,
-      action,
-      props,
-      getMyData,
-      getOtherData,
-    }) {
-      let { personManager, thisPersonId } = props;
-      const socketResponses = SocketResponseBuckets();
-
-      // People who will receive the information
-      let receivingPeopleIds = getArrFromProp(
-        props,
-        {
-          plural: "receivingPeopleIds",
-          singular: "receivingPersonId",
-        },
-        thisPersonId
-      );
-
-      // The players who's information changed - assumed this person by default
-      let peopleIds = Array.from(
-        new Set(
-          getArrFromProp(
-            props,
-            {
-              plural: "peopleIds",
-              singular: "personId",
-            },
-            thisPersonId
-          )
-        )
-      );
-
-      if (isDef(peopleIds)) {
-        // for each person receiving the data
-        receivingPeopleIds.forEach((receivingPersonId) => {
-          let receivingPerson = personManager.getPerson(receivingPersonId);
-          if (isDef(receivingPerson)) {
-            let status = "success";
-            let payload = {
-              items: {},
-              order: [],
-            };
-            // Generate iHaveAHand data from the perspective of the recipient
-            peopleIds.forEach((ownerPersonId) => {
-              if (receivingPersonId === ownerPersonId) {
-                payload.items[ownerPersonId] = getMyData(ownerPersonId);
-              } else {
-                payload.items[ownerPersonId] = getOtherData(
-                  ownerPersonId,
-                  receivingPersonId
-                );
-              }
-              payload.order.push(ownerPersonId);
-            });
-            socketResponses.addToSpecific(
-              receivingPerson.getClientId(),
-              makeResponse({
-                subject,
-                action,
-                status,
-                payload,
-              })
-            );
-          }
-        });
-      } else {
-        console.log("users not defined");
-      }
-      return socketResponses;
-    }
-
-    function makeConsumerFallbackResponse({ subject, action, socketResponses }) {
-      return function (checkpoints) {
-        let serializecheckpoints = {
-          items: {},
-          order: [],
-        };
-
-        let message = null;
-        checkpoints.forEach((val, key) => {
-          serializecheckpoints.items[key] = val;
-          serializecheckpoints.order.push(key);
-          if (!isDef(message) && !val) {
-            message = `Query failed because this was not true: ${key}.`;
-          }
-        });
-
-        socketResponses.addToBucket(
-          "default",
-          makeResponse({
-            subject,
-            action,
-            message,
-            status: "failure",
-            payload: serializecheckpoints,
-          })
-        );
-        return socketResponses;
-      };
-    }
-    // #endregion
-
-    function makeRegularGetKeyed({
-      SUBJECTS,
-      subject,
-      singularKey,
-      pluralKey,
-      makeGetDataFn,
-      makeGetAllKeysFn,
-      makeGetAlMyKeysFn,
-    }) {
-      return {
-        GET_KEYED: (props) => {
-          //props: { roomCode, (collectionIds|collectionId)}
-          let action = "GET_KEYED";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData, checkpoints) => {
-              let upgradedData = { ...consumerData, subject, action };
-              let myKeyedRequest = KeyedRequest();
-              myKeyedRequest.setAction(action);
-              myKeyedRequest.setSubject(subject);
-              myKeyedRequest.setProps(upgradedData);
-              myKeyedRequest.setSingularKey(singularKey);
-              myKeyedRequest.setPluralKey(pluralKey);
-              myKeyedRequest.setDataFn(makeGetDataFn(upgradedData, checkpoints));
-  
-              // deliver data
-              socketResponses.addToBucket(
-                "default",
-                makeKeyedResponse(myKeyedRequest)
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        GET_ALL_KEYED: (props) => {
-          //props: {roomCode}
-          let action = "GET_ALL_KEYED";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData, checkpoints) => {
-              let upgradedData = { ...consumerData, subject, action };
-              let myKeyedRequest = KeyedRequest();
-              myKeyedRequest.setAction(action);
-              myKeyedRequest.setSubject(subject);
-              myKeyedRequest.setSingularKey(singularKey);
-              myKeyedRequest.setPluralKey(pluralKey);
-              myKeyedRequest.setProps(upgradedData);
-              myKeyedRequest.setAllKeysFn(
-                makeGetAllKeysFn(upgradedData, checkpoints)
-              );
-  
-              // Get data
-              socketResponses.addToBucket(
-                "default",
-                getAllKeyedResponse(SUBJECTS, myKeyedRequest)
-              );
-  
-              // confirm the all command
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({
-                  subject,
-                  action,
-                  status: "success",
-                  payload: null,
-                })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        GET_ALL_MY_KEYED: (props) => {
-          let action = "GET_ALL_MY_KEYED";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData, checkpoints) => {
-              let upgradedData = { ...consumerData, subject, action };
-              let myKeyedRequest = KeyedRequest();
-              myKeyedRequest.setAction(action);
-              myKeyedRequest.setSubject(subject);
-              myKeyedRequest.setSingularKey(singularKey);
-              myKeyedRequest.setPluralKey(pluralKey);
-              myKeyedRequest.setProps(upgradedData);
-              myKeyedRequest.setAllKeysFn(
-                makeGetAlMyKeysFn(upgradedData, checkpoints)
-              );
-  
-              // Get data
-              socketResponses.addToBucket(
-                "default",
-                getAllKeyedResponse(SUBJECTS, myKeyedRequest)
-              );
-  
-              // confirm the all command
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({
-                  subject,
-                  action,
-                  status: "success",
-                  payload: null,
-                })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-        REMOVE_KEYED: (props) => {
-          //props: { roomCode, (collectionIds|collectionId)}
-          let action = "REMOVE_KEYED";
-          const socketResponses = SocketResponseBuckets();
-          return handleGame(
-            props,
-            (consumerData, checkpoints) => {
-              let status = "success";
-              let nomenclature = {
-                plural: pluralKey,
-                singular: singularKey,
-              };
-              let payload = {
-                removeItemsIds: getArrFromProp(props, nomenclature, []),
-              };
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({
-                  subject,
-                  action,
-                  status: status,
-                  payload: payload,
-                })
-              );
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
-      };
-    }
-
-
-    //==================================================
-  
-    //                    CONSUMERS
-  
-    //==================================================
-
-    // #region CONSUMERS
-    // ensured the data required for a room is presant
-    function handleRoom(props, fn, fallback = undefined) {
-      let { roomCode } = props;
-      // define which points were reached before failure
-      let checkpoints = new Map();
-      checkpoints.set("roomCode", false);
-      checkpoints.set("room", false);
-      checkpoints.set("personManager", false);
-  
-      let reducedResponses = SocketResponseBuckets();
-      let responses = null;
-  
-      if (isDef(roomCode)) {
-        checkpoints.set("roomCode", true);
-        let room = roomManager.getRoomByCode(roomCode);
-        if (isDef(room)) {
-          checkpoints.set("room", true);
-          let personManager = room.getPersonManager();
-          if (isDef(personManager)) {
-            checkpoints.set("personManager", true);
-  
-            let myClientId = mStrThisClientId;
-            let person = personManager.getPersonByClientId(myClientId);
-            let game = room.getGame();
-  
-            let newProps = {
-              ...props,
-              //game,
-              //person,
-              roomCode,
-              thisRoomCode: roomCode,
-              room,
-              thisRoom: room,
-              personManager,
-            };
-            if (isDef(person)) {
-              Object.assign(newProps, {
-                person,
-                thisPersonId: person.getId(),
-                thisPerson: person,
-              });
-            }
-  
-            responses = fn(newProps, checkpoints);
-  
-            if (isDef(responses)) {
-              let clientPersonMapping = {};
-              personManager.getConnectedPeople().forEach((person) => {
-                clientPersonMapping[String(person.getClientId())] = true;
-              });
-              let clientIds = Object.keys(clientPersonMapping);
-  
-              reducedResponses.addToBucket(
-                responses.reduce(myClientId, clientIds)
-              );
-            }
-            return responses;
-          }
-        }
-      }
-      if (!isDef(responses) && isFunc(fallback)) {
-        return fallback(checkpoints);
-      }
-      return fallback;
-    }
-  
-    function handlePerson(props, fn, fallback = undefined) {
-      return handleRoom(
-        props,
-        (props2, checkpoints) => {
-          const { room } = props2;
-          let personManager = room.getPersonManager();
-          if (isDef(personManager)) {
-            checkpoints.set("personManager", true);
-            // default
-            checkpoints.set("person", false);
-            let myClientId = mStrThisClientId;
-            let person = personManager.getPersonByClientId(myClientId);
-  
-            if (isDef(person)) {
-              checkpoints.set("person", true);
-              return fn(
-                {
-                  personId: person.getId(),
-                  person,
-                  thisPersonId: person.getId(),
-                  ...props2,
-                },
-                checkpoints
-              );
-            }
-          }
-          if (isFunc(fallback)) return fallback(checkpoints);
-          return fallback;
-        },
-        fallback
-      );
-    }
-  
-    function handleGame(props, fn, fallback = undefined) {
-      // define which points were reached before failure
-      let checkpoints = new Map();
-  
-      // define which points were reached before failure
-      return handlePerson(
-        props,
-        (props2, checkpoints) => {
-          let { room } = props2;
-          let game = room.getGame();
-          if (isDef(game)) {
-            checkpoints.set("game", true);
-            return fn(
-              {
-                ...props2,
-                game,
-              },
-              checkpoints
-            );
-          } else {
-            console.log("game not defined");
-          }
-          if (isFunc(fallback2)) return fallback2(checkpoints);
-          return fallback2;
-        },
-        fallback
-      );
-  
-      if (isFunc(fallback)) return fallback(checkpoints);
-      return fallback;
-    }
-  
-    function _myTurnConsumerBase(props, fn, fallback = undefined) {
-      return handleGame(
-        props,
-        (props2, checkpoints) => {
-          checkpoints.set("iHaveAHand", false);
-          checkpoints.set("isMyTurn", false);
-  
-          let { game, thisPersonId } = props2;
-  
-          let hand = game.getPlayerHand(thisPersonId);
-          if (isDef(hand)) {
-            checkpoints.set("iHaveAHand", true);
-  
-            if (game.isMyTurn(thisPersonId)) {
-              checkpoints.set("isMyTurn", true);
-  
-              return fn(
-                {
-                  ...props2,
-                  hand,
-                  currentTurn: game.getCurrentTurn(),
-                },
-                checkpoints
-              );
-            }
-          }
-          if (isFunc(fallback)) return fallback(checkpoints);
-          return fallback;
-        },
-        fallback
-      );
-    }
-  
-    function handleMyTurn(props, fn, fallback = undefined) {
-      let consumerCheck = (
-        consumerData,
-        checkpoints,
-        socketResponses,
-        fn,
-        setFailed
-      ) => {
-        let boolFailed = false;
-        let { game } = consumerData;
-        socketResponses.addToBucket(
-          "default",
-          fn(
-            {
-              ...consumerData,
-              currentTurn: game.getCurrentTurn(),
-            },
-            checkpoints
-          )
-        );
-  
-        setFailed(boolFailed);
-      };
-      return makeConsumer(
-        consumerCheck,
-        _myTurnConsumerBase,
-        props,
-        fn,
-        fallback
-      );
-    }
-  
-    function handCardConsumer(props, fn, fallback = undefined) {
-      let consumerCheck = (
-        consumerData,
-        checkpoints,
-        socketResponses,
-        fn,
-        setFailed
-      ) => {
-        let boolFailed = true;
-        checkpoints.set("the card", false);
-        checkpoints.set("isCardInHand", false);
-  
-        let { hand, game } = consumerData;
-  
-        let { cardId } = consumerData;
-        if (isDef(cardId)) {
-          checkpoints.set("the card", true);
-          let card = hand.getCard(cardId);
-          if (isDef(card)) {
-            checkpoints.set("isCardInHand", true);
-            boolFailed = false;
-  
-            socketResponses.addToBucket(
-              "default",
-              fn(
-                {
-                  ...consumerData,
-                  card,
-                  cardId,
-                  hand,
-                  currentTurn: game.getCurrentTurn(),
-                },
-                checkpoints
-              )
-            );
-          }
-        }
-  
-        setFailed(boolFailed);
-      };
-      return makeConsumer(
-        consumerCheck,
-        _myTurnConsumerBase,
-        props,
-        fn,
-        fallback
-      );
-    }
-  
-    function makeConsumer(
-      consumerCheck,
-      parentConsumer,
-      props,
-      fn,
-      fallback = undefined
-    ) {
-      const socketResponses = SocketResponseBuckets();
-      return parentConsumer(
-        props,
-        (consumerData, checkpoints) => {
-          let boolFailed = true;
-  
-          // If the consumer check adds checkpoints but are not met the function is considered a failure
-          consumerCheck(
-            consumerData,
-            checkpoints,
-            socketResponses,
-            fn,
-            (val) => (boolFailed = val)
-          );
-  
-          // If not all checkpoints were met
-          checkpoints.forEach((value, key) => {
-            if (!value) {
-              boolFailed = true;
-            }
-          });
-  
-          if (boolFailed) {
-            if (isFunc(fallback)) {
-              let fallbackResult = fallback(checkpoints);
-              socketResponses.addToBucket("default", fallbackResult);
-            } else {
-              socketResponses.addToBucket("default", fallback);
-            }
-          }
-          return socketResponses;
-        },
-        fallback
-      );
-    }
-  
-    function handleTransactionResponse(
+      //-------------------
+      OrderedTree,
+      Affected,
+      ClientManager,
+      RoomManager,
+      GameInstance,
+      SocketResponseBuckets,
+      KeyedRequest,
       PUBLIC_SUBJECTS,
-      subject,
-      action,
-      props,
-      theThing
-    ) {
-      const socketResponses = SocketResponseBuckets();
-      let status = "failure";
-      let payload = null;
-      return handleGame(
-        props,
-        (consumerData, checkpoints) => {
-          let { requestId } = consumerData;
-          let { roomCode, game, personManager, thisPersonId } = consumerData;
-  
-          let currentTurn = game.getCurrentTurn();
-          let phaseKey = currentTurn.getPhaseKey();
-          let requestManager = currentTurn.getRequestManager();
-          let actionNum = currentTurn.getActionCount();
-  
-          // Request manager exists
-          checkpoints.set("requestManagerExists", false);
-          if (isDef(currentTurn) && isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
-  
-            // Is request phase
-  
-            let player = game.getPlayer(thisPersonId);
-            let playerBank = player.getBank();
-            let request = requestManager.getRequest(requestId);
-            checkpoints.set("isRequestDefined", false);
-            if (isDef(request)) {
-              checkpoints.set("isRequestDefined", true);
-  
-              let requestPayload = request.getPayload();
-              let transaction = requestPayload.transaction;
-  
-              checkpoints.set("hasTransaction", false);
-              if (isDef(transaction)) {
-                checkpoints.set("hasTransaction", true);
-  
-                let isApplicable = false;
-                let isAuthor = request.getAuthorKey() === thisPersonId;
-                let isTarget = request.getTargetKey() === thisPersonId;
-  
-                if (isAuthor || isTarget) {
-                  isApplicable = true;
-                }
-  
-                // If is related to request
-                checkpoints.set("isApplicable", false);
-                if (isApplicable) {
-                  checkpoints.set("isApplicable", true);
-  
-                  // Log what is to be reported back to the user
-                  let _Affected = new Affected();
-                  
-  
-                  // DO THE THING
-                  checkpoints.set("success", false);
-                  theThing({
-                    thisPersonId,
-                    actionNum,
-                    _Affected,
-                    request,
-                    player,
-                    playerBank,
-                    transaction,
-                    socketResponses,
-                    checkpoints,
-                    ...consumerData,
-                  });
-                  if (checkpoints.get("success")) status = "success";
-  
-                  // If request is completed
-                  if (transaction.isComplete() || transaction.isEmpty()) {
-                    request.close(request.getStatus());
-                    if (
-                      requestManager.isAllRequestsClosed() &&
-                      currentTurn.getPhaseKey() === "request"
-                    ) {
-                      currentTurn.proceedToNextPhase();
-                      _Affected.setAffected('TURN');
-                    }
-                  }
-  
-                  
-  
-                  if (_Affected.isAffected('HAND')) {
-                    let allPlayerIds = getAllPlayerIds({
-                      game,
-                      personManager,
-                    });
-                    socketResponses.addToBucket(
-                      "default",
-                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                        makeProps(consumerData, {
-                          personId: thisPersonId,
-                          receivingPeopleIds: allPlayerIds,
-                        })
-                      )
-                    );
-                  }
-  
-  
-                  
-                  // COLLECTIONS
-                  if (_Affected.isAffected('COLLECTION')) {
-                    let updatedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE);
-                    let removedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE);
-  
-                    if (updatedCollectionIds.length > 0) {
-                      socketResponses.addToBucket(
-                        "everyone",
-                        PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
-                          makeProps(consumerData, {
-                            collectionIds: updatedCollectionIds,
-                          })
-                        )
-                      );
-                    }
-  
-                    if (removedCollectionIds.length > 0) {
-                      socketResponses.addToBucket(
-                        "everyone",
-                        PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
-                          makeProps(consumerData, {
-                            collectionIds: removedCollectionIds,
-                          })
-                        )
-                      );
-                    }
-                  }
-  
-  
-                  // PLAYER COLLECTIONS
-                  if (_Affected.isAffected('PLAYER_COLLECTION')) {
-                    // Update who has what collection
-                    socketResponses.addToBucket(
-                      "everyone",
-                      PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
-                        makeProps(consumerData, {
-                          peopleIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
-                        })
-                      )
-                    );
-                  }
-  
-                  // REQUESTS
-                  if (_Affected.isAffected('REQUEST')) {
-                    socketResponses.addToBucket(
-                      "everyone",
-                      PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                        makeProps(consumerData, {
-                          requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
-                        })
-                      )
-                    );
-                  }
-  
-                  if (_Affected.isAffected('PLAYER_REQUEST')) {
-                    socketResponses.addToBucket(
-                      "everyone",
-                      PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                        makeProps(consumerData, {
-                          peopleIds: _Affected.getIdsAffectedByAction("PLAYER_REQUEST", Affected.ACTION_GROUP.CHANGE),
-                        })
-                      )
-                    );
-                  }
-  
-                  // BANK
-                  if (_Affected.isAffected('BANK')) {
-                    let attendingPeople = personManager.filterPeople(
-                      (person) =>
-                        person.isConnected() && person.getStatus() === "ready"
-                    );
-                    let peopleIds = attendingPeople.map((person) =>
-                      person.getId()
-                    );
-                    socketResponses.addToBucket(
-                      "default",
-                      PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
-                        makeProps(consumerData, {
-                          peopleIds: thisPersonId,
-                          receivingPeopleIds: peopleIds,
-                        })
-                      )
-                    );
-                  }
-  
-                  // PLAYER TURN
-                  if (_Affected.isAffected('TURN')) {
-                    socketResponses.addToBucket(
-                      "everyone",
-                      PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
-                    );
-                  }
-                }
-              }
-            }
-          }
-  
-          payload = {
-            checkpoints: packageCheckpoints(checkpoints),
-          };
-          socketResponses.addToBucket(
-            "default",
-            makeResponse({ subject, action, status, payload })
-          );
-  
-          return socketResponses;
-        },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
-      );
-    }
-  
-    function handleTransferResponse(
-      PUBLIC_SUBJECTS,
-      subject,
-      action,
-      props,
-      theThing
-    ) {
-      const socketResponses = SocketResponseBuckets();
-      let status = "failure";
-      let payload = null;
-      return handleGame(
-        props,
-        (consumerData, checkpoints) => {
-          let { requestId } = consumerData;
-          let { roomCode, game, personManager, thisPersonId } = consumerData;
-    
-          let currentTurn = game.getCurrentTurn();
-          let phaseKey = currentTurn.getPhaseKey();
-          let requestManager = currentTurn.getRequestManager();
-          let actionNum = currentTurn.getActionCount();
-    
-          // Request manager exists
-          checkpoints.set("requestManagerExists", false);
-          if (isDef(currentTurn) && isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
-    
-            // Is request phase
-            let player = game.getPlayer(thisPersonId);
-            let playerBank = player.getBank();
-            let request = requestManager.getRequest(requestId);
-            checkpoints.set("isRequestDefined", false);
-            if (isDef(request)) {
-              checkpoints.set("isRequestDefined", true);
-    
-              let requestPayload = request.getPayload();
-              let transaction = requestPayload.transaction;
-    
-              checkpoints.set("hasTransaction", false);
-              if (isDef(transaction)) {
-                checkpoints.set("hasTransaction", true);
-    
-                let isApplicable = false;
-                let isAuthor = request.getAuthorKey() === thisPersonId;
-                let isTarget = request.getTargetKey() === thisPersonId;
-                let transferField = "";
-                if (isAuthor) {
-                  transferField = "toAuthor";
-                  isApplicable = true;
-                } else if (isTarget) {
-                  transferField = "toTarget";
-                  isApplicable = true;
-                }
-    
-                // If is related to request
-                checkpoints.set("isApplicable", false);
-                if (isApplicable) {
-                  if (transaction.has(transferField)) {
-                    checkpoints.set("isApplicable", true);
-    
-                    // Get what is being transferd to me
-                    let transfering = transaction.get(transferField);
-    
-                    // Log what is to be reported back to the user
-                    let _Affected = new Affected();
-    
-                    // DO THE THING
-                    checkpoints.set("success", false);
-                    theThing({
-                      request,
-                      requestId,
-                      _Affected,
-                      actionNum,
-                      player,
-                      playerBank,
-                      transaction,
-                      transfering,
-                      socketResponses,
-                      checkpoints,
-                      ...consumerData,
-                    });
-    
-                    if (checkpoints.get("success")) status = "success";
-    
-                    // If request is completed
-                    if (transaction.isComplete() || transaction.isEmpty()) {
-                      request.close(request.getStatus());
-                      if (
-                        requestManager.isAllRequestsClosed() &&
-                        currentTurn.getPhaseKey() === "request"
-                      ) {
-                        currentTurn.proceedToNextPhase();
-                        _Affected.setAffected('TURN');
-                      }
-                    }
-    
-                    
-                    if (_Affected.isAffected('HAND')) {
-                      let allPlayerIds = getAllPlayerIds({
-                        game,
-                        personManager,
-                      });
-                      socketResponses.addToBucket(
-                        "default",
-                        PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                          makeProps(consumerData, {
-                            personId: thisPersonId,
-                            receivingPeopleIds: allPlayerIds,
-                          })
-                        )
-                      );
-                    }
-    
-                    // COLLECTIONS
-                    
-                    if (_Affected.isAffected('COLLECTION')) {
-                      let updatedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE);
-                      let removedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE);
-    
-                      if (updatedCollectionIds.length > 0) {
-                        socketResponses.addToBucket(
-                          "everyone",
-                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
-                            makeProps(consumerData, {
-                              collectionIds: updatedCollectionIds,
-                            })
-                          )
-                        );
-                      }
-    
-                      if (removedCollectionIds.length > 0) {
-                        socketResponses.addToBucket(
-                          "everyone",
-                          PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
-                            makeProps(consumerData, {
-                              collectionIds: removedCollectionIds,
-                            })
-                          )
-                        );
-                      }
-                    }
-                    // PLAYER COLLECTIONS
-                    if (_Affected.isAffected('PLAYER_COLLECTION')) {
-                      // Update who has what collection
-                      socketResponses.addToBucket(
-                        "everyone",
-                        PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
-                          makeProps(consumerData, {
-                            peopleIds: _Affected.getIdsAffectedByAction("PLAYER_COLLECTIONS", Affected.ACTION_GROUP.CHANGE),
-                          })
-                        )
-                      );
-                    }
-    
-                    // REQUESTS
-                    if (_Affected.isAffected('REQUEST')) {
-                      socketResponses.addToBucket(
-                        "everyone",
-                        PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                          makeProps(consumerData, {
-                            requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
-                          })
-                        )
-                      );
-                      socketResponses.addToBucket(
-                        "everyone",
-                        PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                          makeProps(consumerData, { personId: thisPersonId })
-                        )
-                      ); // maybe have to include other people
-                    }
-    
-                    // BANK
-                    if (_Affected.isAffected('BANK')) {
-                      let attendingPeople = personManager.filterPeople(
-                        (person) =>
-                          person.isConnected() && person.getStatus() === "ready"
-                      );
-                      let peopleIds = attendingPeople.map((person) =>
-                        person.getId()
-                      );
-                      socketResponses.addToBucket(
-                        "default",
-                        PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
-                          makeProps(consumerData, {
-                            peopleIds: thisPersonId,
-                            receivingPeopleIds: peopleIds,
-                          })
-                        )
-                      );
-                    }
-    
-                    // PLAYER TURN
-                    if (_Affected.isAffected('TURN')) {
-                      socketResponses.addToBucket(
-                        "everyone",
-                        PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
-                      );
-                    }
-                  }
-                }
-              }
-            }
-          }
-    
-          payload = {
-            checkpoints: packageCheckpoints(checkpoints),
-          };
-          socketResponses.addToBucket(
-            "default",
-            makeResponse({ subject, action, status, payload })
-          );
-    
-          return socketResponses;
-        },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
-      );
-    }
-  
-    function handleRequestCreation(
-      PUBLIC_SUBJECTS,
-      subject,
-      action,
-      props,
-      doTheThing
-    ) {
-      const socketResponses = SocketResponseBuckets();
-      let status = "failure";
-      let payload = null;
-      return handCardConsumer(
-        props,
-        (consumerData, checkpoints) => {
-          let { cardId } = consumerData;
-          let targetPeopleIds = getArrFromProp(consumerData, {
-            plural: "targetIds",
-            singular: "targetId",
-          });
-  
-          let { game, personManager, thisPersonId } = consumerData;
-          let currentTurn = game.getCurrentTurn();
-          let actionNum = currentTurn.getActionCount();
-  
-          // request manager exists?
-          let requestManager = currentTurn.getRequestManager();
-          checkpoints.set("requestManagerExists", false);
-          if (isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
-  
-            // Is action phase?
-            checkpoints.set("action", false);
-            if (currentTurn.getPhaseKey() === "action") {
-              checkpoints.set("action", true);
-              let hand = game.getPlayerHand(thisPersonId);
-              let card = game.getCard(cardId);
-              checkpoints.set("isValidCard", false);
-              if (isDef(card) && game.isActionCard(card) && hand.hasCard(card)) {
-                checkpoints.set("isValidCard", true);
-  
-                // Determine request cardnality
-                let target = isDef(card.target) ? card.target : "one";
-                if (target === "one") {
-                  targetPeopleIds = [targetPeopleIds[0]];
-                } else if (target === "all") {
-                  let allPlayerIds = getAllPlayerIds({ game, personManager });
-                  targetPeopleIds = allPlayerIds.filter(
-                    (playerId) => String(playerId) !== String(thisPersonId)
-                  );
-                }
-  
-                //==========================================================
-                let _Affected = new Affected();
-                
-                checkpoints.set("success", false);
-                doTheThing({
-                  ...consumerData,
-                  actionNum,
-                  requestManager,
-                  checkpoints,
-                  _Affected,
-                  targetPeopleIds,
-                  currentTurn,
-                  thisPersonId,
-                  socketResponses,
-                });
-  
-                if (checkpoints.get("success") === true) {
-                  status = "success";
-                }
-  
-                //==========================================================
-  
-                // Update current turn state
-  
-                // Update everyone with my new hand
-                let allPlayerIds = getAllPlayerIds({ game, personManager });
-                socketResponses.addToBucket(
-                  "default",
-                  PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                    makeProps(consumerData, {
-                      personId: thisPersonId,
-                      receivingPeopleIds: allPlayerIds,
-                    })
-                  )
-                );
-                if (_Affected.isAffected('ACTIVE_PILE')) {
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
-                  );
-                }
-  
-                if (_Affected.isAffected('COLLECTION')) {
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
-                      makeProps(consumerData, {
-                        collectionIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
-                      })
-                    )
-                  );
-                }
-  
-                if (_Affected.isAffected('PLAYER_COLLECTION')) {
-                  // Update who has what collection
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
-                      makeProps(consumerData, {
-                        peopleIds: _Affected.getIdsAffectedByAction("PLAYER_COLLECTION", Affected.ACTION_GROUP.CHANGE),
-                      })
-                    )
-                  );
-                }
-  
-                if (_Affected.isAffected('PLAYER_REQUEST')) {
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                      makeProps(consumerData, { peopleIds: targetPeopleIds })
-                    )
-                  );
-                }
-  
-  
-                if (_Affected.isAffected('REQUEST')) {
-                  socketResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                      makeProps(consumerData, {
-                        requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
-                      })
-                    )
-                  );
-                }
-  
-                socketResponses.addToBucket(
-                  "everyone",
-                  PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
-                );
-              }
-            }
-          }
-  
-          payload = {
-            checkpoints: packageCheckpoints(checkpoints),
-          };
-          socketResponses.addToBucket(
-            "default",
-            makeResponse({ subject, action, status, payload })
-          );
-          return socketResponses;
-        },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
-      );
-    }
-  
-    function handleCollectionBasedRequestCreation(
-      PUBLIC_SUBJECTS,
-      subject,
-      action,
-      props,
-      doTheThing
-    ) {
-      const socketResponses = SocketResponseBuckets();
-      let status = "failure";
-      let payload = null;
-      return handCardConsumer(
-        props,
-        (consumerData, checkpoints) => {
-          let { collectionId, cardId, augmentCardsIds } = consumerData;
-          let targetPeopleIds = getArrFromProp(consumerData, {
-            plural: "targetIds",
-            singular: "targetId",
-          });
-  
-          let { game, personManager, thisPersonId } = consumerData;
-          let currentTurn = game.getCurrentTurn();
-          let actionNum = currentTurn.getActionCount();
-          // request manager exists?
-          let requestManager = currentTurn.getRequestManager();
-          checkpoints.set("requestManagerExists", false);
-          if (isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
-  
-            // Is action phase?
-            checkpoints.set("action", false);
-            if (currentTurn.getPhaseKey() === "action") {
-              let collectionManager = game.getCollectionManager();
-              checkpoints.set("action", true);
-  
-              if (isDef(collectionId)) {
-                let collection = collectionManager.getCollection(collectionId);
-  
-                checkpoints.set("collectionExists", false);
-                if (isDef(collection)) {
-                  checkpoints.set("collectionExists", true);
-                  let collectionPropertySetKey = collection.getPropertySetKey();
-  
-                  checkpoints.set("isMyCollection", false);
-                  if (collection.getPlayerKey() === thisPersonId) {
-                    checkpoints.set("isMyCollection", true);
-  
-                    let hand = game.getPlayerHand(thisPersonId);
-                    let card = game.getCard(cardId);
-                    checkpoints.set("isValidCard", false);
-                    if (
-                      isDef(card) &&
-                      game.isRentCard(card) &&
-                      hand.hasCard(card)
-                    ) {
-                      checkpoints.set("isValidCard", true);
-  
-                      let rentCardApplicableSets = game.getSetChoicesForCard(
-                        card
-                      );
-                      checkpoints.set("rentCanBeChargedForThisCollection", false);
-                      if (
-                        rentCardApplicableSets.includes(collectionPropertySetKey)
-                      ) {
-                        checkpoints.set(
-                          "rentCanBeChargedForThisCollection",
-                          true
-                        );
-  
-                        let activePile = game.getActivePile();
-                        activePile.addCard(hand.giveCard(card));
-  
-                        // get rent value for collection
-                        let rentValue = game.getRentValueOfCollection(
-                          thisPersonId,
-                          collectionId
-                        );
-  
-                        // If rent augment ment cards exist alter value
-                        let chargeValue = rentValue;
-                        let validAugmentCardsIds = [];
-                        let augments = {};
-                        if (isArr(augmentCardsIds)) {
-                          let augmentUsesActionCount = game.getConfig(
-                            CONFIG.ACTION_AUGMENT_CARDS_COST_ACTION,
-                            true
-                          );
-                          let currentActionCount =
-                            currentTurn.getActionCount() + 1; // +1 for the rent card
-                          let additionalActionCountFromAugments = 0;
-                          augmentCardsIds.forEach((augCardId) => {
-                            if (
-                              !augmentUsesActionCount ||
-                              (augmentUsesActionCount &&
-                                currentActionCount < currentTurn.getActionLimit())
-                            ) {
-                              let canApply = game.canApplyRequestAugment(
-                                cardId,
-                                augCardId,
-                                validAugmentCardsIds,
-                                augmentCardsIds
-                              );
-                              if (canApply) {
-                                ++additionalActionCountFromAugments;
-                                validAugmentCardsIds.push(augCardId);
-                                let card = game.getCard(augCardId);
-                                augments[augCardId] = getNestedValue(
-                                  card,
-                                  ["action", "agument"],
-                                  {}
-                                );
-                              }
-                            }
-                          });
-                          currentActionCount += additionalActionCountFromAugments;
-                        }
-  
-                        let baseValue = chargeValue;
-                        chargeValue = game.applyActionValueAugment(
-                          validAugmentCardsIds,
-                          chargeValue
-                        );
-  
-                        // Determine request cardnality
-                        let target = isDef(card.target) ? card.target : "one";
-                        if (target === "one") {
-                          targetPeopleIds = [targetPeopleIds[0]];
-                        } else if (target === "all") {
-                          let allPlayerIds = getAllPlayerIds({
-                            game,
-                            personManager,
-                          });
-                          targetPeopleIds = allPlayerIds.filter(
-                            (playerId) =>
-                              String(playerId) !== String(thisPersonId)
-                          );
-                        }
-  
-                        // targetPeopleIds allPlayerIds augmentCardsIds  validAugmentCardsIds
-                        //==========================================================
-  
-                        let _Affected = new Affected();
-                        checkpoints.set("success", false);
-  
-                        doTheThing({
-                          ...consumerData,
-                          requestManager,
-                          checkpoints,
-                          baseValue: baseValue,
-                          totalValue: chargeValue,
-                          augments: {
-                            cardIds: validAugmentCardsIds,
-                            items: augments,
-                          },
-                          actionNum,
-                          _Affected,
-                          targetPeopleIds,
-                          currentTurn,
-                          collectionId,
-                          thisPersonId,
-                          socketResponses,
-                          validAugmentCardsIds,
-                        }); //actuallly do it
-  
-                        if (checkpoints.get("success") === true) {
-                          status = "success";
-                        }
-  
-                        // Player Hands
-                        let allPlayerIds = getAllPlayerIds({
-                          game,
-                          personManager,
-                        });
-                        socketResponses.addToBucket(
-                          "default",
-                          PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                            makeProps(consumerData, {
-                              personId: thisPersonId,
-                              receivingPeopleIds: allPlayerIds,
-                            })
-                          )
-                        );
-  
-                        // Active Pile
-                        if (_Affected.isAffected('ACTIVE_PILE')) {
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
-                              makeProps(consumerData)
-                            )
-                          );
-                        }
-  
-                        // Requests
-                        if (_Affected.isAffected('REQUEST')) {
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
-                              makeProps(consumerData, {
-                                peopleIds: targetPeopleIds,
-                              })
-                            )
-                          );
-                          socketResponses.addToBucket(
-                            "everyone",
-                            PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
-                              makeProps(consumerData, {
-                                requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
-                              })
-                            )
-                          );
-                        }
-  
-                        // Player Turn
-                        socketResponses.addToBucket(
-                          "everyone",
-                          PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
-                        );
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-  
-          socketResponses.addToBucket(
-            "default",
-            makeResponse({ subject, action, status, payload })
-          );
-  
-          return socketResponses;
-        },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
-      );
-    }
-    // #endregion
-  
+      PRIVATE_SUBJECTS,
 
+      //-------------------
+      mThisClientId,
+      mStrThisClientId,
+      thisClient,
+      clientManager,
+      roomManager,
+      cookieTokenManager,
+      //-------------------
+    });
+
+
+    const kitchenSinkDeps = {
+      els,
+      isDef,
+      isDefNested,
+      isFunc,
+      isStr,
+      isArr,
+      getNestedValue,
+      log,
+      jsonEncode,
+      getArrFromProp,
+
+      //-------------------
+      OrderedTree,
+      Affected,
+      ClientManager,
+      RoomManager,
+      GameInstance,
+      SocketResponseBuckets,
+      KeyedRequest,
+      PUBLIC_SUBJECTS,
+      PRIVATE_SUBJECTS,
+      registry,
+
+      //-------------------
+      mThisClientId,
+      mStrThisClientId,
+      thisClient,
+      clientManager,
+      roomManager,
+      cookieTokenManager,
+      //-------------------
+
+      makeProps,
+      makeResponse,
+      makeKeyedResponse,
+
+      getAllKeyedResponse,
+      packageCheckpoints,
+      getAllPlayerIds,
+      getAllPlayers,
+      canGameStart,
+      createGameInstance,
+      canPersonRemoveOtherPerson,
+
+      makePersonSpecificResponses,
+      makeConsumerFallbackResponse,
+      makeRegularGetKeyed,
+
+      handleRoom,
+      handlePerson,
+
+      handleGame,
+
+      _myTurnConsumerBase,
+      handleMyTurn,
+      handCardConsumer,
+      makeConsumer,
+      handleTransactionResponse,
+      handleTransferResponse,
+      handleRequestCreation,
+      handleCollectionBasedRequestCreation,
+    }
 
     //=========================================================================
 
     //                INTEGRATE GAME MANAGER TO REQUEST TREE 
 
     //=========================================================================
-    
     /*
       Each method focuses on preforming an action and bundleding information required by the UI 
     */
-
-    const mThisClientId = thisClient.id;
-    const mStrThisClientId = String(mThisClientId);
   
-    // Declare
-    const PRIVATE_SUBJECTS = {};
-    const PUBLIC_SUBJECTS = {};
 
     // These objects will be refactored into build methods 
     Object.assign(PRIVATE_SUBJECTS, {
       CLIENT: {
-        CONNECT: (props) => {},
+        CONNECT:    (props) => {},
         DISCONNECT: (props) => {},
       },
       PEOPLE: {
@@ -1778,7 +413,6 @@ class PlayDealClientService {
   
           return socketResponses;
         },
-
         GET_CURRENT: (props) => {
           const [subject, action] = ["ROOM", "GET_CURRENT"];
           const socketResponses = SocketResponseBuckets();
@@ -1805,7 +439,6 @@ class PlayDealClientService {
   
           return socketResponses;
         },
-  
         GET_KEYED: (props) => {
           const [subject, action] = ["ROOM", "GET_KEYED"];
           const socketResponses = SocketResponseBuckets();
@@ -1842,7 +475,6 @@ class PlayDealClientService {
   
           return socketResponses;
         },
-  
         GET_All_KEYED: (props) => {
           let subject = "ROOM";
           let action = "GET_ALL_KEYED";
@@ -1866,7 +498,6 @@ class PlayDealClientService {
   
           return socketResponses;
         },
-       
         LEAVE: (props) => {
           const [subject, action] = ["ROOM", "LEAVE"];
           const socketResponses = SocketResponseBuckets();
@@ -2267,7 +898,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-  
         REMOVE: (props) => {
           const socketResponses = SocketResponseBuckets();
           const [subject, action] = ["PEOPLE", "REMOVE"];
@@ -2385,8 +1015,6 @@ class PlayDealClientService {
           );
         },
       },
-      MY_TURN:    {},
-      RESPONSES:  {},
       GAME: {
         /**
          * @PROPS {String} roomCode
@@ -2413,7 +1041,6 @@ class PlayDealClientService {
           }
           return socketResponses;
         },
-  
         RESET: (props) => {
           const [subject, action] = ["GAME", "RESET"];
           const socketResponses = SocketResponseBuckets();
@@ -2447,7 +1074,6 @@ class PlayDealClientService {
             socketResponses
           );
         },
-  
         UPDATE_CONFIG: (props) => {
           const [subject, action] = ["GAME", "UPDATE_CONFIG"];
           let payload = null;
@@ -2484,7 +1110,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-  
         GET_CONFIG: (props) => {
           const [subject, action] = ["GAME", "GET_CONFIG"];
           let payload = null;
@@ -2512,7 +1137,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-  
         STATUS: (props) => {
           // roomCode
           const [subject, action] = ["GAME", "STATUS"];
@@ -2546,7 +1170,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-  
         START: (props) => {
           const [subject, action] = ["GAME", "START"];
           const socketResponses = SocketResponseBuckets();
@@ -2667,7 +1290,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-
         CAN_START: (props) => {
           // roomCode
           const [subject, action] = ["GAME", "CAN_START"];
@@ -2828,7 +1450,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-        UPDATE: () => {},
       },
       DISCARD_PILE: {
         GET: (props) => {
@@ -2850,7 +1471,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-        UPDATE: {},
       },
       ACTIVE_PILE: {
         GET: (props) => {
@@ -2872,7 +1492,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-        UPDATE: {},
       },
       DRAW_PILE: {
         GET: (props) => {
@@ -2897,7 +1516,6 @@ class PlayDealClientService {
             makeConsumerFallbackResponse({ subject, action, socketResponses })
           );
         },
-        UPDATE: {},
       },
       PLAYERS: {
         GET: (props) => {
@@ -3006,7 +1624,6 @@ class PlayDealClientService {
         },
       },
       PLAYER_HANDS: {
-        //
         /**
          * GET PLAYER HAND
          * The information will be tailored for each recipient.
@@ -3219,7 +1836,6 @@ class PlayDealClientService {
         },
       },
       REQUESTS: {
-        // Make
         ...makeRegularGetKeyed({
           SUBJECTS: PUBLIC_SUBJECTS,
           subject: "REQUESTS",
@@ -3357,10 +1973,6 @@ class PlayDealClientService {
         },
       },
       COLLECTIONS: {
-        // Make
-        // GET_KEYED
-        // GET_ALL_KEYED
-        // GET_ALL_MY_KEYED
         ...makeRegularGetKeyed({
           SUBJECTS: PUBLIC_SUBJECTS,
           subject: "COLLECTIONS",
@@ -3390,9 +2002,9 @@ class PlayDealClientService {
           return handleGame(
             props,
             (consumerData) => {
-
-              if (IS_TEST_MODE) {
-                let { game } = consumerData;
+              let { game } = consumerData;
+              if (game.constants.IS_TEST_MODE) {
+                
                 let status = "success";
                 let payload = game.serialize();
 
@@ -3407,61 +2019,8 @@ class PlayDealClientService {
             }
           );
         },
-        FORCE_STATE: (props) => {
-          const [subject, action] = ["CHEAT", "FORCE_STATE"];
-          const socketResponses = SocketResponseBuckets();
-          let status = "failure";
-          let payload = null;
-          return handleRoom(
-            props,
-            (consumerData, checkpoints) => {
-              // If in testing mode
-              if (IS_TEST_MODE) {
-                let { room } = consumerData;
-  
-                //Reset game
-                socketResponses.addToBucket(
-                  "default",
-                  PUBLIC_SUBJECTS.GAME.RESET(makeProps(props))
-                );
-                createGameInstance(room);
-  
-                socketResponses.addToBucket(
-                  "default",
-                  PUBLIC_SUBJECTS.GAME.UPDATE_CONFIG(
-                    makeProps(consumerData, {
-                      config: {
-                        [CONFIG.SHUFFLE_DECK]: false,
-                        [CONFIG.ALTER_SET_COST_ACTION]: false,
-                      },
-                    })
-                  )
-                );
-  
-                // @TODO
-                //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.GAME.START(makeProps(consumerData)));
-  
-                status = "success";
-              } else {
-                payload = {
-                  message: "Test mode is disabled",
-                };
-              }
-              socketResponses.addToBucket(
-                "default",
-                makeResponse({ subject, action, status, payload })
-              );
-  
-              return socketResponses;
-            },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
-          );
-        },
       },
     });
-  
-
-
 
 
     //==================================================
@@ -3469,27 +2028,18 @@ class PlayDealClientService {
     //                  BUILD ACTIONS
   
     //==================================================
-    const coreDeps = buildCoreFuncs({
-      isDef, isArr, isFunc, getArrFromProp,
-      Affected, SocketResponseBuckets, 
-      myClientId: mStrThisClientId,
-      roomManager, 
-      packageCheckpoints,
-      PUBLIC_SUBJECTS,
-      makeProps,
-    })
-
 
     const commonDeps = {
+      // Helpers
+      isDef, isArr, isFunc, 
+      getArrFromProp, packageCheckpoints, makeProps,
       // Reference
       PUBLIC_SUBJECTS,
+      PRIVATE_SUBJECTS,
       // Structures
       Affected, 
       Transaction,
       SocketResponseBuckets,
-      // Helpers
-      isDef, isArr, isFunc, 
-      getArrFromProp, packageCheckpoints, makeProps,
       // Props
       myClientId: mStrThisClientId,
       roomManager, 
@@ -3511,19 +2061,18 @@ class PlayDealClientService {
     if (enabled.requestValue) {
       // CHARGE RENT
       if (enabled.chargeRent) {
-        PUBLIC_SUBJECTS['MY_TURN']['CHARGE_RENT'] = 
-          buildChargeRentAction({
-          ...commonDeps,
-          makeConsumerFallbackResponse:         coreDeps.makeConsumerFallbackResponse,
-          handleGame:                           coreDeps.handleGame,
-          handleCollectionBasedRequestCreation,
-          makeConsumerFallbackResponse,
-        })
+        registry.public(['MY_TURN', 'CHARGE_RENT'], buildChargeRentAction({
+            ...commonDeps,
+            makeConsumerFallbackResponse,
+            handleGame,
+            handleCollectionBasedRequestCreation,
+            makeConsumerFallbackResponse,
+          })
+        )
       }
 
         
-      PUBLIC_SUBJECTS['MY_TURN']['VALUE_COLLECTION'] = 
-        buildRequestValueAction({
+      registry.public(['MY_TURN', 'VALUE_COLLECTION'], buildRequestValueAction({
           ...commonDeps,
           makeConsumerFallbackResponse,
           makeResponse,
@@ -3531,26 +2080,31 @@ class PlayDealClientService {
           isDefNested,
           handleRequestCreation,
         })
+      )
+        
 
-      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_COLLECT_VALUE'] = 
-        buildRespondToCollectValueAction({
+      registry.public(['RESPONSES', 'RESPOND_TO_COLLECT_VALUE'], buildRespondToCollectValueAction({
           ...commonDeps,
           makeConsumerFallbackResponse,
           makeResponse,
           handleGame, 
           handleTransactionResponse,
         })
+      )
     }
 
-    PUBLIC_SUBJECTS['MY_TURN']['PLAY_PASS_GO'] = 
+    // Draw Cards
+    registry.public(['MY_TURN', 'PLAY_PASS_GO'],
       buildDrawCardsAction({
         ...commonDeps,
         makeConsumerFallbackResponse,
         makeResponse,
         handCardConsumer,
       })
+    )
 
-    PUBLIC_SUBJECTS['MY_TURN']['CHANGE_CARD_ACTIVE_SET'] = 
+    // Card Manipulation
+    registry.public(['MY_TURN', 'CHANGE_CARD_ACTIVE_SET'],
       buildChangeCardActiveSetAction({
         ...commonDeps,
         makeResponse,
@@ -3559,140 +2113,160 @@ class PlayDealClientService {
         packageCheckpoints,
         makeResponse,
       })
-      
-    PUBLIC_SUBJECTS['MY_TURN']['ADD_CARD_TO_MY_BANK_FROM_HAND'] = 
-      buildAddCardToBankAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        log,
-      })
-    PUBLIC_SUBJECTS['MY_TURN']['ADD_PROPERTY_TO_NEW_COLLECTION_FROM_HAND'] = 
-      buildAddPropertyToNewCollectionAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        log,
-      })
-    PUBLIC_SUBJECTS['MY_TURN']['ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND'] = 
-      buildAddPropertyToExitingCollectionAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        log,
-      })
-    
+    )
 
-    PUBLIC_SUBJECTS['MY_TURN']['ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND'] = 
-      buildAddSetAugmentToExistingCollectionAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-      })
-    
-    PUBLIC_SUBJECTS['MY_TURN']['TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND'] = 
-      buildAddSetAugmentToNewCollectionAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        handleMyTurn,
-      })
-        
-    PUBLIC_SUBJECTS['MY_TURN']['TRANSFER_PROPERTY_TO_NEW_COLLECTION_FROM_COLLECTION'] = 
-      buildTransferPropertyToNewCollectionFromExistingAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        handleMyTurn,
-      })
+    // Add From Hand
+    if (1) {
+      registry.public(['MY_TURN', 'ADD_CARD_TO_MY_BANK_FROM_HAND'],
+        buildAddCardToBankAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          log,
+        })
+      )
 
-    PUBLIC_SUBJECTS['MY_TURN']['TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION'] = 
-      buildTransferPropertyToExistingCollectionFromExistingAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        handleMyTurn,
-      })
+      registry.public(['MY_TURN', 'ADD_PROPERTY_TO_NEW_COLLECTION_FROM_HAND'],
+        buildAddPropertyToNewCollectionAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          log,
+        })
+      )
+
+      registry.public(['MY_TURN', 'ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND'],
+        buildAddPropertyToExitingCollectionAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          log,
+        })
+      )
+
+      registry.public(['MY_TURN', 'ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND'],
+        buildAddSetAugmentToExistingCollectionAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+        })
+      )
+
+      registry.public(['MY_TURN', 'TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND'],
+        buildAddSetAugmentToNewCollectionAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          handleMyTurn,
+        })
+      )
+    }
 
 
-    PUBLIC_SUBJECTS['MY_TURN']['TRANSFER_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_COLLECTION'] = 
-      buildTransferSetAugmentToExistingCollectionFromExistingAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        handleMyTurn,
-      })
-        
-      
-    PUBLIC_SUBJECTS['MY_TURN']['TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION'] = 
-      buildTransferSetAugmentToNewCollectionFromExistingAction({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        handleMyTurn,
-      })
+    // Transfer From Collections
+    if (1) {
+      registry.public(['MY_TURN', 'TRANSFER_PROPERTY_TO_NEW_COLLECTION_FROM_COLLECTION'],
+        buildTransferPropertyToNewCollectionFromExistingAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          handleMyTurn,
+        })
+      )
+      registry.public(['MY_TURN', 'TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION'],
+        buildTransferPropertyToExistingCollectionFromExistingAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          handleMyTurn,
+        })
+      )
 
-    PUBLIC_SUBJECTS['ROOM']['CREATE'] = 
-      buildCreateRoom({
-        ...commonDeps,
-        makeConsumerFallbackResponse,
-        makeResponse,
-        packageCheckpoints,
-        handCardConsumer,
-        handleMyTurn,
-        els,
-        roomManager,
-        createGameInstance,
-      })
-      
-    PUBLIC_SUBJECTS['ROOM']['JOIN'] = 
-      buildJoinRoom({
-        ...commonDeps,
-        makeResponse,
-        els,
-        handleRoom,
-        roomManager,
-        cookieTokenManager,
-        thisClientKey: mStrThisClientId,
-        thisClient,
-      })
-      
-  PUBLIC_SUBJECTS['ROOM']['EXISTS'] = 
-    buildCheckExists({
-        ...commonDeps,
-        makeResponse,
-        els,
-        handleRoom,
-        roomManager,
-        cookieTokenManager,
-        thisClientKey: mStrThisClientId,
-        thisClient,
-        getArrFromProp,
-      })
-      
+      registry.public(['MY_TURN', 'TRANSFER_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_COLLECTION'],
+        buildTransferSetAugmentToExistingCollectionFromExistingAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          handleMyTurn,
+        })
+      )
+
+      registry.public(['MY_TURN', 'TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION'],
+        buildTransferSetAugmentToNewCollectionFromExistingAction({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          handleMyTurn,
+        })
+      )
+    }
+
+    // Rooms
+    if (1) {
+      registry.public(['ROOM', 'CREATE'],
+        buildCreateRoom({
+          ...commonDeps,
+          makeConsumerFallbackResponse,
+          makeResponse,
+          packageCheckpoints,
+          handCardConsumer,
+          handleMyTurn,
+          els,
+          roomManager,
+          createGameInstance,
+        })
+      )
+
+      registry.public(['ROOM', 'JOIN'],
+        buildJoinRoom({
+          ...commonDeps,
+          makeResponse,
+          els,
+          handleRoom,
+          roomManager,
+          cookieTokenManager,
+          thisClientKey: mStrThisClientId,
+          thisClient,
+        })
+      )
+
+      registry.public(['ROOM', 'EXISTS'],
+        buildCheckExists({
+          ...commonDeps,
+          makeResponse,
+          els,
+          handleRoom,
+          roomManager,
+          cookieTokenManager,
+          thisClientKey: mStrThisClientId,
+          thisClient,
+          getArrFromProp,
+        })
+      )
+    }
       
 
     // REACT WITH JUST_SAY_NO
     if (enabled.justSayNo) {
-      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_JUST_SAY_NO'] = 
+      registry.public(['RESPONSES', 'RESPOND_TO_JUST_SAY_NO'],
         buildRespondToJustSayNoAction({
           ...commonDeps,
           makeConsumerFallbackResponse,
@@ -3700,64 +2274,75 @@ class PlayDealClientService {
           handleGame, 
           handleTransactionResponse,
         })
+      )
     }
 
     // STEAL COLLECTION
     if (enabled.stealCollection) {
-      PUBLIC_SUBJECTS['MY_TURN']['STEAL_COLLECTION'] = 
+      registry.public(['MY_TURN', 'STEAL_COLLECTION'],
         buildStealCollectionAction({
           ...commonDeps,
-          handleRequestCreation: coreDeps.handleRequestCreation,
+          handleRequestCreation,
         })
-      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_STEAL_COLLECTION'] = 
+      )
+
+      registry.public(['RESPONSES', 'RESPOND_TO_STEAL_COLLECTION'],
         buildRespondToStealCollection({
           ...commonDeps,
           handleTransactionResponse,
         })     
+      )
     }
 
     // STEAL_PROPERTY
     if (enabled.stealProperty) {
-      PUBLIC_SUBJECTS['MY_TURN']['STEAL_PROPERTY'] = 
+      registry.public(['MY_TURN', 'STEAL_PROPERTY'],
         buildStealPropertyAction({
           ...commonDeps,
           handleRequestCreation,
         }) 
+      )
 
-      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_STEAL_PROPERTY'] = 
+      registry.public(['RESPONSES', 'RESPOND_TO_STEAL_PROPERTY'],
         buildRespondToStealPropertyAction({
           ...commonDeps,
           handleTransactionResponse,
         }) 
+      )
     }
 
     // SWAP_PROPERTY
     if (enabled.swapProperty) {    
-      PUBLIC_SUBJECTS['MY_TURN']['SWAP_PROPERTY'] =
+      registry.public(['MY_TURN', 'SWAP_PROPERTY'],
         buildSwapPropertyAction({
           ...commonDeps,
           handleRequestCreation,
         }) 
-        
-      PUBLIC_SUBJECTS['RESPONSES']['RESPOND_TO_PROPERTY_SWAP'] =
+      )
+
+      registry.public(['RESPONSES', 'RESPOND_TO_PROPERTY_SWAP'],
         buildRespondToPropertySwapAction({
           ...commonDeps,
           handleTransactionResponse
         }) 
+      )
     }
-       
 
-    PUBLIC_SUBJECTS['MY_TURN']['TURN_STARTING_DRAW'] =
-      buildTurnStartingDrawAction({
-        ...commonDeps,
-        SocketResponseBuckets,
-        PUBLIC_SUBJECTS,
-        makeConsumerFallbackResponse,
-        handleMyTurn,
-        makeResponse,
-      }) 
 
-      PUBLIC_SUBJECTS['MY_TURN']['FINISH_TURN'] =
+    // Turn based
+    if (1) {
+      registry.public(['MY_TURN','TURN_STARTING_DRAW'],
+        buildTurnStartingDrawAction({
+          ...commonDeps,
+          SocketResponseBuckets,
+          PUBLIC_SUBJECTS,
+          makeConsumerFallbackResponse,
+          handleMyTurn,
+          makeResponse,
+        }) 
+      )
+
+      registry.public(['MY_TURN', 'FINISH_TURN'],
         buildAttemptFinishTurnAction({
           ...commonDeps,
           SocketResponseBuckets,
@@ -3767,50 +2352,58 @@ class PlayDealClientService {
           makeResponse,
           makeProps,
         }) 
+      )
 
-      PUBLIC_SUBJECTS['MY_TURN']['DISCARD_REMAINING'] =
+      registry.public(['MY_TURN', 'DISCARD_REMAINING'],
         buildDiscardToHandLimitAction({
-            ...commonDeps,
-            SocketResponseBuckets,
-            PUBLIC_SUBJECTS,
-            makeConsumerFallbackResponse,
-            handleMyTurn,
-            makeResponse,
-            makeProps,
-            els,
-          }) 
-      
+          ...commonDeps,
+          SocketResponseBuckets,
+          PUBLIC_SUBJECTS,
+          makeConsumerFallbackResponse,
+          handleMyTurn,
+          makeResponse,
+          makeProps,
+          els,
+        }) 
+      )
+    }
 
     // COLLECT CARDS
     if (enabled.collectCards) {
-      PUBLIC_SUBJECTS['RESPONSES']['ACKNOWLEDGE_COLLECT_NOTHING'] =
+      registry.public(['RESPONSES', 'ACKNOWLEDGE_COLLECT_NOTHING'],
         buildAcknowledgeCollectNothingAction({
           ...commonDeps,
           handleTransactionResponse
         }) 
+      )
 
-      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_CARD_TO_BANK_AUTO'] = 
+      registry.public(['RESPONSES', 'COLLECT_CARD_TO_BANK_AUTO'],
         buildCollectCardToBankAutoAction({
           ...commonDeps,
           handleTransferResponse,
         }) 
+      )
 
-      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_CARD_TO_BANK'] = 
+      registry.public(['RESPONSES', 'COLLECT_CARD_TO_BANK'],
         buildCollectCardToBankAction({
           ...commonDeps,
           handleTransferResponse,
         }) 
-      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_CARD_TO_COLLECTION'] = 
+      )
+
+      registry.public(['RESPONSES', 'COLLECT_CARD_TO_COLLECTION'],
         buildCollectCardToCollectionAction({
           ...commonDeps,
           handleTransferResponse,
         }) 
+      )
         
-      PUBLIC_SUBJECTS['RESPONSES']['COLLECT_COLLECTION'] =
+      registry.public(['RESPONSES','COLLECT_COLLECTION'],
         buildCollectCollectionAction({
           ...commonDeps,
           handleTransferResponse
         }) 
+      )
     }
 
 
@@ -3823,7 +2416,6 @@ class PlayDealClientService {
     //==================================================
     // #region HANDLERS
     function handleConnect() {
-      console.log("handleConnect", thisClient.id);
       clientManager.addClient(thisClient);
     }
   
@@ -3911,7 +2503,6 @@ class PlayDealClientService {
         });
       }
       clientManager.removeClient(thisClient);
-      console.log("disconnect", clientId);
     }
     // #endregion
   

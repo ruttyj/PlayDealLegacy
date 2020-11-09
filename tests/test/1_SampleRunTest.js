@@ -27,10 +27,9 @@ const defaultProps = (roomCode, props = {}) => ({
   props: { roomCode, ...props },
 });
 
-console.clear();
 describe("Sample Game", async function () {
   // TOGGLE EXECUTION
-  let executeUnill = 5000;
+  let executeUnill = 500000;
   let testNumber = 0;
 
 

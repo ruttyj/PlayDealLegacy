@@ -150,7 +150,6 @@ function buildSwapPropertyAction({
           }
       
           return handleRequestCreation(
-            PUBLIC_SUBJECTS,
             "MY_TURN",
             "SWAP_PROPERTY",
             props,

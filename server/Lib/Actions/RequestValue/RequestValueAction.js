@@ -4,7 +4,6 @@
  * const buildRequestValueAction = require(`${serverFolder}/Lib/Actions/RequestValueAction`);
  */
 function buildRequestValueAction({
-    PUBLIC_SUBJECTS,
     handleRequestCreation,
     Affected,
     Transaction,
@@ -69,7 +68,6 @@ function buildRequestValueAction({
           }
       
           return handleRequestCreation(
-            PUBLIC_SUBJECTS,
             "MY_TURN",
             "VALUE_COLLECTION",
             props,

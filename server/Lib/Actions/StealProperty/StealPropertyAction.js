@@ -106,7 +106,6 @@ function buildStealPropertyAction({
           }
       
           return handleRequestCreation(
-            PUBLIC_SUBJECTS,
             "MY_TURN",
             "STEAL_PROPERTY",
             props,
