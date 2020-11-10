@@ -5,13 +5,9 @@
  * const buildCreateRoom = require(`${serverFolder}/Lib/Actions/CreateRoom`);
  */
 function buildCreateRoom({
-    makeConsumerFallbackResponse,
-    PUBLIC_SUBJECTS,
     makeResponse,
-    packageCheckpoints,
     isDef,
     SocketResponseBuckets,
-    handleMyTurn,
     els,
     roomManager,
     createGameInstance,

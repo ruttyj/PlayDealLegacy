@@ -7,9 +7,10 @@ function buildJoinRoom({
     PUBLIC_SUBJECTS,
     makeResponse,
     isDef,
+    getNestedValue,
+    setNestedValue,
     SocketResponseBuckets,
     els,
-    roomManager,
     handleRoom,
     cookieTokenManager,
     thisClientKey,
@@ -178,7 +179,7 @@ function buildJoinRoom({
 
               if (game.isGameStarted() && !game.isGameOver()) {
                 let thisPersonId = person.getId();
-                let allPlayerIds = getAllPlayerIds({ game, personManager });
+                let allPlayerIds = game.getAllPlayerKeys();
 
                 socketResponses.addToBucket(
                   "default",

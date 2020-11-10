@@ -170,10 +170,7 @@ function buildRespondToCollectValueAction({
                         });
 
 
-                        let allPlayerIds = getAllPlayerIds({
-                            game,
-                            personManager,
-                        });
+                        let allPlayerIds = game.getAllPlayerKeys();
                         socketResponses.addToBucket(
                             "default",
                             PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
@@ -196,10 +193,7 @@ function buildRespondToCollectValueAction({
                         }
 
                         if (_Affected.isAffected('HAND')) {
-                            let allPlayerIds = getAllPlayerIds({
-                                game,
-                                personManager,
-                            });
+                            let allPlayerIds = game.getAllPlayerKeys();
                             socketResponses.addToBucket(
                                 "default",
                                 PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(

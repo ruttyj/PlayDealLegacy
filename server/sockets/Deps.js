@@ -131,10 +131,6 @@ function buildDeps({
       return null;
     }
 
-    function getAllPlayerIds({ game })
-    {
-      return game.getPlayerManager().getAllPlayerKeys();
-    }
 
     function getAllPlayers(game, personManager)
     {
@@ -821,10 +817,7 @@ function buildDeps({
                   
   
                   if (_Affected.isAffected('HAND')) {
-                    let allPlayerIds = getAllPlayerIds({
-                      game,
-                      personManager,
-                    });
+                    let allPlayerIds = game.getAllPlayerKeys();
                     socketResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
@@ -1046,10 +1039,7 @@ function buildDeps({
     
                     
                     if (_Affected.isAffected('HAND')) {
-                      let allPlayerIds = getAllPlayerIds({
-                        game,
-                        personManager,
-                      });
+                      let allPlayerIds = game.getAllPlayerKeys();
                       socketResponses.addToBucket(
                         "default",
                         PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
@@ -1210,7 +1200,7 @@ function buildDeps({
                 if (target === "one") {
                   targetPeopleIds = [targetPeopleIds[0]];
                 } else if (target === "all") {
-                  let allPlayerIds = getAllPlayerIds({ game, personManager });
+                  let allPlayerIds = game.getAllPlayerKeys();
                   targetPeopleIds = allPlayerIds.filter(
                     (playerId) => String(playerId) !== String(thisPersonId)
                   );
@@ -1241,7 +1231,7 @@ function buildDeps({
                 // Update current turn state
   
                 // Update everyone with my new hand
-                let allPlayerIds = getAllPlayerIds({ game, personManager });
+                let allPlayerIds = game.getAllPlayerKeys();
                
                 socketResponses.addToBucket(
                   "default",
@@ -1451,10 +1441,7 @@ function buildDeps({
                         if (target === "one") {
                           targetPeopleIds = [targetPeopleIds[0]];
                         } else if (target === "all") {
-                          let allPlayerIds = getAllPlayerIds({
-                            game,
-                            personManager,
-                          });
+                          let allPlayerIds = game.getAllPlayerKeys();
                           targetPeopleIds = allPlayerIds.filter(
                             (playerId) =>
                               String(playerId) !== String(thisPersonId)
@@ -1492,10 +1479,7 @@ function buildDeps({
                         }
   
                         // Player Hands
-                        let allPlayerIds = getAllPlayerIds({
-                          game,
-                          personManager,
-                        });
+                        let allPlayerIds = game.getAllPlayerKeys();
                         socketResponses.addToBucket(
                           "default",
                           PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
@@ -1568,7 +1552,6 @@ function buildDeps({
 
         getAllKeyedResponse,
         packageCheckpoints,
-        getAllPlayerIds,
         getAllPlayers,
         canGameStart,
         createGameInstance,
