@@ -17,7 +17,7 @@ function buildRegisterConnectionMethods({
     {
         Object.assign(PUBLIC_SUBJECTS, {
             CLIENTS: {
-              GET_ONLINE_STATS: () => {
+              GET_ONLINE_STATS: (props) => {
                 const socketResponses = SocketResponseBuckets();
                 const subject = "CLIENTS";
                 const action = "GET_ONLINE_STATS";
@@ -25,6 +25,8 @@ function buildRegisterConnectionMethods({
                 const payload = {
                   peopleOnlineCount: clientManager.count(),
                 };
+
+                let { thisClientKey } = props;
         
                 socketResponses.addToBucket(
                   "default",
@@ -33,7 +35,7 @@ function buildRegisterConnectionMethods({
         
                 const reducedResponses = SocketResponseBuckets();
                 reducedResponses.addToBucket(
-                  socketResponses.reduce(mStrThisClientId, [mStrThisClientId])
+                  socketResponses.reduce(thisClientKey, [thisClientKey])
                 );
                 return reducedResponses;
               },

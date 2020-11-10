@@ -18,9 +18,6 @@ function buildDeps({
     roomManager,
     //-------------------
 }){
-    const X = PUBLIC_SUBJECTS;
-    console.log('BUILD!!!');
-
     // #region DEPENDENCIES
     function makeProps(props, data = {})
     {

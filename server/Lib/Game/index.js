@@ -6,16 +6,26 @@
  */
 function buildRegisterGameMethods({
     enabled,
-    commonDeps,
     els,
     isDef,
     isDefNested,
+    isFunc,
+    isArr,
     log,
+    getArrFromProp,
 
     //-------------------
+    Affected,
+    Transaction,
     SocketResponseBuckets,
     KeyedRequest,
     PUBLIC_SUBJECTS,
+    PRIVATE_SUBJECTS,
+
+    //-------------------
+    thisClientKey,
+    roomManager,
+    //-------------------
 
     makeProps,
     makeResponse,
@@ -23,9 +33,11 @@ function buildRegisterGameMethods({
 
     getAllKeyedResponse,
     packageCheckpoints,
+    getAllPlayers,
     canGameStart,
     createGameInstance,
 
+    makePersonSpecificResponses,
     makeConsumerFallbackResponse,
     makeRegularGetKeyed,
 
@@ -38,7 +50,7 @@ function buildRegisterGameMethods({
     handleTransferResponse,
     handleRequestCreation,
     handleCollectionBasedRequestCreation,
-    
+
     buildAttemptFinishTurnAction,
     buildDiscardToHandLimitAction,
     buildChargeRentAction,
@@ -71,8 +83,26 @@ function buildRegisterGameMethods({
     buildRegisterRequestValueMethods,
     buildRegisterCollectionsMethods,
     buildRegisterCardMethods,
+    buildRegisterPlayerMethods,
 })
 {
+
+    const commonDeps = {
+        // Helpers
+        isDef, isArr, isFunc, 
+        getArrFromProp, packageCheckpoints, makeProps,
+        // Reference
+        PUBLIC_SUBJECTS,
+        PRIVATE_SUBJECTS,
+        // Structures
+        Affected, 
+        Transaction,
+        SocketResponseBuckets,
+        // Props
+        myClientId: thisClientKey,
+        roomManager, 
+      }
+
     function registerGameMethods(registry)
     {
         Object.assign(PUBLIC_SUBJECTS, {
@@ -935,8 +965,21 @@ function buildRegisterGameMethods({
           },
         },
       });
-  
+        
+        // Players
+        let registerPlayerMethods = buildRegisterPlayerMethods({
+            isDef,
+            isArr,
+            SocketResponseBuckets,
+            PUBLIC_SUBJECTS,
+            makeResponse,
+            getAllPlayers,
+            makePersonSpecificResponses,
+            makeConsumerFallbackResponse,
+            handleGame,
+        })
 
+        registerPlayerMethods(registry)
     }
     return registerGameMethods;
 }
