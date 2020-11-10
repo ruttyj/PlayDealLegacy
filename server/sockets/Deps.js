@@ -1,32 +1,21 @@
 function buildDeps({
     els,
     isDef,
-    isDefNested,
     isFunc,
-    isStr,
     isArr,
     getNestedValue,
-    log,
-    jsonEncode,
     getArrFromProp,
 
     //-------------------
     Affected,
-    ClientManager,
-    RoomManager,
     GameInstance,
     SocketResponseBuckets,
     KeyedRequest,
     PUBLIC_SUBJECTS,
-    PRIVATE_SUBJECTS,
 
     //-------------------
-    mThisClientId,
     mStrThisClientId,
-    thisClient,
-    clientManager,
     roomManager,
-    cookieTokenManager,
     //-------------------
 }){
     const X = PUBLIC_SUBJECTS;
