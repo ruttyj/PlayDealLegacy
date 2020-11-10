@@ -1,7 +1,6 @@
-const rootFolder          = `../..`;
-const serverFolder        = `${rootFolder}/server`;
-const serverSocketFolder  = `${serverFolder}/sockets`;
-const gameFolder          = `${serverFolder}/Game`;
+const rootFolder              = `../..`;
+const serverFolder            = `${rootFolder}/server`;
+const serverSocketFolder      = `${serverFolder}/sockets`;
 
 const buildAffected           = require(`${serverFolder}/Lib/Affected`);
 const buildOrderedTree        = require(`${serverFolder}/Lib/OrderedTree`);
@@ -9,32 +8,23 @@ const CookieTokenManager      = require("../CookieTokenManager/");
 
 const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
 const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
-const GameInstance            = require(`${gameFolder}/`);
 
 // Import generic logic for indexed game data
-const KeyedRequest            = require(`${serverSocketFolder}/container/keyedRequest.js`);
 const SocketResponseBuckets   = require(`${serverSocketFolder}/socketResponseBuckets.js`); // @TODO rename AddressedResponse
-
-const buildDeps               = require(`./Deps.js`);
-
+const buildHandleRoom         = require(`${serverFolder}/Lib/HandleRoom`);
 const buildPopulatedRegistry  = require(`./PopulateRegistry`);
 
+const buildRegistry           = require(`${serverFolder}/Lib/Registry`);
 const {
   els,
   isDef,
-  isDefNested,
   isFunc,
   isStr,
   isArr,
-  getNestedValue,
-  setNestedValue,
-  log,
   jsonEncode,
-  getArrFromProp,
 } = require("./utils.js");
 
-const OrderedTree             = buildOrderedTree();
-const Affected                = buildAffected({OrderedTree});
+
 /**
  * 
  * TODO #$%^&$#^&$%#^&%$^&%$#%^&$%
@@ -44,57 +34,21 @@ const Affected                = buildAffected({OrderedTree});
  * 
  */
 
-class Registry {
-  constructor()
-  {
-    this.PRIVATE_SUBJECTS = {};
-    this.PUBLIC_SUBJECTS  = {};
-  }
+const OrderedTree         = buildOrderedTree();
+const Affected            = buildAffected({OrderedTree});
+const Registry            = buildRegistry({
+                              isStr,
+                              isArr,
+                              isDef,
+                            })
+const clientManager       = ClientManager();
+const cookieTokenManager  = CookieTokenManager.getInstance();
+const roomManager         = RoomManager();
+roomManager.setClientManager(clientManager);
 
-  public(identifier, fn)
-  {
-    if(isStr(identifier)) {
-      identifier = String(identifier).split('.');
-    }
-    if (isArr(identifier)) {
-      let [subject, action] = identifier;
-      if (!isDef(this.PUBLIC_SUBJECTS[subject])){
-        this.PUBLIC_SUBJECTS[subject] = {};
-      }
-      this.PUBLIC_SUBJECTS[subject][action] = fn;
-    }
-  }
 
-  private(identifier, fn)
-  {
-    if(isStr(identifier)) {
-      identifier = String(identifier).split('.');
-    }
-    if (isArr(identifier)) {
-      let [subject, action] = identifier;
-      if (!isDef(this.PRIVATE_SUBJECTS[subject])){
-        this.PRIVATE_SUBJECTS[subject] = {};
-      }
-      
-      this.PRIVATE_SUBJECTS[subject][action] = fn;
-    }
-  }
 
-  getAllPublic()
-  {
-    return this.PUBLIC_SUBJECTS;
-  }
-
-  getAllPrivate()
-  {
-    return this.PRIVATE_SUBJECTS;
-  }
-}
-let clientManager       = ClientManager();
-let cookieTokenManager  = CookieTokenManager.getInstance();
-let roomManager         = RoomManager();
-    roomManager.setClientManager(clientManager);
-    // @TODO move to injectDeps
+// @TODO move to injectDeps
 let deps = {
   clientManager        : clientManager,
   roomManager          : roomManager,
@@ -133,8 +87,20 @@ class PlayDealClientService {
       Affected,
       OrderedTree
     });
+    
+
+    let handleRoom = buildHandleRoom({
+      isDef,
+      isFunc,
+      SocketResponseBuckets,
+      mStrThisClientId,
+      roomManager,
+    })
+
     populatedRegistry({
       thisClient,
+      //---------------------
+      handleRoom,
       //---------------------
       clientManager,
       roomManager,
@@ -143,41 +109,7 @@ class PlayDealClientService {
     })
     this.todoMove.set(mStrThisClientId, registry);
 
-    let {
-      handleRoom,
-    } = buildDeps({
-      els,
-      isDef,
-      isDefNested,
-      isFunc,
-      isStr,
-      isArr,
-      getNestedValue,
-      setNestedValue,
-      log,
-      jsonEncode,
-      getArrFromProp,
-
-      //-------------------
-      OrderedTree,
-      Affected,
-      ClientManager,
-      RoomManager,
-      GameInstance,
-      SocketResponseBuckets,
-      KeyedRequest,
-      PUBLIC_SUBJECTS:  registry.getAllPublic(),
-      PRIVATE_SUBJECTS: registry.getAllPrivate(),
-
-      //-------------------
-      mThisClientId,
-      mStrThisClientId,
-      thisClient,
-      clientManager,
-      roomManager,
-      cookieTokenManager,
-      //-------------------
-    });
+    
 
 
     //==================================================
@@ -201,12 +133,13 @@ class PlayDealClientService {
           requests.forEach((request) => {
             let requestResponses = SocketResponseBuckets();
     
-            request.thisClient    = thisClient;
-            request.thisClientKey = thisClient.id;
-
             let subject = request.subject;
             let action = request.action;
             let props = els(request.props, {});
+
+            request.thisClient    = thisClient;
+            request.thisClientKey = thisClient.id;
+            props.thisClientKey   = thisClient.id;
     
             if (isDef(subjectMap[subject])) {
               if (isDef(subjectMap[subject][action])) {

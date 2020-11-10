@@ -136,6 +136,7 @@ const {
     return function ({
       thisClient,
       //-------------------------
+      handleRoom,
       registry,
       clientManager,
       roomManager,
@@ -181,7 +182,6 @@ const {
         makeConsumerFallbackResponse,
         makeRegularGetKeyed,
 
-        handleRoom,
         handlePerson,
 
         handleGame,
