@@ -117,15 +117,6 @@ function buildDeps({
       return null;
     }
 
-
-    function getAllPlayers(game, personManager)
-    {
-      return personManager.getConnectedPeople().filter((person) => {
-        let pId = person.getId();
-        return game.hasPlayer(pId);
-      });
-    }
-
     function canGameStart(game, personManager)
     {
       let readyPeople = personManager.filterPeople((person) => {
@@ -1531,6 +1522,8 @@ function buildDeps({
     }
     // #endregion
 
+
+
     return {
         makeProps,
         makeResponse,
@@ -1538,7 +1531,6 @@ function buildDeps({
 
         getAllKeyedResponse,
         packageCheckpoints,
-        getAllPlayers,
         canGameStart,
         createGameInstance,
         canPersonRemoveOtherPerson,
@@ -1552,10 +1544,8 @@ function buildDeps({
 
         handleGame,
 
-        _myTurnConsumerBase,
         handleMyTurn,
         handCardConsumer,
-        makeConsumer,
         handleTransactionResponse,
         handleTransferResponse,
         handleRequestCreation,

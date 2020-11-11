@@ -1,38 +1,15 @@
-const { identity, isObj, nDeep } = require("../../server/utils");
 const rootFolder = `../..`;
 const serverFolder = `${rootFolder}/server`;
-const socketFolder = `${serverFolder}/sockets`;
-const clientFolder = `${rootFolder}/client`;
-const utilsFolder = `${serverFolder}/utils`;
-const playDealFolder = `${serverFolder}/Game`;
 const gameFolder = `${serverFolder}/Game`;
 const GameInstance = require(`${gameFolder}/`);
 const fs = require('fs');
-const {
-  CONFIG, // CONFIG Options
-  IS_TEST_MODE,
-  AMBIGUOUS_SET_KEY,
-  NON_PROPERTY_SET_KEYS,
-} = require(`${gameFolder}/config/constants.js`);
 const assert = require("chai").assert;
-const {
-  isDef,
-  isArr,
-  getNestedValue,
-  makeListenerMap,
-  makeVar,
-  jsonLog,
-} = require(`${utilsFolder}`);
-
 
 const buildAffected = require(`${serverFolder}/Lib/Affected`);
 const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
 
-
 const OrderedTree = buildOrderedTree();
 const Affected = buildAffected({OrderedTree});
-
-let dump = (template) => console.log("@@@@@", JSON.stringify(template, null, 2));
 
 describe("Just Say No", async function () {
   it(`Tripple JSN`, async () => {

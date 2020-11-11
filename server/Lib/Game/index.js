@@ -13,7 +13,6 @@ function buildRegisterGameMethods({
     isArr,
     log,
     getArrFromProp,
-
     //-------------------
     Affected,
     Transaction,
@@ -21,25 +20,21 @@ function buildRegisterGameMethods({
     KeyedRequest,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
-
     //-------------------
     thisClientKey,
     roomManager,
     //-------------------
-
     makeProps,
     makeResponse,
     makeKeyedResponse,
-
-    getAllKeyedResponse,
-    packageCheckpoints,
-    getAllPlayers,
-    canGameStart,
-    createGameInstance,
-
     makePersonSpecificResponses,
     makeConsumerFallbackResponse,
     makeRegularGetKeyed,
+
+    getAllKeyedResponse,
+    packageCheckpoints,
+    canGameStart,
+    createGameInstance,
 
     handleRoom,
     handlePerson,
@@ -973,7 +968,6 @@ function buildRegisterGameMethods({
             AddressedResponse,
             PUBLIC_SUBJECTS,
             makeResponse,
-            getAllPlayers,
             makePersonSpecificResponses,
             makeConsumerFallbackResponse,
             handleGame,

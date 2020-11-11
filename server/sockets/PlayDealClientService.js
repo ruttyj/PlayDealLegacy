@@ -64,6 +64,43 @@ let deps = {
   cookieTokenManager   : cookieTokenManager,
 }
 
+
+
+
+
+class Server {
+  constructor() {
+     
+  }
+
+  onUpdate() {
+    
+  }
+
+  //Handle a new connection to the server
+  onConnected(socket) {
+   
+  }
+
+  onDisconnected(connection = Connection) {
+     
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = class PlayDealClientService {
   
   constructor()

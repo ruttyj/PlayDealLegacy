@@ -9,7 +9,6 @@ function buildRegisterPlayerMethods({
     AddressedResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
-    getAllPlayers,
     makePersonSpecificResponses,
     makeConsumerFallbackResponse,
     handleGame,
@@ -146,7 +145,7 @@ function buildRegisterPlayerMethods({
                   (props2) => {
                     let { personManager, game } = props2;
         
-                    let peopleIds = getAllPlayers(game, personManager).map((person) =>
+                    let peopleIds = game.getAllPlayerKeys().map((person) =>
                       person.getId()
                     );
         
@@ -227,7 +226,7 @@ function buildRegisterPlayerMethods({
                       })
                     );
         
-                    let peopleIds = getAllPlayers(game, personManager).map((person) =>
+                    let peopleIds = game.getAllPlayerKeys().map((person) =>
                       person.getId()
                     );
                     addressedResponses.addToBucket(

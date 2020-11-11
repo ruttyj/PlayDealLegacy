@@ -173,7 +173,6 @@ module.exports = function({
 
         getAllKeyedResponse,
         packageCheckpoints,
-        getAllPlayers,
         canGameStart,
         createGameInstance,
         canPersonRemoveOtherPerson,
@@ -191,6 +190,7 @@ module.exports = function({
         handleTransferResponse,
         handleRequestCreation,
         handleCollectionBasedRequestCreation,
+        
       } = buildDeps({
         els,
         isDef,
@@ -273,7 +273,6 @@ module.exports = function({
 
         getAllKeyedResponse,
         packageCheckpoints,
-        getAllPlayers,
         canGameStart,
         createGameInstance,
 

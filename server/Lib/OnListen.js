@@ -12,7 +12,7 @@ module.exports = function({
 })
 {
     const subjectMap = registry.getAllPublic();
-    function onListen(encodedData)
+    return function (encodedData)
     {
         const addressedResponses = new AddressedResponse();
         let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
@@ -74,6 +74,5 @@ module.exports = function({
           }
         });
     }
-    return onListen;
 }
 
