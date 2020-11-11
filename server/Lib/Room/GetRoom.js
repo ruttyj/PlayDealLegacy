@@ -15,7 +15,7 @@ function buildGetRoom({
     function getRoom(props)
     {
         const [subject, action] = ["ROOM", "GET_KEYED"];
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let payload = {
             items: {},
             order: [],
@@ -37,7 +37,7 @@ function buildGetRoom({
             } // end isDef room
         });
 
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
             "default",
             makeResponse({
             status: successCount > 0 ? "success" : "failure",
@@ -47,7 +47,7 @@ function buildGetRoom({
             })
         );
 
-        return socketResponses;
+        return addressedResponses;
     }
     return getRoom;
 }

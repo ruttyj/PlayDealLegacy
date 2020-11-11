@@ -18,7 +18,7 @@ function buildRegisterCheatMethods({
         CHEAT: {
           DUMP_STATE: (props) => {
             const [subject, action] = ["CHEAT", "DUMP_STATE"];
-            const socketResponses = new AddressedResponse();
+            const addressedResponses = new AddressedResponse();
             return handleGame(
               props,
               (consumerData) => {
@@ -29,13 +29,13 @@ function buildRegisterCheatMethods({
                   let payload = game.serialize();
   
                   // Might as well display to everyone if we are cheating....
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     makeResponse({ subject, action, status, payload })
                   );
                 }
     
-                return socketResponses;
+                return addressedResponses;
               }
             );
           },

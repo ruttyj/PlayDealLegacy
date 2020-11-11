@@ -55,7 +55,7 @@ function buildDeps({
       fallback = keyedRequest.getFallback();
 
       fallback = els(fallback, undefined);
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
 
       let keys = getArrFromProp(props, nomenclature, fallback);
 
@@ -72,11 +72,11 @@ function buildDeps({
         status = "success";
       }
 
-      socketResponses.addToBucket(
+      addressedResponses.addToBucket(
         "default",
         makeResponse({ subject, action, status, payload })
       );
-      return socketResponses;
+      return addressedResponses;
     }
 
     function getAllKeyedResponse(PUBLIC_SUBJECTS, keyedRequest)
@@ -88,8 +88,8 @@ function buildDeps({
       propName    = keyedRequest.getPluralKey();
       getAllKeys  = keyedRequest.getAllKeysFn();
 
-      const socketResponses = new AddressedResponse();
-      socketResponses.addToSpecific(
+      const addressedResponses = new AddressedResponse();
+      addressedResponses.addToSpecific(
         "default",
         makeResponse({ subject, action, status: "success", payload: null })
       );
@@ -99,12 +99,12 @@ function buildDeps({
         ...props,
       };
       getProps[propName] = getAllKeys();
-      socketResponses.addToBucket(
+      addressedResponses.addToBucket(
         "default",
         PUBLIC_SUBJECTS[subject].GET_KEYED(getProps)
       );
 
-      return socketResponses;
+      return addressedResponses;
     }
 
     function packageCheckpoints(checkpoints)
@@ -176,7 +176,7 @@ function buildDeps({
       getOtherData,
     }) {
       let { personManager, thisPersonId } = props;
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
 
       // People who will receive the information
       let receivingPeopleIds = getArrFromProp(
@@ -224,7 +224,7 @@ function buildDeps({
               }
               payload.order.push(ownerPersonId);
             });
-            socketResponses.addToSpecific(
+            addressedResponses.addToSpecific(
               receivingPerson.getClientId(),
               makeResponse({
                 subject,
@@ -238,10 +238,10 @@ function buildDeps({
       } else {
         console.log("users not defined");
       }
-      return socketResponses;
+      return addressedResponses;
     }
 
-    function makeConsumerFallbackResponse({ subject, action, socketResponses })
+    function makeConsumerFallbackResponse({ subject, action, addressedResponses })
     {
       return function (checkpoints) {
         let serializecheckpoints = {
@@ -258,7 +258,7 @@ function buildDeps({
           }
         });
 
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
           "default",
           makeResponse({
             subject,
@@ -268,7 +268,7 @@ function buildDeps({
             payload: serializecheckpoints,
           })
         );
-        return socketResponses;
+        return addressedResponses;
       };
     }
     // #endregion
@@ -286,7 +286,7 @@ function buildDeps({
         GET_KEYED: (props) => {
           //props: { roomCode, (collectionIds|collectionId)}
           let action = "GET_KEYED";
-          const socketResponses = new AddressedResponse();
+          const addressedResponses = new AddressedResponse();
           return handleGame(
             props,
             (consumerData, checkpoints) => {
@@ -300,20 +300,20 @@ function buildDeps({
               myKeyedRequest.setDataFn(makeGetDataFn(upgradedData, checkpoints));
   
               // deliver data
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 makeKeyedResponse(myKeyedRequest)
               );
   
-              return socketResponses;
+              return addressedResponses;
             },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
+            makeConsumerFallbackResponse({ subject, action, addressedResponses })
           );
         },
         GET_ALL_KEYED: (props) => {
           //props: {roomCode}
           let action = "GET_ALL_KEYED";
-          const socketResponses = new AddressedResponse();
+          const addressedResponses = new AddressedResponse();
           return handleGame(
             props,
             (consumerData, checkpoints) => {
@@ -329,13 +329,13 @@ function buildDeps({
               );
   
               // Get data
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 getAllKeyedResponse(SUBJECTS, myKeyedRequest)
               );
   
               // confirm the all command
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 makeResponse({
                   subject,
@@ -345,14 +345,14 @@ function buildDeps({
                 })
               );
   
-              return socketResponses;
+              return addressedResponses;
             },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
+            makeConsumerFallbackResponse({ subject, action, addressedResponses })
           );
         },
         GET_ALL_MY_KEYED: (props) => {
           let action = "GET_ALL_MY_KEYED";
-          const socketResponses = new AddressedResponse();
+          const addressedResponses = new AddressedResponse();
           return handleGame(
             props,
             (consumerData, checkpoints) => {
@@ -368,13 +368,13 @@ function buildDeps({
               );
   
               // Get data
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 getAllKeyedResponse(SUBJECTS, myKeyedRequest)
               );
   
               // confirm the all command
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 makeResponse({
                   subject,
@@ -384,15 +384,15 @@ function buildDeps({
                 })
               );
   
-              return socketResponses;
+              return addressedResponses;
             },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
+            makeConsumerFallbackResponse({ subject, action, addressedResponses })
           );
         },
         REMOVE_KEYED: (props) => {
           //props: { roomCode, (collectionIds|collectionId)}
           let action = "REMOVE_KEYED";
-          const socketResponses = new AddressedResponse();
+          const addressedResponses = new AddressedResponse();
           return handleGame(
             props,
             (consumerData) => {
@@ -404,7 +404,7 @@ function buildDeps({
               let payload = {
                 removeItemsIds: getArrFromProp(props, nomenclature, []),
               };
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 makeResponse({
                   subject,
@@ -413,9 +413,9 @@ function buildDeps({
                   payload: payload,
                 })
               );
-              return socketResponses;
+              return addressedResponses;
             },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
+            makeConsumerFallbackResponse({ subject, action, addressedResponses })
           );
         },
       };
@@ -592,13 +592,13 @@ function buildDeps({
       let consumerCheck = (
         consumerData,
         checkpoints,
-        socketResponses,
+        addressedResponses,
         fn,
         setFailed
       ) => {
         let boolFailed = false;
         let { game } = consumerData;
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
           "default",
           fn(
             {
@@ -625,7 +625,7 @@ function buildDeps({
         function(
             consumerData,
             checkpoints,
-            socketResponses,
+            addressedResponses,
             fn,
             setFailed
         ){
@@ -644,7 +644,7 @@ function buildDeps({
                     checkpoints.set("isCardInHand", true);
                     boolFailed = false;
           
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       fn(
                         {
@@ -677,7 +677,7 @@ function buildDeps({
       fn,
       fallback = undefined
     ) {
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
       return parentConsumer(
         props,
         function(consumerData, checkpoints) {
@@ -687,7 +687,7 @@ function buildDeps({
           consumerCheck(
             consumerData,
             checkpoints,
-            socketResponses,
+            addressedResponses,
             fn,
             (val) => (boolFailed = val)
           );
@@ -702,12 +702,12 @@ function buildDeps({
           if (boolFailed) {
             if (isFunc(fallback)) {
               let fallbackResult = fallback(checkpoints);
-              socketResponses.addToBucket("default", fallbackResult);
+              addressedResponses.addToBucket("default", fallbackResult);
             } else {
-              socketResponses.addToBucket("default", fallback);
+              addressedResponses.addToBucket("default", fallback);
             }
           }
-          return socketResponses;
+          return addressedResponses;
         },
         fallback
       );
@@ -720,7 +720,7 @@ function buildDeps({
       props,
       theThing
     ) {
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
       let status = "failure";
       let payload = null;
       return handleGame(
@@ -782,7 +782,7 @@ function buildDeps({
                     player,
                     playerBank,
                     transaction,
-                    socketResponses,
+                    addressedResponses,
                     checkpoints,
                     ...consumerData,
                   });
@@ -804,7 +804,7 @@ function buildDeps({
   
                   if (_Affected.isAffected('HAND')) {
                     let allPlayerIds = game.getAllPlayerKeys();
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                         makeProps(consumerData, {
@@ -823,7 +823,7 @@ function buildDeps({
                     let removedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE);
   
                     if (updatedCollectionIds.length > 0) {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                           makeProps(consumerData, {
@@ -834,7 +834,7 @@ function buildDeps({
                     }
   
                     if (removedCollectionIds.length > 0) {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
                           makeProps(consumerData, {
@@ -849,7 +849,7 @@ function buildDeps({
                   // PLAYER COLLECTIONS
                   if (_Affected.isAffected('PLAYER_COLLECTION')) {
                     // Update who has what collection
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                         makeProps(consumerData, {
@@ -861,7 +861,7 @@ function buildDeps({
   
                   // REQUESTS
                   if (_Affected.isAffected('REQUEST')) {
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                         makeProps(consumerData, {
@@ -872,7 +872,7 @@ function buildDeps({
                   }
   
                   if (_Affected.isAffected('PLAYER_REQUEST')) {
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                         makeProps(consumerData, {
@@ -891,7 +891,7 @@ function buildDeps({
                     let peopleIds = attendingPeople.map((person) =>
                       person.getId()
                     );
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
                         makeProps(consumerData, {
@@ -904,7 +904,7 @@ function buildDeps({
   
                   // PLAYER TURN
                   if (_Affected.isAffected('TURN')) {
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
                     );
@@ -917,14 +917,14 @@ function buildDeps({
           payload = {
             checkpoints: packageCheckpoints(checkpoints),
           };
-          socketResponses.addToBucket(
+          addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
           );
   
-          return socketResponses;
+          return addressedResponses;
         },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
+        makeConsumerFallbackResponse({ subject, action, addressedResponses })
       );
     }
   
@@ -935,7 +935,7 @@ function buildDeps({
       props,
       theThing
     ) {
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
       let status = "failure";
       let payload = null;
       return handleGame(
@@ -1004,7 +1004,7 @@ function buildDeps({
                       playerBank,
                       transaction,
                       transfering,
-                      socketResponses,
+                      addressedResponses,
                       checkpoints,
                       ...consumerData,
                     });
@@ -1026,7 +1026,7 @@ function buildDeps({
                     
                     if (_Affected.isAffected('HAND')) {
                       let allPlayerIds = game.getAllPlayerKeys();
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "default",
                         PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                           makeProps(consumerData, {
@@ -1044,7 +1044,7 @@ function buildDeps({
                       let removedCollectionIds = _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.REMOVE);
     
                       if (updatedCollectionIds.length > 0) {
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                             makeProps(consumerData, {
@@ -1055,7 +1055,7 @@ function buildDeps({
                       }
     
                       if (removedCollectionIds.length > 0) {
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
                             makeProps(consumerData, {
@@ -1068,7 +1068,7 @@ function buildDeps({
                     // PLAYER COLLECTIONS
                     if (_Affected.isAffected('PLAYER_COLLECTION')) {
                       // Update who has what collection
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                           makeProps(consumerData, {
@@ -1080,7 +1080,7 @@ function buildDeps({
     
                     // REQUESTS
                     if (_Affected.isAffected('REQUEST')) {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                           makeProps(consumerData, {
@@ -1088,7 +1088,7 @@ function buildDeps({
                           })
                         )
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                           makeProps(consumerData, { personId: thisPersonId })
@@ -1105,7 +1105,7 @@ function buildDeps({
                       let peopleIds = attendingPeople.map((person) =>
                         person.getId()
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "default",
                         PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
                           makeProps(consumerData, {
@@ -1118,7 +1118,7 @@ function buildDeps({
     
                     // PLAYER TURN
                     if (_Affected.isAffected('TURN')) {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
                       );
@@ -1132,14 +1132,14 @@ function buildDeps({
           payload = {
             checkpoints: packageCheckpoints(checkpoints),
           };
-          socketResponses.addToBucket(
+          addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
           );
     
-          return socketResponses;
+          return addressedResponses;
         },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
+        makeConsumerFallbackResponse({ subject, action, addressedResponses })
       );
     }
   
@@ -1149,7 +1149,7 @@ function buildDeps({
       props,
       doTheThing
     ) {
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
       let status = "failure";
       let payload = null;
       return handCardConsumer(
@@ -1205,7 +1205,7 @@ function buildDeps({
                   targetPeopleIds,
                   currentTurn,
                   thisPersonId,
-                  socketResponses,
+                  addressedResponses,
                 });
   
                 if (checkpoints.get("success") === true) {
@@ -1219,7 +1219,7 @@ function buildDeps({
                 // Update everyone with my new hand
                 let allPlayerIds = game.getAllPlayerKeys();
                
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                     makeProps(consumerData, {
@@ -1229,14 +1229,14 @@ function buildDeps({
                   )
                 );
                 if (_Affected.isAffected('ACTIVE_PILE')) {
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
                   );
                 }
   
                 if (_Affected.isAffected('COLLECTION')) {
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                       makeProps(consumerData, {
@@ -1248,7 +1248,7 @@ function buildDeps({
   
                 if (_Affected.isAffected('PLAYER_COLLECTION')) {
                   // Update who has what collection
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(
                       makeProps(consumerData, {
@@ -1259,7 +1259,7 @@ function buildDeps({
                 }
   
                 if (_Affected.isAffected('PLAYER_REQUEST')) {
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                       makeProps(consumerData, { peopleIds: targetPeopleIds })
@@ -1269,7 +1269,7 @@ function buildDeps({
   
   
                 if (_Affected.isAffected('REQUEST')) {
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                       makeProps(consumerData, {
@@ -1279,7 +1279,7 @@ function buildDeps({
                   );
                 }
   
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "everyone",
                   PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
                 );
@@ -1290,13 +1290,13 @@ function buildDeps({
           payload = {
             checkpoints: packageCheckpoints(checkpoints),
           };
-          socketResponses.addToBucket(
+          addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
           );
-          return socketResponses;
+          return addressedResponses;
         },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
+        makeConsumerFallbackResponse({ subject, action, addressedResponses })
       );
     }
   
@@ -1307,7 +1307,7 @@ function buildDeps({
       props,
       doTheThing
     ) {
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
       let status = "failure";
       let payload = null;
       return handCardConsumer(
@@ -1456,7 +1456,7 @@ function buildDeps({
                           currentTurn,
                           collectionId,
                           thisPersonId,
-                          socketResponses,
+                          addressedResponses,
                           validAugmentCardsIds,
                         }); //actuallly do it
   
@@ -1466,7 +1466,7 @@ function buildDeps({
   
                         // Player Hands
                         let allPlayerIds = game.getAllPlayerKeys();
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "default",
                           PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                             makeProps(consumerData, {
@@ -1478,7 +1478,7 @@ function buildDeps({
   
                         // Active Pile
                         if (_Affected.isAffected('ACTIVE_PILE')) {
-                          socketResponses.addToBucket(
+                          addressedResponses.addToBucket(
                             "everyone",
                             PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
                               makeProps(consumerData)
@@ -1488,7 +1488,7 @@ function buildDeps({
   
                         // Requests
                         if (_Affected.isAffected('REQUEST')) {
-                          socketResponses.addToBucket(
+                          addressedResponses.addToBucket(
                             "everyone",
                             PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                               makeProps(consumerData, {
@@ -1496,7 +1496,7 @@ function buildDeps({
                               })
                             )
                           );
-                          socketResponses.addToBucket(
+                          addressedResponses.addToBucket(
                             "everyone",
                             PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                               makeProps(consumerData, {
@@ -1507,7 +1507,7 @@ function buildDeps({
                         }
   
                         // Player Turn
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
                         );
@@ -1519,14 +1519,14 @@ function buildDeps({
             }
           }
   
-          socketResponses.addToBucket(
+          addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
           );
   
-          return socketResponses;
+          return addressedResponses;
         },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
+        makeConsumerFallbackResponse({ subject, action, addressedResponses })
       );
     }
     // #endregion

@@ -48,7 +48,7 @@ function buildRegisterCollectionsMethods({
                 //props: { roomCode, (peopleIds|personId)}
                 let subject = "PLAYER_COLLECTIONS";
                 let action = "GET_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -67,21 +67,21 @@ function buildRegisterCollectionsMethods({
                     myKeyedRequest.setProps(consumerData);
         
                     //deliver data
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeKeyedResponse(myKeyedRequest)
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_ALL_KEYED: (props) => {
                 //props: {roomCode}
                 let subject = "PLAYER_COLLECTIONS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -89,7 +89,7 @@ function buildRegisterCollectionsMethods({
                     let { game, personManager } = consumerData;
         
                     // confirm the all command
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({
                         subject,
@@ -110,14 +110,14 @@ function buildRegisterCollectionsMethods({
                     );
         
                     // Get data
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },

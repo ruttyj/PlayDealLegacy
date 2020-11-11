@@ -19,7 +19,7 @@ function buildRegisterChatMethods({
             CHAT: {
               SEND_PRIVATE_MESSAGE: (props) => {
                 const [subject, action] = ["CHAT", "SEND_PRIVATE_MESSAGE"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -36,20 +36,20 @@ function buildRegisterChatMethods({
       
                     let receivingPerson = personManager.getPerson(playerKey);
                     if (isDef(receivingPerson)) {
-                      socketResponses.addToSpecific(
+                      addressedResponses.addToSpecific(
                         receivingPerson.getClientId(),
                         makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
                       );
                     }
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               SEND_MESSAGE: (props) => {
                 const [subject, action] = ["CHAT", "SEND_MESSAGE"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -64,14 +64,14 @@ function buildRegisterChatMethods({
                       value
                     };
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               /**
@@ -81,7 +81,7 @@ function buildRegisterChatMethods({
                 // emit to user
                 // roomCode
                 const [subject, action] = ["CHAT", "RECEIVE_MESSAGE"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -93,14 +93,14 @@ function buildRegisterChatMethods({
                       message
                     };
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyoneElse",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },

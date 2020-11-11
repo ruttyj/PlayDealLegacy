@@ -13,7 +13,7 @@ function buildRespondToCollectValueAction({
     function respondToCollectValueAction(props)
     {
         const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
 
         const doTheThing = (consumerData, checkpoints) => {
           let {
@@ -91,7 +91,7 @@ function buildRespondToCollectValueAction({
                           let peopleIds = attendingPeople.map((person) =>
                             person.getId()
                           );
-                          socketResponses.addToBucket(
+                          addressedResponses.addToBucket(
                             "default",
                             PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
                               makeProps(consumerData, {
@@ -110,7 +110,7 @@ function buildRespondToCollectValueAction({
 
                           // Add updated collections to be GET
                           if (collectionChanges.updated.length > 0) {
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                               "everyone",
                               PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                                 makeProps(consumerData, {
@@ -123,7 +123,7 @@ function buildRespondToCollectValueAction({
 
                           // Add removed collections to REMOVE
                           if (collectionChanges.removed.length > 0) {
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                               "everyone",
                               PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
                                 makeProps(consumerData, {
@@ -136,7 +136,7 @@ function buildRespondToCollectValueAction({
                         }
 
 
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                             makeProps(consumerData, {
@@ -144,7 +144,7 @@ function buildRespondToCollectValueAction({
                             })
                           )
                         );
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                             makeProps(consumerData, {
@@ -152,7 +152,7 @@ function buildRespondToCollectValueAction({
                             })
                           )
                         );
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS.PLAYER_TURN.GET(
                             makeProps(consumerData)
@@ -171,7 +171,7 @@ function buildRespondToCollectValueAction({
 
 
                         let allPlayerIds = game.getAllPlayerKeys();
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                             "default",
                             PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                                 makeProps(consumerData, {
@@ -184,7 +184,7 @@ function buildRespondToCollectValueAction({
 
                         
                         if (_Affected.isAffected('ACTIVE_PILE')) {
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                                 "everyone",
                                 PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
                                 makeProps(consumerData)
@@ -194,7 +194,7 @@ function buildRespondToCollectValueAction({
 
                         if (_Affected.isAffected('HAND')) {
                             let allPlayerIds = game.getAllPlayerKeys();
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                                 "default",
                                 PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                                     makeProps(consumerData, {
@@ -205,7 +205,7 @@ function buildRespondToCollectValueAction({
                             );
                         }
                         if (_Affected.isAffected('COLLECTION')) {
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                                 "everyone",
                                 PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
                                     makeProps(consumerData, {
@@ -218,7 +218,7 @@ function buildRespondToCollectValueAction({
 
                         if (_Affected.isAffected('REQUEST')) {
                           
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                                 "everyone",
                                 PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
                                     makeProps(consumerData, {
@@ -230,7 +230,7 @@ function buildRespondToCollectValueAction({
 
 
                         if (_Affected.isAffected('PLAYER_REQUEST')) {
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                                 "everyone",
                                 PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                                     makeProps(consumerData, {
@@ -241,7 +241,7 @@ function buildRespondToCollectValueAction({
                         }
 
 
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                             "everyone",
                             PUBLIC_SUBJECTS.PLAYER_TURN.GET(
                                 makeProps(consumerData)
@@ -258,25 +258,25 @@ function buildRespondToCollectValueAction({
           payload = {
             checkpoints: packageCheckpoints(checkpoints),
           };
-          socketResponses.addToBucket(
+          addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
           );
 
           if (game.checkWinConditionForPlayer(thisPersonId)) {
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "everyone",
               PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
             );
           }
 
-          return socketResponses;
+          return addressedResponses;
         }
 
         return handleGame(
           props,
           doTheThing,
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
       
     }

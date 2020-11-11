@@ -16,7 +16,7 @@ function buildCreateRoom({
     function createRoom(props)
     {
         const [subject, action] = ["ROOM", "CREATE"];
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let { roomCode } = props;
         roomCode = els(roomCode, "AAAA");
 
@@ -30,12 +30,12 @@ function buildCreateRoom({
           // Create Game
           createGameInstance(room);
 
-          socketResponses.addToBucket(
+          addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
           );
         }
-        return socketResponses;
+        return addressedResponses;
       
     }
     return createRoom;

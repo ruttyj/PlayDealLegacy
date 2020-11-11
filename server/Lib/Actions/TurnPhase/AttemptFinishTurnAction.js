@@ -17,7 +17,7 @@ function buildAttemptFinishTurnAction({
 
         let subject = "MY_TURN";
         let action = "FINISH_TURN";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
 
         return handleMyTurn(
           props,
@@ -58,13 +58,13 @@ function buildAttemptFinishTurnAction({
             }
 
             if (currentTurn.getPhaseKey() === "done") {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
                   makeProps(consumerData)
                 )
               );
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
               );
@@ -72,13 +72,13 @@ function buildAttemptFinishTurnAction({
               status = "success";
             }
 
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "everyone",
               PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
                 makeProps(consumerData)
               )
             );
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "everyone",
               PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
             );
@@ -92,26 +92,26 @@ function buildAttemptFinishTurnAction({
             let payload = null;
 
             // Emit updated player turn
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "everyone",
               PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
             );
 
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
     return attemptFinishTurnAction;

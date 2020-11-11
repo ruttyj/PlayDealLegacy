@@ -17,7 +17,7 @@ function buildDiscardToHandLimitAction({
     {
         let subject = "MY_TURN";
         let action = "DISCARD_REMAINING";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         return handleMyTurn(
           props,
           (props2) => {
@@ -78,7 +78,7 @@ function buildDiscardToHandLimitAction({
             }
 
             if (hasWildCard) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.CARDS.GET_KEYED({
                   roomCode,
@@ -89,7 +89,7 @@ function buildDiscardToHandLimitAction({
 
             // Update everyone with my new hand
             let allPlayerIds = game.getAllPlayerKeys();
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                 roomCode,
@@ -97,29 +97,29 @@ function buildDiscardToHandLimitAction({
                 receivingPeopleIds: allPlayerIds,
               })
             );
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "everyone",
               makeResponse({ subject, action, status, payload })
             );
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "everyone",
               PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
             );
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "everyone",
               PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
       
     }

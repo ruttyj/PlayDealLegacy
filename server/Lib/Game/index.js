@@ -113,28 +113,28 @@ function buildRegisterGameMethods({
               GET_UPDATED_PILES: (props) => {
                 const { roomCode } = props;
         
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 if (isDef(roomCode)) {
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "default",
                     PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
                   );
         
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "default",
                     PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
                   );
         
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "default",
                     PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
                   );
                 }
-                return socketResponses;
+                return addressedResponses;
               },
               RESET: (props) => {
                 const [subject, action] = ["GAME", "RESET"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleRoom(
                   props,
                   (consumerData) => {
@@ -144,32 +144,32 @@ function buildRegisterGameMethods({
         
                     createGameInstance(room);
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
                         makeProps(consumerData)
                       )
                     );
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
                     );
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  socketResponses
+                  addressedResponses
                 );
               },
               UPDATE_CONFIG: (props) => {
                 const [subject, action] = ["GAME", "UPDATE_CONFIG"];
                 let payload = null;
                 let status = "failure";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (consumerData, checkpoints) => {
@@ -187,25 +187,25 @@ function buildRegisterGameMethods({
                         game.updateConfig(config);
                       }
                     }
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS.GAME.GET_CONFIG({ roomCode })
                     );
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_CONFIG: (props) => {
                 const [subject, action] = ["GAME", "GET_CONFIG"];
                 let payload = null;
                 let status = "failure";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (consumerData) => {
@@ -218,20 +218,20 @@ function buildRegisterGameMethods({
                       updatedConfig: isDef(game) ? game.getConfig() : null,
                     };
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               STATUS: (props) => {
                 // roomCode
                 const [subject, action] = ["GAME", "STATUS"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -252,18 +252,18 @@ function buildRegisterGameMethods({
                       isGameOver,
                       winningCondition: winningCondition,
                     };
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               START: (props) => {
                 const [subject, action] = ["GAME", "START"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (consumerData) => {
@@ -294,75 +294,75 @@ function buildRegisterGameMethods({
                         receivingPeopleIds: peopleIds,
                       };
         
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
                           makeProps(consumerData)
                         )
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
                       );
         
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["PROPERTY_SETS"].GET_ALL_KEYED({ roomCode })
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["CARDS"].GET_ALL_KEYED({ roomCode })
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["PLAYERS"].GET({ roomCode })
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "default",
                         PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                           specificPropsForEveryone
                         )
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "default",
                         PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
                           specificPropsForEveryone
                         )
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED({
                           roomCode,
                           peopleIds: peopleIds,
                         })
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED({
                           roomCode,
                           peopleIds: peopleIds,
                         })
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
                       );
         
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
                       );
         
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["GAME"].STATUS({ roomCode })
                       );
         
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         makeResponse({
                           subject,
@@ -371,20 +371,20 @@ function buildRegisterGameMethods({
                           payload: null,
                         })
                       );
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                       );
                     }
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               CAN_START: (props) => {
                 // roomCode
                 const [subject, action] = ["GAME", "CAN_START"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -400,14 +400,14 @@ function buildRegisterGameMethods({
                       let payload = {
                         value: canStart,
                       };
-                      socketResponses.addToSpecific(
+                      addressedResponses.addToSpecific(
                         host.getClientId(),
                         makeResponse({ subject, action, status, payload })
                       );
                     }
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },
@@ -709,20 +709,20 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "DISCARD_PILE";
             let action = "GET";
-            const socketResponses = new AddressedResponse();
+            const addressedResponses = new AddressedResponse();
             return handleGame(
               props,
               (props2) => {
                 let { game } = props2;
                 let payload = game.getDiscardPile().serialize();
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   makeResponse({ subject, action, status: "success", payload })
                 );
     
-                return socketResponses;
+                return addressedResponses;
               },
-              makeConsumerFallbackResponse({ subject, action, socketResponses })
+              makeConsumerFallbackResponse({ subject, action, addressedResponses })
             );
           },
         },
@@ -730,20 +730,20 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "ACTIVE_PILE";
             let action = "GET";
-            const socketResponses = new AddressedResponse();
+            const addressedResponses = new AddressedResponse();
             return handleGame(
               props,
               (props2) => {
                 let { game } = props2;
                 let payload = game.getActivePile().serialize();
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   makeResponse({ subject, action, status: "success", payload })
                 );
     
-                return socketResponses;
+                return addressedResponses;
               },
-              makeConsumerFallbackResponse({ subject, action, socketResponses })
+              makeConsumerFallbackResponse({ subject, action, addressedResponses })
             );
           },
         },
@@ -751,7 +751,7 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "DRAW_PILE";
             let action = "GET";
-            const socketResponses = new AddressedResponse();
+            const addressedResponses = new AddressedResponse();
             return handleGame(
               props,
               ({ game }) => {
@@ -760,14 +760,14 @@ function buildRegisterGameMethods({
                 let payload = {
                   count: game.getDeckCardCount(),
                 };
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   makeResponse({ subject, action, status: "success", payload })
                 );
                 //___________________________________________________________
-                return socketResponses;
+                return addressedResponses;
               },
-              makeConsumerFallbackResponse({ subject, action, socketResponses })
+              makeConsumerFallbackResponse({ subject, action, addressedResponses })
             );
           },
         },
@@ -810,7 +810,7 @@ function buildRegisterGameMethods({
             GET: (props) => {
               let subject = "PLAYER_TURN";
               let action = "GET";
-              const socketResponses = new AddressedResponse();
+              const addressedResponses = new AddressedResponse();
               return handleGame(
                 props,
                 (consumerData) => {
@@ -830,17 +830,17 @@ function buildRegisterGameMethods({
       
                   let payload = game.getCurrentTurn().serialize();
       
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "default",
                     makeResponse({ subject, action, status: "success", payload })
                   );
       
-                  //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData)));
-                  //socketResponses.addToBucket("default", PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData)));
+                  //addressedResponses.addToBucket("default", PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData)));
+                  //addressedResponses.addToBucket("default", PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData)));
       
-                  return socketResponses;
+                  return addressedResponses;
                 },
-                makeConsumerFallbackResponse({ subject, action, socketResponses })
+                makeConsumerFallbackResponse({ subject, action, addressedResponses })
               );
             },
           },
@@ -894,18 +894,18 @@ function buildRegisterGameMethods({
             let action = "REMOVE_ALL";
             let status = "failure";
             let payload = null;
-            const socketResponses = new AddressedResponse();
+            const addressedResponses = new AddressedResponse();
             return handleGame(
               props,
               (consumerData) => {
                 status = "success";
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   makeResponse({ subject, action, status, payload })
                 );
-                return socketResponses;
+                return addressedResponses;
               },
-              makeConsumerFallbackResponse({ subject, action, socketResponses })
+              makeConsumerFallbackResponse({ subject, action, addressedResponses })
             );
           },
         },
@@ -914,7 +914,7 @@ function buildRegisterGameMethods({
             //props: { roomCode, (peopleIds|personId)}
             let subject = "PLAYER_REQUESTS";
             let action = "GET_KEYED";
-            const socketResponses = new AddressedResponse();
+            const addressedResponses = new AddressedResponse();
     
             return handleGame(
               props,
@@ -934,14 +934,14 @@ function buildRegisterGameMethods({
                 myKeyedRequest.setProps(consumerData);
     
                 //deliver data
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   makeKeyedResponse(myKeyedRequest)
                 );
     
-                return socketResponses;
+                return addressedResponses;
               },
-              makeConsumerFallbackResponse({ subject, action, socketResponses })
+              makeConsumerFallbackResponse({ subject, action, addressedResponses })
             );
           },
           REMOVE_ALL: (props) => {
@@ -949,18 +949,18 @@ function buildRegisterGameMethods({
             let action = "PLAYER_REQUESTS";
             let status = "failure";
             let payload = null;
-            const socketResponses = new AddressedResponse();
+            const addressedResponses = new AddressedResponse();
             return handleGame(
               props,
               (consumerData) => {
                 status = "success";
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   makeResponse({ subject, action, status, payload })
                 );
-                return socketResponses;
+                return addressedResponses;
               },
-              makeConsumerFallbackResponse({ subject, action, socketResponses })
+              makeConsumerFallbackResponse({ subject, action, addressedResponses })
             );
           },
         },

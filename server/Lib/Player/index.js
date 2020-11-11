@@ -21,7 +21,7 @@ function buildRegisterPlayerMethods({
             PLAYERS: {
               GET: (props) => {
                 const [subject, action] = ["PLAYERS", "GET"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -40,20 +40,20 @@ function buildRegisterPlayerMethods({
                       }
                     }
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               PERSON_DREW_CARDS_KEYED: (props) => {
                 let subject = "PLAYERS";
                 let action = "PERSON_DREW_CARDS_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   ({ cardIds, game, personId }) => {
@@ -75,14 +75,14 @@ function buildRegisterPlayerMethods({
                         cards: cardIds.map((id) => game.getCard(id)),
                       };
                     }
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               }, // end PLAYERS.PERSON_DREW_CARDS_KEYED
             },
@@ -98,7 +98,7 @@ function buildRegisterPlayerMethods({
               // props = {roomCode, personId, (receivingPeopleIds|receivingPersonId), (peopleIds|personId)}
               GET_KEYED: (props) => {
                 const [subject, action] = ["PLAYER_HANDS", "GET_KEYED"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
         
                 return handleGame(
                   props,
@@ -121,7 +121,7 @@ function buildRegisterPlayerMethods({
                       };
                     };
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makePersonSpecificResponses({
                         props: props2,
@@ -132,15 +132,15 @@ function buildRegisterPlayerMethods({
                       })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_ALL_KEYED: (props) => {
                 let subject = "PLAYER_HANDS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (props2) => {
@@ -150,7 +150,7 @@ function buildRegisterPlayerMethods({
                       person.getId()
                     );
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS[subject].GET_KEYED({
                         ...props2,
@@ -159,7 +159,7 @@ function buildRegisterPlayerMethods({
                     );
         
                     // Confirm
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({
                         subject,
@@ -169,9 +169,9 @@ function buildRegisterPlayerMethods({
                       })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },
@@ -179,7 +179,7 @@ function buildRegisterPlayerMethods({
               GET_KEYED: (props) => {
                 let subject = "PLAYER_BANKS";
                 let action = "GET_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (props2) => {
@@ -192,7 +192,7 @@ function buildRegisterPlayerMethods({
                       return null;
                     };
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makePersonSpecificResponses({
                         props: props2,
@@ -203,21 +203,21 @@ function buildRegisterPlayerMethods({
                       })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_ALL_KEYED: (props) => {
                 let subject = "PLAYER_BANKS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (props2) => {
                     let { personManager, game } = props2;
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({
                         subject,
@@ -230,7 +230,7 @@ function buildRegisterPlayerMethods({
                     let peopleIds = getAllPlayers(game, personManager).map((person) =>
                       person.getId()
                     );
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS[subject].GET_KEYED({
                         ...props,
@@ -238,9 +238,9 @@ function buildRegisterPlayerMethods({
                       })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },

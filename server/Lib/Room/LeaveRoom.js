@@ -18,7 +18,7 @@ function buildLeaveRoom({
     {
        
         const [subject, action] = ["ROOM", "LEAVE"];
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
 
         let status = "failure";
         return handleRoom(
@@ -29,7 +29,7 @@ function buildLeaveRoom({
                 let payload = {
                 personId: thisPerson.getId(),
                 };
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                 "everyone",
                 makeResponse({
                     subject,
@@ -59,7 +59,7 @@ function buildLeaveRoom({
                 }
 
                 if (reconnectAllowed) {
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                     "everyoneElse",
                     PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                     personId: thisPersonId,
@@ -67,7 +67,7 @@ function buildLeaveRoom({
                     })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                     "default",
                     PRIVATE_SUBJECTS.PEOPLE.DISCONNECT({
                     roomCode,
@@ -80,7 +80,7 @@ function buildLeaveRoom({
                     thisPerson
                     );
                     if (isDef(otherPeople[0])) {
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
                         roomCode,
@@ -93,7 +93,7 @@ function buildLeaveRoom({
                 }
 
                 // Remove person from room
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.PEOPLE.REMOVE({
                     roomCode,
@@ -103,9 +103,9 @@ function buildLeaveRoom({
                 }
             }
 
-            return socketResponses;
+            return addressedResponses;
             },
-            makeConsumerFallbackResponse({ subject, action, socketResponses })
+            makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     
     }

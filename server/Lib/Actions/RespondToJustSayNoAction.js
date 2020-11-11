@@ -6,7 +6,7 @@ function buildRespondToJustSayNoAction({
     {
         let subject = "RESPONSES";
         let action = "RESPOND_TO_JUST_SAY_NO";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         return handleGame(
           props,
           ({game}) => {
@@ -18,7 +18,7 @@ function buildRespondToJustSayNoAction({
               game.respondToJustSayNo
             );
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
     return respondToJustSayNoAction;

@@ -20,7 +20,7 @@ function buildAddCardToBankAction({
 
         let subject = "MY_TURN";
         let action = "ADD_CARD_TO_MY_BANK_FROM_HAND";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let status = "failure";
         return handCardConsumer(
           props,
@@ -57,7 +57,7 @@ function buildAddCardToBankAction({
                     //PLAYER_HANDS
                     // Update everyone with my new hand
                     let allPlayerIds = game.getAllPlayerKeys();
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                         roomCode,
@@ -66,7 +66,7 @@ function buildAddCardToBankAction({
                       })
                     );
                     //PLAYER_BANKS
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED({
                         roomCode,
@@ -77,14 +77,14 @@ function buildAddCardToBankAction({
 
                     //PLAYER_TURN
                     // Update current turn state
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                     );
 
                     // Wildcard could be any set, let other know
                     if (isWildCard) {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
                       );
@@ -95,13 +95,13 @@ function buildAddCardToBankAction({
                     let payload = {
                       checkpoints: packageCheckpoints(checkpoints),
                     };
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
 
                     if (game.checkWinConditionForPlayer(thisPersonId)) {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                       );
@@ -113,9 +113,9 @@ function buildAddCardToBankAction({
               }
             }
 
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
       
     }

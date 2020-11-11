@@ -18,7 +18,7 @@ function buildAddPropertyToExitingCollectionAction({
 
         let subject = "MY_TURN";
         let action = "ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let status = "failure";
         return handCardConsumer(
           props,
@@ -86,7 +86,7 @@ function buildAddPropertyToExitingCollectionAction({
                             status = "success";
 
                             if (isWildCard) {
-                              socketResponses.addToBucket(
+                              addressedResponses.addToBucket(
                                 "everyone",
                                 PUBLIC_SUBJECTS.CARDS.GET_KEYED({
                                   roomCode,
@@ -96,13 +96,13 @@ function buildAddPropertyToExitingCollectionAction({
                             }
 
                             // Emit updated player turn
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                               "everyone",
                               PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                             );
 
                             //Update collection contents
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                               "everyone",
                               PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                                 roomCode,
@@ -112,7 +112,7 @@ function buildAddPropertyToExitingCollectionAction({
 
                             // Update everyone with my new hand
                             let allPlayerIds = game.getAllPlayerKeys();
-                            socketResponses.addToBucket(
+                            addressedResponses.addToBucket(
                               "default",
                               PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                                 roomCode,
@@ -131,7 +131,7 @@ function buildAddPropertyToExitingCollectionAction({
 
             // If player wins let people know
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
@@ -141,20 +141,20 @@ function buildAddPropertyToExitingCollectionAction({
             let payload = {
               checkpoints: packageCheckpoints(checkpoints),
             };
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
       
     }

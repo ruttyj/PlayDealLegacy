@@ -14,7 +14,7 @@ module.exports = function({
     const subjectMap = registry.getAllPublic();
     function onListen(encodedData)
     {
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
         let clientPersonMapping = {};
     
@@ -52,23 +52,23 @@ module.exports = function({
     
             // Assing the buckets of reponses to the relevent clients
             let clientIds = Object.keys(clientIdsMap);
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               requestResponses.reduce(mStrThisClientId, clientIds)
             );
           });
         }
     
         // Emit to "me" since I am always available
-        if (socketResponses.specific.has(String(mStrThisClientId))) {
-          let resp = socketResponses.specific.get(mStrThisClientId);
+        if (addressedResponses.specific.has(String(mStrThisClientId))) {
+          let resp = addressedResponses.specific.get(mStrThisClientId);
           thisClient.emit("response", jsonEncode(resp));
         }
         // Emit to other relevent people collected from the above requests
         Object.keys(clientPersonMapping).forEach((clientId) => {
           if (mStrThisClientId !== clientId) {
             let person = clientPersonMapping[clientId];
-            if (socketResponses.specific.has(clientId)) {
-              let resp = socketResponses.specific.get(clientId);
+            if (addressedResponses.specific.has(clientId)) {
+              let resp = addressedResponses.specific.get(clientId);
               person.emit("response", jsonEncode(resp));
             }
           }

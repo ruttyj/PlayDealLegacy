@@ -20,7 +20,7 @@ function buildJoinRoom({
     function joinRoom(props)
     {
         const [subject, action] = ["ROOM", "JOIN"];
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
 
         let { roomCode, username } = props;
         username = els(username, "Player");
@@ -112,7 +112,7 @@ function buildJoinRoom({
                 }
               }
 
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS.PEOPLE.ME({
                   roomCode,
@@ -120,7 +120,7 @@ function buildJoinRoom({
               );
 
               if (personManager.getConnectedPeopleCount() === 1) {
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
                     roomCode,
@@ -130,13 +130,13 @@ function buildJoinRoom({
               }
 
               // send room data
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS.ROOM.GET_CURRENT({ roomCode })
               );
 
               // Get the full player list for myself
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS.PEOPLE.GET_ALL_KEYED({
                   roomCode,
@@ -144,7 +144,7 @@ function buildJoinRoom({
               );
 
               // Let everyone else know the new users has joined
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyoneElse",
                 PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                   personId,
@@ -152,7 +152,7 @@ function buildJoinRoom({
                 })
               );
 
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
                   roomCode,
@@ -167,7 +167,7 @@ function buildJoinRoom({
 
               
 
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 makeResponse({
                   subject,
@@ -181,20 +181,20 @@ function buildJoinRoom({
                 let thisPersonId = person.getId();
                 let allPlayerIds = game.getAllPlayerKeys();
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS.PROPERTY_SETS.GET_ALL_KEYED({
                     roomCode,
                   })
                 );
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS.CARDS.GET_ALL_KEYED({
                     roomCode,
                   })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["PLAYERS"].GET({
                     roomCode,
@@ -203,14 +203,14 @@ function buildJoinRoom({
                 );
 
                 // @TODO store client side
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS.GAME.GET_CONFIG({
                     roomCode,
                   })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                     roomCode,
@@ -220,7 +220,7 @@ function buildJoinRoom({
                   })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS.PLAYER_BANKS.GET_ALL_KEYED({
                     roomCode,
@@ -228,58 +228,58 @@ function buildJoinRoom({
                   })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED({
                     roomCode,
                     peopleIds: allPlayerIds,
                   })
                 );
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED({
                     roomCode,
                     peopleIds: allPlayerIds,
                   })
                 );
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
                 );
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["GAME"].STATUS({ roomCode })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["PLAYER_REQUESTS"].GET_KEYED({
                     roomCode,
                     peopleIds: allPlayerIds,
                   })
                 );
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["REQUESTS"].GET_ALL_KEYED({ roomCode })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                 );
               }
 
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 makeResponse({
                   subject,
@@ -289,9 +289,9 @@ function buildJoinRoom({
                 })
               );
             }
-            return socketResponses;
+            return addressedResponses;
           },
-          socketResponses
+          addressedResponses
         );
     }
     return joinRoom;

@@ -17,7 +17,7 @@ function buildAddSetAugmentToNewCollectionAction({
     {
         let subject = "MY_TURN";
         let action = "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let status = "failure";
         return handleMyTurn(
           props,
@@ -81,7 +81,7 @@ function buildAddSetAugmentToNewCollectionAction({
                     );
 
                     if (removedCollectionIds.length > 0) {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
                           roomCode,
@@ -100,7 +100,7 @@ function buildAddSetAugmentToNewCollectionAction({
                       peopleIds: peopleIds,
                       receivingPeopleIds: peopleIds,
                     };
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
                         specificPropsForEveryone
@@ -108,7 +108,7 @@ function buildAddSetAugmentToNewCollectionAction({
                     );
 
                     // Notify player collections
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                         roomCode,
@@ -117,7 +117,7 @@ function buildAddSetAugmentToNewCollectionAction({
                     );
 
                     // Notift collection contents
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                         roomCode,
@@ -127,7 +127,7 @@ function buildAddSetAugmentToNewCollectionAction({
                       })
                     );
 
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                     );
@@ -139,21 +139,21 @@ function buildAddSetAugmentToNewCollectionAction({
             let payload = {
               checkpoints: packageCheckpoints(checkpoints),
             };
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
     return addSetAugmentToNewCollectionAction;

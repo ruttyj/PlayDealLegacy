@@ -18,7 +18,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
 
         let subject = "MY_TURN";
         let action = "TRANSFER_PROPERTY_TO_NEW_COLLECTION_FROM_COLLECTION";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let status = "failure";
         return handleMyTurn(
           props,
@@ -90,7 +90,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
                   }
                 }
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "everyone",
                   PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
                     roomCode,
@@ -98,7 +98,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
                   })
                 );
 
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "everyone",
                   PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                     roomCode,
@@ -107,7 +107,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
                     ),
                   })
                 );
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "everyone",
                   PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                 );
@@ -115,7 +115,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
             }
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
@@ -125,20 +125,20 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
             let payload = {
               checkpoints: packageCheckpoints(checkpoints),
             };
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
     return transferPropertyToNewCollectionFromExistingAction;

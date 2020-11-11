@@ -15,7 +15,7 @@ function buildTurnStartingDrawAction({
     {
         let subject = "MY_TURN";
         let action = "TURN_STARTING_DRAW";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         return handleMyTurn(
           props,
           (props2) => {
@@ -40,7 +40,7 @@ function buildTurnStartingDrawAction({
               );
 
               // Let people know --------------------------------------------------------
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
                   roomCode,
@@ -49,14 +49,14 @@ function buildTurnStartingDrawAction({
                 })
               );
 
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
               );
 
               // Update everyone with my new hand
               let allPlayerIds = game.getAllPlayerKeys();
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                   roomCode,
@@ -66,7 +66,7 @@ function buildTurnStartingDrawAction({
               );
 
               // Confirm this executed
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "default",
                 makeResponse({
                   subject,
@@ -77,16 +77,16 @@ function buildTurnStartingDrawAction({
               );
 
               // Update current turn state
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
               );
               //___________________________________________________________________________
             }
 
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
     return turnStartingDrawAction;

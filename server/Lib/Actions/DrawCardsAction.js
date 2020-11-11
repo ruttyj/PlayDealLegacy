@@ -16,7 +16,7 @@ function buildDrawCardsAction({
 
         let subject = "MY_TURN";
         let action = "PLAY_PASS_GO";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let status = "failure";
         let payload = null;
         return handCardConsumer(
@@ -66,13 +66,13 @@ function buildDrawCardsAction({
                   // Let people know ---------------------------------------------------------
 
                   // updated card piles
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS["GAME"].GET_UPDATED_PILES({ roomCode })
                   );
 
                   // Cards Drawn
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
                       roomCode,
@@ -83,7 +83,7 @@ function buildDrawCardsAction({
 
                   // Update everyone with my new hand
                   let allPlayerIds = game.getAllPlayerKeys();
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "default",
                     PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                       roomCode,
@@ -92,25 +92,25 @@ function buildDrawCardsAction({
                     })
                   );
 
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "default",
                     makeResponse({ subject, action, status, payload })
                   );
 
                   // update player turn - must be last
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                   );
 
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                     );
                   }
 
-                  return socketResponses;
+                  return addressedResponses;
                 }
               }
             }
@@ -119,14 +119,14 @@ function buildDrawCardsAction({
             payload = {
               checkpoints: packageCheckpoints(checkpoints),
             };
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
             );
 
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
       
     }

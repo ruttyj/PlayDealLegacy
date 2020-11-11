@@ -12,7 +12,7 @@ function buildGetRandomRoom({
 {
     function getRandomRoom(props)
     {
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         const [subject, action] = ["ROOM", "GET_RANDOM_CODE"];
 
         let status = "success";
@@ -20,12 +20,12 @@ function buildGetRandomRoom({
             code: roomManager.getRandomCode(),
         };
 
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
         "default",
             makeResponse({ subject, action, status, payload })
         );
 
-        return socketResponses;
+        return addressedResponses;
     }
     return getRandomRoom;
 }

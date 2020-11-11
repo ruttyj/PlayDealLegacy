@@ -17,9 +17,9 @@ function buildGetAllRooms({
         let action = "GET_ALL_KEYED";
         let status = "success";
 
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let roomCodes = roomManager.listAllRoomCodes();
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
             "default",
             PUBLIC_SUBJECTS.ROOM.GET_KEYED({
             roomCodes: roomCodes,
@@ -28,12 +28,12 @@ function buildGetAllRooms({
         let payload = {
             roomCodes,
         };
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
         );
 
-        return socketResponses;
+        return addressedResponses;
     }
     return getAllRooms;
 }

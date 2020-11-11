@@ -12,7 +12,7 @@ function buildChargeRentAction({
   function ChargeRentAction(props) {
     const subject = "MY_TURN";
       const action = "CHARGE_RENT";
-      const socketResponses = new AddressedResponse();
+      const addressedResponses = new AddressedResponse();
 
       return handleGame(
         props,
@@ -26,7 +26,7 @@ function buildChargeRentAction({
             game.requestRent,
           );
         },
-        makeConsumerFallbackResponse({ subject, action, socketResponses })
+        makeConsumerFallbackResponse({ subject, action, addressedResponses })
       );
     }
 

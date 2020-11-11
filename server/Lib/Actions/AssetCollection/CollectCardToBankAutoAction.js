@@ -19,7 +19,7 @@ function buildCollectCardToBankAutoAction({
                 checkpoints,
                 thisPersonId,
                 roomCode,
-                socketResponses,
+                addressedResponses,
                 game,
             } = consumerData;
             if (transfering.has("bank")) {
@@ -36,7 +36,7 @@ function buildCollectCardToBankAutoAction({
                 checkpoints.set("success", true);
 
                 if (game.checkWinConditionForPlayer(thisPersonId)) {
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                     "everyone",
                     PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                 );

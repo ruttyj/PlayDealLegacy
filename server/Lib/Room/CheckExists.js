@@ -14,7 +14,7 @@ function buildCheckExists({
 {
     function checkExists(props)
     {
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         const [subject, action] = ["ROOM", "EXISTS"];
         let roomCodes = getArrFromProp(props, {
           plural: "roomCodes",
@@ -30,12 +30,12 @@ function buildCheckExists({
           let room = roomManager.getRoomByCode(code);
           payload.exists[code] = isDef(room);
         });
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
           "default",
           makeResponse({ subject, action, status, payload })
         );
 
-        return socketResponses;
+        return addressedResponses;
       
     }
     return checkExists;

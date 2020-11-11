@@ -20,7 +20,7 @@ function buildCollectCollectionAction({
               game,
               thisPersonId,
               roomCode,
-              socketResponses,
+              addressedResponses,
             } = consumerData;
             let playerManager = game.getPlayerManager();
       
@@ -53,7 +53,7 @@ function buildCollectCollectionAction({
               });
       
               if (game.checkWinConditionForPlayer(thisPersonId)) {
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "everyone",
                   PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                 );

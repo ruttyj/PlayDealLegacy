@@ -17,7 +17,7 @@ function buildAddSetAugmentToExistingCollectionAction({
     {
         let subject = "MY_TURN";
         let action = "ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let status = "failure";
         return handCardConsumer(
           props,
@@ -63,13 +63,13 @@ function buildAddSetAugmentToExistingCollectionAction({
                         status = "success";
 
                         // Emit updated player turn
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
                         );
 
                         //Update collection contents
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                             roomCode,
@@ -79,7 +79,7 @@ function buildAddSetAugmentToExistingCollectionAction({
 
                         // Update everyone with my new hand
                         let allPlayerIds = game.getAllPlayerKeys();
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "default",
                           PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
                             roomCode,
@@ -97,21 +97,21 @@ function buildAddSetAugmentToExistingCollectionAction({
               checkpoints: packageCheckpoints(checkpoints),
             };
             // confirm action for async await
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
 
-            return socketResponses;
+            return addressedResponses;
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
     return addSetAugmentToExistingCollectionAction;

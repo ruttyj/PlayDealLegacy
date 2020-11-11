@@ -19,7 +19,7 @@ function buildChangeCardActiveSetAction({
 
         let subject = "MY_TURN";
         let action = "CHANGE_CARD_ACTIVE_SET";
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let status = "failure";
         let payload = null;
         return handleMyTurn(
@@ -69,7 +69,7 @@ function buildChangeCardActiveSetAction({
                         game.updateCardSet(cardId, chosenSetKey);
                         collection.setPropertySetKey(chosenSetKey);
 
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
                             roomCode,
@@ -86,7 +86,7 @@ function buildChangeCardActiveSetAction({
             }
 
             if (status === "success") {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 scope,
                 PUBLIC_SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
               );
@@ -95,20 +95,20 @@ function buildChangeCardActiveSetAction({
             if (!isDef(payload)) payload = {};
             payload.checkpoints = packageCheckpoints(checkpoints);
 
-            socketResponses.addToBucket(
+            addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
-              socketResponses.addToBucket(
+              addressedResponses.addToBucket(
                 "everyone",
                 PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
               );
             }
-            return socketResponses; // <----- REMEMBER THIS!!!!
+            return addressedResponses; // <----- REMEMBER THIS!!!!
           },
-          makeConsumerFallbackResponse({ subject, action, socketResponses })
+          makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
       
     }

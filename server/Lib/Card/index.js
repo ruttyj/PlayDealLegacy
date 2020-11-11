@@ -22,7 +22,7 @@ function buildRegisterCardMethods({
               GET_KEYED: (props) => {
                 let subject = "PROPERTY_SETS";
                 let action = "GET_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -38,20 +38,20 @@ function buildRegisterCardMethods({
                       return game.getPropertySet(propertySetKey);
                     });
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeKeyedResponse(myKeyedRequest)
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_ALL_KEYED: (props) => {
                 let subject = "PROPERTY_SETS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -67,14 +67,14 @@ function buildRegisterCardMethods({
                     myKeyedRequest.setAllKeysFn(game.getAllPropertySetKeys);
         
                     // Get data
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },
@@ -82,7 +82,7 @@ function buildRegisterCardMethods({
               GET_KEYED: (props) => {
                 let subject = "CARDS";
                 let action = "GET_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -98,20 +98,20 @@ function buildRegisterCardMethods({
                     myKeyedRequest.setDataFn(game.getCard);
         
                     // Get data
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeKeyedResponse(myKeyedRequest)
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_ALL_KEYED: (props) => {
                 let subject = "CARDS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -127,13 +127,13 @@ function buildRegisterCardMethods({
                     myKeyedRequest.setAllKeysFn(game.getAllCardIds);
         
                     // Get data
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
                     );
         
                     // Confirm
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({
                         subject,
@@ -143,9 +143,9 @@ function buildRegisterCardMethods({
                       })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },

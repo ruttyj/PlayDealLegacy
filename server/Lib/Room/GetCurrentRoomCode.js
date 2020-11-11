@@ -18,7 +18,7 @@ function buildGetCurrentRoomCode({
     function getCurrentRoomCode(props)
     {
         const [subject, action] = ["ROOM", "GET_CURRENT"];
-        const socketResponses = new AddressedResponse();
+        const addressedResponses = new AddressedResponse();
         let payload = null;
 
         let { roomCode } = props;
@@ -30,7 +30,7 @@ function buildGetCurrentRoomCode({
         }
         }
 
-        socketResponses.addToBucket(
+        addressedResponses.addToBucket(
         "default",
         makeResponse({
             status: isDef(payload) ? "success" : "failure",
@@ -40,7 +40,7 @@ function buildGetCurrentRoomCode({
         })
         );
 
-        return socketResponses;
+        return addressedResponses;
     }
     return getCurrentRoomCode;
 }

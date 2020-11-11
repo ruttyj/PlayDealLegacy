@@ -26,7 +26,7 @@ function buildRegisterPeopleMethods({
               UPDATE_MY_NAME: function(props) {
                 // roomCode
                 const [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -40,7 +40,7 @@ function buildRegisterPeopleMethods({
                       if (username.length < usernameMaxLength) {
                         status = "success";
                         thisPerson.setName(username);
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                             personId: thisPersonId,
@@ -50,20 +50,20 @@ function buildRegisterPeopleMethods({
                       }
                     }
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               ME: function(props) {
                 // roomCode
                 const [subject, action] = ["PEOPLE", "ME"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -74,19 +74,19 @@ function buildRegisterPeopleMethods({
                       me: thisPersonId,
                     };
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_HOST: function(props) {
                 // roomCode
                 const [subject, action] = ["PEOPLE", "GET_HOST"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -105,20 +105,20 @@ function buildRegisterPeopleMethods({
         
                     payload.host = host;
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               SET_HOST: function(props) {
                 // roomCode, personId
                 const [subject, action] = ["PEOPLE", "SET_HOST"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -143,28 +143,28 @@ function buildRegisterPeopleMethods({
         
                         status = "success";
                         payload.host = personId;
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           makeResponse({ subject, action, status, payload })
                         );
                       }
                     } else {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "default",
                         makeResponse({ subject, action, status, payload })
                       );
                     }
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
                         roomCode,
                       })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               GET_ALL_KEYED: function(props) {
@@ -173,7 +173,7 @@ function buildRegisterPeopleMethods({
                 let status = "failure";
         
                 let payload = null;
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 let { roomCode } = props;
                 let room = roomManager.getRoomByCode(roomCode);
                 if (isDef(room)) {
@@ -183,7 +183,7 @@ function buildRegisterPeopleMethods({
                     .getConnectedPeople()
                     .map((person) => person.getId());
         
-                  socketResponses.addToBucket(
+                  addressedResponses.addToBucket(
                     "default",
                     PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                       peopleIds,
@@ -191,15 +191,15 @@ function buildRegisterPeopleMethods({
                     })
                   );
                 }
-                socketResponses.addToBucket(
+                addressedResponses.addToBucket(
                   "default",
                   makeResponse({ subject, action, status, payload })
                 );
         
-                return socketResponses;
+                return addressedResponses;
               },
               GET_KEYED: function(props) {
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 const [subject, action] = ["PEOPLE", "GET_KEYED"];
                 let peopleIds = getArrFromProp(props, {
                   plural: "peopleIds",
@@ -225,18 +225,18 @@ function buildRegisterPeopleMethods({
                     });
         
                     let status = personFoundCount > 0 ? "success" : "failure";
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               REMOVE: function(props) {
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 const [subject, action] = ["PEOPLE", "REMOVE"];
                 let message = "Failed to remove people.";
         
@@ -282,12 +282,12 @@ function buildRegisterPeopleMethods({
                     if (removedPersonCount > 0) {
                       status = "success";
                       message = `Removed ${removedPersonCount} people successfully.`;
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "everyone",
                         makeResponse({ subject, action, status, payload, message })
                       );
                     } else {
-                      socketResponses.addToBucket(
+                      addressedResponses.addToBucket(
                         "default",
                         makeResponse({ subject, action, status, payload, message })
                       );
@@ -298,7 +298,7 @@ function buildRegisterPeopleMethods({
                         firstPerson.isConnected()
                       );
                       if (isDef(nextHost)) {
-                        socketResponses.addToBucket(
+                        addressedResponses.addToBucket(
                           "everyone",
                           PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
                             roomCode,
@@ -308,14 +308,14 @@ function buildRegisterPeopleMethods({
                       }
                     }
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
               UPDATE_MY_STATUS: function(props) {
                 const [subject, action] = ["PEOPLE", "UPDATE_MY_STATUS"];
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 let payload = null;
                 let requestStatus = "failure";
                 return handlePerson(
@@ -329,12 +329,12 @@ function buildRegisterPeopleMethods({
                     }
         
                     requestStatus = "success";
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status: requestStatus, payload })
                     );
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                         personId: thisPersonId,
@@ -342,13 +342,13 @@ function buildRegisterPeopleMethods({
                       })
                     );
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "default",
                       PUBLIC_SUBJECTS.GAME.CAN_START({ roomCode })
                     );
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },
@@ -358,7 +358,7 @@ function buildRegisterPeopleMethods({
             PEOPLE: {
               DISCONNECT: function(props) {
                 // when game is in progeress and the user loses connection or closes the browser
-                const socketResponses = new AddressedResponse();
+                const addressedResponses = new AddressedResponse();
                 const [subject, action] = ["PEOPLE", "DISCONNECT"];
                 let status = "failure";
                 let payload = {};
@@ -385,7 +385,7 @@ function buildRegisterPeopleMethods({
                       }
                     });
         
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
                         peopleIds: disconnectedIds,
@@ -393,9 +393,9 @@ function buildRegisterPeopleMethods({
                       })
                     );
         
-                    return socketResponses;
+                    return addressedResponses;
                   },
-                  makeConsumerFallbackResponse({ subject, action, socketResponses })
+                  makeConsumerFallbackResponse({ subject, action, addressedResponses })
                 );
               },
             },

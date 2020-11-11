@@ -22,7 +22,7 @@ function buildCollectCardToCollectionAction({
               thisPersonId,
               player,
               roomCode,
-              socketResponses,
+              addressedResponses,
             } = consumerData;
             let playerManager = game.getPlayerManager();
             let status = "failure";
@@ -94,7 +94,7 @@ function buildCollectCardToCollectionAction({
                   checkpoints.set("success", true);
       
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
-                    socketResponses.addToBucket(
+                    addressedResponses.addToBucket(
                       "everyone",
                       PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
                     );
