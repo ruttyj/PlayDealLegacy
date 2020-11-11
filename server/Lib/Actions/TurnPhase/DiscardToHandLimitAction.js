@@ -6,7 +6,7 @@
  */
 function buildDiscardToHandLimitAction({
     els, isDef,
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     makeConsumerFallbackResponse,
     handleMyTurn,
@@ -17,7 +17,7 @@ function buildDiscardToHandLimitAction({
     {
         let subject = "MY_TURN";
         let action = "DISCARD_REMAINING";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         return handleMyTurn(
           props,
           (props2) => {

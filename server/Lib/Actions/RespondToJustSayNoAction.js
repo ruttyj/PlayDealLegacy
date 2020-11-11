@@ -1,12 +1,12 @@
 function buildRespondToJustSayNoAction({
-    handleGame, SocketResponseBuckets, makeConsumerFallbackResponse, handleTransactionResponse, PUBLIC_SUBJECTS
+    handleGame, AddressedResponse, makeConsumerFallbackResponse, handleTransactionResponse, PUBLIC_SUBJECTS
 })
 {
     function respondToJustSayNoAction(props)
     {
         let subject = "RESPONSES";
         let action = "RESPOND_TO_JUST_SAY_NO";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         return handleGame(
           props,
           ({game}) => {

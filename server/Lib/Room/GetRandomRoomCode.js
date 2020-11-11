@@ -5,14 +5,14 @@
  * const buildGetRandomRoom = require(`${serverFolder}/Lib/Room/GetRandomRoom`);
  */
 function buildGetRandomRoom({
-    SocketResponseBuckets,
+    AddressedResponse,
     roomManager,
     makeResponse,
 })
 {
     function getRandomRoom(props)
     {
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         const [subject, action] = ["ROOM", "GET_RANDOM_CODE"];
 
         let status = "success";

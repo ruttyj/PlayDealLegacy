@@ -21,7 +21,7 @@ function buildTemplateAction({
     getArrFromProp,
 
     //-------------------
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
 

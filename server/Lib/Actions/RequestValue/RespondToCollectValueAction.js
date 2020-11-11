@@ -1,7 +1,7 @@
 function buildRespondToCollectValueAction({
     isDef,
     makeConsumerFallbackResponse,
-    SocketResponseBuckets,
+    AddressedResponse,
     packageCheckpoints,
     makeResponse,
     Affected,
@@ -13,7 +13,7 @@ function buildRespondToCollectValueAction({
     function respondToCollectValueAction(props)
     {
         const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
 
         const doTheThing = (consumerData, checkpoints) => {
           let {

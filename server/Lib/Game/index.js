@@ -17,7 +17,7 @@ function buildRegisterGameMethods({
     //-------------------
     Affected,
     Transaction,
-    SocketResponseBuckets,
+    AddressedResponse,
     KeyedRequest,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
@@ -97,7 +97,7 @@ function buildRegisterGameMethods({
         // Structures
         Affected, 
         Transaction,
-        SocketResponseBuckets,
+        AddressedResponse,
         // Props
         myClientId: thisClientKey,
         roomManager, 
@@ -113,7 +113,7 @@ function buildRegisterGameMethods({
               GET_UPDATED_PILES: (props) => {
                 const { roomCode } = props;
         
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 if (isDef(roomCode)) {
                   socketResponses.addToBucket(
                     "default",
@@ -134,7 +134,7 @@ function buildRegisterGameMethods({
               },
               RESET: (props) => {
                 const [subject, action] = ["GAME", "RESET"];
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handleRoom(
                   props,
                   (consumerData) => {
@@ -169,7 +169,7 @@ function buildRegisterGameMethods({
                 const [subject, action] = ["GAME", "UPDATE_CONFIG"];
                 let payload = null;
                 let status = "failure";
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (consumerData, checkpoints) => {
@@ -205,7 +205,7 @@ function buildRegisterGameMethods({
                 const [subject, action] = ["GAME", "GET_CONFIG"];
                 let payload = null;
                 let status = "failure";
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (consumerData) => {
@@ -231,7 +231,7 @@ function buildRegisterGameMethods({
               STATUS: (props) => {
                 // roomCode
                 const [subject, action] = ["GAME", "STATUS"];
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -263,7 +263,7 @@ function buildRegisterGameMethods({
               },
               START: (props) => {
                 const [subject, action] = ["GAME", "START"];
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (consumerData) => {
@@ -384,7 +384,7 @@ function buildRegisterGameMethods({
               CAN_START: (props) => {
                 // roomCode
                 const [subject, action] = ["GAME", "CAN_START"];
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -484,7 +484,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN','TURN_STARTING_DRAW'],
           buildTurnStartingDrawAction({
             ...commonDeps,
-            SocketResponseBuckets,
+            AddressedResponse,
             PUBLIC_SUBJECTS,
             makeConsumerFallbackResponse,
             handleMyTurn,
@@ -495,7 +495,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN', 'FINISH_TURN'],
           buildAttemptFinishTurnAction({
             ...commonDeps,
-            SocketResponseBuckets,
+            AddressedResponse,
             PUBLIC_SUBJECTS,
             makeConsumerFallbackResponse,
             handleMyTurn,
@@ -507,7 +507,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN', 'DISCARD_REMAINING'],
           buildDiscardToHandLimitAction({
             ...commonDeps,
-            SocketResponseBuckets,
+            AddressedResponse,
             PUBLIC_SUBJECTS,
             makeConsumerFallbackResponse,
             handleMyTurn,
@@ -709,7 +709,7 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "DISCARD_PILE";
             let action = "GET";
-            const socketResponses = new SocketResponseBuckets();
+            const socketResponses = new AddressedResponse();
             return handleGame(
               props,
               (props2) => {
@@ -730,7 +730,7 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "ACTIVE_PILE";
             let action = "GET";
-            const socketResponses = new SocketResponseBuckets();
+            const socketResponses = new AddressedResponse();
             return handleGame(
               props,
               (props2) => {
@@ -751,7 +751,7 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "DRAW_PILE";
             let action = "GET";
-            const socketResponses = new SocketResponseBuckets();
+            const socketResponses = new AddressedResponse();
             return handleGame(
               props,
               ({ game }) => {
@@ -776,7 +776,7 @@ function buildRegisterGameMethods({
       
     let registerCollectionsMethods = buildRegisterCollectionsMethods({
         isDef,
-        SocketResponseBuckets,
+        AddressedResponse,
         KeyedRequest,
         PUBLIC_SUBJECTS,
         makeResponse,
@@ -791,7 +791,7 @@ function buildRegisterGameMethods({
 
     // Card related
     let registerCardMethods = buildRegisterCardMethods({
-        SocketResponseBuckets,
+        AddressedResponse,
         KeyedRequest,
         PUBLIC_SUBJECTS,
         makeResponse,
@@ -810,7 +810,7 @@ function buildRegisterGameMethods({
             GET: (props) => {
               let subject = "PLAYER_TURN";
               let action = "GET";
-              const socketResponses = new SocketResponseBuckets();
+              const socketResponses = new AddressedResponse();
               return handleGame(
                 props,
                 (consumerData) => {
@@ -894,7 +894,7 @@ function buildRegisterGameMethods({
             let action = "REMOVE_ALL";
             let status = "failure";
             let payload = null;
-            const socketResponses = new SocketResponseBuckets();
+            const socketResponses = new AddressedResponse();
             return handleGame(
               props,
               (consumerData) => {
@@ -914,7 +914,7 @@ function buildRegisterGameMethods({
             //props: { roomCode, (peopleIds|personId)}
             let subject = "PLAYER_REQUESTS";
             let action = "GET_KEYED";
-            const socketResponses = new SocketResponseBuckets();
+            const socketResponses = new AddressedResponse();
     
             return handleGame(
               props,
@@ -949,7 +949,7 @@ function buildRegisterGameMethods({
             let action = "PLAYER_REQUESTS";
             let status = "failure";
             let payload = null;
-            const socketResponses = new SocketResponseBuckets();
+            const socketResponses = new AddressedResponse();
             return handleGame(
               props,
               (consumerData) => {
@@ -970,7 +970,7 @@ function buildRegisterGameMethods({
         let registerPlayerMethods = buildRegisterPlayerMethods({
             isDef,
             isArr,
-            SocketResponseBuckets,
+            AddressedResponse,
             PUBLIC_SUBJECTS,
             makeResponse,
             getAllPlayers,

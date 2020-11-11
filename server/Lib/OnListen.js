@@ -4,7 +4,7 @@ module.exports = function({
     isStr,
     isArr,
     jsonEncode,
-    SocketResponseBuckets,
+    AddressedResponse,
     registry,
     mStrThisClientId,
     thisClient,
@@ -14,13 +14,13 @@ module.exports = function({
     const subjectMap = registry.getAllPublic();
     function onListen(encodedData)
     {
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
         let clientPersonMapping = {};
     
         if (isArr(requests)) {
           requests.forEach((request) => {
-            let requestResponses = new SocketResponseBuckets();
+            let requestResponses = new AddressedResponse();
     
             let subject = request.subject;
             let action = request.action;

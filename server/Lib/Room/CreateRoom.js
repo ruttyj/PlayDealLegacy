@@ -7,7 +7,7 @@
 function buildCreateRoom({
     makeResponse,
     isDef,
-    SocketResponseBuckets,
+    AddressedResponse,
     els,
     roomManager,
     createGameInstance,
@@ -16,7 +16,7 @@ function buildCreateRoom({
     function createRoom(props)
     {
         const [subject, action] = ["ROOM", "CREATE"];
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let { roomCode } = props;
         roomCode = els(roomCode, "AAAA");
 

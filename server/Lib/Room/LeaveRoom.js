@@ -6,7 +6,7 @@
  */
 function buildLeaveRoom({
     isDef,
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
     makeResponse,
@@ -18,7 +18,7 @@ function buildLeaveRoom({
     {
        
         const [subject, action] = ["ROOM", "LEAVE"];
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
 
         let status = "failure";
         return handleRoom(

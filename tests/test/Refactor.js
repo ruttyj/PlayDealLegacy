@@ -5,7 +5,7 @@ const utilsFolder = `${serverFolder}/utils`;
 const fs = require('fs');
 const assert = require("chai").assert;
 
-const SocketResponseBuckets = require(`${serverFolder}/sockets/socketResponseBuckets`);
+const AddressedResponse = require(`${serverFolder}/sockets/AddressedResponse`);
 
 const buildAffected = require(`${serverFolder}/Lib/Affected`);
 const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
@@ -39,7 +39,7 @@ describe("Affected", async function () {
   const PUBLIC_SUBJECTS = {};
   const StealCollectionAction = buildStealCollectionAction({
     isDef, isArr, isFunc,
-    Affected, SocketResponseBuckets,
+    Affected, AddressedResponse,
     PUBLIC_SUBJECTS,
   });
  

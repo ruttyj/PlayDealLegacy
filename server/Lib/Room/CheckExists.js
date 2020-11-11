@@ -7,14 +7,14 @@
 function buildCheckExists({
     makeResponse,
     isDef,
-    SocketResponseBuckets,
+    AddressedResponse,
     getArrFromProp,
     roomManager,
 })
 {
     function checkExists(props)
     {
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         const [subject, action] = ["ROOM", "EXISTS"];
         let roomCodes = getArrFromProp(props, {
           plural: "roomCodes",

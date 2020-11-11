@@ -9,7 +9,7 @@ function buildChangeCardActiveSetAction({
     packageCheckpoints,
     isDef,
     PUBLIC_SUBJECTS,
-    SocketResponseBuckets,
+    AddressedResponse,
     handleMyTurn,
     makeResponse,
 })
@@ -19,7 +19,7 @@ function buildChangeCardActiveSetAction({
 
         let subject = "MY_TURN";
         let action = "CHANGE_CARD_ACTIVE_SET";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let status = "failure";
         let payload = null;
         return handleMyTurn(

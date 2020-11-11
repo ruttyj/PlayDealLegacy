@@ -8,7 +8,7 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
     PUBLIC_SUBJECTS,
     makeResponse,
     isDef,
-    SocketResponseBuckets,
+    AddressedResponse,
     handleMyTurn,
 })
 {
@@ -17,7 +17,7 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
 
         let subject = "MY_TURN";
         let action = "TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let status = "failure";
         return handleMyTurn(
           props,

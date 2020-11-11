@@ -9,7 +9,7 @@ function buildJoinRoom({
     isDef,
     getNestedValue,
     setNestedValue,
-    SocketResponseBuckets,
+    AddressedResponse,
     els,
     handleRoom,
     cookieTokenManager,
@@ -20,7 +20,7 @@ function buildJoinRoom({
     function joinRoom(props)
     {
         const [subject, action] = ["ROOM", "JOIN"];
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
 
         let { roomCode, username } = props;
         username = els(username, "Player");

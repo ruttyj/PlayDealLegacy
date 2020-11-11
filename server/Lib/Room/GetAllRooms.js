@@ -5,7 +5,7 @@
  * const buildGetAllRooms = require(`${serverFolder}/Lib/Room/GetAllRooms`);
  */
 function buildGetAllRooms({
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     roomManager,
     makeResponse,
@@ -17,7 +17,7 @@ function buildGetAllRooms({
         let action = "GET_ALL_KEYED";
         let status = "success";
 
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let roomCodes = roomManager.listAllRoomCodes();
         socketResponses.addToBucket(
             "default",

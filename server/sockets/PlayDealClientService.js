@@ -21,7 +21,7 @@ const ClientManager           = require(`${serverSocketFolder}/client/clientMana
 const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
 
 // Import generic logic for indexed game data
-const SocketResponseBuckets   = require(`${serverSocketFolder}/socketResponseBuckets.js`); // @TODO rename AddressedResponse
+const AddressedResponse   = require(`${serverSocketFolder}/AddressedResponse.js`); // @TODO rename AddressedResponse
 const buildHandleRoom         = require(`${libFolder}/HandleRoom`);
 const buildPopulatedRegistry  = require(`./PopulateRegistry`);
 
@@ -124,7 +124,7 @@ module.exports = class PlayDealClientService {
     let handleRoom = buildHandleRoom({
       isDef,
       isFunc,
-      SocketResponseBuckets,
+      AddressedResponse,
       mStrThisClientId: connectionId,
       roomManager     : this.roomManager,
     })
@@ -146,7 +146,7 @@ module.exports = class PlayDealClientService {
         isStr,
         isArr,
         jsonEncode,
-        SocketResponseBuckets,
+        AddressedResponse,
         registry,
         mStrThisClientId: connectionId,
         thisClient: connection,

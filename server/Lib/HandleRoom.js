@@ -1,7 +1,7 @@
 module.exports = function({
     isDef,
     isFunc,
-    SocketResponseBuckets,
+    AddressedResponse,
     mStrThisClientId,
     roomManager,
 })
@@ -14,7 +14,7 @@ module.exports = function({
         checkpoints.set("room", false);
         checkpoints.set("personManager", false);
 
-        let reducedResponses = new SocketResponseBuckets();
+        let reducedResponses = new AddressedResponse();
         let responses = null;
 
         if (isDef(roomCode)) {

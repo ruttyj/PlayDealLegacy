@@ -8,7 +8,7 @@ function buildDrawCardsAction({
     makeResponse,
     PUBLIC_SUBJECTS,
     handCardConsumer,
-    SocketResponseBuckets,
+    AddressedResponse,
 })
 {
     function drawCardsAction(props)
@@ -16,7 +16,7 @@ function buildDrawCardsAction({
 
         let subject = "MY_TURN";
         let action = "PLAY_PASS_GO";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let status = "failure";
         let payload = null;
         return handCardConsumer(

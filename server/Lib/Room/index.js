@@ -5,7 +5,7 @@
  * const buildRoomMethodsProvider = require(`${serverFolder}/Lib/Room/`);
  */
 function buildRegisterRoomMethods({
-    SocketResponseBuckets,
+    AddressedResponse,
     //-------------------------
     buildCreateRoom,
     buildJoinRoom,
@@ -46,26 +46,26 @@ function buildRegisterRoomMethods({
     {
         let getCurrentRoom = buildGetCurrentRoomCode({
             isDef,
-            SocketResponseBuckets,
+            AddressedResponse,
             roomManager,
             makeResponse,
         })
         let getKeyed = buildGetRoom({
             isDef,
             getArrFromProp,
-            SocketResponseBuckets,
+            AddressedResponse,
             roomManager,
             makeResponse,
         })
         let getAllKeyed = buildGetAllRooms({
-            SocketResponseBuckets,
+            AddressedResponse,
             PUBLIC_SUBJECTS,
             roomManager,
             makeResponse,
         })
         let leaveRoom =  buildLeaveRoom({
             isDef,
-            SocketResponseBuckets,
+            AddressedResponse,
             PUBLIC_SUBJECTS,
             PRIVATE_SUBJECTS,
             makeResponse,
@@ -73,14 +73,14 @@ function buildRegisterRoomMethods({
             handleRoom,
         })
         let getRandomRoom = buildGetRandomRoom({
-            SocketResponseBuckets,
+            AddressedResponse,
             roomManager,
             makeResponse,
         })
         let createRoom = buildCreateRoom({
             makeResponse,
             isDef,
-            SocketResponseBuckets,
+            AddressedResponse,
             els,
             roomManager,
             createGameInstance,
@@ -91,7 +91,7 @@ function buildRegisterRoomMethods({
             isDef,
             getNestedValue,
             setNestedValue,
-            SocketResponseBuckets,
+            AddressedResponse,
             els,
             handleRoom,
             cookieTokenManager,
@@ -101,7 +101,7 @@ function buildRegisterRoomMethods({
         let checkRoomExists = buildCheckExists({
             makeResponse,
             isDef,
-            SocketResponseBuckets,
+            AddressedResponse,
             getArrFromProp,
             roomManager,
         })

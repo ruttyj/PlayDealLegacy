@@ -9,7 +9,7 @@ function buildAddSetAugmentToNewCollectionAction({
     makeResponse,
     packageCheckpoints,
     isDef,
-    SocketResponseBuckets,
+    AddressedResponse,
     handleMyTurn,
 })
 {
@@ -17,7 +17,7 @@ function buildAddSetAugmentToNewCollectionAction({
     {
         let subject = "MY_TURN";
         let action = "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let status = "failure";
         return handleMyTurn(
           props,

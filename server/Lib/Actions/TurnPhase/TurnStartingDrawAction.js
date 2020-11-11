@@ -4,7 +4,7 @@
  * const buildTurnStartingDrawAction = require(`${serverFolder}/Lib/Actions/TurnStartingDrawAction`);
  */
 function buildTurnStartingDrawAction({
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     makeConsumerFallbackResponse,
     handleMyTurn,
@@ -15,7 +15,7 @@ function buildTurnStartingDrawAction({
     {
         let subject = "MY_TURN";
         let action = "TURN_STARTING_DRAW";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         return handleMyTurn(
           props,
           (props2) => {

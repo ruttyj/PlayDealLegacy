@@ -5,7 +5,7 @@
  * const buildRegisterConnectionMethods = require(`${serverFolder}/Lib/Connection/`);
  */
 function buildRegisterConnectionMethods({
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
     mStrThisClientId,
@@ -18,7 +18,7 @@ function buildRegisterConnectionMethods({
         Object.assign(PUBLIC_SUBJECTS, {
             CLIENTS: {
               GET_ONLINE_STATS: (props) => {
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 const subject = "CLIENTS";
                 const action = "GET_ONLINE_STATS";
                 const status = "success";
@@ -33,7 +33,7 @@ function buildRegisterConnectionMethods({
                   makeResponse({ subject, action, status, payload })
                 );
         
-                const reducedResponses = new SocketResponseBuckets();
+                const reducedResponses = new AddressedResponse();
                 reducedResponses.addToBucket(
                   socketResponses.reduce(thisClientKey, [thisClientKey])
                 );

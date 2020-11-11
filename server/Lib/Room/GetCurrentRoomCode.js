@@ -8,7 +8,7 @@ function buildGetCurrentRoomCode({
     //-------------------------
     isDef,
     //-------------------
-    SocketResponseBuckets,
+    AddressedResponse,
     //-------------------
     roomManager,
     //-------------------
@@ -18,7 +18,7 @@ function buildGetCurrentRoomCode({
     function getCurrentRoomCode(props)
     {
         const [subject, action] = ["ROOM", "GET_CURRENT"];
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let payload = null;
 
         let { roomCode } = props;

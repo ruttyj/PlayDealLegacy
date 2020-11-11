@@ -1,8 +1,8 @@
-const { isDef, isArr, isFunc, makeMap, stateSerialize } = require("./utils.js");
+const { isDef, isArr, makeMap, stateSerialize } = require("./utils.js");
 
 //##################################################
 
-//              SOCKET RESPONSE BUCKETS
+//              ADDRESSED RESPONSE
 
 //##################################################
 /**
@@ -16,7 +16,7 @@ const { isDef, isArr, isFunc, makeMap, stateSerialize } = require("./utils.js");
  * Additional information can be places into specific buckets indexed by the client id.
  * All buckets will eventually be reduced to their correponding client id.
  */
-module.exports = class SocketResponseBuckets {
+module.exports = class AddressedResponse {
 
   constructor()
   {
@@ -37,11 +37,11 @@ module.exports = class SocketResponseBuckets {
   }
 
   isSameType(obj) {
-    return obj instanceof SocketResponseBuckets;
+    return obj instanceof AddressedResponse;
   }
 
   is() {
-    return SocketResponseBuckets;
+    return AddressedResponse;
   }
 
   addArrToBucket(buckeyKey, arrItems) {
@@ -119,7 +119,7 @@ module.exports = class SocketResponseBuckets {
   // Take information from the buckets and assign to relevent clients
   // Returns a new object
   reduce(thisId, ids) {
-    let newBuckets = new SocketResponseBuckets();
+    let newBuckets = new AddressedResponse();
     let b = this.buckets;
     let s = this.specific;
 

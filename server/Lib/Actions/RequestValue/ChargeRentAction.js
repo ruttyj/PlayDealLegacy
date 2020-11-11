@@ -1,6 +1,6 @@
 function buildChargeRentAction({ 
     // Objects
-    SocketResponseBuckets,
+    AddressedResponse,
 
     // Socket Methods
     PUBLIC_SUBJECTS,
@@ -12,7 +12,7 @@ function buildChargeRentAction({
   function ChargeRentAction(props) {
     const subject = "MY_TURN";
       const action = "CHARGE_RENT";
-      const socketResponses = new SocketResponseBuckets();
+      const socketResponses = new AddressedResponse();
 
       return handleGame(
         props,

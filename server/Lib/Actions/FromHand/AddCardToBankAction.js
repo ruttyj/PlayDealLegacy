@@ -11,7 +11,7 @@ function buildAddCardToBankAction({
     packageCheckpoints,
     isDef,
     handCardConsumer,
-    SocketResponseBuckets,
+    AddressedResponse,
     log,
 })
 {
@@ -20,7 +20,7 @@ function buildAddCardToBankAction({
 
         let subject = "MY_TURN";
         let action = "ADD_CARD_TO_MY_BANK_FROM_HAND";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let status = "failure";
         return handCardConsumer(
           props,

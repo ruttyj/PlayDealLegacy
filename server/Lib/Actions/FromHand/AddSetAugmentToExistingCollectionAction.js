@@ -10,14 +10,14 @@ function buildAddSetAugmentToExistingCollectionAction({
     packageCheckpoints,
     isDef,
     handCardConsumer,
-    SocketResponseBuckets,
+    AddressedResponse,
 })
 {
     function addSetAugmentToExistingCollectionAction(props)
     {
         let subject = "MY_TURN";
         let action = "ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let status = "failure";
         return handCardConsumer(
           props,

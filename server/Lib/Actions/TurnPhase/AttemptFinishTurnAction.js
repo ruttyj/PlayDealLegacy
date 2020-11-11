@@ -4,7 +4,7 @@
  * const buildAttemptFinishTurnAction = require(`${serverFolder}/Lib/Actions/AttemptFinishTurnAction`);
  */
 function buildAttemptFinishTurnAction({
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     makeProps,
     makeConsumerFallbackResponse,
@@ -17,7 +17,7 @@ function buildAttemptFinishTurnAction({
 
         let subject = "MY_TURN";
         let action = "FINISH_TURN";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
 
         return handleMyTurn(
           props,

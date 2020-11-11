@@ -9,7 +9,7 @@ const GameInstance            = require(`${gameFolder}/`);
 
 // Import generic logic for indexed game data
 const KeyedRequest            = require(`${serverSocketFolder}/container/keyedRequest.js`);
-const SocketResponseBuckets   = require(`${serverSocketFolder}/socketResponseBuckets.js`); // @TODO rename AddressedResponse
+const AddressedResponse   = require(`${serverSocketFolder}/AddressedResponse.js`); // @TODO rename AddressedResponse
 const Transaction             = require(`${gameFolder}/player/request/transfer/Transaction.js`);
 
 const buildDeps               = require(`./Deps.js`);
@@ -210,7 +210,7 @@ module.exports = function({
         ClientManager,
         RoomManager,
         GameInstance,
-        SocketResponseBuckets,
+        AddressedResponse,
         KeyedRequest,
         PUBLIC_SUBJECTS,
         PRIVATE_SUBJECTS,
@@ -236,7 +236,7 @@ module.exports = function({
       //=========================================================================
       // Clients
       let registerConnectionsMethods = buildRegisterConnectionMethods({
-          SocketResponseBuckets,
+          AddressedResponse,
           PUBLIC_SUBJECTS,
           PRIVATE_SUBJECTS,
           mStrThisClientId,
@@ -257,7 +257,7 @@ module.exports = function({
         //-------------------
         Affected,
         Transaction,
-        SocketResponseBuckets,
+        AddressedResponse,
         KeyedRequest,
         PUBLIC_SUBJECTS,
         PRIVATE_SUBJECTS,
@@ -330,7 +330,7 @@ module.exports = function({
         isDef,
         isStr,
         getArrFromProp,
-        SocketResponseBuckets,
+        AddressedResponse,
         PUBLIC_SUBJECTS,
         PRIVATE_SUBJECTS,
         roomManager,
@@ -341,13 +341,13 @@ module.exports = function({
         handlePerson,
       })
       let registerCheatMethods = buildRegisterCheatMethods({
-        SocketResponseBuckets,
+        AddressedResponse,
         PUBLIC_SUBJECTS,
         makeResponse,
         handleGame,
       })
       let registerRoomMethods = buildRegisterRoomMethods({
-        SocketResponseBuckets,
+        AddressedResponse,
         //-------------------------
         buildCreateRoom,
         buildJoinRoom,
@@ -385,7 +385,7 @@ module.exports = function({
       })
       let registerChatMethods = buildRegisterChatMethods({
           isDef,
-          SocketResponseBuckets,
+          AddressedResponse,
           PUBLIC_SUBJECTS,
           makeResponse,
           makeConsumerFallbackResponse,

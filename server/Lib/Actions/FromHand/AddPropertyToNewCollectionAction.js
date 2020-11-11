@@ -10,7 +10,7 @@ function buildAddPropertyToNewCollectionAction({
     packageCheckpoints,
     isDef,
     handCardConsumer,
-    SocketResponseBuckets,
+    AddressedResponse,
 })
 {
     function addPropertyToNewCollectionAction(props)
@@ -18,7 +18,7 @@ function buildAddPropertyToNewCollectionAction({
 
         let subject = "MY_TURN";
         let action = "ADD_PROPERTY_TO_NEW_COLLECTION_FROM_HAND";
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let status = "failure";
         return handCardConsumer(
           props,

@@ -7,7 +7,7 @@
 function buildGetRoom({
     isDef,
     getArrFromProp,
-    SocketResponseBuckets,
+    AddressedResponse,
     roomManager,
     makeResponse,
 })
@@ -15,7 +15,7 @@ function buildGetRoom({
     function getRoom(props)
     {
         const [subject, action] = ["ROOM", "GET_KEYED"];
-        const socketResponses = new SocketResponseBuckets();
+        const socketResponses = new AddressedResponse();
         let payload = {
             items: {},
             order: [],

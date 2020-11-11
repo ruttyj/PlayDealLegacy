@@ -6,7 +6,7 @@
 function buildRegisterPlayerMethods({
     isDef,
     isArr,
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
     getAllPlayers,
@@ -21,7 +21,7 @@ function buildRegisterPlayerMethods({
             PLAYERS: {
               GET: (props) => {
                 const [subject, action] = ["PLAYERS", "GET"];
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -53,7 +53,7 @@ function buildRegisterPlayerMethods({
               PERSON_DREW_CARDS_KEYED: (props) => {
                 let subject = "PLAYERS";
                 let action = "PERSON_DREW_CARDS_KEYED";
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   ({ cardIds, game, personId }) => {
@@ -98,7 +98,7 @@ function buildRegisterPlayerMethods({
               // props = {roomCode, personId, (receivingPeopleIds|receivingPersonId), (peopleIds|personId)}
               GET_KEYED: (props) => {
                 const [subject, action] = ["PLAYER_HANDS", "GET_KEYED"];
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
         
                 return handleGame(
                   props,
@@ -140,7 +140,7 @@ function buildRegisterPlayerMethods({
               GET_ALL_KEYED: (props) => {
                 let subject = "PLAYER_HANDS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (props2) => {
@@ -179,7 +179,7 @@ function buildRegisterPlayerMethods({
               GET_KEYED: (props) => {
                 let subject = "PLAYER_BANKS";
                 let action = "GET_KEYED";
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (props2) => {
@@ -211,7 +211,7 @@ function buildRegisterPlayerMethods({
               GET_ALL_KEYED: (props) => {
                 let subject = "PLAYER_BANKS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = new SocketResponseBuckets();
+                const socketResponses = new AddressedResponse();
                 return handleGame(
                   props,
                   (props2) => {

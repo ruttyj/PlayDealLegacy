@@ -5,7 +5,7 @@
  * const buildRegisterCheatMethods = require(`${serverFolder}/Lib/Cheat/`);
  */
 function buildRegisterCheatMethods({
-    SocketResponseBuckets,
+    AddressedResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
     handleGame,
@@ -18,7 +18,7 @@ function buildRegisterCheatMethods({
         CHEAT: {
           DUMP_STATE: (props) => {
             const [subject, action] = ["CHEAT", "DUMP_STATE"];
-            const socketResponses = new SocketResponseBuckets();
+            const socketResponses = new AddressedResponse();
             return handleGame(
               props,
               (consumerData) => {

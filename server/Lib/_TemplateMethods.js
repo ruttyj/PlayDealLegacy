@@ -19,7 +19,7 @@ module.exports = function({
     ClientManager,
     RoomManager,
     GameInstance,
-    SocketResponseBuckets,
+    AddressedResponse,
     KeyedRequest,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
