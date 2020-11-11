@@ -19,7 +19,7 @@ function buildChangeCardActiveSetAction({
 
         let subject = "MY_TURN";
         let action = "CHANGE_CARD_ACTIVE_SET";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let status = "failure";
         let payload = null;
         return handleMyTurn(

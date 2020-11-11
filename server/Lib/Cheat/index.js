@@ -18,7 +18,7 @@ function buildRegisterCheatMethods({
         CHEAT: {
           DUMP_STATE: (props) => {
             const [subject, action] = ["CHEAT", "DUMP_STATE"];
-            const socketResponses = SocketResponseBuckets();
+            const socketResponses = new SocketResponseBuckets();
             return handleGame(
               props,
               (consumerData) => {

@@ -48,7 +48,7 @@ function buildRegisterCollectionsMethods({
                 //props: { roomCode, (peopleIds|personId)}
                 let subject = "PLAYER_COLLECTIONS";
                 let action = "GET_KEYED";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -81,7 +81,7 @@ function buildRegisterCollectionsMethods({
                 //props: {roomCode}
                 let subject = "PLAYER_COLLECTIONS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handleGame(
                   props,
                   (consumerData) => {

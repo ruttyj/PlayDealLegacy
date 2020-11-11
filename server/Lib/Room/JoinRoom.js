@@ -20,7 +20,7 @@ function buildJoinRoom({
     function joinRoom(props)
     {
         const [subject, action] = ["ROOM", "JOIN"];
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
 
         let { roomCode, username } = props;
         username = els(username, "Player");

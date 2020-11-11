@@ -12,7 +12,7 @@ function buildGetRandomRoom({
 {
     function getRandomRoom(props)
     {
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         const [subject, action] = ["ROOM", "GET_RANDOM_CODE"];
 
         let status = "success";

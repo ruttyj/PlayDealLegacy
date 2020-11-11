@@ -17,7 +17,7 @@ function buildGetAllRooms({
         let action = "GET_ALL_KEYED";
         let status = "success";
 
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let roomCodes = roomManager.listAllRoomCodes();
         socketResponses.addToBucket(
             "default",

@@ -12,7 +12,7 @@ function buildChargeRentAction({
   function ChargeRentAction(props) {
     const subject = "MY_TURN";
       const action = "CHARGE_RENT";
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
 
       return handleGame(
         props,

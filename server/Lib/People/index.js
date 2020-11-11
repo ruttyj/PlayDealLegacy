@@ -26,7 +26,7 @@ function buildRegisterPeopleMethods({
               UPDATE_MY_NAME: function(props) {
                 // roomCode
                 const [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -63,7 +63,7 @@ function buildRegisterPeopleMethods({
               ME: function(props) {
                 // roomCode
                 const [subject, action] = ["PEOPLE", "ME"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -86,7 +86,7 @@ function buildRegisterPeopleMethods({
               GET_HOST: function(props) {
                 // roomCode
                 const [subject, action] = ["PEOPLE", "GET_HOST"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -118,7 +118,7 @@ function buildRegisterPeopleMethods({
               SET_HOST: function(props) {
                 // roomCode, personId
                 const [subject, action] = ["PEOPLE", "SET_HOST"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -173,7 +173,7 @@ function buildRegisterPeopleMethods({
                 let status = "failure";
         
                 let payload = null;
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 let { roomCode } = props;
                 let room = roomManager.getRoomByCode(roomCode);
                 if (isDef(room)) {
@@ -199,7 +199,7 @@ function buildRegisterPeopleMethods({
                 return socketResponses;
               },
               GET_KEYED: function(props) {
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 const [subject, action] = ["PEOPLE", "GET_KEYED"];
                 let peopleIds = getArrFromProp(props, {
                   plural: "peopleIds",
@@ -236,7 +236,7 @@ function buildRegisterPeopleMethods({
                 );
               },
               REMOVE: function(props) {
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 const [subject, action] = ["PEOPLE", "REMOVE"];
                 let message = "Failed to remove people.";
         
@@ -315,7 +315,7 @@ function buildRegisterPeopleMethods({
               },
               UPDATE_MY_STATUS: function(props) {
                 const [subject, action] = ["PEOPLE", "UPDATE_MY_STATUS"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 let payload = null;
                 let requestStatus = "failure";
                 return handlePerson(
@@ -358,7 +358,7 @@ function buildRegisterPeopleMethods({
             PEOPLE: {
               DISCONNECT: function(props) {
                 // when game is in progeress and the user loses connection or closes the browser
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 const [subject, action] = ["PEOPLE", "DISCONNECT"];
                 let status = "failure";
                 let payload = {};

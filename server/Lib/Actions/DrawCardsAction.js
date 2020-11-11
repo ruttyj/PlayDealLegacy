@@ -16,7 +16,7 @@ function buildDrawCardsAction({
 
         let subject = "MY_TURN";
         let action = "PLAY_PASS_GO";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let status = "failure";
         let payload = null;
         return handCardConsumer(

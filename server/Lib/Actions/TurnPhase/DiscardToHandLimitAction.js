@@ -17,7 +17,7 @@ function buildDiscardToHandLimitAction({
     {
         let subject = "MY_TURN";
         let action = "DISCARD_REMAINING";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         return handleMyTurn(
           props,
           (props2) => {

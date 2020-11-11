@@ -14,13 +14,13 @@ module.exports = function({
     const subjectMap = registry.getAllPublic();
     function onListen(encodedData)
     {
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
         let clientPersonMapping = {};
     
         if (isArr(requests)) {
           requests.forEach((request) => {
-            let requestResponses = SocketResponseBuckets();
+            let requestResponses = new SocketResponseBuckets();
     
             let subject = request.subject;
             let action = request.action;

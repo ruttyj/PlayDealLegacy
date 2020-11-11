@@ -18,7 +18,7 @@ function buildRegisterConnectionMethods({
         Object.assign(PUBLIC_SUBJECTS, {
             CLIENTS: {
               GET_ONLINE_STATS: (props) => {
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 const subject = "CLIENTS";
                 const action = "GET_ONLINE_STATS";
                 const status = "success";
@@ -33,7 +33,7 @@ function buildRegisterConnectionMethods({
                   makeResponse({ subject, action, status, payload })
                 );
         
-                const reducedResponses = SocketResponseBuckets();
+                const reducedResponses = new SocketResponseBuckets();
                 reducedResponses.addToBucket(
                   socketResponses.reduce(thisClientKey, [thisClientKey])
                 );

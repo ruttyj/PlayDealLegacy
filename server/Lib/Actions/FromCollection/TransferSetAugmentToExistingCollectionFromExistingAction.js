@@ -19,7 +19,7 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
         let subject = "MY_TURN";
         let action =
           "TRANSFER_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_COLLECTION";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let status = "failure";
         return handleMyTurn(
           props,

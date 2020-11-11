@@ -15,7 +15,7 @@ function buildTurnStartingDrawAction({
     {
         let subject = "MY_TURN";
         let action = "TURN_STARTING_DRAW";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         return handleMyTurn(
           props,
           (props2) => {

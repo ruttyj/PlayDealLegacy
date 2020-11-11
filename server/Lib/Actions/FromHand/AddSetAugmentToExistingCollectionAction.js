@@ -17,7 +17,7 @@ function buildAddSetAugmentToExistingCollectionAction({
     {
         let subject = "MY_TURN";
         let action = "ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,

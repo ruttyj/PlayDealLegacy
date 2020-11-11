@@ -22,7 +22,7 @@ function buildRegisterCardMethods({
               GET_KEYED: (props) => {
                 let subject = "PROPERTY_SETS";
                 let action = "GET_KEYED";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -51,7 +51,7 @@ function buildRegisterCardMethods({
               GET_ALL_KEYED: (props) => {
                 let subject = "PROPERTY_SETS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -82,7 +82,7 @@ function buildRegisterCardMethods({
               GET_KEYED: (props) => {
                 let subject = "CARDS";
                 let action = "GET_KEYED";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handleGame(
                   props,
                   (consumerData) => {
@@ -111,7 +111,7 @@ function buildRegisterCardMethods({
               GET_ALL_KEYED: (props) => {
                 let subject = "CARDS";
                 let action = "GET_ALL_KEYED";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handleGame(
                   props,
                   (consumerData) => {

@@ -14,7 +14,7 @@ function buildCheckExists({
 {
     function checkExists(props)
     {
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         const [subject, action] = ["ROOM", "EXISTS"];
         let roomCodes = getArrFromProp(props, {
           plural: "roomCodes",

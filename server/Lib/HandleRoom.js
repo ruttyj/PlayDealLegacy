@@ -14,7 +14,7 @@ module.exports = function({
         checkpoints.set("room", false);
         checkpoints.set("personManager", false);
 
-        let reducedResponses = SocketResponseBuckets();
+        let reducedResponses = new SocketResponseBuckets();
         let responses = null;
 
         if (isDef(roomCode)) {

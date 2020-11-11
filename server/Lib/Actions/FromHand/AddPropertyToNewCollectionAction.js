@@ -18,7 +18,7 @@ function buildAddPropertyToNewCollectionAction({
 
         let subject = "MY_TURN";
         let action = "ADD_PROPERTY_TO_NEW_COLLECTION_FROM_HAND";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,

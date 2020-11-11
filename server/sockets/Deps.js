@@ -55,7 +55,7 @@ function buildDeps({
       fallback = keyedRequest.getFallback();
 
       fallback = els(fallback, undefined);
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
 
       let keys = getArrFromProp(props, nomenclature, fallback);
 
@@ -88,7 +88,7 @@ function buildDeps({
       propName    = keyedRequest.getPluralKey();
       getAllKeys  = keyedRequest.getAllKeysFn();
 
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
       socketResponses.addToSpecific(
         "default",
         makeResponse({ subject, action, status: "success", payload: null })
@@ -176,7 +176,7 @@ function buildDeps({
       getOtherData,
     }) {
       let { personManager, thisPersonId } = props;
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
 
       // People who will receive the information
       let receivingPeopleIds = getArrFromProp(
@@ -286,7 +286,7 @@ function buildDeps({
         GET_KEYED: (props) => {
           //props: { roomCode, (collectionIds|collectionId)}
           let action = "GET_KEYED";
-          const socketResponses = SocketResponseBuckets();
+          const socketResponses = new SocketResponseBuckets();
           return handleGame(
             props,
             (consumerData, checkpoints) => {
@@ -313,7 +313,7 @@ function buildDeps({
         GET_ALL_KEYED: (props) => {
           //props: {roomCode}
           let action = "GET_ALL_KEYED";
-          const socketResponses = SocketResponseBuckets();
+          const socketResponses = new SocketResponseBuckets();
           return handleGame(
             props,
             (consumerData, checkpoints) => {
@@ -352,7 +352,7 @@ function buildDeps({
         },
         GET_ALL_MY_KEYED: (props) => {
           let action = "GET_ALL_MY_KEYED";
-          const socketResponses = SocketResponseBuckets();
+          const socketResponses = new SocketResponseBuckets();
           return handleGame(
             props,
             (consumerData, checkpoints) => {
@@ -392,7 +392,7 @@ function buildDeps({
         REMOVE_KEYED: (props) => {
           //props: { roomCode, (collectionIds|collectionId)}
           let action = "REMOVE_KEYED";
-          const socketResponses = SocketResponseBuckets();
+          const socketResponses = new SocketResponseBuckets();
           return handleGame(
             props,
             (consumerData) => {
@@ -438,7 +438,7 @@ function buildDeps({
       checkpoints.set("room", false);
       checkpoints.set("personManager", false);
   
-      let reducedResponses = SocketResponseBuckets();
+      let reducedResponses = new SocketResponseBuckets();
       let responses = null;
   
       if (isDef(roomCode)) {
@@ -677,7 +677,7 @@ function buildDeps({
       fn,
       fallback = undefined
     ) {
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
       return parentConsumer(
         props,
         function(consumerData, checkpoints) {
@@ -720,7 +720,7 @@ function buildDeps({
       props,
       theThing
     ) {
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
       let status = "failure";
       let payload = null;
       return handleGame(
@@ -935,7 +935,7 @@ function buildDeps({
       props,
       theThing
     ) {
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
       let status = "failure";
       let payload = null;
       return handleGame(
@@ -1149,7 +1149,7 @@ function buildDeps({
       props,
       doTheThing
     ) {
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
       let status = "failure";
       let payload = null;
       return handCardConsumer(
@@ -1307,7 +1307,7 @@ function buildDeps({
       props,
       doTheThing
     ) {
-      const socketResponses = SocketResponseBuckets();
+      const socketResponses = new SocketResponseBuckets();
       let status = "failure";
       let payload = null;
       return handCardConsumer(

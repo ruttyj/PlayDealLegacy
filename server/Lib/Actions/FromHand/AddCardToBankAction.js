@@ -20,7 +20,7 @@ function buildAddCardToBankAction({
 
         let subject = "MY_TURN";
         let action = "ADD_CARD_TO_MY_BANK_FROM_HAND";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,

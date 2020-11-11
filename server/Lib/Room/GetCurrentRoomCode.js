@@ -18,7 +18,7 @@ function buildGetCurrentRoomCode({
     function getCurrentRoomCode(props)
     {
         const [subject, action] = ["ROOM", "GET_CURRENT"];
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let payload = null;
 
         let { roomCode } = props;

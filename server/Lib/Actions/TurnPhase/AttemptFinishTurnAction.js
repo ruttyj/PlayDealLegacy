@@ -17,7 +17,7 @@ function buildAttemptFinishTurnAction({
 
         let subject = "MY_TURN";
         let action = "FINISH_TURN";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
 
         return handleMyTurn(
           props,

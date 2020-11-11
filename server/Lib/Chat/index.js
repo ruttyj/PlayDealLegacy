@@ -19,7 +19,7 @@ function buildRegisterChatMethods({
             CHAT: {
               SEND_PRIVATE_MESSAGE: (props) => {
                 const [subject, action] = ["CHAT", "SEND_PRIVATE_MESSAGE"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -49,7 +49,7 @@ function buildRegisterChatMethods({
               },
               SEND_MESSAGE: (props) => {
                 const [subject, action] = ["CHAT", "SEND_MESSAGE"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -81,7 +81,7 @@ function buildRegisterChatMethods({
                 // emit to user
                 // roomCode
                 const [subject, action] = ["CHAT", "RECEIVE_MESSAGE"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {

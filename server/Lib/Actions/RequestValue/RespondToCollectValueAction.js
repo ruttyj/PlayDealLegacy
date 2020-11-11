@@ -13,7 +13,7 @@ function buildRespondToCollectValueAction({
     function respondToCollectValueAction(props)
     {
         const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
 
         const doTheThing = (consumerData, checkpoints) => {
           let {

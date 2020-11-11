@@ -15,7 +15,7 @@ function buildGetRoom({
     function getRoom(props)
     {
         const [subject, action] = ["ROOM", "GET_KEYED"];
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let payload = {
             items: {},
             order: [],

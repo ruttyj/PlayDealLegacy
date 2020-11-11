@@ -16,7 +16,7 @@ function buildCreateRoom({
     function createRoom(props)
     {
         const [subject, action] = ["ROOM", "CREATE"];
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let { roomCode } = props;
         roomCode = els(roomCode, "AAAA");
 

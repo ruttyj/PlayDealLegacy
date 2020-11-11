@@ -6,7 +6,7 @@ function buildRespondToJustSayNoAction({
     {
         let subject = "RESPONSES";
         let action = "RESPOND_TO_JUST_SAY_NO";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         return handleGame(
           props,
           ({game}) => {

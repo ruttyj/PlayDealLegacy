@@ -113,7 +113,7 @@ function buildRegisterGameMethods({
               GET_UPDATED_PILES: (props) => {
                 const { roomCode } = props;
         
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 if (isDef(roomCode)) {
                   socketResponses.addToBucket(
                     "default",
@@ -134,7 +134,7 @@ function buildRegisterGameMethods({
               },
               RESET: (props) => {
                 const [subject, action] = ["GAME", "RESET"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handleRoom(
                   props,
                   (consumerData) => {
@@ -169,7 +169,7 @@ function buildRegisterGameMethods({
                 const [subject, action] = ["GAME", "UPDATE_CONFIG"];
                 let payload = null;
                 let status = "failure";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (consumerData, checkpoints) => {
@@ -205,7 +205,7 @@ function buildRegisterGameMethods({
                 const [subject, action] = ["GAME", "GET_CONFIG"];
                 let payload = null;
                 let status = "failure";
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (consumerData) => {
@@ -231,7 +231,7 @@ function buildRegisterGameMethods({
               STATUS: (props) => {
                 // roomCode
                 const [subject, action] = ["GAME", "STATUS"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -263,7 +263,7 @@ function buildRegisterGameMethods({
               },
               START: (props) => {
                 const [subject, action] = ["GAME", "START"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (consumerData) => {
@@ -384,7 +384,7 @@ function buildRegisterGameMethods({
               CAN_START: (props) => {
                 // roomCode
                 const [subject, action] = ["GAME", "CAN_START"];
-                const socketResponses = SocketResponseBuckets();
+                const socketResponses = new SocketResponseBuckets();
                 return handlePerson(
                   props,
                   (props2) => {
@@ -709,7 +709,7 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "DISCARD_PILE";
             let action = "GET";
-            const socketResponses = SocketResponseBuckets();
+            const socketResponses = new SocketResponseBuckets();
             return handleGame(
               props,
               (props2) => {
@@ -730,7 +730,7 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "ACTIVE_PILE";
             let action = "GET";
-            const socketResponses = SocketResponseBuckets();
+            const socketResponses = new SocketResponseBuckets();
             return handleGame(
               props,
               (props2) => {
@@ -751,7 +751,7 @@ function buildRegisterGameMethods({
           GET: (props) => {
             let subject = "DRAW_PILE";
             let action = "GET";
-            const socketResponses = SocketResponseBuckets();
+            const socketResponses = new SocketResponseBuckets();
             return handleGame(
               props,
               ({ game }) => {
@@ -810,7 +810,7 @@ function buildRegisterGameMethods({
             GET: (props) => {
               let subject = "PLAYER_TURN";
               let action = "GET";
-              const socketResponses = SocketResponseBuckets();
+              const socketResponses = new SocketResponseBuckets();
               return handleGame(
                 props,
                 (consumerData) => {
@@ -894,7 +894,7 @@ function buildRegisterGameMethods({
             let action = "REMOVE_ALL";
             let status = "failure";
             let payload = null;
-            const socketResponses = SocketResponseBuckets();
+            const socketResponses = new SocketResponseBuckets();
             return handleGame(
               props,
               (consumerData) => {
@@ -914,7 +914,7 @@ function buildRegisterGameMethods({
             //props: { roomCode, (peopleIds|personId)}
             let subject = "PLAYER_REQUESTS";
             let action = "GET_KEYED";
-            const socketResponses = SocketResponseBuckets();
+            const socketResponses = new SocketResponseBuckets();
     
             return handleGame(
               props,
@@ -949,7 +949,7 @@ function buildRegisterGameMethods({
             let action = "PLAYER_REQUESTS";
             let status = "failure";
             let payload = null;
-            const socketResponses = SocketResponseBuckets();
+            const socketResponses = new SocketResponseBuckets();
             return handleGame(
               props,
               (consumerData) => {

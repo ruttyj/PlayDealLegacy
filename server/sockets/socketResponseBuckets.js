@@ -16,107 +16,119 @@ const { isDef, isArr, isFunc, makeMap, stateSerialize } = require("./utils.js");
  * Additional information can be places into specific buckets indexed by the client id.
  * All buckets will eventually be reduced to their correponding client id.
  */
-function SocketResponseBuckets() {
-  let mState = {};
+module.exports = class SocketResponseBuckets {
 
-  let buckets = makeMap(mState, "buckets");
-  let specific = makeMap(mState, "specific", [], {
-    keyMutator: v => String(v)
-  });
-
-  function isSameType(obj) {
-    return isDef(obj) && isFunc(obj.is) && obj.is() === is();
+  constructor()
+  {
+    this.mState = {};
+    this.mBuckets = makeMap(this.mState, "buckets");
+    this.mSpecific = makeMap(this.mState, "specific", [], {
+      keyMutator: v => String(v)
+    });
   }
 
-  function is() {
+  get buckets()
+  {
+    return this.mBuckets;
+  }
+
+  get specific(){
+    return this.mSpecific;
+  }
+
+  isSameType(obj) {
+    return obj instanceof SocketResponseBuckets;
+  }
+
+  is() {
     return SocketResponseBuckets;
   }
 
-  function addArrToBucket(buckeyKey, arrItems) {
-    if (!buckets.has(buckeyKey)) buckets.set(buckeyKey, []);
-    buckets.get(buckeyKey).push(...arrItems);
+  addArrToBucket(buckeyKey, arrItems) {
+    if (!this.mBuckets.has(buckeyKey)) this.mBuckets.set(buckeyKey, []);
+    this.mBuckets.get(buckeyKey).push(...arrItems);
   }
 
-  function addObjToBucket(buckeyKey, obj) {
-    addArrToBucket(buckeyKey, [obj]);
+  addObjToBucket(buckeyKey, obj) {
+    this.addArrToBucket(buckeyKey, [obj]);
   }
 
-  function addArrToSpecific(sKey, arrItems) {
-    if (!specific.has(sKey)) specific.set(sKey, []);
-    specific.get(sKey).push(...arrItems);
+  addArrToSpecific(sKey, arrItems) {
+    if (!this.mSpecific.has(sKey)) this.mSpecific.set(sKey, []);
+    this.mSpecific.get(sKey).push(...arrItems);
   }
-  function addObjToSpecific(sKey, obj) {
-    addArrToSpecific(sKey, [obj]);
+  addObjToSpecific(sKey, obj) {
+    this.addArrToSpecific(sKey, [obj]);
   }
 
-  function addSocketReponse(objA) {
+  addSocketReponse(objA) {
     let serialA = objA.serialize();
     Object.keys(serialA.buckets).forEach(bucketKey => {
-      addArrToBucket(bucketKey, serialA.buckets[bucketKey]);
+      this.addArrToBucket(bucketKey, serialA.buckets[bucketKey]);
     });
 
     Object.keys(serialA.specific).forEach(sKey => {
-      addArrToSpecific(sKey, serialA.specific[sKey]);
+      this.addArrToSpecific(sKey, serialA.specific[sKey]);
     });
   }
 
   // Transfer from default to a specific bucket
-  function transferToBucket(newBucketKey, objA) {
+  transferToBucket(newBucketKey, objA) {
     let serialA = objA.serialize();
 
     Object.keys(serialA.buckets).forEach(bucketKey => {
       let targetBucketKey = bucketKey === "default" ? newBucketKey : bucketKey;
-      addArrToBucket(targetBucketKey, serialA.buckets[bucketKey]);
+      this.addArrToBucket(targetBucketKey, serialA.buckets[bucketKey]);
     });
 
     Object.keys(serialA.specific).forEach(sKey => {
-      addArrToSpecific(sKey, serialA.specific[sKey]);
+      this.addArrToSpecific(sKey, serialA.specific[sKey]);
     });
   }
 
-  function addToBucket(mxdA, mxdB = null) {
+  addToBucket(mxdA, mxdB = null) {
     if (!isDef(mxdB)) {
-      if (isSameType(mxdA)) {
-        addSocketReponse(mxdA);
+      if (this.isSameType(mxdA)) {
+        this.addSocketReponse(mxdA);
       } else if (isArr(mxdA)) {
-        transferToBucket("default", mxdA);
+        this.transferToBucket("default", mxdA);
       } else {
-        addObjToBucket("default", mxdA);
+        this.addObjToBucket("default", mxdA);
       }
-    } else if (isSameType(mxdB)) {
-      transferToBucket(mxdA, mxdB);
+    } else if (this.isSameType(mxdB)) {
+      this.transferToBucket(mxdA, mxdB);
     } else if (isArr(mxdB)) {
-      addArrToBucket(mxdA, mxdB);
+      this.addArrToBucket(mxdA, mxdB);
     } else {
-      addObjToBucket(mxdA, mxdB);
+      this.addObjToBucket(mxdA, mxdB);
     }
   }
 
-  function addToSpecific(sKey, mxdB) {
+  addToSpecific(sKey, mxdB) {
     if (isArr(mxdB)) {
-      addArrToSpecific(sKey, mxdB);
+      this.addArrToSpecific(sKey, mxdB);
     } else {
-      addObjToSpecific(sKey, mxdB);
+      this.addObjToSpecific(sKey, mxdB);
     }
   }
 
-  function serialize() {
-    return stateSerialize(mState);
+  serialize() {
+    return stateSerialize(this.mState);
   }
 
   // Take information from the buckets and assign to relevent clients
   // Returns a new object
-  function reduce(thisId, ids) {
-    let newBuckets = SocketResponseBuckets();
-    let b = buckets;
-    let s = specific;
+  reduce(thisId, ids) {
+    let newBuckets = new SocketResponseBuckets();
+    let b = this.buckets;
+    let s = this.specific;
 
     let defaultBuckets = {
       default: 1,
       everyoneElse: 1,
       everyone: 1
     };
-    buckets.keys().forEach(bucket => {
+    this.mBuckets.keys().forEach(bucket => {
       if (!isDef(defaultBuckets[bucket])) {
         console.log("HEYYY!!!, WRONG BUCKET NAME!!");
       }
@@ -145,26 +157,4 @@ function SocketResponseBuckets() {
     });
     return newBuckets;
   }
-
-  return {
-    is,
-    addToBucket,
-    addToSpecific,
-
-    addArrToBucket,
-    addObjToBucket,
-    addSocketReponse,
-    transferToBucket,
-
-    addArrToSpecific,
-    addObjToSpecific,
-
-    reduce,
-
-    serialize,
-    specific,
-    buckets
-  };
 }
-
-module.exports = SocketResponseBuckets;

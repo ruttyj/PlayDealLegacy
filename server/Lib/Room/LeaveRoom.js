@@ -18,7 +18,7 @@ function buildLeaveRoom({
     {
        
         const [subject, action] = ["ROOM", "LEAVE"];
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
 
         let status = "failure";
         return handleRoom(

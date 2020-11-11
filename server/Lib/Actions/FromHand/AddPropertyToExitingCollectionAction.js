@@ -18,7 +18,7 @@ function buildAddPropertyToExitingCollectionAction({
 
         let subject = "MY_TURN";
         let action = "ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND";
-        const socketResponses = SocketResponseBuckets();
+        const socketResponses = new SocketResponseBuckets();
         let status = "failure";
         return handCardConsumer(
           props,
