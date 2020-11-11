@@ -128,7 +128,7 @@ const {
 
 
     //this.todoMove.set(mStrThisClientId, registry);
-  function buildPopulatedRegistry({
+module.exports = function({
     Affected,
     OrderedTree,
   })
@@ -399,7 +399,5 @@ const {
       registerCheatMethods(registry);
       registerRoomMethods(registry);
     }
-  }
+}
 
-
-module.exports = buildPopulatedRegistry;

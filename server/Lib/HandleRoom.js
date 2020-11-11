@@ -1,4 +1,4 @@
-function buildHandleRoom({
+module.exports = function({
     isDef,
     isFunc,
     SocketResponseBuckets,
@@ -68,5 +68,3 @@ function buildHandleRoom({
         return fallback;
     }
 }
-
-module.exports = buildHandleRoom;

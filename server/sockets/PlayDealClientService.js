@@ -1,9 +1,20 @@
 const rootFolder              = `../..`;
 const serverFolder            = `${rootFolder}/server`;
 const serverSocketFolder      = `${serverFolder}/sockets`;
+const libFolder               = `${serverFolder}/Lib`;
 
-const buildAffected           = require(`${serverFolder}/Lib/Affected`);
-const buildOrderedTree        = require(`${serverFolder}/Lib/OrderedTree`);
+const {
+        isDef,
+        isFunc,
+        isStr,
+        isArr,
+        jsonEncode,
+        els,
+      }                       = require("./utils.js");
+
+
+const buildAffected           = require(`${libFolder}/Affected`);
+const buildOrderedTree        = require(`${libFolder}/OrderedTree`);
 const CookieTokenManager      = require("../CookieTokenManager/");
 
 const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
@@ -11,18 +22,16 @@ const RoomManager             = require(`${serverSocketFolder}/room/roomManager.
 
 // Import generic logic for indexed game data
 const SocketResponseBuckets   = require(`${serverSocketFolder}/socketResponseBuckets.js`); // @TODO rename AddressedResponse
-const buildHandleRoom         = require(`${serverFolder}/Lib/HandleRoom`);
+const buildHandleRoom         = require(`${libFolder}/HandleRoom`);
 const buildPopulatedRegistry  = require(`./PopulateRegistry`);
 
-const buildRegistry           = require(`${serverFolder}/Lib/Registry`);
-const {
-  els,
-  isDef,
-  isFunc,
-  isStr,
-  isArr,
-  jsonEncode,
-} = require("./utils.js");
+const buildRegistry           = require(`${libFolder}/Registry`);
+const buildOnListen           = require(`${libFolder}/OnListen`);
+const buildOnDisconnected     = require(`${libFolder}/OnDisconnected`);
+const buildOnConnection       = require(`${libFolder}/OnConnection`);
+
+
+
 
 
 /**
@@ -55,7 +64,7 @@ let deps = {
   cookieTokenManager   : cookieTokenManager,
 }
 
-class PlayDealClientService {
+module.exports = class PlayDealClientService {
   
   constructor()
   {
@@ -72,33 +81,24 @@ class PlayDealClientService {
     this.todoMove = new Map();
   }
   
-  
-  connectClient(thisClient)
-  {
+
+  buildRegistry({connection, handleRoom}){
+    let connectionId          = this.getConnectionId(connection);
+    
     const clientManager       = this.clientManager;
     const roomManager         = this.roomManager;
     const cookieTokenManager  = this.cookieTokenManager;
-    const registry            = new Registry();
+    const registry            = new Registry(); // event Registry
 
-
-    const mThisClientId       = thisClient.id;
-    const mStrThisClientId    = String(mThisClientId);
+    
     let populatedRegistry     = buildPopulatedRegistry({
       Affected,
       OrderedTree
     });
     
 
-    let handleRoom = buildHandleRoom({
-      isDef,
-      isFunc,
-      SocketResponseBuckets,
-      mStrThisClientId,
-      roomManager,
-    })
-
     populatedRegistry({
-      thisClient,
+      thisClient: connection,
       //---------------------
       handleRoom,
       //---------------------
@@ -107,9 +107,28 @@ class PlayDealClientService {
       cookieTokenManager,
       registry,
     })
-    this.todoMove.set(mStrThisClientId, registry);
+    this.todoMove.set(connectionId, registry);
 
+    return registry;
+  }
+
+  getConnectionId(connection)
+  {
+    return String(connection.id);
+  }
+  
+  connectClient(connection)
+  {
+    let connectionId = this.getConnectionId(connection);
     
+    let handleRoom = buildHandleRoom({
+      isDef,
+      isFunc,
+      SocketResponseBuckets,
+      mStrThisClientId: connectionId,
+      roomManager     : this.roomManager,
+    })
+    const registry = this.buildRegistry({connection, handleRoom});
 
 
     //==================================================
@@ -117,106 +136,34 @@ class PlayDealClientService {
     //                    HANDLERS
   
     //==================================================
-    // #region HANDLERS
-    function onConnected() {
-      clientManager.addClient(thisClient);
-    }
-  
-    function buildOnListen(registry) {
-      const subjectMap = registry.getAllPublic();
-      return function(encodedData) {
-        const socketResponses = SocketResponseBuckets();
-        let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
-        let clientPersonMapping = {};
-    
-        if (isArr(requests)) {
-          requests.forEach((request) => {
-            let requestResponses = SocketResponseBuckets();
-    
-            let subject = request.subject;
-            let action = request.action;
-            let props = els(request.props, {});
+    const onConnected = buildOnConnection({
+      clientManager: this.clientManager, 
+      connection
+    });
+    const onListen = buildOnListen({
+        els,
+        isDef,
+        isStr,
+        isArr,
+        jsonEncode,
+        SocketResponseBuckets,
+        registry,
+        mStrThisClientId: connectionId,
+        thisClient: connection,
+        handleRoom,
+    });
+    const onDisconnected = buildOnDisconnected({
+      onListen,
+      isDef,
+      thisClient          : connection,
+      clientManager       : this.clientManager,
+      roomManager         : this.roomManager,
+      cookieTokenManager  : this.cookieTokenManager,
+  })
 
-            request.thisClient    = thisClient;
-            request.thisClientKey = thisClient.id;
-            props.thisClientKey   = thisClient.id;
-    
-            if (isDef(subjectMap[subject])) {
-              if (isDef(subjectMap[subject][action])) {
-                // @TODO add a way of limiting the props which can be passed to method from the client
-                // We may want to push data to clients but not allow it to be abused
-                let actionResult = subjectMap[subject][action](props);
-    
-                requestResponses.addToBucket("default", actionResult);
-              }
-            }
-    
-            // Collect person Ids
-            let clientIdsMap = {};
-            clientIdsMap[mStrThisClientId] = true;
-            handleRoom(props, ({ personManager }) => {
-              personManager.getConnectedPeople().forEach((person) => {
-                clientIdsMap[String(person.getClientId())] = true;
-                clientPersonMapping[String(person.getClientId())] = person;
-              });
-            });
-    
-            // Assing the buckets of reponses to the relevent clients
-            let clientIds = Object.keys(clientIdsMap);
-            socketResponses.addToBucket(
-              requestResponses.reduce(mStrThisClientId, clientIds)
-            );
-          });
-        }
-    
-        // Emit to "me" since I am always available
-        if (socketResponses.specific.has(String(mStrThisClientId))) {
-          let resp = socketResponses.specific.get(mStrThisClientId);
-          thisClient.emit("response", jsonEncode(resp));
-        }
-        // Emit to other relevent people collected from the above requests
-        Object.keys(clientPersonMapping).forEach((clientId) => {
-          if (mStrThisClientId !== clientId) {
-            let person = clientPersonMapping[clientId];
-            if (socketResponses.specific.has(clientId)) {
-              let resp = socketResponses.specific.get(clientId);
-              person.emit("response", jsonEncode(resp));
-            }
-          }
-        });
-      }
-    };
   
-    function onDisconnected() {
-      let clientId = thisClient.id;
-      let rooms = roomManager.getRoomsForClientId(clientId);
-      cookieTokenManager.dissociateClient(clientId);
-  
-      if (isDef(rooms)) {
-        // HACK
-        let onListen = buildOnListen(registry);
-        rooms.forEach((room) => {
-          onListen(
-            JSON.stringify([
-              {
-                subject: "ROOM",
-                action: "LEAVE",
-                props: { roomCode: room.getCode() },
-              },
-            ])
-          );
-  
-          // Handle leave room since the above handler requires the room to exist to notify people
-          let roomPersonManager = room.getPersonManager();
-          if (roomPersonManager.getConnectedPeopleCount() === 0) {
-            roomManager.deleteRoom(room.getId());
-          }
-        });
-      }
-      clientManager.removeClient(thisClient);
-    }
-    // #endregion
-  
+
+    
 
     //==================================================
   
@@ -224,9 +171,7 @@ class PlayDealClientService {
   
     //==================================================
     onConnected();
-    thisClient.on("request",  buildOnListen(registry));
-    thisClient.on("disconnect", onDisconnected);
+    connection.on("request",  onListen);
+    connection.on("disconnect", onDisconnected);
   }
 }
-
-module.exports = PlayDealClientService;

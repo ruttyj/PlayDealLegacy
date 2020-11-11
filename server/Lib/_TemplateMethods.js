@@ -1,10 +1,4 @@
-/**
- * Build a People Method Provider
- * @SEARCH_REPLACE Template
- * Provides methods for a socket to be able to listen with
- * const buildRegisterTemplateMethods = require(`${serverFolder}/Lib/Template/`);
- */
-function buildRegisterTemplateMethods({
+module.exports = function({
     
     serverFolder,
     commonDeps,
@@ -78,4 +72,3 @@ function buildRegisterTemplateMethods({
     return registerTemplateMethods;
 }
 
-module.exports = buildRegisterTemplateMethods;
