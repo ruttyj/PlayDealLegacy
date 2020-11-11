@@ -33,31 +33,16 @@ function buildAddPropertyToExitingCollectionAction({
               currentTurn,
               thisPersonId,
             } = props2;
-            checkpoints.set("isActionPhase", false);
-            checkpoints.set("collectionExists", false);
-            checkpoints.set("isMyCollection", false);
-            checkpoints.set("isPropertyCard", false);
-            checkpoints.set("hasPropertySet", false);
-            checkpoints.set("cardMatchesPropertySet", false);
-            checkpoints.set("isWithinActionLimit", false);
-
             if (currentTurn.getPhaseKey() === "action") {
-              checkpoints.set("isActionPhase", true);
 
               if (isDef(collectionId)) {
                 let collection = game
                   .getCollectionManager()
                   .getCollection(collectionId);
                 if (isDef(collection)) {
-                  checkpoints.set("collectionExists", true);
                   if (collection.getPlayerKey() === thisPersonId) {
-                    checkpoints.set("isMyCollection", true);
-                    checkpoints.set("doesCollectionHaveRoom", false);
                     if (!collection.isFull()) {
-                      checkpoints.set("doesCollectionHaveRoom", true);
-
                       if (game.isCardProperty(card)) {
-                        checkpoints.set("isPropertyCard", true);
 
                         let resultFromCollection = game.canAddCardToCollection(
                           card,
@@ -67,12 +52,9 @@ function buildAddPropertyToExitingCollectionAction({
                           resultFromCollection.newPropertySetKey;
                         let canBeAdded = resultFromCollection.canBeAdded;
 
-                        checkpoints.set("canBeAdded", false);
                         if (canBeAdded) {
-                          checkpoints.set("canBeAdded", true);
 
                           if (game.getCurrentTurn().isWithinActionLimit()) {
-                            checkpoints.set("isWithinActionLimit", true);
 
                             let isWildCard = game.doesCardHaveTag(card, "wild");
 

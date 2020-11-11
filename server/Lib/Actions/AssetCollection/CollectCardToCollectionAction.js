@@ -28,22 +28,16 @@ function buildCollectCardToCollectionAction({
             let status = "failure";
       
             // if card is in list of transfer cards and has not already been processed
-            checkpoints.set("isValidTransferCard", false);
             if (transfering.has("property")) {
               let transferPropertiesToMe = transfering.get("property");
               let cardIds = transferPropertiesToMe.getRemainingList();
               if (cardIds.includes(cardId)) {
-                checkpoints.set("isValidTransferCard", true);
-      
                 let card = game.getCard(cardId);
                 let collection;
       
                 // If my collection is specified to transfer to
                 if (isDef(collectionId)) {
-                  checkpoints.set("isMyCollection", false);
                   if (player.hasCollectionId(collectionId)) {
-                    checkpoints.set("isMyCollection", true);
-      
                     let transformCollection = game.canAddCardToCollection(
                       cardId,
                       collectionId

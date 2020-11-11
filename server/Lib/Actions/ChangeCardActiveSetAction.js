@@ -6,7 +6,6 @@
  */
 function buildChangeCardActiveSetAction({
     makeConsumerFallbackResponse,
-    packageCheckpoints,
     isDef,
     PUBLIC_SUBJECTS,
     AddressedResponse,
@@ -24,28 +23,17 @@ function buildChangeCardActiveSetAction({
         let payload = null;
         return handleMyTurn(
           props,
-          (consumerData, checkpoints) => {
+          (consumerData) => {
             let { cardId, chosenSetKey, collectionId } = consumerData;
             const { roomCode, game, thisPersonId } = consumerData;
-
             let scope = "default";
-            checkpoints.set("cardIsDefined", false);
-            checkpoints.set("validChosenSetKey", false);
-            checkpoints.set("validPlayer", false);
-            // Player
             let player = game.getPlayer(thisPersonId);
             if (isDef(player)) {
-              checkpoints.set("validPlayer", true);
-
-              // Card
               if (isDef(cardId)) {
-                checkpoints.set("cardIsDefined", true);
 
                 // Set choice is valid
                 let choiceList = game.getSetChoicesForCard(cardId);
                 if (isDef(chosenSetKey) && choiceList.includes(chosenSetKey)) {
-                  checkpoints.set("validChosenSetKey", true);
-
                   // Is in hand?
                   let hand = game.getPlayerHand(thisPersonId);
                   if (hand.hasCard(cardId)) {
@@ -93,7 +81,6 @@ function buildChangeCardActiveSetAction({
             }
 
             if (!isDef(payload)) payload = {};
-            payload.checkpoints = packageCheckpoints(checkpoints);
 
             addressedResponses.addToBucket(
               "default",

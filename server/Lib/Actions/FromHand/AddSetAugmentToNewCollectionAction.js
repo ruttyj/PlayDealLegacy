@@ -22,10 +22,6 @@ function buildAddSetAugmentToNewCollectionAction({
         return handleMyTurn(
           props,
           (consumerData, checkpoints) => {
-            //Defind checkpoints which must be reached
-            checkpoints.set("cardExists", false);
-
-            // Unpack consumerData
             const { cardId } = consumerData;
             const {
               roomCode,
@@ -43,7 +39,6 @@ function buildAddSetAugmentToNewCollectionAction({
 
             const card = game.getCard(cardId);
             if (isDef(card)) {
-              checkpoints.set("cardExists", true);
               let beforeAllMyCollectionIds = JSON.parse(
                 JSON.stringify(
                   playerManager.getAllCollectionIdsForPlayer(thisPersonId)
@@ -58,8 +53,6 @@ function buildAddSetAugmentToNewCollectionAction({
                 let hand = game.getPlayerHand(thisPersonId);
                 if (isDef(hand)) {
                   if (game.isCardSetAugment(card)) {
-                    checkpoints.set("isSetAugmentCard", true);
-
                     toCollection.addCard(hand.giveCard(card));
 
                     if (willCostAction) {

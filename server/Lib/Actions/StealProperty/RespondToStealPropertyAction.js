@@ -37,20 +37,14 @@ function buildRespondToStealPropertyAction({
                 request.getTargetKey() === thisPersonId &&
                 request.getType() === "stealProperty"
             ) {
-                checkpoints.set("isValidResponseKey", false);
                 if (isDef(responseKey) && isDef(validResponses[responseKey])) {
-                checkpoints.set("isValidResponseKey", true);
                 let { transaction } = request.getPayload();
         
-                checkpoints.set("isTransactionDefined", false);
                 if (isDef(transaction)) {
-                    checkpoints.set("isTransactionDefined", true);
         
                     if (responseKey === "decline") {
                     let hand = game.getPlayerHand(thisPersonId);
-                    checkpoints.set("isCardInHand", false);
                     if (hand.hasCard(cardId)) {
-                        checkpoints.set("isCardInHand", true);
         
                         //can the card decline the request
                         if (game.doesCardHaveTag(cardId, "declineRequest")) {

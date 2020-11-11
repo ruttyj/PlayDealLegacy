@@ -7,7 +7,6 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
     makeConsumerFallbackResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
-    packageCheckpoints,
     isDef,
     AddressedResponse,
     handleMyTurn,
@@ -23,15 +22,7 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
         let status = "failure";
         return handleMyTurn(
           props,
-          (consumerData, checkpoints) => {
-            //Defind checkpoints which must be reached
-            checkpoints.set("cardExists", false);
-            checkpoints.set("isMyFromCollection", false);
-            checkpoints.set("isMyToCollection", false);
-            checkpoints.set("doesCardBelong", false);
-            checkpoints.set("cardIsAcceptable", false);
-
-            // Unpack consumerData
+          (consumerData) => {
             const { fromCollectionId, toCollectionId, cardId } = consumerData;
             const { roomCode, game, thisPersonId, currentTurn } = consumerData;
             const collectionManager = game.getCollectionManager();
@@ -40,8 +31,6 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
 
             const card = game.getCard(cardId);
             if (isDef(card)) {
-              checkpoints.set("cardExists", true);
-
               // Is my collection?
               let beforeAllMyCollectionIds = JSON.parse(
                 JSON.stringify(
@@ -57,8 +46,6 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
                   fromCollectionId
                 );
                 if (isDef(fromCollection)) {
-                  checkpoints.set("isMyFromCollection", true);
-
                   if (
                     beforeAllMyCollectionIds
                       .map(String)
@@ -68,14 +55,9 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
                       toCollectionId
                     );
                     if (isDef(toCollection)) {
-                      checkpoints.set("isMyToCollection", true);
-                      checkpoints.set("isMyFromCollectionHasCard", false);
                       if (fromCollection.hasCard(card)) {
-                        checkpoints.set("isMyFromCollectionHasCard", true);
                         if (game.isCardSetAugment(card)) {
-                          checkpoints.set("isSetAugmentCard", true);
                           if (game.canApplyAugmentToSet(card, toCollection)) {
-                            checkpoints.set("canApplyAugment", true);
                             fromCollection.removeCard(card);
                             toCollection.addCard(card);
                             game.cleanUpFromCollection(
@@ -143,7 +125,6 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
             }
             // Confirm this executed
             let payload = {
-              checkpoints: packageCheckpoints(checkpoints),
             };
             addressedResponses.addToBucket(
               "default",

@@ -13,7 +13,6 @@ function buildDrawCardsAction({
 {
     function drawCardsAction(props)
     {
-
         let subject = "MY_TURN";
         let action = "PLAY_PASS_GO";
         const addressedResponses = new AddressedResponse();
@@ -21,7 +20,7 @@ function buildDrawCardsAction({
         let payload = null;
         return handCardConsumer(
           props,
-          (props2, checkpoints) => {
+          (props2) => {
             let {
               cardId,
               hand,
@@ -32,19 +31,13 @@ function buildDrawCardsAction({
               currentTurn,
               thisPersonId,
             } = props2;
-            checkpoints.set("isActionPhase", false);
-            checkpoints.set("isDrawCard", false);
-            checkpoints.set("canPlayCard", false);
 
             if (currentTurn.getPhaseKey() === "action") {
-              checkpoints.set("isActionPhase", true);
               // CARD IS PASS GO
               if (card.type === "action" && card.class === "draw") {
-                checkpoints.set("isDrawCard", true);
                 let drawQty = card.drawCards.amount;
 
                 if (game.getCurrentTurn().isWithinActionLimit()) {
-                  checkpoints.set("canPlayCard", true);
 
                   let handBefore = game.getPlayerHand(thisPersonId).serialize();
 
@@ -117,7 +110,6 @@ function buildDrawCardsAction({
 
             // confirm action for async await
             payload = {
-              checkpoints: packageCheckpoints(checkpoints),
             };
             addressedResponses.addToBucket(
               "default",

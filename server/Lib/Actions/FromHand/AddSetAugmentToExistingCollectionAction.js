@@ -32,29 +32,16 @@ function buildAddSetAugmentToExistingCollectionAction({
               thisPersonId,
             } = props2;
 
-            // Add checkpoints which must be reached
-            checkpoints.set("isActionPhase", false);
-            checkpoints.set("collectionExists", false);
-            checkpoints.set("isMyCollection", false);
-            checkpoints.set("isSetAugmentCard", false);
-            checkpoints.set("canApplyAugment", false);
-
             if (currentTurn.getPhaseKey() === "action") {
-              checkpoints.set("isActionPhase", true);
 
               if (isDef(collectionId)) {
                 let collection = game
                   .getCollectionManager()
                   .getCollection(collectionId);
                 if (isDef(collection)) {
-                  checkpoints.set("collectionExists", true);
                   if (collection.getPlayerKey() === thisPersonId) {
-                    checkpoints.set("isMyCollection", true);
                     if (game.isCardSetAugment(card)) {
-                      checkpoints.set("isSetAugmentCard", true);
                       if (game.canApplyAugmentToSet(card, collection)) {
-                        checkpoints.set("canApplyAugment", true);
-
                         collection.addCard(hand.giveCard(card));
                         currentTurn.setActionPreformed(
                           "AUGMENT_COLLECTION",

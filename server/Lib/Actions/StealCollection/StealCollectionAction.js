@@ -17,30 +17,20 @@ function buildStealCollectionAction({
           let hand = game.getPlayerHand(thisPersonId);
           let activePile = game.getActivePile();
     
-          checkpoints.set("isValidActionCard", false);
           if (game.doesCardHaveTag(cardId, "stealCollection")) {
-            checkpoints.set("isValidActionCard", true);
     
             let theirCollection = game
               .getCollectionManager()
               .getCollection(theirCollectionId);
             let collectionOwnerId = theirCollection.getPlayerKey();
-            checkpoints.set("isValidCollection", false);
             if (String(collectionOwnerId) !== String(thisPersonId)) {
-              checkpoints.set("isValidCollection", true);
     
-              checkpoints.set("isValidPropertySetKey", false);
               if (
                 !game.constants.NON_PROPERTY_SET_KEYS.includes(
                   theirCollection.getPropertySetKey
                 )
               ) {
-                checkpoints.set("isValidPropertySetKey", true);
-    
-                checkpoints.set("isCompleteCollection", false);
                 if (theirCollection.isFull()) {
-                  checkpoints.set("isCompleteCollection", true);
-    
                   // Use card
                   activePile.addCard(hand.giveCard(game.getCard(cardId)));
                   currentTurn.setActionPreformed(

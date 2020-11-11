@@ -31,48 +31,35 @@ function buildSwapPropertyAction({
             //}
       
             let actionCard = game.getCard(cardId);
-            checkpoints.set("isValidSwapPropertyActionCard", false);
             if (game.doesCardHaveTag(cardId, "swapProperty")) {
-              checkpoints.set("isValidSwapPropertyActionCard", true);
-      
               // My collection?
               let myCollection = game.getCollectionThatHasCard(myPropertyCardId);
-              checkpoints.set("isMyCollection", false);
               if (isDef(myCollection)) {
                 if (
                   String(myCollection.getPlayerKey()) === String(thisPersonId)
                 ) {
-                  checkpoints.set("isMyCollection", true);
-      
                   // Their collection?
                   let theirCollection = game.getCollectionThatHasCard(
                     theirPropertyCardId
                   );
-                  checkpoints.set("isTheirCollection", false);
                   if (isDef(theirCollection)) {
                     if (
                       String(theirCollection.getPlayerKey()) !==
                       String(thisPersonId)
                     ) {
-                      checkpoints.set("isTheirCollection", true);
-      
                       // Are valid cards? Augments might affect this in the future
                       let isValidCards = true;
-                      checkpoints.set("isValidCards", false);
-      
-                      checkpoints.set("isTheirCollectionNotFull", false);
+                      let isTheirCollectionNotFull = false;
                       if (!theirCollection.isFull()) {
-                        checkpoints.set("isTheirCollectionNotFull", true);
+                        isTheirCollectionNotFull = true;
                       }
       
-                      checkpoints.set("isMyCollectionNotFull", false);
+                      let isMyCollectionNotFull = false;
                       if (!myCollection.isFull()) {
-                        checkpoints.set("isMyCollectionNotFull", true);
+                        isMyCollectionNotFull = true;
                       }
       
-                      isValidCards =
-                        checkpoints.get("isTheirCollectionNotFull") &&
-                        checkpoints.get("isMyCollectionNotFull");
+                      isValidCards = isTheirCollectionNotFull && isMyCollectionNotFull;
       
                       // are they tagged as property?
                       if (isValidCards) {
@@ -85,24 +72,16 @@ function buildSwapPropertyAction({
                           "property"
                         );
       
-                        checkpoints.set("isMyCardProperty", false);
-                        if (isMyCardProperty) {
-                          checkpoints.set("isMyCardProperty", true);
-                        } else {
+                        if (!isMyCardProperty) {
                           isValidCards = false;
                         }
       
-                        checkpoints.set("isTheirCardProperty", false);
-                        if (isTheirCardProperty) {
-                          checkpoints.set("isTheirCardProperty", true);
-                        } else {
+                        if (!isTheirCardProperty) {
                           isValidCards = false;
                         }
                       }
       
                       if (isValidCards) {
-                        checkpoints.set("isValidCards", true);
-      
                         activePile.addCard(hand.giveCard(game.getCard(cardId)));
                         _Affected.setAffected('ACTIVE_PILE');
       

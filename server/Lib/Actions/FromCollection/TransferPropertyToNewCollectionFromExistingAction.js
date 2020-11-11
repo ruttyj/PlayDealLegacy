@@ -7,7 +7,6 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
     makeConsumerFallbackResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
-    packageCheckpoints,
     isDef,
     AddressedResponse,
     handleMyTurn,
@@ -22,13 +21,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
         let status = "failure";
         return handleMyTurn(
           props,
-          (consumerData, checkpoints) => {
-            //Defind checkpoints which must be reached
-            checkpoints.set("cardExists", false);
-            checkpoints.set("isMyCollection", false);
-            checkpoints.set("doesCardBelong", false);
-
-            // Unpack consumerData
+          (consumerData) => {
             const {
               roomCode,
               game,
@@ -43,8 +36,6 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
 
             const card = game.getCard(cardId);
             if (isDef(card)) {
-              checkpoints.set("cardExists", true);
-
               // Is my collection?
               let beforeAllMyCollectionIds = playerManager.getAllCollectionIdsForPlayer(
                 thisPersonId
@@ -54,8 +45,6 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
                   .map(String)
                   .includes(String(fromCollectionId))
               ) {
-                checkpoints.set("isMyCollection", true);
-
                 let fromCollection = collectionManager.getCollection(
                   fromCollectionId
                 );
@@ -64,13 +53,8 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
                 // would not make sense to transfer to another set when it only had 1 card to start
 
                 if (card.type === "property") {
-                  checkpoints.set("collectionHasMultipleCards", false);
                   if (fromCollection.propertyCount() > 1) {
-                    checkpoints.set("collectionHasMultipleCards", true);
-
                     if (fromCollection.hasCard(cardId)) {
-                      checkpoints.set("doesCardBelong", true);
-
                       let newCollection = playerManager.createNewCollectionForPlayer(
                         thisPersonId
                       );
@@ -123,7 +107,6 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
 
             // Confirm this executed
             let payload = {
-              checkpoints: packageCheckpoints(checkpoints),
             };
             addressedResponses.addToBucket(
               "default",

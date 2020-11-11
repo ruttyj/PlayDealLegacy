@@ -114,7 +114,7 @@ const PlayerRequestManager = function () {
 
   function _reconstructRequest(
     thisRequest,
-    { affected, affectedIds, _Affected, checkpoints }
+    { affected, affectedIds, _Affected }
   ) {
     // sure, it did go away.... but its baccccck
     let reconstruct = thisRequest.getPayload("reconstruct");
@@ -146,7 +146,7 @@ const PlayerRequestManager = function () {
 
   function _justSayNoTransitive(
     thisRequest,
-    { cardId, affected, affectedIds, _Affected, checkpoints }
+    { cardId, affected, affectedIds, _Affected }
   ) {
     let counterJustSayNo = makeJustSayNo(thisRequest, cardId);
 

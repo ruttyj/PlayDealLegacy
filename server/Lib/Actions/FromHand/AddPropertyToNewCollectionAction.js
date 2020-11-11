@@ -33,13 +33,9 @@ function buildAddPropertyToNewCollectionAction({
               thisPerson,
               thisPersonId,
             } = props2;
-            checkpoints.set("isPropertyCard", false);
-            checkpoints.set("hasPropertySet", false);
-            checkpoints.set("collectionCreated", false);
 
             // CARD IS PROPERTY
             if (game.isCardProperty(card)) {
-              checkpoints.set("isPropertyCard", true);
               let isSuperWildCard = game.doesCardHaveTag(card, "superWild");
               let isWildCard = game.doesCardHaveTag(card, "wild");
 
@@ -52,7 +48,6 @@ function buildAddPropertyToNewCollectionAction({
 
               // BELONGS TO A hasPropertySet
               if (isDef(decidedPropertySetKey)) {
-                checkpoints.set("hasPropertySet", true);
 
                 let handBefore = hand.serialize();
                 //
@@ -61,7 +56,6 @@ function buildAddPropertyToNewCollectionAction({
                   cardId
                 );
                 if (isDef(collection)) {
-                  checkpoints.set("collectionCreated", true);
                   collection.setPropertySetKey(decidedPropertySetKey);
                   status = "success";
 

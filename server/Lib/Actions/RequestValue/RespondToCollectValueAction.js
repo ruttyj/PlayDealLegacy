@@ -35,38 +35,23 @@ function buildRespondToCollectValueAction({
           let validResponseKeys = ["accept", "decline", "counter"];
 
           // Request manager exists
-          checkpoints.set("requestManagerExists", false);
           if (isDef(currentTurn) && isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
-
             // Is request phase
-            checkpoints.set("isRequestPhase", false);
             if (phaseKey === "request") {
-              checkpoints.set("isRequestPhase", true);
-
               // Request exists
               if (isDef(requestId) && requestManager.hasRequest(requestId)) {
                 let request = requestManager.getRequest(requestId);
                 let targetKey = request.getTargetKey();
 
                 // Is request targeting me?
-                checkpoints.set("isTargetingMe", true);
                 if (String(targetKey) === String(thisPersonId)) {
-                  checkpoints.set("isTargetingMe", false);
-
                   // Is request still open
-                  checkpoints.set("isRequestOpen", false);
                   if (!request.isClosed()) {
-                    checkpoints.set("isRequestOpen", true);
-
                     // valid response key
-                    checkpoints.set("isValidResponseKey", false);
                     if (
                       isDef(responseKey) &&
                       validResponseKeys.includes(responseKey)
                     ) {
-                      checkpoints.set("isValidResponseKey", true);
-
                       let player = game.getPlayer(thisPersonId);
                       let _Affected = new Affected();
 

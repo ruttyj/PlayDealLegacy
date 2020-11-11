@@ -21,15 +21,7 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
         let status = "failure";
         return handleMyTurn(
           props,
-          (consumerData, checkpoints) => {
-            //Defind checkpoints which must be reached
-            checkpoints.set("cardExists", false);
-            checkpoints.set("isMyFromCollection", false);
-            checkpoints.set("isMyToCollection", false);
-            checkpoints.set("doesCardBelong", false);
-            checkpoints.set("cardIsAcceptable", false);
-
-            // Unpack consumerData
+          (consumerData) => {
             const {
               roomCode,
               fromCollectionId,
@@ -43,8 +35,6 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
 
             const card = game.getCard(cardId);
             if (isDef(card)) {
-              checkpoints.set("cardExists", true);
-
               // Is my collection?
               let beforeAllMyCollectionIds = JSON.parse(
                 JSON.stringify(
@@ -60,8 +50,6 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
                   fromCollectionId
                 );
                 if (isDef(fromCollection)) {
-                  checkpoints.set("isMyFromCollection", true);
-
                   if (
                     beforeAllMyCollectionIds
                       .map(String)
@@ -71,16 +59,8 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
                       toCollectionId
                     );
                     if (isDef(toCollection)) {
-                      checkpoints.set("isMyToCollection", true);
-
                       if (card.type === "property") {
-                        checkpoints.set("cardIsAcceptable", true);
-                        checkpoints.set("cardExistsInFromCollection", false);
-
-                        checkpoints.set("cardMatchesPropertySet", false);
-
                         if (fromCollection.hasCard(cardId)) {
-                          checkpoints.set("cardExistsInFromCollection", true);
 
                           let resultFromCollection = game.canAddCardToCollection(
                             card,
@@ -91,9 +71,6 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
                           let canBeAdded = resultFromCollection.canBeAdded;
 
                           if (canBeAdded) {
-                            checkpoints.set("cardMatchesPropertySet", true);
-                            checkpoints.set("doesCardBelong", true);
-
                             fromCollection.removeCard(card);
                             toCollection.addCard(card);
                             toCollection.setPropertySetKey(
