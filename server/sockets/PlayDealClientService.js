@@ -5,7 +5,6 @@ const libFolder               = `${serverFolder}/Lib`;
 
 const {
         isDef,
-        isDefNested,
         isFunc,
         isStr,
         isArr,
@@ -93,10 +92,7 @@ module.exports = class PlayDealClientService {
     });
 
     populatedRegistry({
-      thisClient: connection,
-      //---------------------
       handleRoom,
-      //---------------------
       clientManager,
       roomManager,
       cookieTokenManager,
