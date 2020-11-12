@@ -127,14 +127,12 @@ const {
  */
 
 
-    //this.todoMove.set(mStrThisClientId, registry);
 module.exports = function({
     Affected,
     OrderedTree,
   })
   {
     return function ({
-      thisClient,
       //-------------------------
       handleRoom,
       registry,
@@ -154,9 +152,6 @@ module.exports = function({
         swapProperty: true,
       }
 
-      const mThisClientId       = thisClient.id;
-      const mStrThisClientId    = String(mThisClientId);
-      const thisClientKey       = mStrThisClientId;
 
 
       //==================================================
@@ -216,9 +211,6 @@ module.exports = function({
         PRIVATE_SUBJECTS,
 
         //-------------------
-        mThisClientId,
-        mStrThisClientId,
-        thisClient,
         clientManager,
         roomManager,
         cookieTokenManager,
@@ -236,12 +228,12 @@ module.exports = function({
       //=========================================================================
       // Clients
       let registerConnectionsMethods = buildRegisterConnectionMethods({
-          AddressedResponse,
-          PUBLIC_SUBJECTS,
-          PRIVATE_SUBJECTS,
-          mStrThisClientId,
-          clientManager,
-          makeResponse,
+        AddressedResponse,
+        PUBLIC_SUBJECTS,
+        PRIVATE_SUBJECTS,
+        clientManager,
+        makeResponse,
+        makeProps,
       })
       // Game
       let registerGameMethods = buildRegisterGameMethods({
@@ -261,12 +253,9 @@ module.exports = function({
         KeyedRequest,
         PUBLIC_SUBJECTS,
         PRIVATE_SUBJECTS,
-
         //-------------------
-        thisClientKey,
         roomManager,
         //-------------------
-
         makeProps,
         makeResponse,
         makeKeyedResponse,
@@ -338,12 +327,14 @@ module.exports = function({
         makeConsumerFallbackResponse,
         handleRoom,
         handlePerson,
+        makeProps,
       })
       let registerCheatMethods = buildRegisterCheatMethods({
         AddressedResponse,
         PUBLIC_SUBJECTS,
         makeResponse,
         handleGame,
+        makeProps,
       })
       let registerRoomMethods = buildRegisterRoomMethods({
         AddressedResponse,
@@ -369,10 +360,9 @@ module.exports = function({
         PRIVATE_SUBJECTS,
         
         //-------------------
-        thisClientKey,
-        thisClient,
         roomManager,
         cookieTokenManager,
+        makeProps,
         //-------------------
         
         makeResponse,
@@ -389,6 +379,7 @@ module.exports = function({
           makeResponse,
           makeConsumerFallbackResponse,
           handlePerson,
+          makeProps,
       })
 
       registerConnectionsMethods(registry);

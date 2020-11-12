@@ -5,6 +5,7 @@
  * const buildChangeCardActiveSetAction = require(`${serverFolder}/Lib/Actions/ChangeCardActiveSetAction`);
  */
 function buildChangeCardActiveSetAction({
+    makeProps,
     makeConsumerFallbackResponse,
     isDef,
     PUBLIC_SUBJECTS,
@@ -59,10 +60,10 @@ function buildChangeCardActiveSetAction({
 
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
+                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
                             roomCode,
                             collectionId: collection.getId(),
-                          })
+                          }))
                         );
                       } else {
                         //things get more complicated
@@ -76,7 +77,7 @@ function buildChangeCardActiveSetAction({
             if (status === "success") {
               addressedResponses.addToBucket(
                 scope,
-                PUBLIC_SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
+                PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, { cardId }))
               );
             }
 
@@ -90,7 +91,7 @@ function buildChangeCardActiveSetAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
               );
             }
             return addressedResponses; // <----- REMEMBER THIS!!!!

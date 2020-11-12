@@ -14,14 +14,18 @@ function buildDeps({
     PUBLIC_SUBJECTS,
 
     //-------------------
-    mStrThisClientId,
     roomManager,
     //-------------------
 }){
     // #region DEPENDENCIES
     function makeProps(props, data = {})
     {
-      return { roomCode: props.roomCode, ...data };
+      return { 
+        roomCode      : props.roomCode, 
+        thisClientKey : props.thisClientKey,
+        thisClient    : props.thisClient,
+        ...data 
+      };
     }
 
     function makeResponse({ status, subject, action, payload, message })
@@ -101,7 +105,7 @@ function buildDeps({
       getProps[propName] = getAllKeys();
       addressedResponses.addToBucket(
         "default",
-        PUBLIC_SUBJECTS[subject].GET_KEYED(getProps)
+        PUBLIC_SUBJECTS[subject].GET_KEYED(makeProps(getProps, getProps))
       );
 
       return addressedResponses;
@@ -422,27 +426,19 @@ function buildDeps({
     // #region CONSUMERS
     // ensured the data required for a room is presant
     function handleRoom(props, fn, fallback = undefined) {
-      let { roomCode } = props;
+      let { roomCode, thisClientKey } = props;
       // define which points were reached before failure
       let checkpoints = new Map();
-      checkpoints.set("roomCode", false);
-      checkpoints.set("room", false);
-      checkpoints.set("personManager", false);
   
       let reducedResponses = new AddressedResponse();
       let responses = null;
-  
+      
       if (isDef(roomCode)) {
-        checkpoints.set("roomCode", true);
         let room = roomManager.getRoomByCode(roomCode);
         if (isDef(room)) {
-          checkpoints.set("room", true);
           let personManager = room.getPersonManager();
           if (isDef(personManager)) {
-            checkpoints.set("personManager", true);
-  
-            let myClientId = mStrThisClientId;
-            let person = personManager.getPersonByClientId(myClientId);
+            let person = personManager.getPersonByClientId(thisClientKey);
   
             let newProps = {
               ...props,
@@ -470,7 +466,7 @@ function buildDeps({
               let clientIds = Object.keys(clientPersonMapping);
   
               reducedResponses.addToBucket(
-                responses.reduce(myClientId, clientIds)
+                responses.reduce(thisClientKey, clientIds)
               );
             }
             return responses;
@@ -488,17 +484,13 @@ function buildDeps({
         props,
         function (props2, checkpoints) {
           const { room } = props2;
+          let { thisClientKey} = props2;
+
           let personManager = room.getPersonManager();
           if (isDef(personManager)) {
-            checkpoints.set("personManager", true);
-            // default
-            checkpoints.set("person", false);
-            let myClientId = mStrThisClientId;
-            let person = personManager.getPersonByClientId(myClientId);
-  
+            let person = personManager.getPersonByClientId(thisClientKey);
             if (isDef(person)) {
               checkpoints.set("person", true);
-
               return fn(
                 {
                   personId: person.getId(),
@@ -518,15 +510,15 @@ function buildDeps({
     }
   
     function handleGame(props, fn, fallback = undefined) {
-      // define which points were reached before failure
-      let checkpoints = new Map();
-  
-      // define which points were reached before failure
       return handlePerson(
         props,
         function(props2, checkpoints) {
           let { room } = props2;
           let game = room.getGame();
+
+
+
+
           if (isDef(game)) {
             checkpoints.set("game", true);
             return fn(
@@ -719,6 +711,8 @@ function buildDeps({
         function(consumerData, checkpoints) {
           let { requestId } = consumerData;
           let { roomCode, game, personManager, thisPersonId } = consumerData;
+
+          
   
           let currentTurn = game.getCurrentTurn();
           let phaseKey = currentTurn.getPhaseKey();
@@ -897,7 +891,7 @@ function buildDeps({
                   if (_Affected.isAffected('TURN')) {
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
+                      PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(props))
                     );
                   }
                 }
@@ -1111,7 +1105,7 @@ function buildDeps({
                     if (_Affected.isAffected('TURN')) {
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.PLAYER_TURN.GET({ roomCode })
+                        PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
                       );
                     }
                   }
@@ -1521,8 +1515,6 @@ function buildDeps({
       );
     }
     // #endregion
-
-
 
     return {
         makeProps,

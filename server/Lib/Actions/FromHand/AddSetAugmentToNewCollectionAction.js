@@ -4,6 +4,7 @@
  * const buildAddSetAugmentToNewCollectionAction = require(`${serverFolder}/Lib/Actions/FromHand/AddSetAugmentToNewCollectionAction`);
  */
 function buildAddSetAugmentToNewCollectionAction({
+    makeProps,
     makeConsumerFallbackResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
@@ -76,11 +77,10 @@ function buildAddSetAugmentToNewCollectionAction({
                     if (removedCollectionIds.length > 0) {
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED({
-                          roomCode,
+                        PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(makeProps(props, {
                           personId: thisPersonId,
                           collectionIds: removedCollectionIds,
-                        })
+                        }))
                       );
                     }
 
@@ -88,41 +88,36 @@ function buildAddSetAugmentToNewCollectionAction({
                     let peopleIds = attendingPeople.map((person) =>
                       person.getId()
                     );
-                    let specificPropsForEveryone = {
-                      roomCode,
+                    let specificPropsForEveryone = makeProps(props, {
                       peopleIds: peopleIds,
                       receivingPeopleIds: peopleIds,
-                    };
+                    });
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                        specificPropsForEveryone
-                      )
+                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(specificPropsForEveryone)
                     );
 
                     // Notify player collections
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
-                        roomCode,
+                      PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(makeProps(props, {
                         personId: thisPersonId,
-                      })
+                      }))
                     );
 
                     // Notift collection contents
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
-                        roomCode,
+                      PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
                         collectionIds: playerManager.getAllCollectionIdsForPlayer(
                           thisPersonId
                         ),
-                      })
+                      }))
                     );
 
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
                     );
                   }
                 }
@@ -140,7 +135,7 @@ function buildAddSetAugmentToNewCollectionAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
               );
             }
 

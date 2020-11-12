@@ -21,9 +21,9 @@ function buildGetAllRooms({
         let roomCodes = roomManager.listAllRoomCodes();
         addressedResponses.addToBucket(
             "default",
-            PUBLIC_SUBJECTS.ROOM.GET_KEYED({
-            roomCodes: roomCodes,
-            })
+            PUBLIC_SUBJECTS.ROOM.GET_KEYED(makeProps(props, {
+                roomCodes: roomCodes,
+            }))
         );
         let payload = {
             roomCodes,

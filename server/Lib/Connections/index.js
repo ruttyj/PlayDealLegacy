@@ -8,7 +8,6 @@ function buildRegisterConnectionMethods({
     AddressedResponse,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
-    mStrThisClientId,
     clientManager,
     makeResponse,
 })

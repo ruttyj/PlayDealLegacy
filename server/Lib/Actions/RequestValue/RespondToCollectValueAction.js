@@ -171,9 +171,7 @@ function buildRespondToCollectValueAction({
                         if (_Affected.isAffected('ACTIVE_PILE')) {
                             addressedResponses.addToBucket(
                                 "everyone",
-                                PUBLIC_SUBJECTS.ACTIVE_PILE.GET(
-                                makeProps(consumerData)
-                                )
+                                PUBLIC_SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
                             );
                         }
 
@@ -219,7 +217,7 @@ function buildRespondToCollectValueAction({
                                 "everyone",
                                 PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
                                     makeProps(consumerData, {
-                                    peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.PLAYER_REQUEST.CHANGE),
+                                      peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.PLAYER_REQUEST.CHANGE),
                                     })
                                 )
                             );
@@ -228,9 +226,7 @@ function buildRespondToCollectValueAction({
 
                         addressedResponses.addToBucket(
                             "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_TURN.GET(
-                                makeProps(consumerData)
-                            )
+                            PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
                         );
                       } // end decline
                     }
@@ -251,7 +247,7 @@ function buildRespondToCollectValueAction({
           if (game.checkWinConditionForPlayer(thisPersonId)) {
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+              PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
             );
           }
 

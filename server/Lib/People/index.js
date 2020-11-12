@@ -5,6 +5,7 @@
  * const buildPeopleMethodsProvider = require(`${serverFolder}/Lib/People/`);
  */
 function buildRegisterPeopleMethods({
+    makeProps,
     isDef,
     isStr,
     getArrFromProp,
@@ -42,10 +43,10 @@ function buildRegisterPeopleMethods({
                         thisPerson.setName(username);
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                          PUBLIC_SUBJECTS.PEOPLE.GET_KEYED(makeProps(props, {
                             personId: thisPersonId,
                             roomCode,
-                          })
+                          }))
                         );
                       }
                     }
@@ -157,9 +158,7 @@ function buildRegisterPeopleMethods({
         
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS.PEOPLE.GET_HOST({
-                        roomCode,
-                      })
+                      PUBLIC_SUBJECTS.PEOPLE.GET_HOST(makeProps(props))
                     );
         
                     return addressedResponses;
@@ -185,10 +184,9 @@ function buildRegisterPeopleMethods({
         
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                    PUBLIC_SUBJECTS.PEOPLE.GET_KEYED(makeProps(props, {
                       peopleIds,
-                      roomCode,
-                    })
+                    }))
                   );
                 }
                 addressedResponses.addToBucket(
@@ -210,7 +208,6 @@ function buildRegisterPeopleMethods({
                   items: {},
                   order: [],
                 };
-        
                 return handleRoom(
                   props,
                   ({ room, personManager }) => {
@@ -239,7 +236,6 @@ function buildRegisterPeopleMethods({
                 const addressedResponses = new AddressedResponse();
                 const [subject, action] = ["PEOPLE", "REMOVE"];
                 let message = "Failed to remove people.";
-        
                 return handlePerson(
                   props,
                   (props2) => {
@@ -300,10 +296,9 @@ function buildRegisterPeopleMethods({
                       if (isDef(nextHost)) {
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
-                            roomCode,
+                          PUBLIC_SUBJECTS.PEOPLE.SET_HOST(makeProps(props, {
                             personId: nextHost.getId(),
-                          })
+                          }))
                         );
                       }
                     }
@@ -336,15 +331,14 @@ function buildRegisterPeopleMethods({
         
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                      PUBLIC_SUBJECTS.PEOPLE.GET_KEYED(makeProps(props, {
                         personId: thisPersonId,
-                        roomCode,
-                      })
+                      }))
                     );
         
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS.GAME.CAN_START({ roomCode })
+                      PUBLIC_SUBJECTS.GAME.CAN_START(makeProps(props))
                     );
                     return addressedResponses;
                   },
@@ -362,6 +356,8 @@ function buildRegisterPeopleMethods({
                 const [subject, action] = ["PEOPLE", "DISCONNECT"];
                 let status = "failure";
                 let payload = {};
+                console.log('handlePerson DISCONNECT');
+
                 return handlePerson(
                   props,
                   (props2) => {
@@ -387,10 +383,9 @@ function buildRegisterPeopleMethods({
         
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
+                      PUBLIC_SUBJECTS.PEOPLE.GET_KEYED(makeProps(props, {
                         peopleIds: disconnectedIds,
-                        roomCode,
-                      })
+                      }))
                     );
         
                     return addressedResponses;

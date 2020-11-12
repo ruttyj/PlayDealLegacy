@@ -5,6 +5,7 @@
  * const buildDiscardToHandLimitAction = require(`${serverFolder}/Lib/Actions/DiscardToHandLimitAction`);
  */
 function buildDiscardToHandLimitAction({
+    makeProps,
     els, isDef,
     AddressedResponse,
     PUBLIC_SUBJECTS,
@@ -80,10 +81,9 @@ function buildDiscardToHandLimitAction({
             if (hasWildCard) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.CARDS.GET_KEYED({
-                  roomCode,
+                PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, {
                   cardId: wildCardIds,
-                })
+                }))
               );
             }
 
@@ -91,11 +91,11 @@ function buildDiscardToHandLimitAction({
             let allPlayerIds = game.getAllPlayerKeys();
             addressedResponses.addToBucket(
               "default",
-              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
                 roomCode,
                 personId: thisPersonId,
                 receivingPeopleIds: allPlayerIds,
-              })
+              }))
             );
             addressedResponses.addToBucket(
               "everyone",
@@ -103,17 +103,17 @@ function buildDiscardToHandLimitAction({
             );
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+              PUBLIC_SUBJECTS["DISCARD_PILE"].GET(makeProps(props))
             );
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+              PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
               );
             }
 

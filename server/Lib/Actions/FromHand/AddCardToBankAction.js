@@ -5,6 +5,7 @@
  * const buildAddCardToBankAction = require(`${serverFolder}/Lib/Actions/AddCardToBankAction`);
  */
 function buildAddCardToBankAction({
+    makeProps,
     makeConsumerFallbackResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
@@ -59,34 +60,34 @@ function buildAddCardToBankAction({
                     let allPlayerIds = game.getAllPlayerKeys();
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
                         roomCode,
                         personId: thisPersonId,
                         receivingPeopleIds: allPlayerIds,
-                      })
+                      }))
                     );
                     //PLAYER_BANKS
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED({
+                      PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(makeProps(props, {
                         roomCode,
                         personId: thisPersonId,
                         receivingPeopleIds: allPlayerIds,
-                      })
+                      }))
                     );
 
                     //PLAYER_TURN
                     // Update current turn state
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
                     );
 
                     // Wildcard could be any set, let other know
                     if (isWildCard) {
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.CARDS.GET_KEYED({ roomCode, cardId })
+                        PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, {cardId}))
                       );
                     }
 
@@ -103,7 +104,7 @@ function buildAddCardToBankAction({
                     if (game.checkWinConditionForPlayer(thisPersonId)) {
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                        PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
                       );
                     }
                   } else {

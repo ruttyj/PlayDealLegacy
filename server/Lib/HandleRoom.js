@@ -10,32 +10,26 @@ module.exports = function({
         let { roomCode } = props;
         // define which points were reached before failure
         let checkpoints = new Map();
-        checkpoints.set("roomCode", false);
-        checkpoints.set("room", false);
-        checkpoints.set("personManager", false);
 
         let reducedResponses = new AddressedResponse();
         let responses = null;
 
         if (isDef(roomCode)) {
-            checkpoints.set("roomCode", true);
             let room = roomManager.getRoomByCode(roomCode);
             if (isDef(room)) {
-            checkpoints.set("room", true);
             let personManager = room.getPersonManager();
             if (isDef(personManager)) {
-                checkpoints.set("personManager", true);
-
                 let myClientId = mStrThisClientId;
                 let person = personManager.getPersonByClientId(myClientId);
 
                 let newProps = {
-                ...props,
-                roomCode,
-                thisRoomCode: roomCode,
-                room,
-                thisRoom: room,
-                personManager,
+                    ...props,
+                    roomCode,
+                    thisClientKey: `${props.thisClientKey}`,
+                    thisRoomCode: roomCode,
+                    room,
+                    thisRoom: room,
+                    personManager,
                 };
                 if (isDef(person)) {
                 Object.assign(newProps, {
@@ -44,19 +38,24 @@ module.exports = function({
                     thisPerson: person,
                 });
                 }
-
+                /*
+                console.log({
+                    props:      props.thisClientKey,
+                    newProps:   newProps.thisClientKey,
+                });
+                //*/
                 responses = fn(newProps, checkpoints);
 
                 if (isDef(responses)) {
-                let clientPersonMapping = {};
-                personManager.getConnectedPeople().forEach((person) => {
-                    clientPersonMapping[String(person.getClientId())] = true;
-                });
-                let clientIds = Object.keys(clientPersonMapping);
+                    let clientPersonMapping = {};
+                    personManager.getConnectedPeople().forEach((person) => {
+                        clientPersonMapping[String(person.getClientId())] = true;
+                    });
+                    let clientIds = Object.keys(clientPersonMapping);
 
-                reducedResponses.addToBucket(
-                    responses.reduce(myClientId, clientIds)
-                );
+                    reducedResponses.addToBucket(
+                        responses.reduce(myClientId, clientIds)
+                    );
                 }
                 return responses;
             }

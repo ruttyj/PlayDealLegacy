@@ -4,6 +4,7 @@
  * const buildTurnStartingDrawAction = require(`${serverFolder}/Lib/Actions/TurnStartingDrawAction`);
  */
 function buildTurnStartingDrawAction({
+    makeProps,
     AddressedResponse,
     PUBLIC_SUBJECTS,
     makeConsumerFallbackResponse,
@@ -42,27 +43,26 @@ function buildTurnStartingDrawAction({
               // Let people know --------------------------------------------------------
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
-                  roomCode,
+                PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED(makeProps(props, {
                   personId: thisPersonId,
                   cardIds: cardIdsDelta,
-                })
+                }))
               );
 
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
+                PUBLIC_SUBJECTS["DRAW_PILE"].GET(makeProps(props))
               );
 
               // Update everyone with my new hand
               let allPlayerIds = game.getAllPlayerKeys();
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
+                PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
                   roomCode,
                   personId: thisPersonId,
                   receivingPeopleIds: allPlayerIds,
-                })
+                }))
               );
 
               // Confirm this executed
@@ -79,7 +79,7 @@ function buildTurnStartingDrawAction({
               // Update current turn state
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
               );
               //___________________________________________________________________________
             }

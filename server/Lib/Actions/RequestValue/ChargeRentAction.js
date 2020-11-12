@@ -13,7 +13,6 @@ function buildChargeRentAction({
     const subject = "MY_TURN";
       const action = "CHARGE_RENT";
       const addressedResponses = new AddressedResponse();
-
       return handleGame(
         props,
         (consumerData) => {

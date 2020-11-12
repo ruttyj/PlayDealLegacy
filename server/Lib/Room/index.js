@@ -28,12 +28,10 @@ function buildRegisterRoomMethods({
     PRIVATE_SUBJECTS,
     
     //-------------------
-    thisClientKey,
-    thisClient,
     roomManager,
     cookieTokenManager,
     //-------------------
-    
+    makeProps,
     makeResponse,
     createGameInstance,
     makeConsumerFallbackResponse,
@@ -45,12 +43,14 @@ function buildRegisterRoomMethods({
     function registerRoomMethods(registry)
     {
         let getCurrentRoom = buildGetCurrentRoomCode({
+            makeProps,
             isDef,
             AddressedResponse,
             roomManager,
             makeResponse,
         })
         let getKeyed = buildGetRoom({
+            makeProps,
             isDef,
             getArrFromProp,
             AddressedResponse,
@@ -58,12 +58,14 @@ function buildRegisterRoomMethods({
             makeResponse,
         })
         let getAllKeyed = buildGetAllRooms({
+            makeProps,
             AddressedResponse,
             PUBLIC_SUBJECTS,
             roomManager,
             makeResponse,
         })
         let leaveRoom =  buildLeaveRoom({
+            makeProps,
             isDef,
             AddressedResponse,
             PUBLIC_SUBJECTS,
@@ -73,11 +75,13 @@ function buildRegisterRoomMethods({
             handleRoom,
         })
         let getRandomRoom = buildGetRandomRoom({
+            makeProps,
             AddressedResponse,
             roomManager,
             makeResponse,
         })
         let createRoom = buildCreateRoom({
+            makeProps,
             makeResponse,
             isDef,
             AddressedResponse,
@@ -86,6 +90,7 @@ function buildRegisterRoomMethods({
             createGameInstance,
         })
         let joinRoom = buildJoinRoom({
+            makeProps,
             PUBLIC_SUBJECTS,
             makeResponse,
             isDef,
@@ -95,10 +100,9 @@ function buildRegisterRoomMethods({
             els,
             handleRoom,
             cookieTokenManager,
-            thisClientKey,
-            thisClient,
         })
         let checkRoomExists = buildCheckExists({
+            makeProps,
             makeResponse,
             isDef,
             AddressedResponse,

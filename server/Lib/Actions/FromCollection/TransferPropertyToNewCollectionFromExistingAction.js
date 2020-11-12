@@ -4,6 +4,7 @@
  * const buildTransferPropertyToNewCollectionFromExistingAction = require(`${serverFolder}/Lib/Actions/FromCollection/TransferPropertyToNewCollectionFromExistingAction`);
  */
 function buildTransferPropertyToNewCollectionFromExistingAction({
+    makeProps,
     makeConsumerFallbackResponse,
     PUBLIC_SUBJECTS,
     makeResponse,
@@ -76,24 +77,22 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
 
                 addressedResponses.addToBucket(
                   "everyone",
-                  PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED({
-                    roomCode,
+                  PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(makeProps(props, {
                     personId: thisPersonId,
-                  })
+                  }))
                 );
 
                 addressedResponses.addToBucket(
                   "everyone",
-                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED({
-                    roomCode,
+                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
                     collectionIds: playerManager.getAllCollectionIdsForPlayer(
                       thisPersonId
                     ),
-                  })
+                  }))
                 );
                 addressedResponses.addToBucket(
                   "everyone",
-                  PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                  PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
                 );
               }
             }
@@ -101,7 +100,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
               );
             }
 
@@ -116,7 +115,7 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
               );
             }
             return addressedResponses;

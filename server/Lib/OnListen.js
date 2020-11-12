@@ -6,7 +6,6 @@ module.exports = function({
     jsonEncode,
     AddressedResponse,
     registry,
-    mStrThisClientId,
     thisClient,
     handleRoom,
 })
@@ -14,6 +13,7 @@ module.exports = function({
     const subjectMap = registry.getAllPublic();
     return function (encodedData)
     {
+        let connectionId = String(thisClient.id);
         const addressedResponses = new AddressedResponse();
         let requests = isStr(encodedData) ? JSON.parse(encodedData) : encodedData;
         let clientPersonMapping = {};
@@ -29,6 +29,7 @@ module.exports = function({
             request.thisClient    = thisClient;
             request.thisClientKey = thisClient.id;
             props.thisClientKey   = thisClient.id;
+            props.thisClient      = thisClient;
     
             if (isDef(subjectMap[subject])) {
               if (isDef(subjectMap[subject][action])) {
@@ -42,7 +43,7 @@ module.exports = function({
     
             // Collect person Ids
             let clientIdsMap = {};
-            clientIdsMap[mStrThisClientId] = true;
+            clientIdsMap[connectionId] = true;
             handleRoom(props, ({ personManager }) => {
               personManager.getConnectedPeople().forEach((person) => {
                 clientIdsMap[String(person.getClientId())] = true;
@@ -53,19 +54,19 @@ module.exports = function({
             // Assing the buckets of reponses to the relevent clients
             let clientIds = Object.keys(clientIdsMap);
             addressedResponses.addToBucket(
-              requestResponses.reduce(mStrThisClientId, clientIds)
+              requestResponses.reduce(connectionId, clientIds)
             );
           });
         }
     
         // Emit to "me" since I am always available
-        if (addressedResponses.specific.has(String(mStrThisClientId))) {
-          let resp = addressedResponses.specific.get(mStrThisClientId);
+        if (addressedResponses.specific.has(String(connectionId))) {
+          let resp = addressedResponses.specific.get(connectionId);
           thisClient.emit("response", jsonEncode(resp));
         }
         // Emit to other relevent people collected from the above requests
         Object.keys(clientPersonMapping).forEach((clientId) => {
-          if (mStrThisClientId !== clientId) {
+          if (connectionId !== clientId) {
             let person = clientPersonMapping[clientId];
             if (addressedResponses.specific.has(clientId)) {
               let resp = addressedResponses.specific.get(clientId);

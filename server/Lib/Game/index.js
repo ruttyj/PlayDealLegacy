@@ -5,80 +5,79 @@
  * const buildRegisterGameMethods = require(`${serverFolder}/Lib/Game/`);
  */
 function buildRegisterGameMethods({
-    enabled,
-    els,
-    isDef,
-    isDefNested,
-    isFunc,
-    isArr,
-    log,
-    getArrFromProp,
-    //-------------------
-    Affected,
-    Transaction,
-    AddressedResponse,
-    KeyedRequest,
-    PUBLIC_SUBJECTS,
-    PRIVATE_SUBJECTS,
-    //-------------------
-    thisClientKey,
-    roomManager,
-    //-------------------
-    makeProps,
-    makeResponse,
-    makeKeyedResponse,
-    makePersonSpecificResponses,
-    makeConsumerFallbackResponse,
-    makeRegularGetKeyed,
+  enabled,
+  els,
+  isDef,
+  isDefNested,
+  isFunc,
+  isArr,
+  log,
+  getArrFromProp,
+  //-------------------
+  Affected,
+  Transaction,
+  AddressedResponse,
+  KeyedRequest,
+  PUBLIC_SUBJECTS,
+  PRIVATE_SUBJECTS,
+  //-------------------
+  roomManager,
+  //-------------------
+  makeProps,
+  makeResponse,
+  makeKeyedResponse,
+  makePersonSpecificResponses,
+  makeConsumerFallbackResponse,
+  makeRegularGetKeyed,
 
-    getAllKeyedResponse,
-    packageCheckpoints,
-    canGameStart,
-    createGameInstance,
+  getAllKeyedResponse,
+  packageCheckpoints,
+  canGameStart,
+  createGameInstance,
 
-    handleRoom,
-    handlePerson,
-    handleGame,
-    handleMyTurn,
-    handCardConsumer,
-    handleTransactionResponse,
-    handleTransferResponse,
-    handleRequestCreation,
-    handleCollectionBasedRequestCreation,
+  handleRoom,
+  handlePerson,
+  handleGame,
+  handleMyTurn,
+  handCardConsumer,
+  handleTransactionResponse,
+  handleTransferResponse,
+  handleRequestCreation,
+  handleCollectionBasedRequestCreation,
 
-    buildAttemptFinishTurnAction,
-    buildDiscardToHandLimitAction,
-    buildChargeRentAction,
-    buildRequestValueAction,
-    buildRespondToCollectValueAction,
-    buildAcknowledgeCollectNothingAction,
-    buildCollectCardToBankAutoAction,
-    buildCollectCardToBankAction,
-    buildCollectCardToCollectionAction,
-    buildCollectCollectionAction,
-    buildStealPropertyAction,
-    buildRespondToStealPropertyAction,
-    buildSwapPropertyAction,
-    buildRespondToPropertySwapAction,
-    buildDrawCardsAction,
-    buildChangeCardActiveSetAction,
-    buildRespondToJustSayNoAction,
-    buildAddCardToBankAction,
-    buildAddPropertyToNewCollectionAction,
-    buildAddPropertyToExitingCollectionAction,
-    buildAddSetAugmentToExistingCollectionAction,
-    buildAddSetAugmentToNewCollectionAction,
-    buildTransferPropertyToNewCollectionFromExistingAction,
-    buildTransferPropertyToExistingCollectionFromExistingAction,
-    buildTransferSetAugmentToExistingCollectionFromExistingAction,
-    buildTransferSetAugmentToNewCollectionFromExistingAction, 
-    buildStealCollectionAction,
-    buildRespondToStealCollection,  
-    buildTurnStartingDrawAction,
-    buildRegisterRequestValueMethods,
-    buildRegisterCollectionsMethods,
-    buildRegisterCardMethods,
-    buildRegisterPlayerMethods,
+  buildAttemptFinishTurnAction,
+  buildDiscardToHandLimitAction,
+  buildChargeRentAction,
+  buildRequestValueAction,
+  buildRespondToCollectValueAction,
+  buildAcknowledgeCollectNothingAction,
+  buildCollectCardToBankAutoAction,
+  buildCollectCardToBankAction,
+  buildCollectCardToCollectionAction,
+  buildCollectCollectionAction,
+  buildStealPropertyAction,
+  buildRespondToStealPropertyAction,
+  buildSwapPropertyAction,
+  buildRespondToPropertySwapAction,
+  buildDrawCardsAction,
+  buildChangeCardActiveSetAction,
+  buildRespondToJustSayNoAction,
+  buildAddCardToBankAction,
+  buildAddPropertyToNewCollectionAction,
+  buildAddPropertyToExitingCollectionAction,
+  buildAddSetAugmentToExistingCollectionAction,
+  buildAddSetAugmentToNewCollectionAction,
+  buildTransferPropertyToNewCollectionFromExistingAction,
+  buildTransferPropertyToExistingCollectionFromExistingAction,
+  buildTransferSetAugmentToExistingCollectionFromExistingAction,
+  buildTransferSetAugmentToNewCollectionFromExistingAction, 
+  buildStealCollectionAction,
+  buildRespondToStealCollection,  
+  buildTurnStartingDrawAction,
+  buildRegisterRequestValueMethods,
+  buildRegisterCollectionsMethods,
+  buildRegisterCardMethods,
+  buildRegisterPlayerMethods,
 })
 {
 
@@ -94,7 +93,6 @@ function buildRegisterGameMethods({
         Transaction,
         AddressedResponse,
         // Props
-        myClientId: thisClientKey,
         roomManager, 
       }
 
@@ -102,9 +100,6 @@ function buildRegisterGameMethods({
     {
         Object.assign(PUBLIC_SUBJECTS, {
             GAME: {
-              /**
-               * @PROPS {String} roomCode
-               */
               GET_UPDATED_PILES: (props) => {
                 const { roomCode } = props;
         
@@ -112,17 +107,17 @@ function buildRegisterGameMethods({
                 if (isDef(roomCode)) {
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
+                    PUBLIC_SUBJECTS["DRAW_PILE"].GET(makeProps(props))
                   );
         
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+                    PUBLIC_SUBJECTS["DISCARD_PILE"].GET(makeProps(props))
                   );
         
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
+                    PUBLIC_SUBJECTS["ACTIVE_PILE"].GET(makeProps(props))
                   );
                 }
                 return addressedResponses;
@@ -130,6 +125,8 @@ function buildRegisterGameMethods({
               RESET: (props) => {
                 const [subject, action] = ["GAME", "RESET"];
                 const addressedResponses = new AddressedResponse();
+                console.log("RESET");
+
                 return handleRoom(
                   props,
                   (consumerData) => {
@@ -141,9 +138,7 @@ function buildRegisterGameMethods({
         
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
-                        makeProps(consumerData)
-                      )
+                      PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
                     );
                     addressedResponses.addToBucket(
                       "everyone",
@@ -169,7 +164,7 @@ function buildRegisterGameMethods({
                   props,
                   (consumerData, checkpoints) => {
                     const { config } = consumerData;
-                    const { roomCode, room } = consumerData;
+                    const { room } = consumerData;
         
                     const game = room.getGame();
         
@@ -184,7 +179,7 @@ function buildRegisterGameMethods({
                     }
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS.GAME.GET_CONFIG({ roomCode })
+                      PUBLIC_SUBJECTS.GAME.GET_CONFIG(makeProps(consumerData))
                     );
                     addressedResponses.addToBucket(
                       "default",
@@ -224,7 +219,6 @@ function buildRegisterGameMethods({
                 );
               },
               STATUS: (props) => {
-                // roomCode
                 const [subject, action] = ["GAME", "STATUS"];
                 const addressedResponses = new AddressedResponse();
                 return handlePerson(
@@ -291,9 +285,7 @@ function buildRegisterGameMethods({
         
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
-                          makeProps(consumerData)
-                        )
+                        PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
@@ -302,59 +294,49 @@ function buildRegisterGameMethods({
         
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PROPERTY_SETS"].GET_ALL_KEYED({ roomCode })
+                        PUBLIC_SUBJECTS["PROPERTY_SETS"].GET_ALL_KEYED(makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["CARDS"].GET_ALL_KEYED({ roomCode })
+                        PUBLIC_SUBJECTS["CARDS"].GET_ALL_KEYED(makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PLAYERS"].GET({ roomCode })
+                        PUBLIC_SUBJECTS["PLAYERS"].GET(makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "default",
-                        PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
-                          specificPropsForEveryone
-                        )
+                        PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(consumerData, specificPropsForEveryone))
                       );
                       addressedResponses.addToBucket(
                         "default",
-                        PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
-                          specificPropsForEveryone
-                        )
+                        PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(makeProps(consumerData, specificPropsForEveryone))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED({
-                          roomCode,
-                          peopleIds: peopleIds,
-                        })
+                        PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED(makeProps(consumerData, {peopleIds}))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED({
-                          roomCode,
-                          peopleIds: peopleIds,
-                        })
+                        PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED(makeProps(consumerData, {peopleIds}))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["DRAW_PILE"].GET({ roomCode })
+                        PUBLIC_SUBJECTS["DRAW_PILE"].GET(makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["ACTIVE_PILE"].GET({ roomCode })
+                        PUBLIC_SUBJECTS["ACTIVE_PILE"].GET(makeProps(consumerData))
                       );
         
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["DISCARD_PILE"].GET({ roomCode })
+                        PUBLIC_SUBJECTS["DISCARD_PILE"].GET(makeProps(consumerData))
                       );
         
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["GAME"].STATUS({ roomCode })
+                        PUBLIC_SUBJECTS["GAME"].STATUS(makeProps(consumerData))
                       );
         
                       addressedResponses.addToBucket(
@@ -368,7 +350,7 @@ function buildRegisterGameMethods({
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                        PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(consumerData))
                       );
                     }
                     return addressedResponses;
@@ -682,6 +664,7 @@ function buildRegisterGameMethods({
 
     // REQUEST VALUE
     let registerRequestValueMethods =  buildRegisterRequestValueMethods({
+        makeProps,
         commonDeps,
         isDefNested,
         buildRespondToCollectValueAction,
@@ -770,6 +753,7 @@ function buildRegisterGameMethods({
 
       
     let registerCollectionsMethods = buildRegisterCollectionsMethods({
+        makeProps,
         isDef,
         AddressedResponse,
         KeyedRequest,
@@ -786,6 +770,7 @@ function buildRegisterGameMethods({
 
     // Card related
     let registerCardMethods = buildRegisterCardMethods({
+        makeProps,
         AddressedResponse,
         KeyedRequest,
         PUBLIC_SUBJECTS,
@@ -910,7 +895,6 @@ function buildRegisterGameMethods({
             let subject = "PLAYER_REQUESTS";
             let action = "GET_KEYED";
             const addressedResponses = new AddressedResponse();
-    
             return handleGame(
               props,
               (consumerData) => {
@@ -971,6 +955,7 @@ function buildRegisterGameMethods({
             makePersonSpecificResponses,
             makeConsumerFallbackResponse,
             handleGame,
+            makeProps,
         })
 
         registerPlayerMethods(registry)

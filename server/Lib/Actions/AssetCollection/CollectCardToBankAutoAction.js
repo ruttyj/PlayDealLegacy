@@ -38,7 +38,7 @@ function buildCollectCardToBankAutoAction({
                 if (game.checkWinConditionForPlayer(thisPersonId)) {
                 addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                    PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
                 );
                 }
             }

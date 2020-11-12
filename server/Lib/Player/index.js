@@ -98,7 +98,6 @@ function buildRegisterPlayerMethods({
               GET_KEYED: (props) => {
                 const [subject, action] = ["PLAYER_HANDS", "GET_KEYED"];
                 const addressedResponses = new AddressedResponse();
-        
                 return handleGame(
                   props,
                   (props2) => {
@@ -151,10 +150,10 @@ function buildRegisterPlayerMethods({
         
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS[subject].GET_KEYED({
+                      PUBLIC_SUBJECTS[subject].GET_KEYED(makeProps(props, {
                         ...props2,
                         peopleIds,
-                      })
+                      }))
                     );
         
                     // Confirm
@@ -211,6 +210,11 @@ function buildRegisterPlayerMethods({
                 let subject = "PLAYER_BANKS";
                 let action = "GET_ALL_KEYED";
                 const addressedResponses = new AddressedResponse();
+
+                console.log('handleGame PLAYER_BANKS  GET_ALL_KEYED')
+
+
+
                 return handleGame(
                   props,
                   (props2) => {
@@ -231,10 +235,10 @@ function buildRegisterPlayerMethods({
                     );
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS[subject].GET_KEYED({
+                      PUBLIC_SUBJECTS[subject].GET_KEYED(makeProps(props, {
                         ...props,
                         peopleIds,
-                      })
+                      }))
                     );
         
                     return addressedResponses;

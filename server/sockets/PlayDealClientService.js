@@ -5,6 +5,7 @@ const libFolder               = `${serverFolder}/Lib`;
 
 const {
         isDef,
+        isDefNested,
         isFunc,
         isStr,
         isArr,
@@ -12,26 +13,22 @@ const {
         els,
       }                       = require("./utils.js");
 
-
-const buildAffected           = require(`${libFolder}/Affected`);
-const buildOrderedTree        = require(`${libFolder}/OrderedTree`);
 const CookieTokenManager      = require("../CookieTokenManager/");
-
 const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
 const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
 
 // Import generic logic for indexed game data
 const AddressedResponse   = require(`${serverSocketFolder}/AddressedResponse.js`); // @TODO rename AddressedResponse
+
+
 const buildHandleRoom         = require(`${libFolder}/HandleRoom`);
 const buildPopulatedRegistry  = require(`./PopulateRegistry`);
-
 const buildRegistry           = require(`${libFolder}/Registry`);
 const buildOnListen           = require(`${libFolder}/OnListen`);
 const buildOnDisconnected     = require(`${libFolder}/OnDisconnected`);
 const buildOnConnection       = require(`${libFolder}/OnConnection`);
-
-
-
+const buildAffected           = require(`${libFolder}/Affected`);
+const buildOrderedTree        = require(`${libFolder}/OrderedTree`);
 
 
 /**
@@ -50,89 +47,50 @@ const Registry            = buildRegistry({
                               isArr,
                               isDef,
                             })
-const clientManager       = ClientManager();
-const cookieTokenManager  = CookieTokenManager.getInstance();
-const roomManager         = RoomManager();
-roomManager.setClientManager(clientManager);
-
-
-
-// @TODO move to injectDeps
-let deps = {
-  clientManager        : clientManager,
-  roomManager          : roomManager,
-  cookieTokenManager   : cookieTokenManager,
-}
-
-
-
-
-
-class Server {
-  constructor() {
-     
-  }
-
-  onUpdate() {
-    
-  }
-
-  //Handle a new connection to the server
-  onConnected(socket) {
-   
-  }
-
-  onDisconnected(connection = Connection) {
-     
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 module.exports = class PlayDealClientService {
   
   constructor()
   {
+    const clientManager       = ClientManager();
+    const cookieTokenManager  = CookieTokenManager.getInstance();
+    const roomManager         = RoomManager();
+    roomManager.setClientManager(clientManager);
+
+    this.injectDeps({
+      clientManager        : clientManager,
+      roomManager          : roomManager,
+      cookieTokenManager   : cookieTokenManager,
+    });
   }
 
-  injectDeps()
+  injectDeps(deps)
   {
-    //deps
-    this.clientManager        = deps.clientManager;
-    this.roomManager          = deps.roomManager;
-    this.cookieTokenManager   = deps.cookieTokenManager;
+    if (isDef(deps)) {
+      //deps
+      this.clientManager        = deps.clientManager;
+      this.roomManager          = deps.roomManager;
+      this.cookieTokenManager   = deps.cookieTokenManager;
 
-    // Right now all thelistener events are duplicated for every single client instance
-    this.todoMove = new Map();
+      // Right now all thelistener events are duplicated for every single client instance
+      this.todoMove = new Map();
+    }
   }
   
 
   buildRegistry({connection, handleRoom}){
-    let connectionId          = this.getConnectionId(connection);
+    let connectionId          = String(connection.id);
     
     const clientManager       = this.clientManager;
     const roomManager         = this.roomManager;
     const cookieTokenManager  = this.cookieTokenManager;
     const registry            = new Registry(); // event Registry
-
     
     let populatedRegistry     = buildPopulatedRegistry({
       Affected,
       OrderedTree
     });
-    
 
     populatedRegistry({
       thisClient: connection,
@@ -148,16 +106,10 @@ module.exports = class PlayDealClientService {
 
     return registry;
   }
-
-  getConnectionId(connection)
-  {
-    return String(connection.id);
-  }
   
   connectClient(connection)
   {
-    let connectionId = this.getConnectionId(connection);
-    
+    let connectionId = String(connection.id);
     let handleRoom = buildHandleRoom({
       isDef,
       isFunc,
@@ -185,7 +137,6 @@ module.exports = class PlayDealClientService {
         jsonEncode,
         AddressedResponse,
         registry,
-        mStrThisClientId: connectionId,
         thisClient: connection,
         handleRoom,
     });

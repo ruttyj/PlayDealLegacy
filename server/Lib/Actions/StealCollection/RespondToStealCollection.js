@@ -10,8 +10,7 @@ function buildRespondToStealCollection({
 {
     function respondToStealCollection(props)
     {
-        let doTheThing = function (consumerData) {
-
+          let doTheThing = function (consumerData) {
             let { cardId, requestId, responseKey } = consumerData;
             let {
               _Affected,

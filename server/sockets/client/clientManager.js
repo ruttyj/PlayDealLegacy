@@ -1,9 +1,5 @@
 const {
-  isUndef,
   isDef,
-  isFunc,
-  isTrue,
-  isFalse,
   emptyFunction,
   makeVar,
   makeMap,
@@ -15,6 +11,7 @@ const {
 //                 CLIENT MANAGER
 
 //##################################################
+
 function ClientManager() {
   let mState = {};
 

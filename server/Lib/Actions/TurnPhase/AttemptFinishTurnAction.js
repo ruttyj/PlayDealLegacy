@@ -60,9 +60,7 @@ function buildAttemptFinishTurnAction({
             if (currentTurn.getPhaseKey() === "done") {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
-                  makeProps(consumerData)
-                )
+                PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
               );
               addressedResponses.addToBucket(
                 "everyone",
@@ -74,9 +72,7 @@ function buildAttemptFinishTurnAction({
 
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(
-                makeProps(consumerData)
-              )
+              PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
             );
             addressedResponses.addToBucket(
               "everyone",
@@ -94,7 +90,7 @@ function buildAttemptFinishTurnAction({
             // Emit updated player turn
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+              PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
             );
 
             addressedResponses.addToBucket(
@@ -105,7 +101,7 @@ function buildAttemptFinishTurnAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
               );
             }
 

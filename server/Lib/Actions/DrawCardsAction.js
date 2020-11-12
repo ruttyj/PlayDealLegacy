@@ -4,6 +4,7 @@
  * const buildDrawCardsAction = require(`${serverFolder}/Lib/Actions/DrawCardsAction`);
  */
 function buildDrawCardsAction({
+    makeProps,
     makeConsumerFallbackResponse,
     makeResponse,
     PUBLIC_SUBJECTS,
@@ -61,28 +62,26 @@ function buildDrawCardsAction({
                   // updated card piles
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS["GAME"].GET_UPDATED_PILES({ roomCode })
+                    PUBLIC_SUBJECTS["GAME"].GET_UPDATED_PILES(makeProps(props))
                   );
 
                   // Cards Drawn
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED({
-                      roomCode,
+                    PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED(makeProps(props, {
                       personId: thisPersonId,
                       cardIds: cardIdsDelta,
-                    })
+                    }))
                   );
 
                   // Update everyone with my new hand
                   let allPlayerIds = game.getAllPlayerKeys();
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED({
-                      roomCode,
+                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
                       personId: thisPersonId,
                       receivingPeopleIds: allPlayerIds,
-                    })
+                    }))
                   );
 
                   addressedResponses.addToBucket(
@@ -93,13 +92,13 @@ function buildDrawCardsAction({
                   // update player turn - must be last
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS["PLAYER_TURN"].GET({ roomCode })
+                    PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
                   );
 
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.GAME.STATUS({ roomCode })
+                      PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
                     );
                   }
 

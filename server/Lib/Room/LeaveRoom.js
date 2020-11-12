@@ -1,10 +1,5 @@
-/**
- * GET_KEYED
- * LeaveRoom
- * @SEARCH_REPLACE : LeaveRoom | leaveRoom
- * const buildLeaveRoom = require(`${serverFolder}/Lib/Room/LeaveRoom`);
- */
 function buildLeaveRoom({
+    makeProps,
     isDef,
     AddressedResponse,
     PUBLIC_SUBJECTS,
@@ -61,18 +56,16 @@ function buildLeaveRoom({
                 if (reconnectAllowed) {
                 addressedResponses.addToBucket(
                     "everyoneElse",
-                    PUBLIC_SUBJECTS.PEOPLE.GET_KEYED({
-                    personId: thisPersonId,
-                    roomCode,
-                    })
+                    PUBLIC_SUBJECTS.PEOPLE.GET_KEYED(makeProps(props, {
+                        personId: thisPersonId,
+                    }))
                 );
 
                 addressedResponses.addToBucket(
                     "default",
-                    PRIVATE_SUBJECTS.PEOPLE.DISCONNECT({
-                    roomCode,
-                    personId: thisPerson.getId(),
-                    })
+                    PRIVATE_SUBJECTS.PEOPLE.DISCONNECT(makeProps(props, {
+                        personId: thisPerson.getId(),
+                    }))
                 );
                 } else {
                 if (thisPerson.hasTag("host")) {
@@ -82,10 +75,9 @@ function buildLeaveRoom({
                     if (isDef(otherPeople[0])) {
                     addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.PEOPLE.SET_HOST({
-                        roomCode,
-                        personId: otherPeople[0].getId(),
-                        })
+                        PUBLIC_SUBJECTS.PEOPLE.SET_HOST(makeProps(props, {
+                            personId: otherPeople[0].getId(),
+                        }))
                     );
                     } else {
                     //@TODO no one left in room
@@ -95,10 +87,9 @@ function buildLeaveRoom({
                 // Remove person from room
                 addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS.PEOPLE.REMOVE({
-                    roomCode,
-                    personId: thisPerson.getId(),
-                    })
+                    PUBLIC_SUBJECTS.PEOPLE.REMOVE(makeProps(props, {
+                        personId: thisPerson.getId(),
+                    }))
                 );
                 }
             }
