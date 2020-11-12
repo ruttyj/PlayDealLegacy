@@ -17,7 +17,7 @@ const gameConstants = require(`${playDealFolder}/config/constants.js`);
 const { CONFIG } = gameConstants;
 const checks = require(`../checks/`);
 const FakeHost = require(`${socketFolder}/FakeHost.js`);
-const PlayDealClientService = require(`${socketFolder}/PlayDealClientService.js`);
+const PlayDealServer = require(`${socketFolder}/PlayDealServer.js`);
 const createConnection = require(`${clientFolder}/src/utils/clientSocket.js`);
 const fs = require('fs');
 
@@ -33,7 +33,7 @@ describe("Sample Game", async function () {
   let testNumber = 0;
 
 
-  const playDealClientService = new PlayDealClientService();
+  const playDealClientService = new PlayDealServer();
 
   const host = FakeHost(function(socket){
     playDealClientService.onConnected(socket);

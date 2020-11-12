@@ -43,7 +43,7 @@ const Registry                = buildRegistry({
  * Change color of set / move cards around at "done" phase
  * 
  */
-module.exports = class PlayDealClientService {
+module.exports = class PlayDealServer {
   constructor()
   {
     this.clientManager        = ClientManager();
@@ -120,5 +120,13 @@ module.exports = class PlayDealClientService {
     onConnected();
     socket.on("request",  onListen);
     socket.on("disconnect", onDisconnected);
+  }
+
+  onUpdate() {
+    // NOP
+  }
+  
+  onDisconnected(connection){
+    // NOP
   }
 }
