@@ -1,7 +1,7 @@
 const { makeListenerMap, makeVar } = require("../utils");
 
 // Used to simulate a Socket.IO host
-function FakeHost(playDealClientService) {
+function FakeHost(onConnected) {
   const mIdBase = 111111;
   const mState = {};
   const mTopId = makeVar(mState, "topId", 0);
@@ -30,9 +30,8 @@ function FakeHost(playDealClientService) {
       once: toServer.once,
       emit: toClient.emit
     };
-
     // Execute connection and attach server side client listeners
-    mHost.once("connection", thisClient => playDealClientService.connectClient(thisClient));
+    mHost.once("connection", onConnected);
     mHost.emit("connection", server);
 
     return client;

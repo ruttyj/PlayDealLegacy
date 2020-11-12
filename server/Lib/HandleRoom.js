@@ -2,12 +2,11 @@ module.exports = function({
     isDef,
     isFunc,
     AddressedResponse,
-    mStrThisClientId,
     roomManager,
 })
 {
     return function (props, fn, fallback = undefined) {
-        let { roomCode } = props;
+        let { roomCode, thisClientKey } = props;
         // define which points were reached before failure
         let checkpoints = new Map();
 
@@ -19,7 +18,7 @@ module.exports = function({
             if (isDef(room)) {
             let personManager = room.getPersonManager();
             if (isDef(personManager)) {
-                let myClientId = mStrThisClientId;
+                let myClientId = thisClientKey;
                 let person = personManager.getPersonByClientId(myClientId);
 
                 let newProps = {

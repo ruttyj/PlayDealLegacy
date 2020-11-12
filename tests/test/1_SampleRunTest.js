@@ -34,10 +34,12 @@ describe("Sample Game", async function () {
 
 
   const playDealClientService = new PlayDealClientService();
-  playDealClientService.injectDeps();
 
+  const host = FakeHost(function(socket){
+    playDealClientService.onConnected(socket);
+  });
 
-  const host = FakeHost(playDealClientService);
+  
 
   let player1Con = createConnection(host.io());
   let player2Con = createConnection(host.io());

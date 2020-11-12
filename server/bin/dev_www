@@ -27,12 +27,12 @@ var server = http.createServer(app);
 
 const PlayDealClientService = require("../sockets/PlayDealClientService");
 const playDealClientService = new PlayDealClientService();
-playDealClientService.injectDeps();
 
 const io = require("socket.io")(server);
 io.on("connection", (thisClient) => {
   // Attach socket handlers
-  playDealClientService.connectClient(thisClient);
+  playDealClientService.onConnected(thisClient);
+
 
   // Associate socket to cookie
   let cookies = cookie.parse(thisClient.request.headers.cookie);

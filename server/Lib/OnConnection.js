@@ -1,5 +1,5 @@
-module.exports = function({clientManager, connection}){
+module.exports = function({clientManager, socket}){
     return function() {
-        clientManager.addClient(connection);
+        clientManager.addClient(socket);
     }
 }
