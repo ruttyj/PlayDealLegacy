@@ -159,8 +159,6 @@ module.exports = function({
       //                  DEPENDENCIES
 
       //==================================================
-      const PRIVATE_SUBJECTS = registry.PRIVATE_SUBJECTS;
-      const PUBLIC_SUBJECTS  = registry.PUBLIC_SUBJECTS;
       let {
         getAllKeyedResponse,
         packageCheckpoints,
@@ -205,9 +203,6 @@ module.exports = function({
         AddressedResponse,
         KeyedRequest,
         registry,
-        PUBLIC_SUBJECTS,
-        PRIVATE_SUBJECTS,
-
         //-------------------
         clientManager,
         roomManager,
@@ -227,8 +222,6 @@ module.exports = function({
       // Clients
       let registerConnectionsMethods = buildRegisterConnectionMethods({
         AddressedResponse,
-        PUBLIC_SUBJECTS,
-        PRIVATE_SUBJECTS,
         clientManager,
         makeResponse,
         makeProps,
@@ -249,8 +242,6 @@ module.exports = function({
         Transaction,
         AddressedResponse,
         KeyedRequest,
-        PUBLIC_SUBJECTS,
-        PRIVATE_SUBJECTS,
         //-------------------
         roomManager,
         //-------------------
@@ -317,8 +308,6 @@ module.exports = function({
         isStr,
         getArrFromProp,
         AddressedResponse,
-        PUBLIC_SUBJECTS,
-        PRIVATE_SUBJECTS,
         roomManager,
         makeResponse,
         canPersonRemoveOtherPerson,
@@ -329,7 +318,6 @@ module.exports = function({
       })
       let registerCheatMethods = buildRegisterCheatMethods({
         AddressedResponse,
-        PUBLIC_SUBJECTS,
         makeResponse,
         handleGame,
         makeProps,
@@ -345,35 +333,26 @@ module.exports = function({
         buildGetRoom,
         buildGetAllRooms,
         buildLeaveRoom,
-
         //-------------------------
         isDef,
         els,
         getNestedValue,
         setNestedValue,
         getArrFromProp, 
-
-        //-------------------
-        PUBLIC_SUBJECTS,
-        PRIVATE_SUBJECTS,
-        
         //-------------------
         roomManager,
         cookieTokenManager,
         makeProps,
         //-------------------
-        
         makeResponse,
         createGameInstance,
         makeConsumerFallbackResponse,
-
         //-------------------
         handleRoom,
       })
       let registerChatMethods = buildRegisterChatMethods({
           isDef,
           AddressedResponse,
-          PUBLIC_SUBJECTS,
           makeResponse,
           makeConsumerFallbackResponse,
           handlePerson,

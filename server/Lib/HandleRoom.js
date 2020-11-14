@@ -7,9 +7,7 @@ module.exports = function({
 {
     return function (props, fn, fallback = undefined) {
         let { roomCode, thisClientKey } = props;
-        // define which points were reached before failure
         let checkpoints = new Map();
-
         let reducedResponses = new AddressedResponse();
         let responses = null;
 
@@ -20,7 +18,6 @@ module.exports = function({
                 if (isDef(personManager)) {
                     let myClientId = thisClientKey;
                     let person = personManager.getPersonByClientId(myClientId);
-
                     let newProps = {
                         ...props,
                         roomCode,
@@ -38,7 +35,6 @@ module.exports = function({
                         });
                     }
                     responses = fn(newProps, checkpoints);
-
                     if (isDef(responses)) {
                         let clientPersonMapping = {};
                         personManager.getConnectedPeople().forEach((person) => {

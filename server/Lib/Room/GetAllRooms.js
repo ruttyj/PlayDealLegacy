@@ -6,13 +6,12 @@
  */
 function buildGetAllRooms({
     AddressedResponse,
-    PUBLIC_SUBJECTS,
     registry,
     roomManager,
     makeResponse,
 })
 {
-    function getAllRooms(props)
+    return function (props)
     {
         let subject = "ROOM";
         let action = "GET_ALL_KEYED";
@@ -36,7 +35,6 @@ function buildGetAllRooms({
 
         return addressedResponses;
     }
-    return getAllRooms;
 }
 
 module.exports = buildGetAllRooms;

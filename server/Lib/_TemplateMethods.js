@@ -21,8 +21,6 @@ module.exports = function({
     GameInstance,
     AddressedResponse,
     KeyedRequest,
-    PUBLIC_SUBJECTS,
-    PRIVATE_SUBJECTS,
     registry,
 
     //-------------------

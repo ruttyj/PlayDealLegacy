@@ -15,19 +15,12 @@ function buildRegisterRoomMethods({
     buildGetRoom,
     buildGetAllRooms,
     buildLeaveRoom,
-
     //-------------------------
     isDef,
     els,
     getNestedValue,
     setNestedValue,
     getArrFromProp, 
-
-    //-------------------
-    registry,
-    PUBLIC_SUBJECTS,
-    PRIVATE_SUBJECTS,
-    
     //-------------------
     roomManager,
     cookieTokenManager,
@@ -61,7 +54,6 @@ function buildRegisterRoomMethods({
         let getAllKeyed = buildGetAllRooms({
             makeProps,
             AddressedResponse,
-            PUBLIC_SUBJECTS,
             registry,
             roomManager,
             makeResponse,
@@ -71,8 +63,6 @@ function buildRegisterRoomMethods({
             isDef,
             AddressedResponse,
             registry,
-            PUBLIC_SUBJECTS,
-            PRIVATE_SUBJECTS,
             makeResponse,
             makeConsumerFallbackResponse,
             handleRoom,
@@ -95,7 +85,6 @@ function buildRegisterRoomMethods({
         let joinRoom = buildJoinRoom({
             makeProps,
             registry,
-            PUBLIC_SUBJECTS,
             makeResponse,
             isDef,
             getNestedValue,

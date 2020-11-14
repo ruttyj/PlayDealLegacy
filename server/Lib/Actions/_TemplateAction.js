@@ -22,8 +22,6 @@ function buildTemplateAction({
 
     //-------------------
     AddressedResponse,
-    PUBLIC_SUBJECTS,
-    PRIVATE_SUBJECTS,
 
     //-------------------
     mStrThisClientId,
