@@ -17,7 +17,6 @@ function buildRegisterGameMethods({
   Transaction,
   AddressedResponse,
   KeyedRequest,
-  PRIVATE_SUBJECTS,
 
   roomManager,
 
@@ -82,8 +81,6 @@ function buildRegisterGameMethods({
     // Helpers
     isDef, isArr, isFunc, 
     getArrFromProp, packageCheckpoints, makeProps,
-    // Reference
-    PRIVATE_SUBJECTS,
     // Structures
     Affected, 
     Transaction,
