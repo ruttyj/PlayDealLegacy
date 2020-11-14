@@ -6,7 +6,7 @@
 function buildAddSetAugmentToExistingCollectionAction({
     makeProps,
     makeConsumerFallbackResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     packageCheckpoints,
     isDef,
@@ -53,13 +53,13 @@ function buildAddSetAugmentToExistingCollectionAction({
                         // Emit updated player turn
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                          registry.execute('PLAYER_TURN.GET', makeProps(props))
                         );
 
                         //Update collection contents
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
+                          registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                             collectionId: collection.getId(),
                           }))
                         );
@@ -68,7 +68,7 @@ function buildAddSetAugmentToExistingCollectionAction({
                         let allPlayerIds = game.getAllPlayerKeys();
                         addressedResponses.addToBucket(
                           "default",
-                          PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+                          registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                             roomCode,
                             personId: thisPersonId,
                             receivingPeopleIds: allPlayerIds,
@@ -92,7 +92,7 @@ function buildAddSetAugmentToExistingCollectionAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
 

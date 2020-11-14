@@ -1,9 +1,3 @@
-/**
- * Build a People Method Provider
- * @SEARCH_REPLACE RequestValue
- * Provides methods for a socket to be able to listen with
- * const buildRegisterRequestValueMethods = require(`${serverFolder}/Lib/RequestValue/`);
- */
 function buildRegisterRequestValueMethods({
     commonDeps,
     isDefNested,
@@ -20,15 +14,15 @@ function buildRegisterRequestValueMethods({
 {
     function registerRequestValueMethods(registry)
     {
-      // CHARGE RENT
-      registry.public(['MY_TURN', 'CHARGE_RENT'], buildChargeRentAction({
-                ...commonDeps,
-                makeConsumerFallbackResponse,
-                handleGame,
-                handleCollectionBasedRequestCreation,
-                makeConsumerFallbackResponse,
-            })
-            )
+        // CHARGE RENT
+        registry.public(['MY_TURN', 'CHARGE_RENT'], buildChargeRentAction({
+            ...commonDeps,
+            makeConsumerFallbackResponse,
+            handleGame,
+            handleCollectionBasedRequestCreation,
+            makeConsumerFallbackResponse,
+            registry,
+        }))
             
         registry.public(['MY_TURN', 'VALUE_COLLECTION'], buildRequestValueAction({
             ...commonDeps,
@@ -37,18 +31,17 @@ function buildRegisterRequestValueMethods({
             handleGame, 
             isDefNested,
             handleRequestCreation,
-            })
-        )
+            registry,
+        }))
             
-
         registry.public(['RESPONSES', 'RESPOND_TO_COLLECT_VALUE'], buildRespondToCollectValueAction({
             ...commonDeps,
             makeConsumerFallbackResponse,
             makeResponse,
             handleGame, 
             handleTransactionResponse,
-            })
-        )
+            registry,
+        }))
 
     }
     return registerRequestValueMethods;

@@ -6,7 +6,7 @@ function buildCollectCollectionAction({
     isDef,
     Affected,
     handleTransferResponse,
-    PUBLIC_SUBJECTS,
+    registry,
 })
 {
     function collectCollectionAction(props)
@@ -19,7 +19,6 @@ function buildCollectCollectionAction({
               checkpoints,
               game,
               thisPersonId,
-              roomCode,
               addressedResponses,
             } = consumerData;
             let playerManager = game.getPlayerManager();
@@ -55,14 +54,13 @@ function buildCollectCollectionAction({
               if (game.checkWinConditionForPlayer(thisPersonId)) {
                 addressedResponses.addToBucket(
                   "everyone",
-                  PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                  registry.execute('GAME.STATUS', makeProps(props))
                 );
               }
             }
           };
       
           let result = handleTransferResponse(
-            PUBLIC_SUBJECTS,
             "RESPONSES",
             "COLLECT_COLLECTION",
             props,

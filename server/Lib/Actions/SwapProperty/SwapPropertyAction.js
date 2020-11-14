@@ -5,7 +5,6 @@
  * const buildSwapPropertyAction = require(`${serverFolder}/Lib/Actions/SwapPropertyAction`);
  */
 function buildSwapPropertyAction({
-    PUBLIC_SUBJECTS,
     handleRequestCreation,
     Affected,
     Transaction,

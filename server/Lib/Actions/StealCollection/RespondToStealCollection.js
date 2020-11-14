@@ -3,7 +3,6 @@
  */
 function buildRespondToStealCollection({
     isDef, 
-    PUBLIC_SUBJECTS,
     handleTransactionResponse,
     Affected,
 })
@@ -139,7 +138,6 @@ function buildRespondToStealCollection({
           };
       
           let result = handleTransactionResponse(
-            PUBLIC_SUBJECTS,
             "RESPONSES",
             "RESPOND_TO_STEAL_COLLECTION",
             props,

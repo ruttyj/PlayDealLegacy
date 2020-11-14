@@ -24,6 +24,7 @@ function buildRegisterRoomMethods({
     getArrFromProp, 
 
     //-------------------
+    registry,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
     
@@ -61,6 +62,7 @@ function buildRegisterRoomMethods({
             makeProps,
             AddressedResponse,
             PUBLIC_SUBJECTS,
+            registry,
             roomManager,
             makeResponse,
         })
@@ -68,6 +70,7 @@ function buildRegisterRoomMethods({
             makeProps,
             isDef,
             AddressedResponse,
+            registry,
             PUBLIC_SUBJECTS,
             PRIVATE_SUBJECTS,
             makeResponse,
@@ -91,6 +94,7 @@ function buildRegisterRoomMethods({
         })
         let joinRoom = buildJoinRoom({
             makeProps,
+            registry,
             PUBLIC_SUBJECTS,
             makeResponse,
             isDef,

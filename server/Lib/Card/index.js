@@ -8,6 +8,7 @@ function buildRegisterCardMethods({
     AddressedResponse,
     KeyedRequest,
     PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     makeKeyedResponse,
     getAllKeyedResponse,
@@ -69,7 +70,7 @@ function buildRegisterCardMethods({
                     // Get data
                     addressedResponses.addToBucket(
                       "default",
-                      getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
+                      getAllKeyedResponse(myKeyedRequest)
                     );
         
                     return addressedResponses;
@@ -129,7 +130,7 @@ function buildRegisterCardMethods({
                     // Get data
                     addressedResponses.addToBucket(
                       "default",
-                      getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
+                      getAllKeyedResponse(myKeyedRequest)
                     );
         
                     // Confirm

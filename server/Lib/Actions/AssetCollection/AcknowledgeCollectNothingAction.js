@@ -4,7 +4,6 @@
  * const buildAcknowledgeCollectNothingAction = require(`${serverFolder}/Lib/Actions/AcknowledgeCollectNothingAction`);
  */
 function buildAcknowledgeCollectNothingAction({
-    PUBLIC_SUBJECTS,
     Affected,
     handleTransactionResponse,
 })
@@ -19,7 +18,6 @@ function buildAcknowledgeCollectNothingAction({
           };
       
           return handleTransactionResponse(
-            PUBLIC_SUBJECTS,
             "RESPONSES",
             "ACKNOWLEDGE_COLLECT_NOTHING",
             props,

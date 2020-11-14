@@ -2,8 +2,7 @@ function buildLeaveRoom({
     makeProps,
     isDef,
     AddressedResponse,
-    PUBLIC_SUBJECTS,
-    PRIVATE_SUBJECTS,
+    registry,
     makeResponse,
     makeConsumerFallbackResponse,
     handleRoom,
@@ -56,14 +55,14 @@ function buildLeaveRoom({
                 if (reconnectAllowed) {
                 addressedResponses.addToBucket(
                     "everyoneElse",
-                    PUBLIC_SUBJECTS.PEOPLE.GET_KEYED(makeProps(props, {
+                    registry.execute('PEOPLE.GET_KEYED', makeProps(props, {
                         personId: thisPersonId,
                     }))
                 );
 
                 addressedResponses.addToBucket(
                     "default",
-                    PRIVATE_SUBJECTS.PEOPLE.DISCONNECT(makeProps(props, {
+                    registry.execute('PEOPLE.DISCONNECT', makeProps(props, {
                         personId: thisPerson.getId(),
                     }))
                 );
@@ -75,7 +74,7 @@ function buildLeaveRoom({
                     if (isDef(otherPeople[0])) {
                     addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.PEOPLE.SET_HOST(makeProps(props, {
+                        registry.execute('PEOPLE.SET_HOST', makeProps(props, {
                             personId: otherPeople[0].getId(),
                         }))
                     );
@@ -87,7 +86,7 @@ function buildLeaveRoom({
                 // Remove person from room
                 addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS.PEOPLE.REMOVE(makeProps(props, {
+                    registry.execute('PEOPLE.REMOVE', makeProps(props, {
                         personId: thisPerson.getId(),
                     }))
                 );

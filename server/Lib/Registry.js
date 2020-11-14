@@ -2,6 +2,7 @@ module.exports = function ({
     isStr,
     isArr,
     isDef,
+    isFunc,
 }) {
     return class Registry {
         constructor()
@@ -12,9 +13,8 @@ module.exports = function ({
     
         public(identifier, fn)
         {
-            if(isStr(identifier)) {
-                identifier = String(identifier).split('.');
-            }
+            identifier = this._processIdentifier(identifier);
+           
             if (isArr(identifier)) {
                 let [subject, action] = identifier;
                 if (!isDef(this.PUBLIC_SUBJECTS[subject])){
@@ -26,9 +26,8 @@ module.exports = function ({
     
         private(identifier, fn)
         {
-            if(isStr(identifier)) {
-                identifier = String(identifier).split('.');
-            }
+            identifier = this._processIdentifier(identifier);
+
             if (isArr(identifier)) {
                 let [subject, action] = identifier;
                 if (!isDef(this.PRIVATE_SUBJECTS[subject])){
@@ -37,6 +36,14 @@ module.exports = function ({
                 
                 this.PRIVATE_SUBJECTS[subject][action] = fn;
             }
+        }
+
+        _processIdentifier(identifier)
+        {
+            if(isStr(identifier)) {
+                identifier = String(identifier).split('.');
+            }
+            return identifier;
         }
     
         getAllPublic()
@@ -47,6 +54,24 @@ module.exports = function ({
         getAllPrivate()
         {
             return this.PRIVATE_SUBJECTS;
+        }
+
+        execute(identifier, props)
+        {
+            identifier = this._processIdentifier(identifier);
+            let [subject, action] = identifier;
+            let fn;
+            
+            fn = this.PUBLIC_SUBJECTS[subject][action];
+            if (!isFunc(fn)) {
+                fn = this.PRIVATE_SUBJECTS[subject][action];
+            }
+
+            if (isFunc(fn)) {
+                return fn(props);
+            }
+            
+            return null;
         }
     }
 }

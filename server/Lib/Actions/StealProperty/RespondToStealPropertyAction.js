@@ -5,7 +5,6 @@
 function buildRespondToStealPropertyAction({
     isDef,
     handleTransactionResponse,
-    PUBLIC_SUBJECTS,
     Affected,
 })
 {
@@ -143,11 +142,10 @@ function buildRespondToStealPropertyAction({
         };
     
         let result = handleTransactionResponse(
-        PUBLIC_SUBJECTS,
-        "RESPONSES",
-        "RESPOND_TO_STEAL_PROPERTY",
-        props,
-        doTheThing
+            "RESPONSES",
+            "RESPOND_TO_STEAL_PROPERTY",
+            props,
+            doTheThing
         );
         return result;
     }

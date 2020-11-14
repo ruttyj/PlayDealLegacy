@@ -5,7 +5,6 @@
  */
 function buildStealPropertyAction({
     handleRequestCreation,
-    PUBLIC_SUBJECTS,
     Affected,
     Transaction,
     isDef,

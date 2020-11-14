@@ -8,6 +8,7 @@ function buildRegisterConnectionMethods({
     AddressedResponse,
     PUBLIC_SUBJECTS,
     PRIVATE_SUBJECTS,
+    registry,
     clientManager,
     makeResponse,
 })

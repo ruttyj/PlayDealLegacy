@@ -7,7 +7,7 @@
 function buildAddCardToBankAction({
     makeProps,
     makeConsumerFallbackResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     packageCheckpoints,
     isDef,
@@ -60,7 +60,7 @@ function buildAddCardToBankAction({
                     let allPlayerIds = game.getAllPlayerKeys();
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+                      registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                         roomCode,
                         personId: thisPersonId,
                         receivingPeopleIds: allPlayerIds,
@@ -69,7 +69,7 @@ function buildAddCardToBankAction({
                     //PLAYER_BANKS
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(makeProps(props, {
+                      registry.execute('PLAYER_BANKS.GET_KEYED', makeProps(props, {
                         roomCode,
                         personId: thisPersonId,
                         receivingPeopleIds: allPlayerIds,
@@ -80,14 +80,14 @@ function buildAddCardToBankAction({
                     // Update current turn state
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                      registry.execute('PLAYER_TURN.GET', makeProps(props))
                     );
 
                     // Wildcard could be any set, let other know
                     if (isWildCard) {
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, {cardId}))
+                        registry.execute('CARDS.GET_KEYED', makeProps(props, {cardId}))
                       );
                     }
 
@@ -104,7 +104,7 @@ function buildAddCardToBankAction({
                     if (game.checkWinConditionForPlayer(thisPersonId)) {
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                        registry.execute('GAME.STATUS', makeProps(props))
                       );
                     }
                   } else {
@@ -124,13 +124,3 @@ function buildAddCardToBankAction({
 }
 
 module.exports = buildAddCardToBankAction;
-
-
-
-
-
-
-
-
-
-

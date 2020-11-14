@@ -7,6 +7,7 @@
 function buildGetAllRooms({
     AddressedResponse,
     PUBLIC_SUBJECTS,
+    registry,
     roomManager,
     makeResponse,
 })
@@ -21,7 +22,7 @@ function buildGetAllRooms({
         let roomCodes = roomManager.listAllRoomCodes();
         addressedResponses.addToBucket(
             "default",
-            PUBLIC_SUBJECTS.ROOM.GET_KEYED(makeProps(props, {
+            registry.execute('ROOM.GET_KEYED', makeProps(props, {
                 roomCodes: roomCodes,
             }))
         );

@@ -3,7 +3,6 @@
  * const buildCollectCardToBankAction = require(`${serverFolder}/Lib/Actions/CollectCardToBankAction`);
  */
 function buildCollectCardToBankAction({
-    PUBLIC_SUBJECTS,
     Affected,
     handleTransferResponse,
 })
@@ -31,7 +30,6 @@ function buildCollectCardToBankAction({
         };
     
         return handleTransferResponse(
-            PUBLIC_SUBJECTS,
             "RESPONSES",
             "COLLECT_CARD_TO_BANK",
             props,

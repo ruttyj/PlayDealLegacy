@@ -7,9 +7,10 @@ function buildRespondToCollectValueAction({
     Affected,
     handleGame,
     makeProps,
-    PUBLIC_SUBJECTS,
+    registry,
 })
 {
+
     function respondToCollectValueAction(props)
     {
         const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
@@ -76,9 +77,10 @@ function buildRespondToCollectValueAction({
                           let peopleIds = attendingPeople.map((person) =>
                             person.getId()
                           );
+
                           addressedResponses.addToBucket(
                             "default",
-                            PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(
+                            registry.execute('PLAYER_BANKS.GET_KEYED', 
                               makeProps(consumerData, {
                                 peopleIds: thisPersonId,
                                 receivingPeopleIds: peopleIds,
@@ -97,7 +99,7 @@ function buildRespondToCollectValueAction({
                           if (collectionChanges.updated.length > 0) {
                             addressedResponses.addToBucket(
                               "everyone",
-                              PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
+                              registry.execute('COLLECTIONS.GET_KEYED', 
                                 makeProps(consumerData, {
                                   personId: thisPersonId,
                                   collectionIds: collectionChanges.updated,
@@ -110,7 +112,7 @@ function buildRespondToCollectValueAction({
                           if (collectionChanges.removed.length > 0) {
                             addressedResponses.addToBucket(
                               "everyone",
-                              PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(
+                              registry.execute('COLLECTIONS.REMOVE_KEYED', 
                                 makeProps(consumerData, {
                                   personId: thisPersonId,
                                   collectionIds: collectionChanges.removed,
@@ -123,7 +125,7 @@ function buildRespondToCollectValueAction({
 
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                          registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                             makeProps(consumerData, {
                               personId: thisPersonId,
                             })
@@ -131,7 +133,7 @@ function buildRespondToCollectValueAction({
                         );
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
+                          registry.execute('REQUESTS.GET_KEYED', 
                             makeProps(consumerData, {
                               requestId: request.getId(),
                             })
@@ -139,7 +141,7 @@ function buildRespondToCollectValueAction({
                         );
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS.PLAYER_TURN.GET(
+                          registry.execute('PLAYER_TURN.GET', 
                             makeProps(consumerData)
                           )
                         );
@@ -158,10 +160,10 @@ function buildRespondToCollectValueAction({
                         let allPlayerIds = game.getAllPlayerKeys();
                         addressedResponses.addToBucket(
                             "default",
-                            PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                            registry.execute('PLAYER_HANDS.GET_KEYED', 
                                 makeProps(consumerData, {
-                                    personId: thisPersonId,
-                                    receivingPeopleIds: allPlayerIds,
+                                  personId: thisPersonId,
+                                  receivingPeopleIds: allPlayerIds,
                                 })
                             )
                         );
@@ -171,7 +173,7 @@ function buildRespondToCollectValueAction({
                         if (_Affected.isAffected('ACTIVE_PILE')) {
                             addressedResponses.addToBucket(
                                 "everyone",
-                                PUBLIC_SUBJECTS.ACTIVE_PILE.GET(makeProps(consumerData))
+                                registry.execute('ACTIVE_PILE.GET', makeProps(consumerData))
                             );
                         }
 
@@ -179,7 +181,7 @@ function buildRespondToCollectValueAction({
                             let allPlayerIds = game.getAllPlayerKeys();
                             addressedResponses.addToBucket(
                                 "default",
-                                PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(
+                                registry.execute('PLAYER_HANDS.GET_KEYED', 
                                     makeProps(consumerData, {
                                         personId: thisPersonId,
                                         receivingPeopleIds: allPlayerIds,
@@ -190,7 +192,7 @@ function buildRespondToCollectValueAction({
                         if (_Affected.isAffected('COLLECTION')) {
                             addressedResponses.addToBucket(
                                 "everyone",
-                                PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(
+                                registry.execute('COLLECTIONS.GET_KEYED', 
                                     makeProps(consumerData, {
                                         collectionIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
                                     })
@@ -203,7 +205,7 @@ function buildRespondToCollectValueAction({
                           
                             addressedResponses.addToBucket(
                                 "everyone",
-                                PUBLIC_SUBJECTS.REQUESTS.GET_KEYED(
+                                registry.execute('REQUESTS.GET_KEYED', 
                                     makeProps(consumerData, {
                                         requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
                                     })
@@ -215,7 +217,7 @@ function buildRespondToCollectValueAction({
                         if (_Affected.isAffected('PLAYER_REQUEST')) {
                             addressedResponses.addToBucket(
                                 "everyone",
-                                PUBLIC_SUBJECTS.PLAYER_REQUESTS.GET_KEYED(
+                                registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                                     makeProps(consumerData, {
                                       peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.PLAYER_REQUEST.CHANGE),
                                     })
@@ -226,7 +228,7 @@ function buildRespondToCollectValueAction({
 
                         addressedResponses.addToBucket(
                             "everyone",
-                            PUBLIC_SUBJECTS.PLAYER_TURN.GET(makeProps(consumerData))
+                            registry.execute('PLAYER_TURN.GET', makeProps(consumerData))
                         );
                       } // end decline
                     }
@@ -247,7 +249,7 @@ function buildRespondToCollectValueAction({
           if (game.checkWinConditionForPlayer(thisPersonId)) {
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+              registry.execute('GAME.STATUS', makeProps(props))
             );
           }
 

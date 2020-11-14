@@ -8,7 +8,7 @@ function buildDiscardToHandLimitAction({
     makeProps,
     els, isDef,
     AddressedResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeConsumerFallbackResponse,
     handleMyTurn,
     makeResponse,
@@ -81,7 +81,7 @@ function buildDiscardToHandLimitAction({
             if (hasWildCard) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, {
+                registry.execute('CARDS.GET_KEYED', makeProps(props, {
                   cardId: wildCardIds,
                 }))
               );
@@ -91,7 +91,7 @@ function buildDiscardToHandLimitAction({
             let allPlayerIds = game.getAllPlayerKeys();
             addressedResponses.addToBucket(
               "default",
-              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+              registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                 roomCode,
                 personId: thisPersonId,
                 receivingPeopleIds: allPlayerIds,
@@ -103,17 +103,17 @@ function buildDiscardToHandLimitAction({
             );
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS["DISCARD_PILE"].GET(makeProps(props))
+              registry.execute('DISCARD_PILE.GET', makeProps(props))
             );
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+              registry.execute('PLAYER_TURN.GET', makeProps(props))
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
 

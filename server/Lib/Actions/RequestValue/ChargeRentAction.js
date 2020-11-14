@@ -3,7 +3,6 @@ function buildChargeRentAction({
     AddressedResponse,
 
     // Socket Methods
-    PUBLIC_SUBJECTS,
     makeConsumerFallbackResponse,
     handleGame,
     handleCollectionBasedRequestCreation,
@@ -18,7 +17,6 @@ function buildChargeRentAction({
         (consumerData) => {
           let { game } = consumerData;
           return handleCollectionBasedRequestCreation(
-            PUBLIC_SUBJECTS,
             subject,
             action,
             props,

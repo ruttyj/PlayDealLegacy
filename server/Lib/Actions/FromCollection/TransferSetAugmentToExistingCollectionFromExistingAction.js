@@ -6,7 +6,7 @@
 function buildTransferSetAugmentToExistingCollectionFromExistingAction({
     makeProps,
     makeConsumerFallbackResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     isDef,
     AddressedResponse,
@@ -88,7 +88,7 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
                         if (removedCollectionIds.length > 0) {
                           addressedResponses.addToBucket(
                             "everyone",
-                            PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(makeProps(props, {
+                            registry.execute('COLLECTIONS.REMOVE_KEYED', makeProps(props, {
                               personId: thisPersonId,
                               collectionIds: removedCollectionIds,
                             }))
@@ -97,14 +97,14 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
 
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(makeProps(props, {
+                          registry.execute('PLAYER_COLLECTIONS.GET_KEYED', makeProps(props, {
                             personId: thisPersonId,
                           }))
                         );
 
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
+                          registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                             collectionIds: playerManager.getAllCollectionIdsForPlayer(
                               thisPersonId
                             ),
@@ -113,7 +113,7 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
 
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                          registry.execute('PLAYER_TURN.GET', makeProps(props))
                         );
                       }
                     }
@@ -132,7 +132,7 @@ function buildTransferSetAugmentToExistingCollectionFromExistingAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
             return addressedResponses;

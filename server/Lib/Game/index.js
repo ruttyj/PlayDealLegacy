@@ -18,6 +18,7 @@ function buildRegisterGameMethods({
   Transaction,
   AddressedResponse,
   KeyedRequest,
+  registry,
   PUBLIC_SUBJECTS,
   PRIVATE_SUBJECTS,
   //-------------------
@@ -107,17 +108,17 @@ function buildRegisterGameMethods({
                 if (isDef(roomCode)) {
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["DRAW_PILE"].GET(makeProps(props))
+                    registry.execute('DRAW_PILE.GET', makeProps(props))
                   );
         
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["DISCARD_PILE"].GET(makeProps(props))
+                    registry.execute('DISCARD_PILE.GET', makeProps(props))
                   );
         
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["ACTIVE_PILE"].GET(makeProps(props))
+                    registry.execute('ACTIVE_PILE.GET', makeProps(props))
                   );
                 }
                 return addressedResponses;
@@ -138,11 +139,11 @@ function buildRegisterGameMethods({
         
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                      registry.execute('PLAYER_REQUESTS.REMOVE_ALL', makeProps(consumerData))
                     );
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                      registry.execute('REQUESTS.REMOVE_ALL', makeProps(consumerData))
                     );
         
                     addressedResponses.addToBucket(
@@ -179,7 +180,7 @@ function buildRegisterGameMethods({
                     }
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS.GAME.GET_CONFIG(makeProps(consumerData))
+                      registry.execute('GAME.GET_CONFIG', makeProps(consumerData))
                     );
                     addressedResponses.addToBucket(
                       "default",
@@ -285,58 +286,58 @@ function buildRegisterGameMethods({
         
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                        registry.execute('PLAYER_REQUESTS.REMOVE_ALL', makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                        registry.execute('REQUESTS.REMOVE_ALL', makeProps(consumerData))
                       );
         
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PROPERTY_SETS"].GET_ALL_KEYED(makeProps(consumerData))
+                        registry.execute('PROPERTY_SETS.GET_ALL_KEYED', makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["CARDS"].GET_ALL_KEYED(makeProps(consumerData))
+                        registry.execute('CARDS.GET_ALL_KEYED', makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PLAYERS"].GET(makeProps(consumerData))
+                        registry.execute('PLAYERS.GET', makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "default",
-                        PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(consumerData, specificPropsForEveryone))
+                        registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(consumerData, specificPropsForEveryone))
                       );
                       addressedResponses.addToBucket(
                         "default",
-                        PUBLIC_SUBJECTS["PLAYER_BANKS"].GET_KEYED(makeProps(consumerData, specificPropsForEveryone))
+                        registry.execute('PLAYER_BANKS.GET_KEYED', makeProps(consumerData, specificPropsForEveryone))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED(makeProps(consumerData, {peopleIds}))
+                        registry.execute('COLLECTIONS.GET_ALL_KEYED', makeProps(consumerData, {peopleIds}))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED(makeProps(consumerData, {peopleIds}))
+                        registry.execute('PLAYER_COLLECTIONS.GET_ALL_KEYED', makeProps(consumerData, {peopleIds}))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["DRAW_PILE"].GET(makeProps(consumerData))
+                        registry.execute('DRAW_PILE.GET', makeProps(consumerData))
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["ACTIVE_PILE"].GET(makeProps(consumerData))
-                      );
-        
-                      addressedResponses.addToBucket(
-                        "everyone",
-                        PUBLIC_SUBJECTS["DISCARD_PILE"].GET(makeProps(consumerData))
+                        registry.execute('ACTIVE_PILE.GET', makeProps(consumerData))
                       );
         
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["GAME"].STATUS(makeProps(consumerData))
+                        registry.execute('DISCARD_PILE.GET', makeProps(consumerData))
+                      );
+        
+                      addressedResponses.addToBucket(
+                        "everyone",
+                        registry.execute('GAME.STATUS', makeProps(consumerData))
                       );
         
                       addressedResponses.addToBucket(
@@ -350,7 +351,7 @@ function buildRegisterGameMethods({
                       );
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(consumerData))
+                        registry.execute('PLAYER_TURN.GET', makeProps(consumerData))
                       );
                     }
                     return addressedResponses;
@@ -396,6 +397,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'RESPOND_TO_JUST_SAY_NO'],
           buildRespondToJustSayNoAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             handleGame, 
@@ -409,6 +411,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN', 'STEAL_COLLECTION'],
           buildStealCollectionAction({
             ...commonDeps,
+            registry,
             handleRequestCreation,
           })
         )
@@ -416,6 +419,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'RESPOND_TO_STEAL_COLLECTION'],
           buildRespondToStealCollection({
             ...commonDeps,
+            registry,
             handleTransactionResponse,
           })     
         )
@@ -426,6 +430,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN', 'STEAL_PROPERTY'],
           buildStealPropertyAction({
             ...commonDeps,
+            registry,
             handleRequestCreation,
           }) 
         )
@@ -433,6 +438,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'RESPOND_TO_STEAL_PROPERTY'],
           buildRespondToStealPropertyAction({
             ...commonDeps,
+            registry,
             handleTransactionResponse,
           }) 
         )
@@ -443,6 +449,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN', 'SWAP_PROPERTY'],
           buildSwapPropertyAction({
             ...commonDeps,
+            registry,
             handleRequestCreation,
           }) 
         )
@@ -450,6 +457,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'RESPOND_TO_PROPERTY_SWAP'],
           buildRespondToPropertySwapAction({
             ...commonDeps,
+            registry,
             handleTransactionResponse
           }) 
         )
@@ -461,6 +469,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN','TURN_STARTING_DRAW'],
           buildTurnStartingDrawAction({
             ...commonDeps,
+            registry,
             AddressedResponse,
             PUBLIC_SUBJECTS,
             makeConsumerFallbackResponse,
@@ -472,6 +481,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN', 'FINISH_TURN'],
           buildAttemptFinishTurnAction({
             ...commonDeps,
+            registry,
             AddressedResponse,
             PUBLIC_SUBJECTS,
             makeConsumerFallbackResponse,
@@ -484,6 +494,7 @@ function buildRegisterGameMethods({
         registry.public(['MY_TURN', 'DISCARD_REMAINING'],
           buildDiscardToHandLimitAction({
             ...commonDeps,
+            registry,
             AddressedResponse,
             PUBLIC_SUBJECTS,
             makeConsumerFallbackResponse,
@@ -500,6 +511,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'ACKNOWLEDGE_COLLECT_NOTHING'],
           buildAcknowledgeCollectNothingAction({
             ...commonDeps,
+            registry,
             handleTransactionResponse
           }) 
         )
@@ -507,6 +519,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'COLLECT_CARD_TO_BANK_AUTO'],
           buildCollectCardToBankAutoAction({
             ...commonDeps,
+            registry,
             handleTransferResponse,
           }) 
         )
@@ -514,6 +527,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'COLLECT_CARD_TO_BANK'],
           buildCollectCardToBankAction({
             ...commonDeps,
+            registry,
             handleTransferResponse,
           }) 
         )
@@ -521,6 +535,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES', 'COLLECT_CARD_TO_COLLECTION'],
           buildCollectCardToCollectionAction({
             ...commonDeps,
+            registry,
             handleTransferResponse,
           }) 
         )
@@ -528,6 +543,7 @@ function buildRegisterGameMethods({
         registry.public(['RESPONSES','COLLECT_COLLECTION'],
           buildCollectCollectionAction({
             ...commonDeps,
+            registry,
             handleTransferResponse
           }) 
         )
@@ -540,6 +556,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.ADD_CARD_TO_MY_BANK_FROM_HAND',
           buildAddCardToBankAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -551,6 +568,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.ADD_PROPERTY_TO_NEW_COLLECTION_FROM_HAND',
           buildAddPropertyToNewCollectionAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -562,6 +580,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND',
           buildAddPropertyToExitingCollectionAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -573,6 +592,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND',
           buildAddSetAugmentToExistingCollectionAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -583,6 +603,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND',
           buildAddSetAugmentToNewCollectionAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -598,6 +619,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.TRANSFER_PROPERTY_TO_NEW_COLLECTION_FROM_COLLECTION',
           buildTransferPropertyToNewCollectionFromExistingAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -608,6 +630,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION',
           buildTransferPropertyToExistingCollectionFromExistingAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -619,6 +642,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.TRANSFER_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_COLLECTION',
           buildTransferSetAugmentToExistingCollectionFromExistingAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -630,6 +654,7 @@ function buildRegisterGameMethods({
         registry.public('MY_TURN.TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION',
           buildTransferSetAugmentToNewCollectionFromExistingAction({
             ...commonDeps,
+            registry,
             makeConsumerFallbackResponse,
             makeResponse,
             packageCheckpoints,
@@ -645,6 +670,7 @@ function buildRegisterGameMethods({
     registry.public('MY_TURN.PLAY_PASS_GO',
     buildDrawCardsAction({
       ...commonDeps,
+      registry,
       makeConsumerFallbackResponse,
       makeResponse,
       handCardConsumer,
@@ -654,6 +680,7 @@ function buildRegisterGameMethods({
  registry.public('MY_TURN.CHANGE_CARD_ACTIVE_SET',
  buildChangeCardActiveSetAction({
    ...commonDeps,
+   registry,
    makeResponse,
    handleMyTurn,
    makeConsumerFallbackResponse,
@@ -664,6 +691,7 @@ function buildRegisterGameMethods({
 
     // REQUEST VALUE
     let registerRequestValueMethods =  buildRegisterRequestValueMethods({
+        registry,
         makeProps,
         commonDeps,
         isDefNested,
@@ -753,6 +781,7 @@ function buildRegisterGameMethods({
 
       
     let registerCollectionsMethods = buildRegisterCollectionsMethods({
+        registry,
         makeProps,
         isDef,
         AddressedResponse,
@@ -768,8 +797,9 @@ function buildRegisterGameMethods({
       registerCollectionsMethods(registry);
   
 
-    // Card related
-    let registerCardMethods = buildRegisterCardMethods({
+      // Card related
+      let registerCardMethods = buildRegisterCardMethods({
+        registry,
         makeProps,
         AddressedResponse,
         KeyedRequest,
@@ -784,55 +814,49 @@ function buildRegisterGameMethods({
   
 
       // Current Turn
-    if (1) {
-        Object.assign(PUBLIC_SUBJECTS, {
-          PLAYER_TURN: {
-            GET: (props) => {
-              let subject = "PLAYER_TURN";
-              let action = "GET";
-              const addressedResponses = new AddressedResponse();
-              return handleGame(
-                props,
-                (consumerData) => {
-                  let { game, thisPersonId } = consumerData;
-                  let currentTurn = game.getCurrentTurn();
-      
-                  if (currentTurn.getPhaseKey() === "discard") {
-                    let thisPlayerHand = game.getPlayerHand(thisPersonId);
-                    let remaining =
-                      thisPlayerHand.getCount() - game.getHandMaxCardCount();
-                    if (remaining > 0) {
-                      currentTurn.setPhaseData({
-                        remainingCountToDiscard: remaining,
-                      });
-                    }
+      Object.assign(PUBLIC_SUBJECTS, {
+        PLAYER_TURN: {
+          GET: (props) => {
+            let subject = "PLAYER_TURN";
+            let action = "GET";
+            const addressedResponses = new AddressedResponse();
+            return handleGame(
+              props,
+              (consumerData) => {
+                let { game, thisPersonId } = consumerData;
+                let currentTurn = game.getCurrentTurn();
+    
+                if (currentTurn.getPhaseKey() === "discard") {
+                  let thisPlayerHand = game.getPlayerHand(thisPersonId);
+                  let remaining =
+                    thisPlayerHand.getCount() - game.getHandMaxCardCount();
+                  if (remaining > 0) {
+                    currentTurn.setPhaseData({
+                      remainingCountToDiscard: remaining,
+                    });
                   }
-      
-                  let payload = game.getCurrentTurn().serialize();
-      
-                  addressedResponses.addToBucket(
-                    "default",
-                    makeResponse({ subject, action, status: "success", payload })
-                  );
-      
-                  //addressedResponses.addToBucket("default", PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData)));
-                  //addressedResponses.addToBucket("default", PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData)));
-      
-                  return addressedResponses;
-                },
-                makeConsumerFallbackResponse({ subject, action, addressedResponses })
-              );
-            },
+                }
+    
+                let payload = game.getCurrentTurn().serialize();
+    
+                addressedResponses.addToBucket(
+                  "default",
+                  makeResponse({ subject, action, status: "success", payload })
+                );
+    
+                return addressedResponses;
+              },
+              makeConsumerFallbackResponse({ subject, action, addressedResponses })
+            );
           },
-        })
-      }
-
+        },
+      })
+    
       
-    // Requests
-    Object.assign(PUBLIC_SUBJECTS, {
+      // Requests
+      Object.assign(PUBLIC_SUBJECTS, {
         REQUESTS: {
           ...makeRegularGetKeyed({
-            SUBJECTS: PUBLIC_SUBJECTS,
             subject: "REQUESTS",
             singularKey: "requestId",
             pluralKey: "requestIds",
@@ -945,20 +969,21 @@ function buildRegisterGameMethods({
         },
       });
         
-        // Players
-        let registerPlayerMethods = buildRegisterPlayerMethods({
-            isDef,
-            isArr,
-            AddressedResponse,
-            PUBLIC_SUBJECTS,
-            makeResponse,
-            makePersonSpecificResponses,
-            makeConsumerFallbackResponse,
-            handleGame,
-            makeProps,
-        })
+      // Players
+      let registerPlayerMethods = buildRegisterPlayerMethods({
+        registry,
+        isDef,
+        isArr,
+        AddressedResponse,
+        PUBLIC_SUBJECTS,
+        makeResponse,
+        makePersonSpecificResponses,
+        makeConsumerFallbackResponse,
+        handleGame,
+        makeProps,
+      })
 
-        registerPlayerMethods(registry)
+      registerPlayerMethods(registry)
     }
     return registerGameMethods;
 }

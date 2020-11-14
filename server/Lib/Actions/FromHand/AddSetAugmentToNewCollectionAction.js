@@ -6,7 +6,7 @@
 function buildAddSetAugmentToNewCollectionAction({
     makeProps,
     makeConsumerFallbackResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     packageCheckpoints,
     isDef,
@@ -77,7 +77,7 @@ function buildAddSetAugmentToNewCollectionAction({
                     if (removedCollectionIds.length > 0) {
                       addressedResponses.addToBucket(
                         "everyone",
-                        PUBLIC_SUBJECTS["COLLECTIONS"].REMOVE_KEYED(makeProps(props, {
+                        registry.execute('COLLECTIONS.REMOVE_KEYED', makeProps(props, {
                           personId: thisPersonId,
                           collectionIds: removedCollectionIds,
                         }))
@@ -94,13 +94,13 @@ function buildAddSetAugmentToNewCollectionAction({
                     });
                     addressedResponses.addToBucket(
                       "default",
-                      PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(specificPropsForEveryone)
+                      registry.execute('PLAYER_HANDS.GET_KEYED', specificPropsForEveryone)
                     );
 
                     // Notify player collections
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(makeProps(props, {
+                      registry.execute('PLAYER_COLLECTIONS.GET_KEYED', makeProps(props, {
                         personId: thisPersonId,
                       }))
                     );
@@ -108,7 +108,7 @@ function buildAddSetAugmentToNewCollectionAction({
                     // Notift collection contents
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
+                      registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                         collectionIds: playerManager.getAllCollectionIdsForPlayer(
                           thisPersonId
                         ),
@@ -117,7 +117,7 @@ function buildAddSetAugmentToNewCollectionAction({
 
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                      registry.execute('PLAYER_TURN.GET', makeProps(props))
                     );
                   }
                 }
@@ -135,7 +135,7 @@ function buildAddSetAugmentToNewCollectionAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
 
@@ -148,4 +148,3 @@ function buildAddSetAugmentToNewCollectionAction({
 }
 
 module.exports = buildAddSetAugmentToNewCollectionAction;
-

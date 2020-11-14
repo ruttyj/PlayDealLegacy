@@ -8,6 +8,7 @@ function buildRegisterChatMethods({
     isDef,
     AddressedResponse,
     PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     makeConsumerFallbackResponse,
     handlePerson,

@@ -5,7 +5,7 @@
  */
 function buildJoinRoom({
     makeProps,
-    PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     isDef,
     getNestedValue,
@@ -113,13 +113,13 @@ function buildJoinRoom({
 
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS.PEOPLE.ME(makeProps(props))
+                registry.execute('PEOPLE.ME', makeProps(props))
               );
 
               if (personManager.getConnectedPeopleCount() === 1) {
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS.PEOPLE.SET_HOST(makeProps(props, {
+                  registry.execute('PEOPLE.SET_HOST', makeProps(props, {
                     personId,
                   }))
                 );
@@ -128,24 +128,24 @@ function buildJoinRoom({
               // send room data
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS.ROOM.GET_CURRENT(makeProps(props))
+                registry.execute('ROOM.GET_CURRENT', makeProps(props))
               );
 
               // Get the full player list for myself
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS.PEOPLE.GET_ALL_KEYED(makeProps(props))
+                registry.execute('PEOPLE.GET_ALL_KEYED', makeProps(props))
               );
 
               // Let everyone else know the new users has joined
               addressedResponses.addToBucket(
                 "everyoneElse",
-                PUBLIC_SUBJECTS.PEOPLE.GET_KEYED(makeProps(props, {personId}))
+                registry.execute('PEOPLE.GET_KEYED', makeProps(props, {personId}))
               );
 
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS.PEOPLE.GET_HOST(makeProps(props))
+                registry.execute('PEOPLE.GET_HOST', makeProps(props))
               );
 
               let payload = {
@@ -172,27 +172,27 @@ function buildJoinRoom({
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS.PROPERTY_SETS.GET_ALL_KEYED(makeProps(props))
+                  registry.execute('PROPERTY_SETS.GET_ALL_KEYED', makeProps(props))
                 );
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS.CARDS.GET_ALL_KEYED(makeProps(props))
+                  registry.execute('CARDS.GET_ALL_KEYED', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["PLAYERS"].GET(makeProps(props, {person}))
+                  registry.execute('PLAYERS.GET', makeProps(props, {person}))
                 );
 
                 // @TODO store client side
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS.GAME.GET_CONFIG(makeProps(props))
+                  registry.execute('GAME.GET_CONFIG', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+                  registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                     person,
                     peopleIds: allPlayerIds,
                     receivingPeopleIds: [thisPersonId],
@@ -201,48 +201,48 @@ function buildJoinRoom({
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS.PLAYER_BANKS.GET_ALL_KEYED(makeProps(props, {person}))
+                  registry.execute('PLAYER_BANKS.GET_ALL_KEYED', makeProps(props, {person}))
                 );
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["COLLECTIONS"].GET_ALL_KEYED(makeProps(props, {peopleIds: allPlayerIds}))
+                  registry.execute('COLLECTIONS.GET_ALL_KEYED', makeProps(props, {peopleIds: allPlayerIds}))
                 );
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_ALL_KEYED(makeProps(props, {peopleIds: allPlayerIds}))
+                  registry.execute('PLAYER_COLLECTIONS.GET_ALL_KEYED', makeProps(props, {peopleIds: allPlayerIds}))
                 );
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["DRAW_PILE"].GET(makeProps(props))
+                  registry.execute('DRAW_PILE.GET', makeProps(props))
                 );
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["ACTIVE_PILE"].GET(makeProps(props))
-                );
-
-                addressedResponses.addToBucket(
-                  "default",
-                  PUBLIC_SUBJECTS["DISCARD_PILE"].GET(makeProps(props))
+                  registry.execute('ACTIVE_PILE.GET', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["GAME"].STATUS(makeProps(props))
+                  registry.execute('DISCARD_PILE.GET', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["PLAYER_REQUESTS"].GET_KEYED(makeProps(props, {peopleIds: allPlayerIds}))
-                );
-                addressedResponses.addToBucket(
-                  "default",
-                  PUBLIC_SUBJECTS["REQUESTS"].GET_ALL_KEYED(makeProps(props))
+                  registry.execute('GAME.STATUS', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
                   "default",
-                  PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                  registry.execute('PLAYER_REQUESTS.GET_KEYED', makeProps(props, {peopleIds: allPlayerIds}))
+                );
+                addressedResponses.addToBucket(
+                  "default",
+                  registry.execute('REQUESTS.GET_ALL_KEYED', makeProps(props))
+                );
+
+                addressedResponses.addToBucket(
+                  "default",
+                  registry.execute('PLAYER_TURN.GET', makeProps(props))
                 );
               }
 

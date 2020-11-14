@@ -5,8 +5,6 @@ const utilsFolder = `${serverFolder}/utils`;
 const fs = require('fs');
 const assert = require("chai").assert;
 
-const AddressedResponse = require(`${serverFolder}/sockets/AddressedResponse`);
-
 const buildAffected = require(`${serverFolder}/Lib/Affected`);
 const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
 //const buildStealCollectionAction = require(`${serverFolder}/Lib/Actions/StealCollection/StealCollectionAction`);

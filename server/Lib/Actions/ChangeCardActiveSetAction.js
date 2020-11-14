@@ -8,7 +8,7 @@ function buildChangeCardActiveSetAction({
     makeProps,
     makeConsumerFallbackResponse,
     isDef,
-    PUBLIC_SUBJECTS,
+    registry,
     AddressedResponse,
     handleMyTurn,
     makeResponse,
@@ -60,7 +60,7 @@ function buildChangeCardActiveSetAction({
 
                         addressedResponses.addToBucket(
                           "everyone",
-                          PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
+                          registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                             roomCode,
                             collectionId: collection.getId(),
                           }))
@@ -77,7 +77,7 @@ function buildChangeCardActiveSetAction({
             if (status === "success") {
               addressedResponses.addToBucket(
                 scope,
-                PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, { cardId }))
+                registry.execute('CARDS.GET_KEYED', makeProps(props, { cardId }))
               );
             }
 
@@ -91,7 +91,7 @@ function buildChangeCardActiveSetAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
             return addressedResponses; // <----- REMEMBER THIS!!!!

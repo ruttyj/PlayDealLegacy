@@ -9,8 +9,6 @@ const {
   isDef,
   isArr,
   getNestedValue,
-  makeListenerMap,
-  makeVar,
   jsonLog,
 } = require(`${utilsFolder}`);
 const gameConstants = require(`${playDealFolder}/config/constants.js`);
@@ -19,9 +17,7 @@ const checks = require(`../checks/`);
 const FakeHost = require(`${socketFolder}/FakeHost.js`);
 const PlayDealServer = require(`${socketFolder}/PlayDealServer.js`);
 const createConnection = require(`${clientFolder}/src/utils/clientSocket.js`);
-const fs = require('fs');
-
-
+//const fs = require('fs');
 
 const defaultProps = (roomCode, props = {}) => ({
   props: { roomCode, ...props },
@@ -29,7 +25,7 @@ const defaultProps = (roomCode, props = {}) => ({
 
 describe("Sample Game", async function () {
   // TOGGLE EXECUTION
-  let executeUnill = 270000;
+  let executeUnill = 300000;
   let testNumber = 0;
 
 
@@ -39,8 +35,6 @@ describe("Sample Game", async function () {
     playDealClientService.onConnected(socket);
   });
 
-  
-
   let player1Con = createConnection(host.io());
   let player2Con = createConnection(host.io());
   const numberOfPlayers = 2;
@@ -48,17 +42,12 @@ describe("Sample Game", async function () {
   const intialDrawPileSize = 96;
   let runningDrawPileSize = intialDrawPileSize;
 
-
-
-  
   const roomCode = "AAAA";
   const player1Name = "Peter";
   const player2Name = "Merry";
   const player1Id = 1;
   const player2Id = 2;
-  const allPlayerNames = [player1Name, player2Name];
   const allPlayerIds = [player1Id, player2Id];
-  const allPlayers = [player1Con, player2Con];
   const allPlayerList = [
     {
       id: player1Id,
@@ -69,10 +58,6 @@ describe("Sample Game", async function () {
       connection: player2Con,
     },
   ];
-  const getPerson = (personId) =>
-    allPlayers[allPlayerIds.findIndex((id) => id === personId)];
-  const getPersonName = (personId) =>
-    allPlayerNames[allPlayerIds.findIndex((id) => id === personId)];
   const getOtherPlayers = (myId) =>
     allPlayerList.filter((player) => player.id !== myId);
   const getOtherPlayersIds = (myId) =>
@@ -82,124 +67,6 @@ describe("Sample Game", async function () {
       (allPlayerIds.length + allPlayerIds.findIndex((id) => id === myId) + 1) %
         allPlayerIds.length
     ];
-
-  const dumpHand = async (connection) =>
-    jsonLog(
-      await connection.emitSingleRequest(
-        "PLAYER_HANDS",
-        "GET_KEYED",
-        defaultProps(roomCode)
-      )
-    );
-  const dumpCollections = async (connection, mxdCollectionIds) =>
-    jsonLog(
-      await connection.emitSingleRequest(
-        "COLLECTIONS",
-        "GET_KEYED",
-        defaultProps(roomCode, {
-          collectionIds: isArr(mxdCollectionIds)
-            ? mxdCollectionIds
-            : [mxdCollectionIds],
-        })
-      )
-    );
-
-  const dumpCurrentTurn = async (connection) => {
-    jsonLog(
-      await connection.emitSingleRequest(
-        "PLAYER_TURN",
-        "GET",
-        defaultProps(roomCode)
-      )
-    );
-  };
-
-  let fetchPlayerCollections = async (connection, personId) => {
-    let subject = `PLAYER_COLLECTIONS`;
-    let action = `GET_KEYED`;
-    let resultPath = ["payload", "items", personId];
-    let responses = await connection.emitSingleRequest(
-      subject,
-      action,
-      defaultProps(roomCode, { personId })
-    );
-    let playerCollectionsResponse = responses.find(
-      (r) => r.subject === subject && r.action === action
-    );
-    return getNestedValue(playerCollectionsResponse, resultPath, []);
-  };
-
-  let fetchPlayerBank = async (connection, personId) => {
-    let subject = `PLAYER_BANKS`;
-    let action = `GET_KEYED`;
-    let resultPath = ["payload", "items", personId];
-    let responses = await connection.emitSingleRequest(
-      subject,
-      action,
-      defaultProps(roomCode, { personId })
-    );
-    let playerCollectionsResponse = responses.find(
-      (r) => r.subject === subject && r.action === action
-    );
-    return getNestedValue(playerCollectionsResponse, resultPath, []);
-  };
-
-  let dumpPlayerCollections = async (connection, playerId) => {
-    let collectionIds = await fetchPlayerCollections(connection, playerId);
-    await dumpCollections(connection, collectionIds);
-  };
-
-  let fetchPlayerRequests = async (connection, personId) => {
-    let subject = `PLAYER_REQUESTS`;
-    let action = `GET_KEYED`;
-    let resultPath = ["payload", "items", personId];
-    let responses = await connection.emitSingleRequest(
-      subject,
-      action,
-      defaultProps(roomCode, { personId })
-    );
-    let playerCollectionsResponse = responses.find(
-      (r) => r.subject === subject && r.action === action
-    );
-    return getNestedValue(playerCollectionsResponse, resultPath, []);
-  };
-
-  let fetchRequests = async (connection, requestIds) => {
-    let subject = `REQUESTS`;
-    let action = `GET_KEYED`;
-    let responses = await connection.emitSingleRequest(
-      subject,
-      action,
-      defaultProps(roomCode, { requestIds })
-    );
-    let playerCollectionsResponse = responses.find(
-      (r) => r.subject === subject && r.action === action
-    );
-
-    let result = {};
-    requestIds.forEach((requestId) => {
-      let item = getNestedValue(
-        playerCollectionsResponse,
-        ["payload", "items", requestId],
-        null
-      );
-      if (isDef(item)) {
-        result[requestId] = item;
-      }
-    });
-
-    return result;
-  };
-
-  let dumpPlayerRequests = async (connection, personId) => {
-    let requestIds = await fetchPlayerRequests(connection, personId);
-    let requests = await fetchRequests(connection, requestIds);
-    jsonLog(requests);
-  };
-
-  let dumpPlayerBank = async (connection, personId) => {
-    jsonLog(await fetchPlayerBank(connection, personId));
-  };
 
   let fetchPlayerHandCardIds = async (thisPerson, roomCode, thisPersonId) => {
     let responses = await thisPerson.emitSingleRequest(

@@ -1,5 +1,9 @@
 function buildRespondToJustSayNoAction({
-    handleGame, AddressedResponse, makeConsumerFallbackResponse, handleTransactionResponse, PUBLIC_SUBJECTS
+    handleGame, 
+    AddressedResponse, 
+    makeConsumerFallbackResponse, 
+    handleTransactionResponse, 
+    registry,
 })
 {
     function respondToJustSayNoAction(props)
@@ -11,7 +15,6 @@ function buildRespondToJustSayNoAction({
           props,
           ({game}) => {
             return handleTransactionResponse(
-              PUBLIC_SUBJECTS,
               subject,
               action,
               props,

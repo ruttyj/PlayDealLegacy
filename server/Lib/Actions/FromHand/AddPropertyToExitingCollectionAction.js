@@ -6,7 +6,7 @@
 function buildAddPropertyToExitingCollectionAction({
     makeProps,
     makeConsumerFallbackResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     packageCheckpoints,
     isDef,
@@ -30,7 +30,6 @@ function buildAddPropertyToExitingCollectionAction({
               card,
               roomCode,
               game,
-              personManager,
               currentTurn,
               thisPersonId,
             } = props2;
@@ -71,7 +70,7 @@ function buildAddPropertyToExitingCollectionAction({
                             if (isWildCard) {
                               addressedResponses.addToBucket(
                                 "everyone",
-                                PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, {
+                                registry.execute('CARDS.GET_KEYED', makeProps(props, {
                                   roomCode,
                                   cardId,
                                 }))
@@ -81,13 +80,13 @@ function buildAddPropertyToExitingCollectionAction({
                             // Emit updated player turn
                             addressedResponses.addToBucket(
                               "everyone",
-                              PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                              registry.execute('PLAYER_TURN.GET', makeProps(props))
                             );
 
                             //Update collection contents
                             addressedResponses.addToBucket(
                               "everyone",
-                              PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
+                              registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                                 roomCode,
                                 collectionId: collection.getId(),
                               }))
@@ -97,7 +96,7 @@ function buildAddPropertyToExitingCollectionAction({
                             let allPlayerIds = game.getAllPlayerKeys();
                             addressedResponses.addToBucket(
                               "default",
-                              PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+                              registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                                 roomCode,
                                 personId: thisPersonId,
                                 receivingPeopleIds: allPlayerIds,
@@ -116,7 +115,7 @@ function buildAddPropertyToExitingCollectionAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
 
@@ -132,7 +131,7 @@ function buildAddPropertyToExitingCollectionAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
             return addressedResponses;

@@ -9,6 +9,7 @@ function buildRegisterCollectionsMethods({
     AddressedResponse,
     KeyedRequest,
     PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     makeKeyedResponse,
     getAllKeyedResponse,
@@ -22,7 +23,6 @@ function buildRegisterCollectionsMethods({
         Object.assign(PUBLIC_SUBJECTS, {
             COLLECTIONS: {
               ...makeRegularGetKeyed({
-                SUBJECTS: PUBLIC_SUBJECTS,
                 subject: "COLLECTIONS",
                 singularKey: "collectionId",
                 pluralKey: "collectionIds",
@@ -112,7 +112,7 @@ function buildRegisterCollectionsMethods({
                     // Get data
                     addressedResponses.addToBucket(
                       "default",
-                      getAllKeyedResponse(PUBLIC_SUBJECTS, myKeyedRequest)
+                      getAllKeyedResponse(myKeyedRequest)
                     );
         
                     return addressedResponses;

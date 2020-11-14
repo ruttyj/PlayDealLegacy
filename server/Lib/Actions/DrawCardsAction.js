@@ -7,7 +7,7 @@ function buildDrawCardsAction({
     makeProps,
     makeConsumerFallbackResponse,
     makeResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     handCardConsumer,
     AddressedResponse,
 })
@@ -62,13 +62,13 @@ function buildDrawCardsAction({
                   // updated card piles
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS["GAME"].GET_UPDATED_PILES(makeProps(props))
+                    registry.execute('GAME.GET_UPDATED_PILES', makeProps(props))
                   );
 
                   // Cards Drawn
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED(makeProps(props, {
+                    registry.execute('PLAYERS.PERSON_DREW_CARDS_KEYED', makeProps(props, {
                       personId: thisPersonId,
                       cardIds: cardIdsDelta,
                     }))
@@ -78,7 +78,7 @@ function buildDrawCardsAction({
                   let allPlayerIds = game.getAllPlayerKeys();
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+                    registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                       personId: thisPersonId,
                       receivingPeopleIds: allPlayerIds,
                     }))
@@ -92,13 +92,13 @@ function buildDrawCardsAction({
                   // update player turn - must be last
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                    registry.execute('PLAYER_TURN.GET', makeProps(props))
                   );
 
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                      registry.execute('GAME.STATUS', makeProps(props))
                     );
                   }
 

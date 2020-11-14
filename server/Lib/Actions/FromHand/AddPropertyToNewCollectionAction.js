@@ -6,7 +6,7 @@
 function buildAddPropertyToNewCollectionAction({
     makeProps,
     makeConsumerFallbackResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     packageCheckpoints,
     isDef,
@@ -30,8 +30,6 @@ function buildAddPropertyToNewCollectionAction({
               hand,
               roomCode,
               game,
-              personManager,
-              thisPerson,
               thisPersonId,
             } = props2;
 
@@ -63,7 +61,7 @@ function buildAddPropertyToNewCollectionAction({
                   //Update collection contents
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS["COLLECTIONS"].GET_KEYED(makeProps(props, {
+                    registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                       roomCode,
                       collectionId: collection.getId(),
                     }))
@@ -72,7 +70,7 @@ function buildAddPropertyToNewCollectionAction({
                   // Update who has what collection
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS["PLAYER_COLLECTIONS"].GET_KEYED(makeProps(props, {
+                    registry.execute('PLAYER_COLLECTIONS.GET_KEYED', makeProps(props, {
                       personId: thisPersonId,
                     }))
                   );
@@ -80,21 +78,21 @@ function buildAddPropertyToNewCollectionAction({
                   if (isWildCard) {
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.CARDS.GET_KEYED(makeProps(props, {cardId}))
+                      registry.execute('CARDS.GET_KEYED', makeProps(props, {cardId}))
                     );
                   }
 
                   // Emit updated player turn
                   addressedResponses.addToBucket(
                     "everyone",
-                    PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                    registry.execute('PLAYER_TURN.GET', makeProps(props))
                   );
 
                   // Update everyone with my new hand
                   let allPlayerIds = game.getAllPlayerKeys();
                   addressedResponses.addToBucket(
                     "default",
-                    PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+                    registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                       roomCode,
                       personId: thisPersonId,
                       receivingPeopleIds: allPlayerIds,
@@ -107,7 +105,7 @@ function buildAddPropertyToNewCollectionAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
 
@@ -123,7 +121,7 @@ function buildAddPropertyToNewCollectionAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
             return addressedResponses;

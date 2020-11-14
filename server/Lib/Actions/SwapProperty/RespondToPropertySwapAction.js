@@ -7,7 +7,6 @@ function buildRespondToPropertySwapAction({
     isDef,
     handleTransactionResponse,
     Affected,
-    PUBLIC_SUBJECTS, 
 })
 {
     function respondToPropertySwapAction(props)
@@ -177,7 +176,6 @@ function buildRespondToPropertySwapAction({
             }
           };
           let result = handleTransactionResponse(
-            PUBLIC_SUBJECTS,
             "RESPONSES",
             "RESPOND_TO_PROPERTY_SWAP",
             props,

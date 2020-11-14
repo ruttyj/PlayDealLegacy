@@ -9,7 +9,6 @@ const GameInstance            = require(`${gameFolder}/`);
 
 // Import generic logic for indexed game data
 const KeyedRequest            = require(`${serverSocketFolder}/container/keyedRequest.js`);
-const AddressedResponse   = require(`${serverSocketFolder}/AddressedResponse.js`); // @TODO rename AddressedResponse
 const Transaction             = require(`${gameFolder}/player/request/transfer/Transaction.js`);
 
 const buildDeps               = require(`./Deps.js`);
@@ -128,6 +127,7 @@ const {
 
 
 module.exports = function({
+    AddressedResponse,
     Affected,
     OrderedTree,
   })
@@ -162,22 +162,20 @@ module.exports = function({
       const PRIVATE_SUBJECTS = registry.PRIVATE_SUBJECTS;
       const PUBLIC_SUBJECTS  = registry.PUBLIC_SUBJECTS;
       let {
-        makeProps,
-        makeResponse,
-        makeKeyedResponse,
-
         getAllKeyedResponse,
         packageCheckpoints,
         canGameStart,
         createGameInstance,
         canPersonRemoveOtherPerson,
 
+        makeProps,
+        makeResponse,
+        makeKeyedResponse,
         makePersonSpecificResponses,
         makeConsumerFallbackResponse,
         makeRegularGetKeyed,
 
         handlePerson,
-
         handleGame,
         handleMyTurn,
         handCardConsumer,
@@ -185,7 +183,6 @@ module.exports = function({
         handleTransferResponse,
         handleRequestCreation,
         handleCollectionBasedRequestCreation,
-        
       } = buildDeps({
         els,
         isDef,
@@ -207,6 +204,7 @@ module.exports = function({
         GameInstance,
         AddressedResponse,
         KeyedRequest,
+        registry,
         PUBLIC_SUBJECTS,
         PRIVATE_SUBJECTS,
 

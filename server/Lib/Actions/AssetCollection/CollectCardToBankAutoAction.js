@@ -3,7 +3,7 @@
  * const buildCollectCardToBankAutoAction = require(`${serverFolder}/Lib/Actions/CollectCardToBankAutoAction`);
  */
 function buildCollectCardToBankAutoAction({
-    PUBLIC_SUBJECTS,
+    registry,
     handleTransferResponse,
     Affected,
 })
@@ -18,7 +18,6 @@ function buildCollectCardToBankAutoAction({
                 transfering,
                 checkpoints,
                 thisPersonId,
-                roomCode,
                 addressedResponses,
                 game,
             } = consumerData;
@@ -36,15 +35,14 @@ function buildCollectCardToBankAutoAction({
                 checkpoints.set("success", true);
 
                 if (game.checkWinConditionForPlayer(thisPersonId)) {
-                addressedResponses.addToBucket(
-                    "everyone",
-                    PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
-                );
+                    addressedResponses.addToBucket(
+                        "everyone",
+                        registry.execute('GAME.STATUS', makeProps(props))
+                    );
                 }
             }
         };
         return handleTransferResponse(
-            PUBLIC_SUBJECTS,
             "RESPONSES",
             "COLLECT_CARD_TO_BANK_AUTO",
             props,

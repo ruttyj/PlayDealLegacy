@@ -10,6 +10,8 @@ const {
         isArr,
         jsonEncode,
         els,
+        makeMap,
+        stateSerialize,
       }                       = require("./utils.js");
 
 const CookieTokenManager      = require("../CookieTokenManager/");
@@ -25,13 +27,17 @@ const buildOnConnection       = require(`${libFolder}/OnConnection`);
 const buildAffected           = require(`${libFolder}/Affected`);
 const buildOrderedTree        = require(`${libFolder}/OrderedTree`);
 
-const AddressedResponse       = require(`${serverSocketFolder}/AddressedResponse.js`); // @TODO rename AddressedResponse
+const buildAddressedResponse  = require(`${libFolder}/AddressedResponse.js`);
+const AddressedResponse       = buildAddressedResponse({isDef, isArr, makeMap, stateSerialize});
+
+
 const OrderedTree             = buildOrderedTree();
 const Affected                = buildAffected({OrderedTree});
 const Registry                = buildRegistry({
                                   isStr,
                                   isArr,
                                   isDef,
+                                  isFunc,
                                 })
 
 
@@ -64,6 +70,7 @@ module.exports = class PlayDealServer {
     const registry            = this.registry; // event Registry
     
     let populatedRegistry     = buildPopulatedRegistry({
+      AddressedResponse,
       Affected,
       OrderedTree
     });

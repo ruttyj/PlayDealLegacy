@@ -7,6 +7,7 @@
 function buildRegisterCheatMethods({
     AddressedResponse,
     PUBLIC_SUBJECTS,
+    registry,
     makeResponse,
     handleGame,
 })

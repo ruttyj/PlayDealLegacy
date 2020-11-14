@@ -5,7 +5,7 @@
  */
 function buildAttemptFinishTurnAction({
     AddressedResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeProps,
     makeConsumerFallbackResponse,
     handleMyTurn,
@@ -26,7 +26,6 @@ function buildAttemptFinishTurnAction({
               game,
               hand,
               currentTurn,
-              roomCode,
               thisPersonId,
             } = consumerData;
             let status = "failure";
@@ -60,11 +59,11 @@ function buildAttemptFinishTurnAction({
             if (currentTurn.getPhaseKey() === "done") {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                registry.execute('PLAYER_REQUESTS.REMOVE_ALL', makeProps(consumerData))
               );
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+                registry.execute('REQUESTS.REMOVE_ALL', makeProps(consumerData))
               );
               game.nextPlayerTurn();
               status = "success";
@@ -72,11 +71,11 @@ function buildAttemptFinishTurnAction({
 
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS.PLAYER_REQUESTS.REMOVE_ALL(makeProps(consumerData))
+              registry.execute('PLAYER_REQUESTS.REMOVE_ALL', makeProps(consumerData))
             );
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS.REQUESTS.REMOVE_ALL(makeProps(consumerData))
+              registry.execute('REQUESTS.REMOVE_ALL', makeProps(consumerData))
             );
 
             //-------------------------------------------------------
@@ -90,7 +89,7 @@ function buildAttemptFinishTurnAction({
             // Emit updated player turn
             addressedResponses.addToBucket(
               "everyone",
-              PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+              registry.execute('PLAYER_TURN.GET', makeProps(props))
             );
 
             addressedResponses.addToBucket(
@@ -101,7 +100,7 @@ function buildAttemptFinishTurnAction({
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                registry.execute('GAME.STATUS', makeProps(props))
               );
             }
 

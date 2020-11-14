@@ -1,12 +1,7 @@
-/**
- * TurnStartingDrawAction
- * MY_TURN TURN_STARTING_DRAW
- * const buildTurnStartingDrawAction = require(`${serverFolder}/Lib/Actions/TurnStartingDrawAction`);
- */
 function buildTurnStartingDrawAction({
     makeProps,
     AddressedResponse,
-    PUBLIC_SUBJECTS,
+    registry,
     makeConsumerFallbackResponse,
     handleMyTurn,
     makeResponse,
@@ -20,7 +15,7 @@ function buildTurnStartingDrawAction({
         return handleMyTurn(
           props,
           (props2) => {
-            let { roomCode, game, personManager, thisPersonId } = props2;
+            let { roomCode, game, thisPersonId } = props2;
 
             if (game.getCurrentTurn().canDrawTurnStartingCards()) {
               // Draw Card from deck ------------------------------------
@@ -43,7 +38,7 @@ function buildTurnStartingDrawAction({
               // Let people know --------------------------------------------------------
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS.PLAYERS.PERSON_DREW_CARDS_KEYED(makeProps(props, {
+                registry.execute('PLAYERS.PERSON_DREW_CARDS_KEYED', makeProps(props, {
                   personId: thisPersonId,
                   cardIds: cardIdsDelta,
                 }))
@@ -51,14 +46,14 @@ function buildTurnStartingDrawAction({
 
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS["DRAW_PILE"].GET(makeProps(props))
+                registry.execute('DRAW_PILE.GET', makeProps(props))
               );
 
               // Update everyone with my new hand
               let allPlayerIds = game.getAllPlayerKeys();
               addressedResponses.addToBucket(
                 "default",
-                PUBLIC_SUBJECTS["PLAYER_HANDS"].GET_KEYED(makeProps(props, {
+                registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                   roomCode,
                   personId: thisPersonId,
                   receivingPeopleIds: allPlayerIds,
@@ -79,7 +74,7 @@ function buildTurnStartingDrawAction({
               // Update current turn state
               addressedResponses.addToBucket(
                 "everyone",
-                PUBLIC_SUBJECTS["PLAYER_TURN"].GET(makeProps(props))
+                registry.execute('PLAYER_TURN.GET', makeProps(props))
               );
               //___________________________________________________________________________
             }

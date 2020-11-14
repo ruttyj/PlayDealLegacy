@@ -6,7 +6,7 @@ function buildCollectCardToCollectionAction({
     isDef,
     Affected,
     handleTransferResponse,
-    PUBLIC_SUBJECTS,
+    registry,
 })
 {
     function collectCardToCollectionAction(props)
@@ -21,7 +21,6 @@ function buildCollectCardToCollectionAction({
               game,
               thisPersonId,
               player,
-              roomCode,
               addressedResponses,
             } = consumerData;
             let playerManager = game.getPlayerManager();
@@ -90,7 +89,7 @@ function buildCollectCardToCollectionAction({
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
                     addressedResponses.addToBucket(
                       "everyone",
-                      PUBLIC_SUBJECTS.GAME.STATUS(makeProps(props))
+                      registry.execute('GAME.STATUS', makeProps(props))
                     );
                   }
                 }
@@ -99,7 +98,6 @@ function buildCollectCardToCollectionAction({
           };
       
           let result = handleTransferResponse(
-            PUBLIC_SUBJECTS,
             "RESPONSES",
             "COLLECT_CARD_TO_COLLECTION",
             props,
