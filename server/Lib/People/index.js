@@ -1,10 +1,4 @@
-/**
- * Build a People Method Provider
- * 
- * Provides methods for a socket to be able to listen with
- * const buildPeopleMethodsProvider = require(`${serverFolder}/Lib/People/`);
- */
-function buildRegisterPeopleMethods({
+module.exports = function ({
     makeProps,
     isDef,
     isStr,
@@ -18,7 +12,7 @@ function buildRegisterPeopleMethods({
     handlePerson,
 })
 {
-    function registerRoomMethods(registry)
+    return function (registry)
     {
       registry.public('PEOPLE.UPDATE_MY_NAME', function(props) {
         const [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
@@ -384,7 +378,4 @@ function buildRegisterPeopleMethods({
         );
       });
     }
-    return registerRoomMethods;
 }
-
-module.exports = buildRegisterPeopleMethods;

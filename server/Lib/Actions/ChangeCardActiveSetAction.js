@@ -1,20 +1,14 @@
-/**
- * CHANGE_CARD_ACTIVE_SET
- * ChangeCardActiveSetAction
- * @SEARCH_REPLACE : ChangeCardActiveSetAction | changeCardActiveSetAction
- * const buildChangeCardActiveSetAction = require(`${serverFolder}/Lib/Actions/ChangeCardActiveSetAction`);
- */
 function buildChangeCardActiveSetAction({
-    makeProps,
-    makeConsumerFallbackResponse,
-    isDef,
-    registry,
-    AddressedResponse,
-    handleMyTurn,
-    makeResponse,
+  makeProps,
+  makeConsumerFallbackResponse,
+  isDef,
+  registry,
+  AddressedResponse,
+  handleMyTurn,
+  makeResponse,
 })
 {
-    function changeCardActiveSetAction(props)
+    return function (props)
     {
 
         let subject = "MY_TURN";
@@ -100,7 +94,6 @@ function buildChangeCardActiveSetAction({
         );
       
     }
-    return changeCardActiveSetAction;
 }
 
 module.exports = buildChangeCardActiveSetAction;

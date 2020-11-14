@@ -7,7 +7,7 @@ function buildTurnStartingDrawAction({
     makeResponse,
 })
 {
-    function turnStartingDrawAction(props)
+    return function (props)
     {
         let subject = "MY_TURN";
         let action = "TURN_STARTING_DRAW";
@@ -84,7 +84,6 @@ function buildTurnStartingDrawAction({
           makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
-    return turnStartingDrawAction;
 }
 
 module.exports = buildTurnStartingDrawAction;

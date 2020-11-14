@@ -1,16 +1,10 @@
-
-/**
- * GET_RANDOM_CODE
- * getRandomRoom
- * const buildGetRandomRoom = require(`${serverFolder}/Lib/Room/GetRandomRoom`);
- */
-function buildGetRandomRoom({
+module.exports = function ({
     AddressedResponse,
     roomManager,
     makeResponse,
 })
 {
-    function getRandomRoom(props)
+    return function (props)
     {
         const addressedResponses = new AddressedResponse();
         const [subject, action] = ["ROOM", "GET_RANDOM_CODE"];
@@ -27,7 +21,4 @@ function buildGetRandomRoom({
 
         return addressedResponses;
     }
-    return getRandomRoom;
 }
-
-module.exports = buildGetRandomRoom;

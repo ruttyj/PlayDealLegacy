@@ -3,10 +3,9 @@ function buildRespondToJustSayNoAction({
     AddressedResponse, 
     makeConsumerFallbackResponse, 
     handleTransactionResponse, 
-    registry,
 })
 {
-    function respondToJustSayNoAction(props)
+    return function (props)
     {
         let subject = "RESPONSES";
         let action = "RESPOND_TO_JUST_SAY_NO";
@@ -24,7 +23,6 @@ function buildRespondToJustSayNoAction({
           makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
-    return respondToJustSayNoAction;
 }
 
 module.exports = buildRespondToJustSayNoAction;

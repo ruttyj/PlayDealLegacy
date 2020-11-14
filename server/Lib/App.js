@@ -1,4 +1,4 @@
-function buildApp({}) {
+module.exports = function ({}) {
     class App {
         constructor() {
         }
@@ -6,5 +6,3 @@ function buildApp({}) {
 
     return App;
 }
-
-module.exports = buildApp;

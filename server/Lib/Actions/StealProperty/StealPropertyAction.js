@@ -1,8 +1,3 @@
-/**
- * StealPropertyAction
- * STEAL_PROPERTY
- * const buildStealPropertyAction = require(`${serverFolder}/Lib/Actions/StealPropertyAction`);
- */
 function buildStealPropertyAction({
     handleRequestCreation,
     Affected,
@@ -10,7 +5,7 @@ function buildStealPropertyAction({
     isDef,
 })
 {
-    function stealPropertyAction(props)
+    return function (props)
     {
         function doTheThing(theGoods) {
             let { cardId, myPropertyCardId, theirPropertyCardId } = theGoods;
@@ -96,7 +91,6 @@ function buildStealPropertyAction({
           );
         
     }
-    return stealPropertyAction;
 }
 
 module.exports = buildStealPropertyAction;

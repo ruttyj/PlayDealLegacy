@@ -1,4 +1,4 @@
-function buildRegisterRequestValueMethods({
+module.exports = function ({
     commonDeps,
     isDefNested,
     buildRespondToCollectValueAction,
@@ -12,7 +12,7 @@ function buildRegisterRequestValueMethods({
     handleCollectionBasedRequestCreation,
 })
 {
-    function registerRequestValueMethods(registry)
+    return function (registry)
     {
         // CHARGE RENT
         registry.public(['MY_TURN', 'CHARGE_RENT'], buildChargeRentAction({
@@ -44,7 +44,4 @@ function buildRegisterRequestValueMethods({
         }))
 
     }
-    return registerRequestValueMethods;
 }
-
-module.exports = buildRegisterRequestValueMethods;

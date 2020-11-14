@@ -1,9 +1,4 @@
-/**
- * JoinRoom
- * @SEARCH_REPLACE : JoinRoom | joinRoom
- * const buildJoinRoom = require(`${serverFolder}/Lib/Room/JoinRoom`);
- */
-function buildJoinRoom({
+module.exports = function ({
     makeProps,
     registry,
     makeResponse,
@@ -16,7 +11,7 @@ function buildJoinRoom({
     cookieTokenManager,
 })
 {
-    function joinRoom(props)
+    return function (props)
     {
         const [subject, action] = ["ROOM", "JOIN"];
         const addressedResponses = new AddressedResponse();
@@ -261,7 +256,4 @@ function buildJoinRoom({
           addressedResponses
         );
     }
-    return joinRoom;
 }
-
-module.exports = buildJoinRoom;

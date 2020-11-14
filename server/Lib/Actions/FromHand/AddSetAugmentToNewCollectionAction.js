@@ -1,8 +1,3 @@
-/**
- * 
- * AddSetAugmentToNewCollectionAction
- * const buildAddSetAugmentToNewCollectionAction = require(`${serverFolder}/Lib/Actions/FromHand/AddSetAugmentToNewCollectionAction`);
- */
 function buildAddSetAugmentToNewCollectionAction({
     makeProps,
     makeConsumerFallbackResponse,
@@ -14,7 +9,7 @@ function buildAddSetAugmentToNewCollectionAction({
     handleMyTurn,
 })
 {
-    function addSetAugmentToNewCollectionAction(props)
+    return function (props)
     {
         let subject = "MY_TURN";
         let action = "TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_HAND";
@@ -144,7 +139,6 @@ function buildAddSetAugmentToNewCollectionAction({
           makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
-    return addSetAugmentToNewCollectionAction;
 }
 
 module.exports = buildAddSetAugmentToNewCollectionAction;

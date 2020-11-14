@@ -1,9 +1,3 @@
-/**
- * AddCardToBankAction
- * ADD_CARD_TO_MY_BANK_FROM_HAND
- * @SEARCH_REPLACE : AddCardToBankAction | addCardToBankAction
- * const buildAddCardToBankAction = require(`${serverFolder}/Lib/Actions/AddCardToBankAction`);
- */
 function buildAddCardToBankAction({
     makeProps,
     makeConsumerFallbackResponse,
@@ -16,9 +10,8 @@ function buildAddCardToBankAction({
     log,
 })
 {
-    function addCardToBankAction(props)
+    return function (props)
     {
-
         let subject = "MY_TURN";
         let action = "ADD_CARD_TO_MY_BANK_FROM_HAND";
         const addressedResponses = new AddressedResponse();
@@ -120,7 +113,6 @@ function buildAddCardToBankAction({
         );
       
     }
-    return addCardToBankAction;
 }
 
 module.exports = buildAddCardToBankAction;

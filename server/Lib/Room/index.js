@@ -1,10 +1,4 @@
-/**
- * Build a Room Method Provider
- * 
- * Provides methods for a socket to be able to listen with
- * const buildRoomMethodsProvider = require(`${serverFolder}/Lib/Room/`);
- */
-function buildRegisterRoomMethods({
+module.exports = function({
     AddressedResponse,
     //-------------------------
     buildCreateRoom,
@@ -29,12 +23,11 @@ function buildRegisterRoomMethods({
     makeResponse,
     createGameInstance,
     makeConsumerFallbackResponse,
-
     //-------------------
     handleRoom,
 })
 {
-    function registerRoomMethods(registry)
+    return function (registry)
     {
         let getCurrentRoom = buildGetCurrentRoomCode({
             makeProps,
@@ -112,7 +105,4 @@ function buildRegisterRoomMethods({
         registry.public('ROOM.GET_All_KEYED',      getAllKeyed);
         registry.public('ROOM.LEAVE',              leaveRoom);
     }
-    return registerRoomMethods;
 }
-
-module.exports = buildRegisterRoomMethods;

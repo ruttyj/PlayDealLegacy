@@ -1,8 +1,3 @@
-/**
- * PLAY_PASS_GO
- * DrawCardsAction
- * const buildDrawCardsAction = require(`${serverFolder}/Lib/Actions/DrawCardsAction`);
- */
 function buildDrawCardsAction({
     makeProps,
     makeConsumerFallbackResponse,
@@ -12,7 +7,7 @@ function buildDrawCardsAction({
     AddressedResponse,
 })
 {
-    function drawCardsAction(props)
+    return function (props)
     {
         let subject = "MY_TURN";
         let action = "PLAY_PASS_GO";
@@ -121,7 +116,6 @@ function buildDrawCardsAction({
         );
       
     }
-    return drawCardsAction;
 }
 
 module.exports = buildDrawCardsAction;

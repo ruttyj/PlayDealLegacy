@@ -1,17 +1,11 @@
-/**
- * RESPOND_TO_PROPERTY_SWAP
- * RespondToPropertySwapAction
- * const buildRespondToPropertySwapAction = require(`${serverFolder}/Lib/Actions/RespondToPropertySwapAction`);
- */
 function buildRespondToPropertySwapAction({
     isDef,
     handleTransactionResponse,
     Affected,
 })
 {
-    function respondToPropertySwapAction(props)
+    return function (props)
     {
-        
         let doTheThing = function (consumerData) {
             let { cardId, requestId, responseKey } = consumerData;
             let {
@@ -184,7 +178,6 @@ function buildRespondToPropertySwapAction({
           return result;
         
     }
-    return respondToPropertySwapAction;
 }
 
 module.exports = buildRespondToPropertySwapAction;

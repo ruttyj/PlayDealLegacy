@@ -1,4 +1,4 @@
-function buildRegisterPlayerMethods({
+module.exports = function ({
     isDef,
     isArr,
     AddressedResponse,
@@ -8,7 +8,7 @@ function buildRegisterPlayerMethods({
     handleGame,
 })
 {
-    function registerPlayerMethods(registry)
+    return function (registry)
     {
       registry.public('PLAYERS.GET', (props) => {
         const [subject, action] = ["PLAYERS", "GET"];
@@ -227,7 +227,4 @@ function buildRegisterPlayerMethods({
         );
       });
     }
-    return registerPlayerMethods;
 }
-
-module.exports = buildRegisterPlayerMethods;

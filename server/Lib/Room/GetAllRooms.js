@@ -1,10 +1,4 @@
-/**
- * GET_KEYED
- * GetAllRooms
- * @SEARCH_REPLACE : GetAllRooms | getAllRooms
- * const buildGetAllRooms = require(`${serverFolder}/Lib/Room/GetAllRooms`);
- */
-function buildGetAllRooms({
+module.exports = function ({
     AddressedResponse,
     registry,
     roomManager,
@@ -36,5 +30,3 @@ function buildGetAllRooms({
         return addressedResponses;
     }
 }
-
-module.exports = buildGetAllRooms;

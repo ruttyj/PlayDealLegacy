@@ -1,4 +1,4 @@
-function buildRegisterConnectionMethods({
+module.exports = function ({
     AddressedResponse,
     clientManager,
     makeResponse,
@@ -36,5 +36,3 @@ function buildRegisterConnectionMethods({
     })
   }
 }
-
-module.exports = buildRegisterConnectionMethods;

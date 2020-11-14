@@ -1,10 +1,4 @@
-/**
- * GET_KEYED
- * GetRoom
- * @SEARCH_REPLACE : GetRoom | getRoom
- * const buildGetRoom = require(`${serverFolder}/Lib/Room/GetRoom`);
- */
-function buildGetRoom({
+module.exports = function({
     isDef,
     getArrFromProp,
     AddressedResponse,
@@ -12,7 +6,7 @@ function buildGetRoom({
     makeResponse,
 })
 {
-    function getRoom(props)
+    return function (props)
     {
         const [subject, action] = ["ROOM", "GET_KEYED"];
         const addressedResponses = new AddressedResponse();
@@ -49,7 +43,4 @@ function buildGetRoom({
 
         return addressedResponses;
     }
-    return getRoom;
 }
-
-module.exports = buildGetRoom;

@@ -1,14 +1,10 @@
-/**
- * COLLECT_CARD_TO_BANK_AUTO
- * const buildCollectCardToBankAutoAction = require(`${serverFolder}/Lib/Actions/CollectCardToBankAutoAction`);
- */
 function buildCollectCardToBankAutoAction({
     registry,
     handleTransferResponse,
     Affected,
 })
 {
-    function collectCardToBankAutoAction(props)
+    return function (props)
     {
         let doTheThing = function (consumerData) {
             let {
@@ -50,7 +46,6 @@ function buildCollectCardToBankAutoAction({
         );
     
     }
-    return collectCardToBankAutoAction;
 }
 
 module.exports = buildCollectCardToBankAutoAction;

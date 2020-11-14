@@ -1,7 +1,3 @@
-/**
- * COLLECT_COLLECTION
- * const buildCollectCollectionAction = require(`${serverFolder}/Lib/Actions/CollectCollectionAction`);
- */
 function buildCollectCollectionAction({
     isDef,
     Affected,
@@ -9,7 +5,7 @@ function buildCollectCollectionAction({
     registry,
 })
 {
-    function collectCollectionAction(props)
+    return function (props)
     {
         let doTheThing = function (consumerData) {
             let { requestId } = consumerData;
@@ -69,7 +65,6 @@ function buildCollectCollectionAction({
           return result;
         
     }
-    return collectCollectionAction;
 }
 
 module.exports = buildCollectCollectionAction;

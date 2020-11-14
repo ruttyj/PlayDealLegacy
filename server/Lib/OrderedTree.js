@@ -1,4 +1,4 @@
-function buildOrderedTree() {
+module.exports = function () {
     let itemField = 'items';
     let orderField = 'order';
 
@@ -139,7 +139,6 @@ function buildOrderedTree() {
             return _recursive(this.mRoot);
         }
     }
+    
     return OrderedTree;
 }
-
-module.exports = buildOrderedTree;

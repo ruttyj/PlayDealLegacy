@@ -8,7 +8,7 @@ function buildRegisterCardMethods({
     handleGame,
 })
 {
-    function registercardMethods(registry)
+    return function (registry)
     {
       registry.public(`PROPERTY_SETS.GET_KEYED`, (props) => {
         let subject = "PROPERTY_SETS";
@@ -138,7 +138,6 @@ function buildRegisterCardMethods({
         );
       })
     }
-    return registercardMethods;
 }
 
 module.exports = buildRegisterCardMethods;

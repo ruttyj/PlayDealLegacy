@@ -1,8 +1,3 @@
-/**
- * RequestValueAction
- * VALUE_COLLECTION
- * const buildRequestValueAction = require(`${serverFolder}/Lib/Actions/RequestValueAction`);
- */
 function buildRequestValueAction({
     handleRequestCreation,
     Affected,
@@ -11,7 +6,7 @@ function buildRequestValueAction({
     isDef,
 })
 {
-    function requestValueAction(props)
+    return function (props)
     {
         
         function doTheThing(theGoods) {
@@ -75,7 +70,6 @@ function buildRequestValueAction({
           );
         
     }
-    return requestValueAction;
 }
 
 module.exports = buildRequestValueAction;

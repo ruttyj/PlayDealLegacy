@@ -1,8 +1,3 @@
-/**
- * ADD_PROPERTY_TO_EXISTING_COLLECTION_FROM_HAND
- * AddPropertyToExitingCollectionAction
- * const buildAddPropertyToExitingCollectionAction = require(`${serverFolder}/Lib/Actions/FromHand/AddPropertyToExitingCollectionAction`);
- */
 function buildAddPropertyToExitingCollectionAction({
     makeProps,
     makeConsumerFallbackResponse,
@@ -14,7 +9,7 @@ function buildAddPropertyToExitingCollectionAction({
     AddressedResponse,
 })
 {
-    function addPropertyToExitingCollectionAction(props)
+    return function (props)
     {
 
         let subject = "MY_TURN";
@@ -140,7 +135,6 @@ function buildAddPropertyToExitingCollectionAction({
         );
       
     }
-    return addPropertyToExitingCollectionAction;
 }
 
 module.exports = buildAddPropertyToExitingCollectionAction;

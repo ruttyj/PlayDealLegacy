@@ -1,10 +1,4 @@
-/**
- * EXISTS
- * CheckExists
- * @SEARCH_REPLACE : CheckExists | checkExists
- * const buildCheckExists = require(`${serverFolder}/Lib/Room/CheckExists`);
- */
-function buildCheckExists({
+module.exports = function({
     makeResponse,
     isDef,
     AddressedResponse,
@@ -12,7 +6,7 @@ function buildCheckExists({
     roomManager,
 })
 {
-    function checkExists(props)
+    return function (props)
     {
         const addressedResponses = new AddressedResponse();
         const [subject, action] = ["ROOM", "EXISTS"];
@@ -36,9 +30,5 @@ function buildCheckExists({
         );
 
         return addressedResponses;
-      
     }
-    return checkExists;
 }
-
-module.exports = buildCheckExists;

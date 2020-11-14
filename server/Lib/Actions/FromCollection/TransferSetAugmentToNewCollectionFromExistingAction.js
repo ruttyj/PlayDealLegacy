@@ -1,8 +1,3 @@
-/**
- * TRANSFER_SET_AUGMENT_TO_NEW_COLLECTION_FROM_COLLECTION
- * TransferSetAugmentToNewCollectionFromExistingAction
- * const buildTransferSetAugmentToNewCollectionFromExistingAction = require(`${serverFolder}/Lib/Actions/FromCollection/TransferSetAugmentToNewCollectionFromExistingAction`);
- */
 function buildTransferSetAugmentToNewCollectionFromExistingAction({
     makeProps,
     makeConsumerFallbackResponse,
@@ -13,7 +8,7 @@ function buildTransferSetAugmentToNewCollectionFromExistingAction({
     handleMyTurn,
 })
 {
-    function transferSetAugmentToNewCollectionFromExistingAction(props)
+    return function (props)
     {
 
         let subject = "MY_TURN";
@@ -133,7 +128,6 @@ function buildTransferSetAugmentToNewCollectionFromExistingAction({
         );
       
     }
-    return transferSetAugmentToNewCollectionFromExistingAction;
 }
 
 module.exports = buildTransferSetAugmentToNewCollectionFromExistingAction;

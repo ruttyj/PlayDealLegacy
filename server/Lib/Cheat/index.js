@@ -29,7 +29,6 @@ function buildRegisterCheatMethods({
         }
       );
     })
-
   }
 }
 

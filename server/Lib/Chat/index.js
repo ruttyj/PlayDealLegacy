@@ -1,9 +1,3 @@
-/**
- * Build a People Method Provider
- * @SEARCH_REPLACE Chat
- * Provides methods for a socket to be able to listen with
- * const buildRegisterChatMethods = require(`${serverFolder}/Lib/Chat/`);
- */
 function buildRegisterChatMethods({
     isDef,
     AddressedResponse,
@@ -12,7 +6,7 @@ function buildRegisterChatMethods({
     handlePerson,
 })
 {
-    function registerChatMethods(registry)
+    return function (registry)
     {
       registry.public(`CHAT.SEND_PRIVATE_MESSAGE`, (props) => {
         const [subject, action] = ["CHAT", "SEND_PRIVATE_MESSAGE"];
@@ -98,7 +92,6 @@ function buildRegisterChatMethods({
         );
       })
     }
-    return registerChatMethods;
 }
 
 module.exports = buildRegisterChatMethods;

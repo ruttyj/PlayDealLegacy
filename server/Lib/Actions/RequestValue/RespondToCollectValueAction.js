@@ -10,8 +10,7 @@ function buildRespondToCollectValueAction({
     registry,
 })
 {
-
-    function respondToCollectValueAction(props)
+    return function (props)
     {
         const [subject, action] = ["RESPONSES", "RESPOND_TO_COLLECT_VALUE"];
         const addressedResponses = new AddressedResponse();
@@ -263,7 +262,6 @@ function buildRespondToCollectValueAction({
         );
       
     }
-    return respondToCollectValueAction;
 }
 
 module.exports = buildRespondToCollectValueAction;

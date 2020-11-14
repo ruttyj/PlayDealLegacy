@@ -1,13 +1,10 @@
-/**
- * RESPOND_TO_STEAL_COLLECTION
- */
 function buildRespondToStealCollection({
     isDef, 
     handleTransactionResponse,
     Affected,
 })
 {
-    function respondToStealCollection(props)
+    return function (props)
     {
           let doTheThing = function (consumerData) {
             let { cardId, requestId, responseKey } = consumerData;
@@ -145,7 +142,6 @@ function buildRespondToStealCollection({
           );
           return result;
     }
-    return respondToStealCollection;
 }
 
 module.exports = buildRespondToStealCollection;

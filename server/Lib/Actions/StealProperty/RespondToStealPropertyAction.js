@@ -1,16 +1,11 @@
-/**
- * RESPOND_TO_STEAL_PROPERTY
- * const buildRespondToStealPropertyAction = require(`${serverFolder}/Lib/Actions/RespondToStealPropertyAction`);
- */
 function buildRespondToStealPropertyAction({
     isDef,
     handleTransactionResponse,
     Affected,
 })
 {
-    function respondToStealPropertyAction(props)
+    return function (props)
     {
-
         let doTheThing = function (consumerData) {
             let { cardId, requestId, responseKey } = consumerData;
             let {
@@ -149,7 +144,6 @@ function buildRespondToStealPropertyAction({
         );
         return result;
     }
-    return respondToStealPropertyAction;
 }
 
 module.exports = buildRespondToStealPropertyAction;

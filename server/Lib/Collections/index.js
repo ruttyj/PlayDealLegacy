@@ -1,4 +1,4 @@
-function buildRegisterCollectionsMethods({
+module.exports = function ({
     isDef,
     AddressedResponse,
     KeyedRequest,
@@ -10,7 +10,7 @@ function buildRegisterCollectionsMethods({
     handleGame,
 })
 {
-    function registerCollectionMethods(registry)
+    return function (registry)
     {
       registry.public(`PLAYER_COLLECTIONS.GET_KEYED`, (props) => {
         //props: { roomCode, (peopleIds|personId)}
@@ -114,7 +114,4 @@ function buildRegisterCollectionsMethods({
       registry.public(`COLLECTIONS.GET_ALL_MY_KEYED`, collectionStuff.GET_ALL_MY_KEYED);
       registry.public(`COLLECTIONS.REMOVE_KEYED`, collectionStuff.REMOVE_KEYED);
     }
-    return registerCollectionMethods;
 }
-
-module.exports = buildRegisterCollectionsMethods;

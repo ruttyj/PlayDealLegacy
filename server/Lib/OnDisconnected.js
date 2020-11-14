@@ -7,7 +7,7 @@ module.exports = function({
     cookieTokenManager,
 })
 {
-    function onDisconnected(registry)
+  return function ()
     {
       let clientId = thisClient.id;
         let rooms = roomManager.getRoomsForClientId(clientId);
@@ -35,5 +35,4 @@ module.exports = function({
         }
         clientManager.removeClient(thisClient);
     }
-    return onDisconnected;
 }

@@ -1,8 +1,3 @@
-/**
- * TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION
- * TransferPropertyToExistingCollectionFromExistingAction
- * const buildTransferPropertyToExistingCollectionFromExistingAction = require(`${serverFolder}/Lib/Actions/FromCollection/TransferPropertyToExistingCollectionFromExistingAction`);
- */
 function buildTransferPropertyToExistingCollectionFromExistingAction({
     makeProps,
     makeConsumerFallbackResponse,
@@ -13,7 +8,7 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
     handleMyTurn,
 })
 {
-    function transferPropertyToExistingCollectionFromExistingAction(props)
+    return function (props)
     {
 
         let subject = "MY_TURN";
@@ -163,7 +158,6 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
         );
       
     }
-    return transferPropertyToExistingCollectionFromExistingAction;
 }
 
 module.exports = buildTransferPropertyToExistingCollectionFromExistingAction;

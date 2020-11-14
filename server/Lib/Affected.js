@@ -1,4 +1,4 @@
-function buildAffected({OrderedTree}) {
+module.exports = function ({OrderedTree}) {
 
     /**
      * Affected
@@ -106,5 +106,3 @@ function buildAffected({OrderedTree}) {
 
     return Affected;
 }
-
-module.exports = buildAffected;

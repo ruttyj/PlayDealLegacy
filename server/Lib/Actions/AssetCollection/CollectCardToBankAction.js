@@ -1,13 +1,9 @@
-/**
- * COLLECT_CARD_TO_BANK
- * const buildCollectCardToBankAction = require(`${serverFolder}/Lib/Actions/CollectCardToBankAction`);
- */
 function buildCollectCardToBankAction({
     Affected,
     handleTransferResponse,
 })
 {
-    function collectCardToBankAction(props)
+    return function (props)
     {
         let doTheThing = function (consumerData) {
             let { cardId } = consumerData;
@@ -35,9 +31,7 @@ function buildCollectCardToBankAction({
             props,
             doTheThing
         );
-        
     }
-    return collectCardToBankAction;
 }
 
 module.exports = buildCollectCardToBankAction;

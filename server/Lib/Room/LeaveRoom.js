@@ -1,4 +1,4 @@
-function buildLeaveRoom({
+module.exports = function({
     makeProps,
     isDef,
     AddressedResponse,
@@ -8,7 +8,7 @@ function buildLeaveRoom({
     handleRoom,
 })
 {
-    function leaveRoom(props)
+    return function (props)
     {
        
         const [subject, action] = ["ROOM", "LEAVE"];
@@ -99,7 +99,4 @@ function buildLeaveRoom({
         );
     
     }
-    return leaveRoom;
 }
-
-module.exports = buildLeaveRoom;

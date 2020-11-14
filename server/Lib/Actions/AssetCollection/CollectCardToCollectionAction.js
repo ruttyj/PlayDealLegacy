@@ -1,7 +1,3 @@
-/**
- * COLLECT_CARD_TO_COLLECTION
- * const buildCollectCardToCollectionAction = require(`${serverFolder}/Lib/Actions/CollectCardToCollectionAction`);
- */
 function buildCollectCardToCollectionAction({
     isDef,
     Affected,
@@ -9,7 +5,7 @@ function buildCollectCardToCollectionAction({
     registry,
 })
 {
-    function collectCardToCollectionAction(props)
+    return function (props)
     {
 
         let doTheThing = function (consumerData) {
@@ -106,7 +102,6 @@ function buildCollectCardToCollectionAction({
           return result;
         
     }
-    return collectCardToCollectionAction;
 }
 
 module.exports = buildCollectCardToCollectionAction;

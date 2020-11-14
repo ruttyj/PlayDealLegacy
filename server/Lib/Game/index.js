@@ -1,10 +1,4 @@
-/**
- * Build a People Method Provider
- * 
- * Provides methods for a socket to be able to listen with
- * const buildRegisterGameMethods = require(`${serverFolder}/Lib/Game/`);
- */
-function buildRegisterGameMethods({
+module.exports = function ({
   els,
   isDef,
   isDefNested,
@@ -855,5 +849,3 @@ function buildRegisterGameMethods({
 
   }
 }
-
-module.exports = buildRegisterGameMethods;

@@ -1,10 +1,5 @@
-/**
- * ROOM CREATE
- * CreateRoom
- * @SEARCH_REPLACE : CreateRoom | createRoom
- * const buildCreateRoom = require(`${serverFolder}/Lib/Actions/CreateRoom`);
- */
-function buildCreateRoom({
+
+module.exports = function({
     makeResponse,
     isDef,
     AddressedResponse,
@@ -13,7 +8,7 @@ function buildCreateRoom({
     createGameInstance,
 })
 {
-    function createRoom(props)
+  return function (props)
     {
         const [subject, action] = ["ROOM", "CREATE"];
         const addressedResponses = new AddressedResponse();
@@ -38,7 +33,4 @@ function buildCreateRoom({
         return addressedResponses;
       
     }
-    return createRoom;
 }
-
-module.exports = buildCreateRoom;

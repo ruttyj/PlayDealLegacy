@@ -1,9 +1,3 @@
-
-/**
- * DISCARD_REMAINING
- * DiscardToHandLimitAction
- * const buildDiscardToHandLimitAction = require(`${serverFolder}/Lib/Actions/DiscardToHandLimitAction`);
- */
 function buildDiscardToHandLimitAction({
     makeProps,
     els, isDef,
@@ -14,7 +8,7 @@ function buildDiscardToHandLimitAction({
     makeResponse,
 })
 {
-    function discardToHandLimitAction(props)
+    return function (props)
     {
         let subject = "MY_TURN";
         let action = "DISCARD_REMAINING";
@@ -123,7 +117,6 @@ function buildDiscardToHandLimitAction({
         );
       
     }
-    return discardToHandLimitAction;
 }
 
 module.exports = buildDiscardToHandLimitAction;

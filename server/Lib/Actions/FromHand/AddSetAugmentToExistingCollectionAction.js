@@ -1,8 +1,3 @@
-/**
- * ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND
- * AddSetAugmentToExistingCollectionAction
- * const buildAddSetAugmentToExistingCollectionAction = require(`${serverFolder}/Lib/Actions/FromHand/AddSetAugmentToExistingCollectionAction`);
- */
 function buildAddSetAugmentToExistingCollectionAction({
     makeProps,
     makeConsumerFallbackResponse,
@@ -14,7 +9,7 @@ function buildAddSetAugmentToExistingCollectionAction({
     AddressedResponse,
 })
 {
-    function addSetAugmentToExistingCollectionAction(props)
+    return function (props)
     {
         let subject = "MY_TURN";
         let action = "ADD_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_HAND";
@@ -101,7 +96,6 @@ function buildAddSetAugmentToExistingCollectionAction({
           makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
     }
-    return addSetAugmentToExistingCollectionAction;
 }
 
 module.exports = buildAddSetAugmentToExistingCollectionAction;
