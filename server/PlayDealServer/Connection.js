@@ -1,27 +1,19 @@
-module.exports = function({
-    utils,
-    classes,
-}) {
-    let {
-        els,
-        isDef,
-        isStr,
-        isArr,
-        jsonEncode,
-    } = utils;
-
-    let {
-        AddressedResponse,
-    } = classes;
+module.exports = function({ utils, classes }) {
+    let { els, isDef, isStr, isArr, jsonEncode } = utils;
+    let { AddressedResponse } = classes;
 
     return class Connection 
     {
         constructor({socket, server})
         {
+            this.id = String(socket.id);
             this.socket = socket
             this.server = server
         }
 
+        /**
+         * Attach the events to the socket
+         */
         registerEvents()
         {
             let connection = this
@@ -32,6 +24,9 @@ module.exports = function({
             connection.onConnected()
         }
 
+        /**
+         * When connection is initialized and ready to do the conconnect logic
+         */
         onConnected()
         {
             let connection = this
@@ -41,24 +36,39 @@ module.exports = function({
             server.clientManager.addClient(socket);
         }
 
+        /**
+         * Responsible for communication with client socket
+         * 
+         * Example: 
+         *  [
+         *      {
+         *          type:       "connect",
+         *          payload:    {
+         *                          "roomCode": "ABC"
+         *                      }
+         *      }
+         *  ]
+         * @param string jsonData   JSON encoded array of events to preform 
+         */
         onTrigger(jsonData)
         {
-            let connection = this
-            let socket = connection.socket
-            let server = connection.server
-
+            let connection      = this
+            let socket          = connection.socket
+            let server          = connection.server
             let registry        = server.registry
             let handleRoom      = server.handleRoom
 
-            let connectionId = String(socket.id)
-            const addressedResponses = new AddressedResponse()
-            let requests = isStr(jsonData) ? JSON.parse(jsonData) : jsonData
+            let events              = isStr(jsonData) ? JSON.parse(jsonData) : jsonData
             let clientPersonMapping = {}
 
-            if (isArr(requests)) {
-                requests.forEach((request) => {
-                    let requestResponses = new AddressedResponse()
+            //==================================================
 
+            //          Trigger actions for each event
+
+            const resultResponses = new AddressedResponse()
+            if (isArr(events)) {
+                events.forEach((request) => {
+                    // Get event type
                     let eventType;
                     if (isDef(request.type)) {
                         eventType = request.type
@@ -66,17 +76,20 @@ module.exports = function({
                         eventType = `${request.subject}.${request.action}`
                     }
 
+                    // Add additional data to payload
                     let payload = els(request.props, els(request.payload, {}))
-                    let props   = els(request.props, {})
-                    // Add client data to props
                     payload.thisClientKey   = socket.id
                     payload.thisClient      = socket
-                    requestResponses.addToBucket("default", registry.execute(eventType, payload))
 
+                    // Collect the addressed responses
+                    let eventResponses = new AddressedResponse()
+                    eventResponses.addToBucket("default", registry.execute(eventType, payload))
+
+                    // @TODO need reference to Room
                     // Collect person Ids
                     let clientIdsMap = {}
-                    clientIdsMap[connectionId] = true
-                    handleRoom(props, ({ personManager }) => {
+                    clientIdsMap[connection.id] = true
+                    handleRoom(payload, ({ personManager }) => {
                         personManager.getConnectedPeople().forEach((person) => {
                             let personConnectionId = String(person.getClientId());
                             clientIdsMap[personConnectionId] = true
@@ -84,64 +97,70 @@ module.exports = function({
                         });
                     });
 
-                    // Assing the buckets of reponses to the relevent clients
+                    // Merge the results for the room into the list of final addressed responses
                     let clientIds = Object.keys(clientIdsMap)
-                    addressedResponses.addToBucket(requestResponses.reduce(connectionId, clientIds))
+                    resultResponses.addToBucket(eventResponses.reduce(connection.id, clientIds))
                 });
             }
 
+            //==================================================
+
+            //        Send responses to addressed sockets
+
             // Emit to "me" since I am always available
-            if (addressedResponses.specific.has(String(connectionId))) {
-                socket.emit("response", jsonEncode(addressedResponses.specific.get(connectionId)))
+            if (resultResponses.specific.has(String(connection.id))) {
+                socket.emit("response", jsonEncode(resultResponses.specific.get(connection.id)))
             }
-            // Emit to other relevent people collected from the above requests
+
+            // Emit to other relevent people collected from the above events
             Object.keys(clientPersonMapping).forEach((clientId) => {
-                if (connectionId !== clientId) {
+                if (connection.id !== clientId) {
                     let person = clientPersonMapping[clientId]
-                    if (addressedResponses.specific.has(clientId)) {
-                        person.emit("response", jsonEncode(addressedResponses.specific.get(clientId)))
+                    if (resultResponses.specific.has(clientId)) {
+                        person.emit("response", jsonEncode(resultResponses.specific.get(clientId)))
                     }
                 }
             });
         }
         
+        /**
+         * When connection ends
+         */
         onDisconnected()
         {
-            let connection  = this
-            let server      = connection.server
-            let socket      = connection.socket
-
+            let connection          = this
+            let server              = connection.server
+            let socket              = connection.socket
             let roomManager         = server.roomManager
             let cookieTokenManager  = server.cookieTokenManager
             let clientManager       = server.clientManager
 
-            let socketId        = socket.id
-            let affectedRooms   = roomManager.getRoomsForClientId(socketId)
+            let socketId            = socket.id
+            let affectedRooms       = roomManager.getRoomsForClientId(socketId)
            
+            // Remove socket from cookieToken
             cookieTokenManager.dissociateClient(socketId)
         
             if (isDef(affectedRooms)) {
               affectedRooms.forEach((room) => {
+                //---------------------------------------------
+                // Leave room
                 // Construct a leave roomevent
                 let leaveRoomEvent = {
-                    type:     "ROOM.LEAVE",
-                    payload:  { roomCode: room.getCode() },
+                    type:       "ROOM.LEAVE",
+                    payload:    { 
+                                    roomCode: room.getCode() 
+                                },
                 }
-
-                // List of events to execute
-                let eventList = [
-                    leaveRoomEvent
-                ]
-
-                // trigger leave room event
-                connection.onTrigger(JSON.stringify(eventList))
+                connection.onTrigger(JSON.stringify([leaveRoomEvent]))
         
+                //---------------------------------------------
+                // Delete Room
                 // Handle leave room since the above handler requires the room to exist to notify people
-                let roomPersonManager = room.getPersonManager()
-                if (roomPersonManager.getConnectedPeopleCount() === 0) {
+                if (room.getPersonManager().getConnectedPeopleCount() === 0) {
                   roomManager.deleteRoom(room.getId())
                 }
-
+                
               })// end foreach affected room
             }
 
