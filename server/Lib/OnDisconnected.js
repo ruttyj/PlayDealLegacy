@@ -1,12 +1,16 @@
 module.exports = function({
-    onListen,
-    isDef,
-    thisClient,
-    clientManager,
-    roomManager,
-    cookieTokenManager,
+  utils,
+  //--------------
+  onListen,
+  thisClient,
+  clientManager,
+  roomManager,
+  cookieTokenManager,
 })
 {
+  let {
+    isDef,
+  } = utils;
   return function ()
     {
       let clientId = thisClient.id;

@@ -126,19 +126,16 @@ const {
  */
 
 
-module.exports = function({
-    AddressedResponse,
-    Affected,
-    OrderedTree,
-  })
-  {
-    return function ({
+module.exports = function ({
       //-------------------------
       handleRoom,
       registry,
       clientManager,
       roomManager,
       cookieTokenManager,
+      AddressedResponse,
+      Affected,
+      OrderedTree,
     })
     {
       // Enable Actions
@@ -365,5 +362,4 @@ module.exports = function({
       registerCheatMethods(registry);
       registerRoomMethods(registry);
     }
-}
 
