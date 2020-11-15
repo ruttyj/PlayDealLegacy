@@ -111,6 +111,10 @@ module.exports = function({
             let server      = connection.server
             let socket      = connection.socket
 
+            let roomManager         = server.roomManager
+            let cookieTokenManager  = server.cookieTokenManager
+            let clientManager       = server.clientManager
+
             let socketId        = socket.id
             let affectedRooms   = roomManager.getRoomsForClientId(socketId)
            
@@ -130,7 +134,7 @@ module.exports = function({
                 ]
 
                 // trigger leave room event
-                onTrigger(JSON.stringify(eventList))
+                connection.onTrigger(JSON.stringify(eventList))
         
                 // Handle leave room since the above handler requires the room to exist to notify people
                 let roomPersonManager = room.getPersonManager()
