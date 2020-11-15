@@ -30,7 +30,6 @@ const buildOrderedTree        = require(`${libFolder}/OrderedTree`);
 const buildAddressedResponse  = require(`${libFolder}/AddressedResponse.js`);
 const AddressedResponse       = buildAddressedResponse({isDef, isArr, makeMap, stateSerialize});
 
-
 const OrderedTree             = buildOrderedTree();
 const Affected                = buildAffected({OrderedTree});
 const Registry                = buildRegistry({
@@ -44,44 +43,45 @@ const Registry                = buildRegistry({
 /**
  * 
  * TODO #$%^&$#^&$%#^&%$^&%$#%^&$%
+ * Change color of set / move cards around at "done" phase
  * if discard and actions still remain offer them to play remaining actions
  * When accepting payment from rent place in set if can be placed in set (when no previous set existed)
- * Change color of set / move cards around at "done" phase
  * 
  */
-module.exports = class PlayDealServer {
+module.exports = class PlayDealServer 
+{
   constructor()
   {
     this.clientManager        = ClientManager();
     this.roomManager          = RoomManager();
     this.cookieTokenManager   = CookieTokenManager.getInstance();
     this.roomManager.setClientManager(this.clientManager);
-    this.todoMove = new Map();
-    this.registry = new Registry();
-    this.handleRoom = buildHandleRoom({
-      isDef,
-      isFunc,
-      AddressedResponse,
-      roomManager: this.roomManager,
-    })
+    this.todoMove             = new Map();
+    this.registry             = new Registry();
+    this.handleRoom           = buildHandleRoom({
+                                isDef,
+                                isFunc,
+                                AddressedResponse,
+                                roomManager: this.roomManager,
+                              });
     const clientManager       = this.clientManager;
     const roomManager         = this.roomManager;
     const cookieTokenManager  = this.cookieTokenManager;
     const registry            = this.registry; // event Registry
     
     let populatedRegistry     = buildPopulatedRegistry({
-      AddressedResponse,
-      Affected,
-      OrderedTree
-    });
+                                AddressedResponse,
+                                Affected,
+                                OrderedTree
+                              });
 
     populatedRegistry({
-      handleRoom: this.handleRoom,
-      clientManager,
-      roomManager,
-      cookieTokenManager,
-      registry,
-    })
+                                handleRoom: this.handleRoom,
+                                clientManager,
+                                roomManager,
+                                cookieTokenManager,
+                                registry,
+                              });
   }
 
   /**
@@ -95,29 +95,29 @@ module.exports = class PlayDealServer {
     //                 Build handlers
   
     //==================================================
-    const onConnected = buildOnConnection({
-      clientManager: this.clientManager, 
-      socket
-    });
-    const onListen = buildOnListen({
-      els,
-      isDef,
-      isStr,
-      isArr,
-      jsonEncode,
-      AddressedResponse,
-      registry    : this.registry,
-      thisClient  : socket,
-      handleRoom  : this.handleRoom,
-    });
-    const onDisconnected = buildOnDisconnected({
-      onListen,
-      isDef,
-      thisClient          : socket,
-      clientManager       : this.clientManager,
-      roomManager         : this.roomManager,
-      cookieTokenManager  : this.cookieTokenManager,
-    })
+    const onConnected     = buildOnConnection({
+                            clientManager: this.clientManager, 
+                            socket
+                          });
+    const onListen        = buildOnListen({
+                            els,
+                            isDef,
+                            isStr,
+                            isArr,
+                            jsonEncode,
+                            AddressedResponse,
+                            registry    : this.registry,
+                            thisClient  : socket,
+                            handleRoom  : this.handleRoom,
+                          });
+    const onDisconnected  = buildOnDisconnected({
+                            onListen,
+                            isDef,
+                            thisClient          : socket,
+                            clientManager       : this.clientManager,
+                            roomManager         : this.roomManager,
+                            cookieTokenManager  : this.cookieTokenManager,
+                          })
 
     //==================================================
   

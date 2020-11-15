@@ -541,18 +541,11 @@ function buildDeps({
       return handleGame(
         props,
         function(props2, checkpoints) {
-          checkpoints.set("iHaveAHand", false);
-          checkpoints.set("isMyTurn", false);
-  
           let { game, thisPersonId } = props2;
   
           let hand = game.getPlayerHand(thisPersonId);
           if (isDef(hand)) {
-            checkpoints.set("iHaveAHand", true);
-  
             if (game.isMyTurn(thisPersonId)) {
-              checkpoints.set("isMyTurn", true);
-  
               return fn(
                 {
                   ...props2,
@@ -593,6 +586,7 @@ function buildDeps({
   
         setFailed(boolFailed);
       };
+      
       return makeConsumer(
         consumerCheck,
         _myTurnConsumerBase,

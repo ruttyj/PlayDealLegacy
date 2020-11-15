@@ -166,7 +166,6 @@ module.exports = function ({
     registry.public(`GAME.RESET`, (props) => {
       const [subject, action] = ["GAME", "RESET"];
       const addressedResponses = new AddressedResponse();
-      console.log("RESET");
 
       return handleRoom(
         props,

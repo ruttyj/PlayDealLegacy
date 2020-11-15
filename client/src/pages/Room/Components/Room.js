@@ -897,11 +897,7 @@ class GameUI extends React.Component {
     isBank = false,
     canSelectCardFromUser = true,
   }) {
-    let displayMode = game.getDisplayData("mode");
-    let actionCardId = game.getDisplayData(["actionCardId"], 0);
-
-    let isDonePhase = game.phase.isMyDonePhase();
-
+    let actionCardId = game.getDisplayData(["actionCardId"], 0);  
     let collection = null;
     let isCollectionSelectable = false;
     if (isCollection) {
@@ -940,6 +936,11 @@ class GameUI extends React.Component {
           return false;
         }
       }
+
+      if (game.turn.isMyTurn() && game.turn.getPhaseKey() === "done" && isCollection && game.card.isWildPropertyCard(cardId)) {
+        return false;
+      }
+
       return game.isCardSelectionEnabled();
     }
 
@@ -982,6 +983,10 @@ class GameUI extends React.Component {
       }
       if (isCollection) {
         if (isCollectionSelectable) {
+          return false;
+        }
+
+        if (game.turn.isMyTurn() && game.turn.getPhaseKey() === "done" && isCollection && game.card.isWildPropertyCard(cardId)) {
           return false;
         }
       }
@@ -2179,7 +2184,6 @@ class GameUI extends React.Component {
                       collectionId
                     );
 
-                    //game.selection.collections.selectable.has()
 
                     let collectionSelection = {
                       enabled: game.selection.collections.isEnabled(),
@@ -2192,6 +2196,7 @@ class GameUI extends React.Component {
                       ),
                       isFull: game.collection.isComplete(collectionId),
                     };
+
                     let cardCheck = this.makeCardCheck({
                       personId: person.id,
                       isCollection: true,
@@ -2300,12 +2305,8 @@ class GameUI extends React.Component {
                                         }
                                       }
                                     }}
-                                    scaledPercent={
-                                      uiConfig.collection.default.scalePercent
-                                    }
-                                    hoverPercent={
-                                      uiConfig.collection.hover.scalePercent
-                                    }
+                                    scaledPercent={uiConfig.collection.default.scalePercent}
+                                    hoverPercent={uiConfig.collection.hover.scalePercent}
                                     clickProps={{
                                       from: "collection",
                                       collectionId: collectionId,
@@ -2319,24 +2320,12 @@ class GameUI extends React.Component {
                                     }}
                                     onClick={this.handleOnPlayerCardClick}
                                     highlightIsSelectable={true}
-                                    selectionEnabled={cardCheck.isSelectionEnabled(
-                                      card.id
-                                    )}
-                                    isSelectable={cardCheck.canSelectCard(
-                                      card.id
-                                    )}
-                                    selectType={cardCheck.getSelectionType(
-                                      card.id
-                                    )}
-                                    isSelected={cardCheck.isCardSelected(
-                                      card.id
-                                    )}
-                                    onSelected={cardCheck.makeOnSelectCard(
-                                      card.id
-                                    )}
-                                    notApplicable={cardCheck.isCardNotApplicable(
-                                      card.id
-                                    )}
+                                    selectionEnabled={cardCheck.isSelectionEnabled(card.id)}
+                                    isSelectable={cardCheck.canSelectCard(card.id)}
+                                    selectType={cardCheck.getSelectionType(card.id)}
+                                    isSelected={cardCheck.isCardSelected(card.id)}
+                                    onSelected={cardCheck.makeOnSelectCard(card.id)}
+                                    notApplicable={cardCheck.isCardNotApplicable(card.id)}
                                   />
                                 </ShakeAnimationWrapper>
                               );
