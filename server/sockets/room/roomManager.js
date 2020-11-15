@@ -1,13 +1,12 @@
 const {
-  els,
+  elsFn,
   isDef,
   isStr,
-  isNum,
-  isObj,
-  makeVar,
   makeMap,
-} = require("../utils.js");
-const Room = require("./room.js");
+} = require("../utils.js")
+const Room = require("./room.js")
+
+
 const utils = {
   randomRange: function (mn, mx) {
     return Math.floor(Math.random() * (mx - mn)) + mn;
@@ -29,203 +28,121 @@ const utils = {
     } while (check(code));
     return code;
   },
-};
+}
 
-//##################################################
 
-//                 Person Manager
 
-//##################################################
-function RoomManager({clientManager} = {}) {
-  let mRef = {};
-
-  function init(){
-    setClientManager(clientManager)
+class RoomManager
+{
+  constructor({server})
+  {
+    const roomManager     = this
+    roomManager.mServer   = server
+    roomManager.mData     = {}
+    roomManager.mRooms    = makeMap(this.mData, "rooms")
   }
 
-  //==================================================
+  _getSocketManager()
+  {
+    const server = this.mServer
 
-  //                    Variables
-
-  //==================================================
-  const mPrivateVars = ["topId"];
-  const { get: getTopId, inc: incTopId } = makeVar(mRef, "topId", 0);
-
-  const {
-    set: addRoomById, // experimental formatting easier to read?
-    get: getRoomById,
-    has: hasRoomById,
-    map: mapRooms,
-    forEach: forEachRoom,
-    remove: removeRoomFromIdMaping,
-    serialize: serializePeople,
-  } = makeMap(mRef, "rooms");
-
-  // {roomCode: roomId}
-  const {
-    set: addRoomIdByCode,
-    get: getRoomIdByCode,
-    has: hasRoomCode,
-    map: mapRoomsCodes,
-    remove: removeRoomCodeToIdMapping,
-    serialize: serializeRoomCodeMap,
-  } = makeMap(mRef, "rooms");
-
-  //==================================================
-
-  //              External references
-
-  //==================================================
-  const mExternalRefs = ["clientManagerRef"];
-  const {
-    get: getClientManager,
-    set: setClientManager,
-    has: hasClientManager,
-  } = makeVar(mRef, "clientManagerRef", null);
-  
-  //==================================================
-
-  //                Additional Logic
-
-  //==================================================
-  function createRoom(definedRoomCode = null) {
-    if (hasClientManager()) {
-      incTopId();
-      let room = Room();
-      let roomId = getTopId();
-      let roomCode = els(definedRoomCode, utils.makeUniqueCode(4, hasRoomCode));
-      room.setClientManager(getClientManager());
-      room.setId(roomId);
-      room.setCode(roomCode);
-
-      addRoomById(roomId, room);
-      addRoomIdByCode(roomCode, roomId);
-      return room;
-    }
-    return null;
+    return server.getSocketManager()
   }
 
-  function getRandomCode() {
-    return utils.makeUniqueCode(4, hasRoomCode);
+  createRoom(desiredRoomCode=null)
+  {
+    const roomManager = this
+
+    let socketManager = roomManager._getSocketManager()
+    let room = Room()
+    let roomCode = elsFn(desiredRoomCode, () => roomManager.getRandomCode())
+    room.setClientManager(socketManager)
+    room.setId(roomCode)   // deprecated
+    room.setCode(roomCode)
+
+    roomManager.mRooms.set(roomCode, room)
+
+    return room;
   }
 
-  function getRoomsForClientId(clientId) {
-    let rooms = [];
-    forEachRoom((room) => {
-      let personManager = room.getPersonManager();
-      let person = personManager.getPersonByClientId(clientId);
-      if (isDef(person)) {
-        rooms.push(room);
+  deleteRoom(roomOrCode)
+  {
+    const roomManager = this;
+
+    let roomCode
+    if (isDef(roomOrCode)) {
+      if (isStr(roomOrCode)) {
+        roomCode = roomOrCode
+      } else {
+        roomCode = roomOrCode.getCode()
       }
-    });
+    }
+
+    if (isDef(roomCode)) {
+      let room = roomManager.mRooms.get(roomCode)
+      if (isDef(room)) {
+        room.destroy()
+        roomManager.mRooms.remove(roomCode)
+      }
+    }
+  }
+
+  listAllRoomCodes() 
+  {
+    const roomManager = this
+
+    return roomManager.mRooms.map((id, code) => code)
+  }
+
+  getRoomsForSocketId(socketId)
+  {
+    const roomManager = this
+    let rooms = []
+
+    roomManager.mRooms.forEach((room) => {
+      let personManager = room.getPersonManager()
+      let person = personManager.getPersonByClientId(socketId)
+      if (isDef(person)) {
+        rooms.push(room)
+      }
+    })
+
     return rooms;
   }
 
-  function getRoomByCode(roomCode) {
-    let roomId = getRoomIdByCode(roomCode);
-    if (isDef(roomId)) return getRoomById(roomId);
-    return null;
+  getRoom(code)
+  {
+    const roomManager = this
+
+    return roomManager.mRooms.get(code)
   }
 
-  function listAllRoomCodes() {
-    return mapRoomsCodes((id, code) => code);
+  getRandomCode()
+  {
+    const roomManager = this
+
+    return utils.makeUniqueCode(4, roomManager.mRooms.has)
   }
 
-  function removeRoomById(roomId) {
-    let room = getRoomById(roomId);
-    if (isDef(room)) {
-      let roomCode = room.getCode();
+  serialize()
+  {
+    const self = this
 
-      room.destroy();
-
-      // remove from mappings
-      removeRoomCodeToIdMapping(roomCode);
-      removeRoomFromIdMaping(roomId);
-    }
-  }
-
-  function removeRoomByCode(roomCode) {
-    let room = getRoomIdByCode(roomCode);
-    if (isDef(room)) {
-      let roomId = room.getId();
-      removeRoomById(roomId);
-    }
-  }
-
-  function deleteRoom(roomOrIdOrCode) {
-    if (isDef(roomOrIdOrCode)) {
-      if (isNum(roomOrIdOrCode)) {
-        deleteRoomById(roomOrIdOrCode);
-      } else if (isStr(roomOrIdOrCode)) {
-        deleteRoomById(roomOrIdOrCode);
-      } else {
-        if (isObj(roomOrIdOrCode)) {
-          removeRoomByCode(roomOrIdOrCode.getCode());
-        }
-      }
-    }
-  }
-
-  function deleteRoomById(roomId) {
-    removeRoomById(roomId);
-  }
-
-  function deleteRoomByCode(roomCode) {
-    removeRoomByCode(roomCode);
-  }
-
-  //==================================================
-
-  //                    Serialize
-
-  //==================================================
-  function serialize() {
-    let result = {};
+    let result = {}
 
     // Serialize everything except the external references
-    let excludeKeys = [...mPrivateVars, ...mExternalRefs];
-    let keys = Object.keys(mRef).filter((key) => !excludeKeys.includes(key));
+    let excludeKeys = [...mPrivateVars, ...mExternalRefs]
+    let keys = Object.keys(self.mData).filter((key) => !excludeKeys.includes(key))
 
     // Serialize each if possible, leave primitives as is
     keys.forEach((key) => {
-      result[key] = isDef(mRef[key].serialize)
-        ? mRef[key].serialize()
-        : mRef[key];
+      result[key] = isDef(self.mData[key].serialize)
+        ? self.mData[key].serialize()
+        : self.mData[key]
     });
-    return result;
+    return result
   }
-
-  //==================================================
-
-  //                    Export
-
-  //==================================================
-  function getPublic() {
-    return {
-      createRoom,
-
-      getClientManager,
-      setClientManager,
-      hasClientManager,
-
-      getRoomsForClientId,
-      listAllRoomCodes,
-      getRandomCode,
-  
-      getRoomByCode,
-      getRoomById,
-  
-      deleteRoom,
-      deleteRoomById,
-      deleteRoomByCode,
-  
-      serialize,
-    };
-  }
-
-
-  init();
-  return getPublic();
 }
 
-module.exports = RoomManager;
+
+module.exports = RoomManager

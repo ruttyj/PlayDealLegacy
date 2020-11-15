@@ -19,8 +19,8 @@ module.exports = function({
         if (isDef(room)) {
           let status = "success";
           let payload = {};
-          let roomCode = room.getCode();
-          payload.roomCode = roomCode;
+
+          payload.roomCode = room.getCode();
 
           // Create Game
           createGameInstance(room);

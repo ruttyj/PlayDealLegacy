@@ -22,7 +22,7 @@ module.exports = function({
 
         let successCount = 0;
         roomCodes.forEach((roomCode) => {
-            let room = roomManager.getRoomByCode(roomCode);
+            let room = roomManager.getRoom(roomCode);
             if (isDef(room)) {
             ++successCount;
             let roomCode = room.getCode();

@@ -73,32 +73,33 @@ module.exports = class PlayDealServer extends BaseServer
    */
   init()
   {
-    this.services             = new Map();
-    this.connections          = new Map();
-    this.registry             = new Registry();
-    this.cookieTokenManager   = CookieTokenManager.getInstance();
-    this.clientManager        = ClientManager();
-    this.roomManager          = RoomManager({ clientManager: this.clientManager });
+    const server              = this;
+    server.services             = new Map();
+    server.connections          = new Map();
+    server.registry             = new Registry();
+    server.cookieTokenManager   = CookieTokenManager.getInstance();
+    server.clientManager        = ClientManager();
+    server.roomManager          = new RoomManager({ server });
 
     // @TODO remove need for handleRoom from Connection
-    this.handleRoom           = buildHandleRoom({
+    server.handleRoom           = buildHandleRoom({
                                   isDef,
                                   isFunc,
                                   AddressedResponse,
-                                  roomManager: this.roomManager,
+                                  roomManager: server.roomManager,
                                 });
     
     populateRegistry({
-      registry                : this.registry,
+      registry                : server.registry,
       //-------------------------
       AddressedResponse,
       Affected,
       OrderedTree,
       //-------------------------
-      handleRoom              : this.handleRoom,
-      clientManager           : this.clientManager,
-      roomManager             : this.roomManager,
-      cookieTokenManager      : this.cookieTokenManager,
+      handleRoom              : server.handleRoom,
+      clientManager           : server.clientManager,
+      roomManager             : server.roomManager,
+      cookieTokenManager      : server.cookieTokenManager,
     })
 
   }

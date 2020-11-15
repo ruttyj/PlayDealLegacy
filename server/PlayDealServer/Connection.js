@@ -134,7 +134,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
             let clientManager       = server.clientManager
 
             let socketId            = socket.id
-            let affectedRooms       = roomManager.getRoomsForClientId(socketId)
+            let affectedRooms       = roomManager.getRoomsForSocketId(socketId)
            
             // Remove socket from cookieToken
             cookieTokenManager.dissociateClient(socketId)

@@ -12,7 +12,7 @@ module.exports = function({
         let responses = null;
 
         if (isDef(roomCode)) {
-            let room = roomManager.getRoomByCode(roomCode);
+            let room = roomManager.getRoom(roomCode);
             if (isDef(room)) {
                 let personManager = room.getPersonManager();
                 if (isDef(personManager)) {

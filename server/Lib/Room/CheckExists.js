@@ -21,7 +21,7 @@ module.exports = function({
 
         roomCodes.forEach((code) => {
           status = "success";
-          let room = roomManager.getRoomByCode(code);
+          let room = roomManager.getRoom(code);
           payload.exists[code] = isDef(room);
         });
         addressedResponses.addToBucket(

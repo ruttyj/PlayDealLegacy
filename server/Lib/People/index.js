@@ -163,7 +163,7 @@ module.exports = function ({
         let payload = null;
         const addressedResponses = new AddressedResponse();
         let { roomCode } = props;
-        let room = roomManager.getRoomByCode(roomCode);
+        let room = roomManager.getRoom(roomCode);
         if (isDef(room)) {
           status = "success";
           let personManager = room.getPersonManager();
