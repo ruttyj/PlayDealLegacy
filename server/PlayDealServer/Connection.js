@@ -85,7 +85,7 @@ module.exports = function({ utils, classes }) {
                     let eventResponses = new AddressedResponse()
                     eventResponses.addToBucket("default", registry.execute(eventType, payload))
 
-                    // @TODO need reference to Room
+                    // @TODO need reference to Room and handleRoom
                     // Collect person Ids
                     let clientIdsMap = {}
                     clientIdsMap[connection.id] = true

@@ -87,8 +87,12 @@ const utils = {
     deleteRoomByCode,
     serialize
 */
-function RoomManager() {
+function RoomManager({clientManager} = {}) {
   let mRef = {};
+
+  function init(){
+    setClientManager(clientManager)
+  }
 
   //==================================================
 
@@ -129,7 +133,7 @@ function RoomManager() {
     set: setClientManager,
     has: hasClientManager,
   } = makeVar(mRef, "clientManagerRef", null);
-
+  
   //==================================================
 
   //                Additional Logic
@@ -259,29 +263,29 @@ function RoomManager() {
   //                    Export
 
   //==================================================
-  const publicScope = {
-    createRoom,
-    getClientManager,
-    setClientManager,
-    hasClientManager,
-    getRoomsForClientId,
-    listAllRoomCodes,
-    getRandomCode,
-
-    getRoomByCode,
-    getRoomById,
-
-    deleteRoom,
-    deleteRoomById,
-    deleteRoomByCode,
-
-    serialize,
-  };
-
   function getPublic() {
-    return { ...publicScope };
+    return {
+      createRoom,
+      getClientManager,
+      setClientManager,
+      hasClientManager,
+      getRoomsForClientId,
+      listAllRoomCodes,
+      getRandomCode,
+  
+      getRoomByCode,
+      getRoomById,
+  
+      deleteRoom,
+      deleteRoomById,
+      deleteRoomByCode,
+  
+      serialize,
+    };
   }
 
+
+  init();
   return getPublic();
 }
 
