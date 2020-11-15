@@ -21,16 +21,14 @@ const buildConnection         = require('../PlayDealServer/Connection.js');
 let {
   isDef,
   isFunc,
-  isArr,
-  makeMap,
-  stateSerialize,
 } = utils;
 
-const AddressedResponse       = buildAddressedResponse({isDef, isArr, makeMap, stateSerialize});
+// Build required objects
+const AddressedResponse       = buildAddressedResponse(utils);
 const OrderedTree             = buildOrderedTree();
-const Affected                = buildAffected({OrderedTree});
+const Affected                = buildAffected({ OrderedTree });
 const Registry                = buildRegistry(utils)
-const Connection              = buildConnection({utils, classes: { AddressedResponse }});
+const Connection              = buildConnection({ ...utils, AddressedResponse });
 
 
 /**
@@ -98,22 +96,23 @@ module.exports = class PlayDealServer
   onConnected(socket)
   {
     let server      = this;
-    let connection  = new Connection({server, socket});
+    let connection  = new Connection({ server, socket });
     this.connections.set(connection.id, connection);
     connection.registerEvents();
   }
 
   /**
-   * 
+   * Update loop for "Live events"
+   * Ex: Play timers
    */
   onUpdate() {
-    // NOP
+    // @TODO - not implemented yet
   }
   
   /**
    * 
    */
   onDisconnected(connection){
-    // NOP
+    // NOP - handeled in Connection atm
   }
 }

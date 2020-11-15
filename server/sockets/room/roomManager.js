@@ -1,21 +1,13 @@
 const {
-  isUndef,
   els,
   isDef,
   isStr,
   isNum,
   isObj,
-  isTrue,
-  isFalse,
-  emptyFunction,
-  identity,
   makeVar,
   makeMap,
-  makeListener,
 } = require("../utils.js");
-
 const Room = require("./room.js");
-const PersonManager = require("../person/personManager.js");
 
 let prettyImages = [
   "https://images.unsplash.com/photo-1553984840-b8cbc34f5215?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",

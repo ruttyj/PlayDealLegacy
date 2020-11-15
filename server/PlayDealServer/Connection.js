@@ -1,7 +1,4 @@
-module.exports = function({ utils, classes }) {
-    let { els, isDef, isStr, isArr, jsonEncode } = utils;
-    let { AddressedResponse } = classes;
-
+module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedResponse }) {
     return class Connection 
     {
         constructor({socket, server})
