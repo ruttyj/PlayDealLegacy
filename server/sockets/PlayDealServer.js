@@ -3,41 +3,30 @@ const serverFolder            = `${rootFolder}/server`;
 const serverSocketFolder      = `${serverFolder}/sockets`;
 const libFolder               = `${serverFolder}/Lib`;
 
-const {
-        isDef,
-        isFunc,
-        isStr,
-        isArr,
-        jsonEncode,
-        els,
-        makeMap,
-        stateSerialize,
-      }                       = require("./utils.js");
+const utils                   = require("./utils.js");
 
 const CookieTokenManager      = require("../CookieTokenManager/");
 const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
 const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
 
-const buildHandleRoom         = require(`${libFolder}/HandleRoom`);
 const populateRegistry        = require(`./PopulateRegistry`);
+
+const buildHandleRoom         = require(`${libFolder}/HandleRoom`);
 const buildRegistry           = require(`${libFolder}/Registry`);
 const buildAffected           = require(`${libFolder}/Affected`);
 const buildOrderedTree        = require(`${libFolder}/OrderedTree`);
-
 const buildAddressedResponse  = require(`${libFolder}/AddressedResponse`);
-const AddressedResponse       = buildAddressedResponse({isDef, isArr, makeMap, stateSerialize});
-
 const buildConnection         = require('../PlayDealServer/Connection.js');
 
-let utils = {
-  els,
+let {
   isDef,
-  isStr,
-  isArr,
   isFunc,
-  jsonEncode,
-}
+  isArr,
+  makeMap,
+  stateSerialize,
+} = utils;
 
+const AddressedResponse       = buildAddressedResponse({isDef, isArr, makeMap, stateSerialize});
 const OrderedTree             = buildOrderedTree();
 const Affected                = buildAffected({OrderedTree});
 const Registry                = buildRegistry(utils)
@@ -76,7 +65,7 @@ module.exports = class PlayDealServer
     this.registry             = new Registry();
     this.cookieTokenManager   = CookieTokenManager.getInstance();
     this.clientManager        = ClientManager();
-    this.roomManager          = RoomManager({clientManager: this.clientManager});
+    this.roomManager          = RoomManager({ clientManager: this.clientManager });
 
     // @TODO remove need for handleRoom from Connection
     this.handleRoom           = buildHandleRoom({
@@ -85,7 +74,7 @@ module.exports = class PlayDealServer
                                   AddressedResponse,
                                   roomManager: this.roomManager,
                                 });
-
+    
     populateRegistry({
       registry                : this.registry,
       //-------------------------
