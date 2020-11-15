@@ -39,11 +39,9 @@ const Registry                = buildRegistry({
                                   isFunc,
                                 })
 
-
 /**
  * 
  * TODO #$%^&$#^&$%#^&%$^&%$#%^&$%
- * Change color of set / move cards around at "done" phase
  * if discard and actions still remain offer them to play remaining actions
  * When accepting payment from rent place in set if can be placed in set (when no previous set existed)
  * 

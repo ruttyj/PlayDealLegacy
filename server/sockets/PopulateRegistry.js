@@ -193,7 +193,6 @@ module.exports = function({
         log,
         jsonEncode,
         getArrFromProp,
-
         //-------------------
         OrderedTree,
         Affected,
@@ -302,7 +301,7 @@ module.exports = function({
         buildRegisterCardMethods,
         buildRegisterPlayerMethods,
       })
-          // People in room
+      // People in room
       let registerPeopleMethods = buildRegisterPeopleMethods({
         isDef,
         isStr,
