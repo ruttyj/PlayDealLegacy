@@ -7,31 +7,6 @@ const {
 const Room = require("./room.js")
 
 
-const utils = {
-  randomRange: function (mn, mx) {
-    return Math.floor(Math.random() * (mx - mn)) + mn;
-  },
-  generateARandomCodeOfLength: function (length) {
-    var result = "";
-    var characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var lastIndex = characters.length - 1;
-    for (var i = 0; i < length; i++) {
-      result += characters.charAt(utils.randomRange(0, lastIndex));
-    }
-    return result;
-  },
-
-  makeUniqueCode: function (strLength = 4, check) {
-    let code;
-    do {
-      code = utils.generateARandomCodeOfLength(strLength);
-    } while (check(code));
-    return code;
-  },
-}
-
-
-
 class RoomManager
 {
   constructor({server})
@@ -120,8 +95,28 @@ class RoomManager
   getRandomCode()
   {
     const roomManager = this
-
-    return utils.makeUniqueCode(4, roomManager.mRooms.has)
+    const randomCodeUtil = {
+      randomRange: function (mn, mx) {
+        return Math.floor(Math.random() * (mx - mn)) + mn;
+      },
+      generateARandomCodeOfLength: function (characters, length) {
+        var result = "";
+        const lastIndex = characters.length - 1;
+        for (var i = 0; i < length; i++) {
+          result += characters.charAt(randomCodeUtil.randomRange(0, lastIndex));
+        }
+        return result;
+      },
+      makeUniqueCode: function (strLength = 4, check) {
+        let code;
+        const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        do {
+          code = randomCodeUtil.generateARandomCodeOfLength(characters, strLength);
+        } while (check(code));
+        return code;
+      },
+    }
+    return randomCodeUtil.makeUniqueCode(4, roomManager.mRooms.has)
   }
 
   serialize()
