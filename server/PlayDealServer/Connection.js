@@ -1,7 +1,6 @@
 module.exports = function({
     utils,
     classes,
-    buildOnDisconnected,
 }) {
     let {
         els,
@@ -9,12 +8,11 @@ module.exports = function({
         isStr,
         isArr,
         jsonEncode,
-      } = utils;
-    
-      let {
-        AddressedResponse,
-      } = classes;
+    } = utils;
 
+    let {
+        AddressedResponse,
+    } = classes;
 
     return class Connection 
     {
@@ -69,7 +67,7 @@ module.exports = function({
                     }
 
                     let payload = els(request.props, els(request.payload, {}))
-                    let props = els(request.props, {})
+                    let props   = els(request.props, {})
                     // Add client data to props
                     payload.thisClientKey   = socket.id
                     payload.thisClient      = socket
@@ -80,8 +78,9 @@ module.exports = function({
                     clientIdsMap[connectionId] = true
                     handleRoom(props, ({ personManager }) => {
                         personManager.getConnectedPeople().forEach((person) => {
-                            clientIdsMap[String(person.getClientId())] = true
-                            clientPersonMapping[String(person.getClientId())] = person
+                            let personConnectionId = String(person.getClientId());
+                            clientIdsMap[personConnectionId] = true
+                            clientPersonMapping[personConnectionId] = person
                         });
                     });
 
@@ -141,7 +140,7 @@ module.exports = function({
 
               })// end foreach affected room
             }
-            
+
             clientManager.removeClient(socket)
             server.onDisconnected(connection)
         }
