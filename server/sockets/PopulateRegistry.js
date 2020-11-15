@@ -138,19 +138,6 @@ module.exports = function ({
       OrderedTree,
     })
     {
-      // Enable Actions
-      let enabled = {
-        requestValue: true,
-          chargeRent: true, // extends is requestValue
-        stealCollection: true,
-        collectCards: true,
-        justSayNo: true,
-        stealProperty: true,
-        swapProperty: true,
-      }
-
-
-
       //==================================================
 
       //                  DEPENDENCIES
@@ -224,7 +211,6 @@ module.exports = function ({
       })
       // Game
       let registerGameMethods = buildRegisterGameMethods({
-        enabled,
         els,
         isDef,
         isDefNested,
@@ -300,66 +286,67 @@ module.exports = function ({
       })
       // People in room
       let registerPeopleMethods = buildRegisterPeopleMethods({
-        isDef,
-        isStr,
-        getArrFromProp,
-        AddressedResponse,
-        roomManager,
-        makeResponse,
-        canPersonRemoveOtherPerson,
-        makeConsumerFallbackResponse,
-        handleRoom,
-        handlePerson,
-        makeProps,
-      })
-      let registerCheatMethods = buildRegisterCheatMethods({
-        AddressedResponse,
-        makeResponse,
-        handleGame,
-        makeProps,
-      })
-      let registerRoomMethods = buildRegisterRoomMethods({
-        AddressedResponse,
-        //-------------------------
-        buildCreateRoom,
-        buildJoinRoom,
-        buildCheckExists,
-        buildGetRandomRoom,
-        buildGetCurrentRoomCode,
-        buildGetRoom,
-        buildGetAllRooms,
-        buildLeaveRoom,
-        //-------------------------
-        isDef,
-        els,
-        getNestedValue,
-        setNestedValue,
-        getArrFromProp, 
-        //-------------------
-        roomManager,
-        cookieTokenManager,
-        makeProps,
-        //-------------------
-        makeResponse,
-        createGameInstance,
-        makeConsumerFallbackResponse,
-        //-------------------
-        handleRoom,
-      })
-      let registerChatMethods = buildRegisterChatMethods({
-          isDef,
-          AddressedResponse,
-          makeResponse,
-          makeConsumerFallbackResponse,
-          handlePerson,
-          makeProps,
-      })
+                                    isDef,
+                                    isStr,
+                                    getArrFromProp,
+                                    AddressedResponse,
+                                    roomManager,
+                                    makeResponse,
+                                    canPersonRemoveOtherPerson,
+                                    makeConsumerFallbackResponse,
+                                    handleRoom,
+                                    handlePerson,
+                                    makeProps,
+                                  })
+      let registerCheatMethods  = buildRegisterCheatMethods({
+                                    AddressedResponse,
+                                    makeResponse,
+                                    handleGame,
+                                    makeProps,
+                                  })
+      let registerRoomMethods   = buildRegisterRoomMethods({
+                                    AddressedResponse,
+                                    //-------------------------
+                                    buildCreateRoom,
+                                    buildJoinRoom,
+                                    buildCheckExists,
+                                    buildGetRandomRoom,
+                                    buildGetCurrentRoomCode,
+                                    buildGetRoom,
+                                    buildGetAllRooms,
+                                    buildLeaveRoom,
+                                    //-------------------------
+                                    isDef,
+                                    els,
+                                    getNestedValue,
+                                    setNestedValue,
+                                    getArrFromProp, 
+                                    //-------------------
+                                    roomManager,
+                                    cookieTokenManager,
+                                    makeProps,
+                                    //-------------------
+                                    makeResponse,
+                                    createGameInstance,
+                                    makeConsumerFallbackResponse,
+                                    //-------------------
+                                    handleRoom,
+                                  })
+      let registerChatMethods   = buildRegisterChatMethods({
+                                    isDef,
+                                    AddressedResponse,
+                                    makeResponse,
+                                    makeConsumerFallbackResponse,
+                                    handlePerson,
+                                    makeProps,
+                                  })
 
       registerConnectionsMethods(registry);
-      registerGameMethods(registry);
       registerPeopleMethods(registry);
-      registerChatMethods(registry);
-      registerCheatMethods(registry);
       registerRoomMethods(registry);
-    }
+      registerChatMethods(registry);
 
+      registerGameMethods(registry);
+      registerCheatMethods(registry);
+      
+    }

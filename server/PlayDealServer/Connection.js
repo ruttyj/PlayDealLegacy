@@ -54,6 +54,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
             let server          = connection.server
             let registry        = server.registry
             let handleRoom      = server.handleRoom
+            let roomManager     = server.roomManager; 
 
             let events              = isStr(jsonData) ? JSON.parse(jsonData) : jsonData
             let clientPersonMapping = {}
@@ -88,7 +89,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                     clientIdsMap[connection.id] = true
                     handleRoom(payload, ({ personManager }) => {
                         personManager.getConnectedPeople().forEach((person) => {
-                            let personConnectionId = String(person.getClientId());
+                            let personConnectionId = String(person.getClientId())
                             clientIdsMap[personConnectionId] = true
                             clientPersonMapping[personConnectionId] = person
                         });

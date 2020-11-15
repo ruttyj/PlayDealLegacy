@@ -22,7 +22,6 @@ function PlayerManager(gameRef = null) {
   let mTurnManager;
   let mPlayers;
   let mPlayerKeys;
-  let mCanProceedNextTurn;
   let mCollectionManager;
 
   
@@ -206,7 +205,6 @@ function PlayerManager(gameRef = null) {
     mState = {};
     mPlayers = makeMap(mState, "players");
     mPlayerKeys = [];
-    mCanProceedNextTurn = true;
     mCollectionManager = CollectionManager(mGameRef);
 
     mTurnManager = TurnManager();

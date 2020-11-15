@@ -17,7 +17,6 @@ function buildDeps({
     roomManager,
     //-------------------
 }){
-    // #region DEPENDENCIES
     function makeProps(props, data = {})
     {
       return { 
@@ -156,8 +155,9 @@ function buildDeps({
       );
     }
 
-    // Will generate resposnes for each respective person regarding the relevent information
     /**
+     * Will generate resposnes for each respective person regarding the relevent information
+     * 
      * @param {function} getMyData      data for the owner of the info              IE: cards in my hand
      * @param {function} getOtherData   data from the perspective of other people   IE: card count of my opponents
      * @param.props[receivingPeopleIds|receivingPersonId] {array|string}   People who will receive the information
@@ -266,7 +266,6 @@ function buildDeps({
         return addressedResponses;
       };
     }
-    // #endregion
     
     function makeRegularGetKeyed({
       subject,
@@ -422,7 +421,6 @@ function buildDeps({
   
     //==================================================
 
-    // #region CONSUMERS
     // ensured the data required for a room is presant
     function handleRoom(props, fn, fallback = undefined) {
       let { roomCode, thisClientKey } = props;
@@ -1504,7 +1502,6 @@ function buildDeps({
         makeConsumerFallbackResponse({ subject, action, addressedResponses })
       );
     }
-    // #endregion
 
     return {
         makeProps,

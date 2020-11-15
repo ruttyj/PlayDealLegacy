@@ -20,9 +20,6 @@ function Room() {
   // CHAT
   const { get: getChat, set: setChat } = makeVar(mRef, "chat", null);
 
-  // IMAGE
-  const { get: getImage, set: setImage } = makeVar(mRef, "image", null);
-
   const mPrivateVars = ["data"];
   // DATA MAP
   const { get, set, has, remove } = makeMap(mRef, "data", {});
@@ -48,14 +45,6 @@ function Room() {
     has: hasPersonManager,
     remove: removePersonManager,
   } = makeVar(mRef, "personManagerRef", null);
-
-  // ROOM MANAGER
-  // Room managerManager Ref
-  const { get: getManager, set: setManager } = makeVar(
-    mRef,
-    "roomManagerRef",
-    null
-  );
 
   // CLIENT MANAGER
   const {
@@ -86,12 +75,6 @@ function Room() {
       _setClientManager(manager);
     }
   }
-
-  //==================================================
-
-  //                    Events
-
-  //==================================================
 
   //==================================================
 
@@ -131,7 +114,6 @@ function Room() {
 
   //==================================================
   setChat(Chat());
-  //setPersonManager(PersonManager())
 
   //==================================================
 
@@ -143,9 +125,6 @@ function Room() {
     setId,
     getCode,
     setCode,
-
-    getImage,
-    setImage,
 
     // GENERIC MAP
     get,
@@ -161,8 +140,6 @@ function Room() {
     setClientManager,
     hasClientManager,
 
-    getManager,
-    setManager,
 
     getGame,
     setGame,

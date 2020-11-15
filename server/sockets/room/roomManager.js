@@ -8,33 +8,6 @@ const {
   makeMap,
 } = require("../utils.js");
 const Room = require("./room.js");
-
-let prettyImages = [
-  "https://images.unsplash.com/photo-1553984840-b8cbc34f5215?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1553524788-3997b32fe069?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1546423237-abf72876d79d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1534&q=80",
-  "https://images.unsplash.com/flagged/photo-1552863477-7dc7069090c8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1571631465319-22849a35a54e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2134&q=80",
-  "https://images.unsplash.com/flagged/photo-1552863477-7dc7069090c8?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1569196769169-148d853ee706?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2082&q=80",
-  "https://images.unsplash.com/photo-1472396961693-142e6e269027?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2103&q=80",
-  "https://images.unsplash.com/photo-1444090542259-0af8fa96557e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1582761371078-6509f13666b1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1471825600287-1f2aa68545aa?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2089&q=80",
-  "https://images.unsplash.com/photo-1544297787-43ce4f544585?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1543302242-ece3ed37a7ca?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1444090542259-0af8fa96557e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-  "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjI0MX0&auto=format&fit=crop&w=1500&q=80",
-  "https://images.unsplash.com/photo-1586254626726-22f20bd7102e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80",
-  "https://images.unsplash.com/photo-1586254574632-55e4aaea7793?ixlib=rb-1.2.1&auto=format&fit=crop&w=2134&q=80",
-  "https://images.unsplash.com/photo-1586021755075-3da0c78d4881?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=2100&q=80",
-  "https://images.unsplash.com/photo-1585224489225-03ca294de508?ixlib=rb-1.2.1&auto=format&fit=crop&w=2134&q=80",
-  "https://images.unsplash.com/photo-1486728297118-82a07bc48a28?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1602&q=80",
-  "https://images.unsplash.com/photo-1516496636080-14fb876e029d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1534&q=80",
-  "https://images.unsplash.com/photo-1570700720924-95bf33158ed5?ixlib=rb-1.2.1&auto=format&fit=crop&w=634&q=80",
-  "https://images.unsplash.com/photo-1562474541-07ed748b1d46?ixlib=rb-1.2.1&auto=format&fit=crop&w=1489&q=80",
-];
-
 const utils = {
   randomRange: function (mn, mx) {
     return Math.floor(Math.random() * (mx - mn)) + mn;
@@ -56,10 +29,6 @@ const utils = {
     } while (check(code));
     return code;
   },
-
-  getRandomImage: function () {
-    return prettyImages[utils.randomRange(0, prettyImages - 1)];
-  },
 };
 
 //##################################################
@@ -67,18 +36,6 @@ const utils = {
 //                 Person Manager
 
 //##################################################
-/*
-  Public:
-    createRoom,
-    getClientManager,
-    setClientManager,
-    hasClientManager,
-    getRoomByCode,
-    getRoomById,
-    deleteRoomById,
-    deleteRoomByCode,
-    serialize
-*/
 function RoomManager({clientManager} = {}) {
   let mRef = {};
 
@@ -131,7 +88,6 @@ function RoomManager({clientManager} = {}) {
   //                Additional Logic
 
   //==================================================
-  const makeElse = (v, makeFn) => (isDef(v) ? v : makeFn());
   function createRoom(definedRoomCode = null) {
     if (hasClientManager()) {
       incTopId();
@@ -139,10 +95,8 @@ function RoomManager({clientManager} = {}) {
       let roomId = getTopId();
       let roomCode = els(definedRoomCode, utils.makeUniqueCode(4, hasRoomCode));
       room.setClientManager(getClientManager());
-      room.setManager(getPublic());
       room.setId(roomId);
       room.setCode(roomCode);
-      room.setImage(utils.getRandomImage());
 
       addRoomById(roomId, room);
       addRoomIdByCode(roomCode, roomId);
@@ -175,15 +129,6 @@ function RoomManager({clientManager} = {}) {
 
   function listAllRoomCodes() {
     return mapRoomsCodes((id, code) => code);
-  }
-
-  function isRoomEmpty(room) {
-    let roomManager = room.getPersonManager();
-    if (isDef()) {
-      let personCount = roomManager.getPersonCount();
-      if (personCount > 0) return false;
-    }
-    return true;
   }
 
   function removeRoomById(roomId) {
@@ -258,9 +203,11 @@ function RoomManager({clientManager} = {}) {
   function getPublic() {
     return {
       createRoom,
+
       getClientManager,
       setClientManager,
       hasClientManager,
+
       getRoomsForClientId,
       listAllRoomCodes,
       getRandomCode,

@@ -16,17 +16,18 @@ module.exports = function({
             if (isDef(room)) {
                 let personManager = room.getPersonManager();
                 if (isDef(personManager)) {
-                    let myClientId = thisClientKey;
-                    let person = personManager.getPersonByClientId(myClientId);
                     let newProps = {
                         ...props,
-                        roomCode,
                         thisClientKey: `${props.thisClientKey}`,
+
+                        roomCode,
                         thisRoomCode: roomCode,
                         room,
                         thisRoom: room,
+
                         personManager,
                     };
+                    let person = personManager.getPersonByClientId(thisClientKey);
                     if (isDef(person)) {
                         Object.assign(newProps, {
                             person,
@@ -42,7 +43,7 @@ module.exports = function({
                         });
                         let clientIds = Object.keys(clientPersonMapping);
                         reducedResponses.addToBucket(
-                            responses.reduce(myClientId, clientIds)
+                            responses.reduce(thisClientKey, clientIds)
                         );
                     }
                     return responses;

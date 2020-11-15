@@ -31,6 +31,19 @@ const Registry                = buildRegistry(utils)
 const Connection              = buildConnection({ ...utils, AddressedResponse });
 
 
+
+class BaseServer {
+  constructor()
+  {
+    this.clientManager;
+  }
+
+  getSocketManager(){
+    return this.clientManager;
+  }
+}
+
+
 /**
  * 
  * TODO #$%^&$#^&$%#^&%$^&%$#%^&$%
@@ -38,17 +51,18 @@ const Connection              = buildConnection({ ...utils, AddressedResponse })
  * When accepting payment from rent place in set if can be placed in set (when no previous set existed)
  * 
  */
-module.exports = class PlayDealServer 
+module.exports = class PlayDealServer extends BaseServer
 {
   constructor()
   {
+    super();
     this.registry;            // event Registry
-    this.clientManager;
     this.roomManager;
     this.cookieTokenManager;
     this.registry;
     this.connections;
     this.utils;
+    this.services;
 
     this.init();
   }
@@ -59,6 +73,7 @@ module.exports = class PlayDealServer
    */
   init()
   {
+    this.services             = new Map();
     this.connections          = new Map();
     this.registry             = new Registry();
     this.cookieTokenManager   = CookieTokenManager.getInstance();
