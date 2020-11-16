@@ -218,7 +218,7 @@ function buildRespondToCollectValueAction({
                                 "everyone",
                                 registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                                     makeProps(consumerData, {
-                                      peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.PLAYER_REQUEST.CHANGE),
+                                      peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
                                     })
                                 )
                             );
