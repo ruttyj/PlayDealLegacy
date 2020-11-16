@@ -2,8 +2,15 @@ const {
   isDef,
   makeVar,
   makeList,
-  makeListener,
 } = require("../utils.js");
+
+
+const PERSON_STATUS = {
+  DISCONNECTED: 'disconnected', 
+  CONNECTED:    'connected',
+}
+
+
 
 function Person() {
   let mRef = {};
@@ -61,11 +68,7 @@ function Person() {
 
   function setName(_newValue) {
     let oldValue = getName();
-
-
     let personManager = getManager();
-    
-
 
     if (_newValue !== oldValue) {
       personManager.releaseTakenName(oldValue)
@@ -84,22 +87,17 @@ function Person() {
 
   function getClientId() {
     let client = getClient();
-    if (isDef(client)) return String(client.id);
+    if (isDef(client)) {
+      return String(client.id);
+    }
     return null;
-  }
-
-  function makeEventClientPayload(client) {
-    return {
-      person: getPublic(),
-      client,
-    };
   }
 
   function connect(client) {
     let person = getPublic();
     let personManager = getManager();
     setClientRef(client);
-    setStatus("connected");
+    setStatus(PERSON_STATUS.CONNECTED);
     client.events.disconnect.once(({ client }) => {
       personManager.disconnectPerson(person);
       disconnect();
@@ -108,9 +106,8 @@ function Person() {
 
   function disconnect() {
     if (hasClient()) {
-      let client = getClient();
       removeClientRef();
-      setStatus("disconnected");
+      setStatus(PERSON_STATUS.DISCONNECTED);
     }
   }
 
