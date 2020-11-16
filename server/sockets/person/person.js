@@ -1,15 +1,8 @@
 const {
-  isUndef,
   isDef,
-  isTrue,
-  isFalse,
-  identityMutator,
-  emptyFunction,
   makeVar,
   makeList,
-  makeMap,
   makeListener,
-  prettyLog,
 } = require("../utils.js");
 
 function Person() {
@@ -62,34 +55,23 @@ function Person() {
 
   //==================================================
 
-  //                    Events
-
-  //==================================================
-  const mConnectEvent = makeListener();
-  const mDisconnectEvent = makeListener();
-  const mNameChangeEvent = makeListener();
-  const mStatusChangeEvent = makeListener();
-
-  //==================================================
-
   //                Additional Logic
 
   //==================================================
-  function makeOnValueChangePayload(newValue, oldValue) {
-    return {
-      person: getPublic(),
-      newValue: newValue,
-      oldValue,
-    };
-  }
 
   function setName(_newValue) {
     let oldValue = getName();
 
+
+    let personManager = getManager();
+    
+
+
     if (_newValue !== oldValue) {
+      personManager.releaseTakenName(oldValue)
       let newValue = getManager().generateNameVariant(_newValue);
       _setName(newValue);
-      mNameChangeEvent.emit(makeOnValueChangePayload(newValue, oldValue));
+      personManager.setTakenName(_newValue)
     }
   }
 
@@ -97,7 +79,6 @@ function Person() {
     let oldValue = getStatus();
     if (newValue !== oldValue) {
       _setStatus(newValue);
-      mStatusChangeEvent.emit(makeOnValueChangePayload(newValue, oldValue));
     }
   }
 
@@ -115,10 +96,12 @@ function Person() {
   }
 
   function connect(client) {
+    let person = getPublic();
+    let personManager = getManager();
     setClientRef(client);
-    mConnectEvent.emit(makeEventClientPayload(client));
     setStatus("connected");
     client.events.disconnect.once(({ client }) => {
+      personManager.disconnectPerson(person);
       disconnect();
     });
   }
@@ -128,7 +111,6 @@ function Person() {
       let client = getClient();
       removeClientRef();
       setStatus("disconnected");
-      mDisconnectEvent.emit(makeEventClientPayload(client));
     }
   }
 
@@ -204,14 +186,6 @@ function Person() {
 
     //emit to client
     emit,
-
-    // Events
-    events: {
-      connect: mConnectEvent,
-      disconnect: mDisconnectEvent,
-      nameChange: mNameChangeEvent,
-      statusChange: mStatusChangeEvent,
-    },
 
     serialize,
   };

@@ -138,6 +138,12 @@ function PersonManager() {
     return variantName;
   }
 
+  function disconnectPerson(person) {
+    let client = person.getClient();
+    if (isDef(client)){
+      disconnectedPlayerByClientId(client.id);
+    }
+  }
   function createPerson(clientSocket, name = "Guest") {
     incTopId();
     let person = Person();
@@ -156,19 +162,10 @@ function PersonManager() {
 
     addPlayerObserver(
       person.getId(),
-      person.events.disconnect.on(({ person, client }) => {
-        if (isDef(client)) {
-          disconnectedPlayerByClientId(client.id);
-        }
-      })
     );
 
     addPlayerObserver(
       person.getId(),
-      person.events.nameChange.on(({ person, oldValue, newValue }) => {
-        releaseTakenName(oldValue);
-        setTakenName(newValue);
-      })
     );
 
     // emit createPerson event
@@ -178,15 +175,6 @@ function PersonManager() {
     });
 
     return person;
-  }
-
-  function emitOnPlayerDisconnect(player) {
-    let payload = {
-      playerManager: getPublic(),
-      player: player,
-    };
-    mPersonDisconnectEvent.emit(payload);
-    person.disconnect();
   }
 
   function getPerson(personOrId) {
@@ -327,6 +315,13 @@ function PersonManager() {
   const publicScope = {
     createPerson,
     generateNameVariant,
+
+    releaseTakenName,
+    setTakenName,
+
+
+
+    disconnectPerson,
 
     removePersonById,
     removePerson,
