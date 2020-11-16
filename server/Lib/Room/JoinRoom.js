@@ -53,7 +53,7 @@ module.exports = function ({
                           !personManager.getPerson(personId).isConnected()
                         ) {
                           person = personManager.getPerson(personId);
-                          person.setClient(thisClient);
+                          person.connect(thisClient);
                           personManager.associateClientIdToPersonId(
                             thisClient.id,
                             person.getId()

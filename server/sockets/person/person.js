@@ -1,6 +1,5 @@
 const {
   isDef,
-  makeVar,
   makeList,
 } = require("../utils.js");
 
@@ -8,190 +7,175 @@ const {
 const PERSON_STATUS = {
   DISCONNECTED: 'disconnected', 
   CONNECTED:    'connected',
+  UNDEFINED:    'undefined',
 }
 
 
+class Person
+{
+  constructor()
+  {
+    const person = this
 
-function Person() {
-  let mRef = {};
+    person.mData  = {}
+    person.id     = 0
+    person.name   = null
+    person.status = PERSON_STATUS.UNDEFINED
+    
+    person.mTags  = makeList(person.mData, "tags")
 
-  // Id
-  const { get: getId, set: setId } = makeVar(mRef, "id", 0);
-
-  // Name
-  const { get: getName, set: _setName } = makeVar(mRef, "name", 0);
-
-  // Status
-  const { get: getStatus, set: _setStatus } = makeVar(mRef, "status", 0, {
-    mutator: (v) => String(v).toLowerCase(),
-  });
-
-  // Tags
-  const {
-    toArray: getTagList,
-    push: addTag,
-    includes: hasTag,
-    removeByValue: removeTag,
-  } = makeList(mRef, "tags");
-
-  //==================================================
-
-  //              External references
-
-  //==================================================
-  const mExternalRefs = [
-    "clientRef",
-    "managerRef",
-    "onSetClient",
-    "onRemoveClient",
-  ];
-  // Manager Ref
-  const { get: getManager, set: setManager } = makeVar(
-    mRef,
-    "managerRef",
-    null
-  );
-
-  // Client Ref
-  const {
-    get: getClient,
-    set: setClientRef,
-    has: hasClient,
-    remove: removeClientRef,
-  } = makeVar(mRef, "clientRef", null);
-
-  //==================================================
-
-  //                Additional Logic
-
-  //==================================================
-
-  function setName(_newValue) {
-    let oldValue = getName();
-    let personManager = getManager();
-
-    if (_newValue !== oldValue) {
-      personManager.releaseTakenName(oldValue)
-      let newValue = getManager().generateNameVariant(_newValue);
-      _setName(newValue);
-      personManager.setTakenName(_newValue)
-    }
+    person.mManager
+    person.client
   }
 
-  function setStatus(newValue) {
-    let oldValue = getStatus();
-    if (newValue !== oldValue) {
-      _setStatus(newValue);
-    }
+  setManager(manager)
+  {
+    this.mManager = manager
   }
 
-  function getClientId() {
-    let client = getClient();
+  getManager()
+  {
+    return this.mManager
+  }
+
+
+
+  connect(client)
+  {
+    const person = this
+    const personManager = person.getManager()
+
+    person.client = client
+    person.setStatus(PERSON_STATUS.CONNECTED)
     if (isDef(client)) {
-      return String(client.id);
-    }
-    return null;
-  }
-
-  function connect(client) {
-    let person = getPublic();
-    let personManager = getManager();
-    setClientRef(client);
-    setStatus(PERSON_STATUS.CONNECTED);
-    client.events.disconnect.once(({ client }) => {
-      personManager.disconnectPerson(person);
-      disconnect();
-    });
-  }
-
-  function disconnect() {
-    if (hasClient()) {
-      removeClientRef();
-      setStatus(PERSON_STATUS.DISCONNECTED);
+      client.events.disconnect.once(() => {
+        personManager.disconnectPerson(person)
+        person.disconnect()
+      })
     }
   }
 
-  //==================================================
-
-  //                    Serialize
-
-  //==================================================
-  function serialize() {
-    let result = {
-      clientId: getClientId(),
-    };
-
-    // Serialize everything except the external references
-    let keys = Object.keys(mRef).filter((key) => !mExternalRefs.includes(key));
-
-    // Serialize each if possible, leave primitives as is
-    keys.forEach((key) => {
-      result[key] = isDef(mRef[key].serialize)
-        ? mRef[key].serialize()
-        : mRef[key];
-    });
-
-    return result;
-  }
-
-  function emit(eventName, payload) {
-    if (hasClient()) {
-      getClient().emit(eventName, payload);
+  disconnect() {
+    const person = this
+    if (isDef(person.client)) {
+      person.client = null
+      person.setStatus(PERSON_STATUS.DISCONNECTED)
     }
   }
 
-  //==================================================
-
-  //                    Export
-
-  //==================================================
-  const publicScope = {
-    getId,
-    setId,
-    getName,
-    setName,
-
-    // Status
-    getStatus,
-    setStatus,
-
-    // Tags
-    getTagList,
-    addTag,
-    hasTag,
-    removeTag,
-
-    // Manager Ref
-    getManager,
-    setManager,
-
-    // Client Ref
-    isConnected: hasClient,
-    hasClient,
-
-    // Connect
-    connect,
-    setClient: connect,
-
-    // Disconnect
-    disconnect,
-    removeClient: disconnect,
-
-    // Client/Connection ID
-    getClient,
-    getClientId,
-
-    //emit to client
-    emit,
-
-    serialize,
-  };
-
-  function getPublic() {
-    return publicScope;
+  isConnected() {
+    return isDef(this.client);
   }
 
-  return getPublic();
+  getClient()
+  {
+    return this.client
+  }
+
+  getClientId()
+  {
+    const client = this.getClient()
+    if (isDef(client)) {
+      return String(client.id)
+    }
+    return null
+  }
+
+  emit(eventName, payload) {
+    const client = this.getClient()
+    if (isDef(client)) {
+      client.emit(eventName, payload);
+    }
+  }
+
+
+
+  setId(id)
+  {
+    this.id = id
+  }
+
+  getId()
+  {
+    return this.id
+  }
+
+
+
+  setName(newValue)
+  {
+    const person        = this
+    const oldValue      = person.getName()
+    const personManager = person.getManager()
+
+    let changeName      = false
+    let hasOldValue     = isDef(oldValue);
+
+    if (hasOldValue && newValue !== oldValue) {
+      personManager.releaseTakenName(oldValue)
+      changeName = true
+    }
+
+    if (!hasOldValue) {
+      changeName = true
+    }
+
+    if (changeName) {
+      person.name = personManager.generateNameVariant(newValue)
+      personManager.setTakenName(person.name)
+    }
+  }
+
+  getName()
+  {
+    return this.name
+  }
+
+
+
+  setStatus(newValue)
+  {
+    this.status = newValue
+  }
+
+  getStatus()
+  {
+    return this.status
+  }
+
+
+  getTagList()
+  {
+    return this.mTags.toArray()
+  }
+
+  addTag(tag)
+  {
+    this.mTags.push(tag)
+  }
+
+  hasTag(tag)
+  {
+    return this.mTags.includes(tag)
+  }
+
+  removeTag(tag)
+  {
+    return this.mTags.removeByValue(tag)
+  }
+
+
+
+  serialize()
+  {
+    const person = this;
+    return {
+      id: person.id,
+      name: person.name,
+      status: person.status,
+      tags: person.mTags.serialize(),
+    }
+  }
 }
 
 module.exports = Person;

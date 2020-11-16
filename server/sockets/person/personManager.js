@@ -146,14 +146,14 @@ function PersonManager() {
   }
   function createPerson(clientSocket, name = "Guest") {
     incTopId();
-    let person = Person();
+    let person = new Person();
     person.setManager(getPublic());
     person.setId(getTopId());
 
     let nameVariant = generateNameVariant(name);
     person.setName(nameVariant);
     setTakenName(nameVariant);
-    person.setClient(clientSocket);
+    person.connect(clientSocket);
     addPerson(person);
 
     //----------------------------------------------------
