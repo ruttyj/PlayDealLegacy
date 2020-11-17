@@ -34,11 +34,6 @@ class Person
     return PERSON_STATUS;
   }
 
-  setManager(manager)
-  {
-    this.mManager = manager
-  }
-
   getManager()
   {
     return this.mManager
@@ -70,6 +65,7 @@ class Person
       let client = person.client;
       person.setStatus(PERSON_STATUS.DISCONNECTED)
       person.client = null
+      // need to do this after to remove mapping of client to person
       personManager.disconnectPerson(person, client)
     }
   }

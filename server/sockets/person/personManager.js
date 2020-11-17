@@ -100,18 +100,14 @@ class PersonManager
     const personManager = this
 
     if (isDef(client)){
-    let clientId = client.id
-      personManager.mClientMap.remove(clientId)
+      personManager.mClientMap.remove(client.id)
     }
 
     if (isDef(person)) {
-      
-
       if (person.isConnected()) {
         person.disconnect()
       }
     }
-    // Remove from mapping
   }
 
   
