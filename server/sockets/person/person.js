@@ -4,14 +4,6 @@ const {
 } = require("../utils.js");
 
 
-const PERSON_STATUS = {
-  READY:        'ready',
-  DISCONNECTED: 'disconnected', 
-  CONNECTED:    'connected',
-  UNDEFINED:    'undefined',
-}
-
-
 class Person
 {
   constructor(manager = null)
@@ -31,7 +23,12 @@ class Person
 
   static get STATUS()
   {
-    return PERSON_STATUS;
+    return {
+      READY:        'ready',
+      DISCONNECTED: 'disconnected', 
+      CONNECTED:    'connected',
+      UNDEFINED:    'undefined',
+    };
   }
 
   getManager()
@@ -47,7 +44,7 @@ class Person
     const personManager = person.getManager()
 
     person.client = client
-    person.setStatus(PERSON_STATUS.CONNECTED)
+    person.setStatus(Person.STATUS.CONNECTED)
     
     if (isDef(client)) {
       personManager.connectPerson(person, client);
@@ -63,7 +60,7 @@ class Person
     const personManager = person.getManager()
     if (isDef(person.client)) {
       let client = person.client;
-      person.setStatus(PERSON_STATUS.DISCONNECTED)
+      person.setStatus(Person.STATUS.DISCONNECTED)
       person.client = null
       // need to do this after to remove mapping of client to person
       personManager.disconnectPerson(person, client)

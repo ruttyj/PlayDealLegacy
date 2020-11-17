@@ -122,19 +122,19 @@ function buildDeps({
 
     function canGameStart(game, personManager)
     {
+
+      // Are there enough people to play?
       let readyPeople = personManager.filterPeople(
         (person) => (person.isConnected() && person.getStatus() === "ready")
       );
       let isAcceptablePlayerCount = game.isAcceptablePlayerCount(readyPeople.length)
 
+      // Does everyone have an acceptable status?
       let acceptableStatuses = ["ready"]
       let isEveryoneReady = personManager.doesAllSatisfy(
         (person) => (person.isConnected() && acceptableStatuses.includes(person.getStatus()))
       )
 
-      console.log({
-        isEveryoneReady , isAcceptablePlayerCount, readyPeople, mClientMap: personManager.mClientMap.toArray()
-      });
       return (isEveryoneReady && isAcceptablePlayerCount);
     }
 
