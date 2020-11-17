@@ -318,6 +318,7 @@ module.exports = function ({
                                     //-------------------------
                                     isDef,
                                     els,
+                                    isArr,
                                     getNestedValue,
                                     setNestedValue,
                                     getArrFromProp, 

@@ -122,13 +122,20 @@ function buildDeps({
 
     function canGameStart(game, personManager)
     {
-      let readyPeople = personManager.filterPeople((person) => {
-        return person.isConnected() && person.getStatus() === "ready";
-      });
-      return (
-        personManager.doesAllPlayersHaveTheSameStatus("ready") &&
-        game.isAcceptablePlayerCount(readyPeople.length)
+      let readyPeople = personManager.filterPeople(
+        (person) => (person.isConnected() && person.getStatus() === "ready")
       );
+      let isAcceptablePlayerCount = game.isAcceptablePlayerCount(readyPeople.length)
+
+      let acceptableStatuses = ["ready"]
+      let isEveryoneReady = personManager.doesAllSatisfy(
+        (person) => (person.isConnected() && acceptableStatuses.includes(person.getStatus()))
+      )
+
+      console.log({
+        isEveryoneReady , isAcceptablePlayerCount, readyPeople, mClientMap: personManager.mClientMap.toArray()
+      });
+      return (isEveryoneReady && isAcceptablePlayerCount);
     }
 
     function createGameInstance(room)
@@ -441,6 +448,7 @@ function buildDeps({
               ...props,
               roomCode,
               thisRoomCode: roomCode,
+              roomManager,
               room,
               thisRoom: room,
               personManager,

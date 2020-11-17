@@ -255,7 +255,7 @@ module.exports = function ({
                   payload.ids.push(personId);
 
                   person.disconnect();
-                  personManager.removePersonById(person.getId());
+                  personManager.removePerson(person);
 
                   // If it was the host who left, assing new host
                   let wasHost = person.hasTag("host");
@@ -304,14 +304,13 @@ module.exports = function ({
         let requestStatus = "failure";
         return handlePerson(
           props,
-          ({ roomCode, room, personManager, person, thisPersonId }) => {
+          ({ person, thisPersonId }) => {
             let { status } = props;
 
             let allowedStatuses = ["ready", "not_ready"];
             if (allowedStatuses.includes(status)) {
               person.setStatus(String(status));
             }
-
             requestStatus = "success";
             addressedResponses.addToBucket(
               "default",

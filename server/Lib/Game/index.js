@@ -409,19 +409,19 @@ module.exports = function ({
 
           let game = room.getGame();
           let canStart = canGameStart(game, personManager);
-          let host = personManager.findPerson((person) =>
-            person.hasTag("host")
+
+          let host = personManager.findPerson(
+            (person) => person.hasTag("host")
           );
-          if (isDef(host)) {
-            let status = "success";
-            let payload = {
-              value: canStart,
-            };
-            addressedResponses.addToSpecific(
-              host.getClientId(),
-              makeResponse({ subject, action, status, payload })
-            );
-          }
+
+          let status = "success";
+          let payload = {
+            value: canStart,
+          };
+          addressedResponses.addToSpecific(
+            host.getClientId(),
+            makeResponse({ subject, action, status, payload })
+          );
           return addressedResponses;
         },
         makeConsumerFallbackResponse({ subject, action, addressedResponses })

@@ -21,7 +21,7 @@ module.exports = class Room
   setClientManager(manager) 
   {
     this.mClientManager = manager
-    this.mPersonManager = PersonManager()
+    this.mPersonManager = new PersonManager()
   }
 
   getPersonManager()

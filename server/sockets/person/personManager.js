@@ -1,11 +1,8 @@
 const {
   els,
   isDef,
-  isNum,
-  isFunc,
   makeVar,
   makeMap,
-  makeListener,
   getKeyFromProp,
 } = require("../utils.js");
 
@@ -16,356 +13,208 @@ const Person = require("./person.js");
 //                 Person Manager
 
 //##################################################
-/*
-  Public:
-    createPerson,
-    getPerson,
-    hasPerson,
-    getAllPeople,
-    getClientManager,
-    setClientManager,
-    hasClientManager,
-    serialize
-*/
-function PersonManager() {
-  let mRef = {};
+class PersonManager 
+{
+  constructor()
+  {
+    const personManager = this
 
-  //==================================================
+    personManager._data = {}
 
-  //                    Variables
+    personManager.mTopId                    = makeVar(personManager._data, "topId",       0)
+    personManager.mItems                    = makeMap(personManager._data, "people",      [], { keyMutator: (v) => String(v) })
+    personManager.mClientMap                = makeMap(personManager._data, "clientMap",   [], { keyMutator: (v) => String(v) })
+    personManager.mTakenNames               = makeMap(personManager._data, "takenNames",  [])
+  }
+  
+  _addPerson(person)
+  {
+    const personManager = this
 
-  //==================================================
-  const mPrivateVars = ["topId", "observers"];
-  const { get: getTopId, inc: incTopId } = makeVar(mRef, "topId", 0);
-
-  const {
-    set: addPersonInMap, // experimental formatting easier to read?
-    get: getPersonInMap,
-    has: hasPersonInMap,
-    map: mapPeople,
-    filter: filterPeople,
-    forEach: forEachPerson,
-    find: findPerson,
-    count: getPersonCount,
-    serialize: serializePeople,
-  } = makeMap(mRef, "people", [], {
-    keyMutator: (v) => String(v),
-  });
-
-  // Dictonary mapping {clientId : personId}
-  const {
-    set: addClientIdPersonIdMap,
-    get: getClientIdPersonIdMap,
-    has: hasClientIdPersonIdMap,
-    map: mapClientIdPersonIdMap,
-    remove: removeClientIdPersonIdMap,
-    count: getConnectedPeopleCount,
-    serialize: serializeClientIds,
-  } = makeMap(mRef, "clientToPersonMapping", [], {
-    keyMutator: (v) => String(v),
-  });
-
-  // keep track of taken names
-  const { set: setName, has: hasName, remove: releaseTakenName } = makeMap(
-    mRef,
-    "takenNames"
-  );
-
-  function setTakenName(name) {
-    setName(name, true);
+    let id = person.getId()
+    personManager.mItems.set(id, person)
+    personManager.mClientMap.set(person.getClientId(), id)
   }
 
-  // List of observers
-  const {
-    set: initPlayerObserverList,
-    get: getPlayerObserverList,
-    has: hasPlayerObserverList,
-    forEach: forEachPlayerObserver,
-  } = makeMap(mRef, "observers");
+  createPerson(clientSocket, name = "Guest")
+  {
+    const personManager = this
 
-  function addPlayerObserver(playerId, observer) {
-    if (!hasPlayerObserverList(playerId)) initPlayerObserverList(playerId, []);
-    getPlayerObserverList(playerId).push(observer);
+    let person = new Person(personManager)
+    let topIdCounter = personManager.mTopId
+    person.setId(topIdCounter.incGet())
+    person.setName(name)
+    person.connect(clientSocket)
+    personManager._addPerson(person)
+
+    
+    return person;
   }
 
-  function removePlayerObservers(playerId) {
-    if (hasPlayerObserverList(playerId))
-      getPlayerObserverList(playerId).forEach((observer) =>
-        observer.unsubscribe()
-      );
+
+  removePerson(personOrId) 
+  {
+    const personManager = this
+
+    // call get person.getId() or personId
+    let personId = getKeyFromProp(personOrId, "id")
+    let person = personManager.getPerson(personId)
+    if (isDef(person)) {
+      personManager.disconnectPerson(person)
+      personManager.mItems.remove(personId)
+    }
   }
 
-  function removeAllPlayerObservers() {
-    forEachPlayerObserver((observer) => {
-      if (isDef(observer) && isFunc(observer.unsubscribe))
-        observer.unsubscribe();
-    });
+  markPersonAsLeftRoom(personOrId)
+  {
+    const personManager = this
+
+    // call get person.getId() or personId
+    let personId = getKeyFromProp(personOrId, "id")
+    let person = personManager.getPerson(personId)
+    if (isDef(person)) {
+      person.setStatus("Left");
+    }
   }
 
-  //==================================================
 
-  //              External references
+  getPersonByClientId(clientId)
+  {
+    const personManager = this
 
-  //==================================================
-  const mExternalRefs = ["clientManagerRef"];
-  const {
-    get: getClientManager,
-    set: setClientManager,
-    has: hasClientManager,
-  } = makeVar(mRef, "clientManagerRef", null);
+    let personId = personManager.mClientMap.get(clientId)
+    return personManager.getPerson(personId)
+  }
 
-  //==================================================
+  
+  connectPerson(personOrId, clientOrId)
+  {
+    const personManager = this
+    let personId = getKeyFromProp(personOrId, "id")
+    let clientId = getKeyFromProp(clientOrId, "id")
+    personManager.mClientMap.set(clientId, personId)
+  }
+  
+  disconnectPerson(person, client)
+  {
+    const personManager = this
 
-  //                      Events
+    if (isDef(client)){
+    let clientId = client.id
+      personManager.mClientMap.remove(clientId)
+    }
 
-  //==================================================
-  // @TODO consider seprate for internal and external events
-  const mCreatePersonEvent = makeListener();
-  const mRemovePersonEvent = makeListener();
-  const mPersonDisconnectEvent = makeListener();
+    if (isDef(person)) {
+      
 
-  //==================================================
+      if (person.isConnected()) {
+        person.disconnect()
+      }
+    }
+    // Remove from mapping
+  }
 
-  //                Additional Logic
+  
+  setTakenName(name) {
+    const personManager = this
+    personManager.mTakenNames.set(name, true)
+  }
 
-  //==================================================
-  // If name is taken then append _#
-  function generateNameVariant(baseName, variantName = null, i = 1) {
+  releaseTakenName(name)
+  {
+    const personManager = this
+    personManager.mTakenNames.remove(name)
+  }
+  
+  generateNameVariant(baseName, variantName = null, i = 1)
+  {
+    // If name taken use variant
+    const personManager = this
     variantName = els(variantName, baseName);
-    if (hasName(variantName)) {
-      return generateNameVariant(baseName, `${baseName}-${i}`, i + 1);
+    if (personManager.mTakenNames.has(variantName)) {
+      return personManager.generateNameVariant(baseName, `${baseName}-${i}`, i + 1);
     }
     return variantName;
   }
+ 
 
-  function disconnectPerson(person) {
-    let client = person.getClient();
-    if (isDef(client)){
-      disconnectedPlayerByClientId(client.id);
-    }
+  getPerson(personOrId) 
+  {
+    const personManager = this
+    return personManager.mItems.get(getKeyFromProp(personOrId, "id"))
   }
-  function createPerson(clientSocket, name = "Guest") {
-    incTopId();
-    let person = new Person();
-    person.setManager(getPublic());
-    person.setId(getTopId());
+  hasPerson(personOrId) 
+  {
+    const personManager = this
+    let personId = getKeyFromProp(personOrId, "id")
+    return personManager.mItems.has(personId)
+  }
+  getPersonCount(){
+    const personManager = this
+    return personManager.mItems.count()
+  }
+  getAllPeople(){
+    const personManager = this
+    return personManager.mItems.map((v => v))
+  }
+  filterPeople(fn){
+    const personManager = this
+    return personManager.mItems.filter(fn)
+  }
+  findPerson(fn){
+    const personManager = this
+    return personManager.mItems.find(fn)
+  }
+  forEachPerson(fn){
+    const personManager = this
+    personManager.mItems.forEach(fn)
+  }
+  doesAllSatisfy(fn) 
+  {
+    const personManager = this
 
-    let nameVariant = generateNameVariant(name);
-    person.setName(nameVariant);
-    setTakenName(nameVariant);
-    person.connect(clientSocket);
-    addPerson(person);
-
-    //----------------------------------------------------
-
-    // Subscribe to events
-
-    addPlayerObserver(
-      person.getId(),
-    );
-
-    addPlayerObserver(
-      person.getId(),
-    );
-
-    // emit createPerson event
-    mCreatePersonEvent.emit({
-      personManager: getPublic(),
-      person,
+    let everyoneSatisfies = true
+    personManager.mItems.forEach((item) => {
+      if (everyoneSatisfies && !fn(item))
+        everyoneSatisfies = false
     });
-
-    return person;
+    return everyoneSatisfies
   }
 
-  function getPerson(personOrId) {
-    let personId = getKeyFromProp(personOrId, "id");
-    if (isDef(personId)) return getPersonInMap(personId);
-    return null;
-  }
 
-  function addPerson(person) {
-    let id = person.getId();
-    let clientId = person.getClientId();
-
-    addPersonInMap(id, person);
-    addClientIdPersonIdMap(clientId, id);
-  }
-
-  function associateClientIdToPersonId(clientId, personId) {
-    addClientIdPersonIdMap(clientId, personId);
-  }
-
-  function removePerson(personOrId) {
-    let personId = getKeyFromProp(personOrId, "id");
-    if (isDef(personId)) removePersonById(personId);
-  }
-
-  function hasPerson(personOrId) {
-    let personId = getKeyFromProp(personOrId, "id");
-    return hasPersonInMap(personId);
-  }
-
-  function removePersonById(personId) {
-    if (hasPerson(personId)) getPerson(personId).setStatus("Left");
-  }
-
-  function getAllPeople() {
-    return mapPeople();
-  }
-
-  function getOtherConnectedPeople(me) {
-    let myId = isNum(me) ? me : me.getId();
-    return filterPeople(
+  getOtherConnectedPeople(personOrId) 
+  {
+    const personManager = this
+    let myId = getKeyFromProp(personOrId, "id")
+    return personManager.filterPeople(
       (person) => person.getId() !== myId && person.isConnected()
     );
   }
-
-  function getConnectedPeople() {
-    return filterPeople((person) => person.isConnected());
+  getConnectedPeople() 
+  {
+    const personManager = this
+    return personManager.filterPeople(
+      (person) => person.isConnected()
+    )
+  }
+  getConnectedPeopleCount()
+  {
+    const personManager = this
+    return personManager.mClientMap.count()
+  }
+  isAllPeopleConnected(){
+    const personManager = this
+    return personManager.getConnectedPeopleCount() === personManager.getPersonCount();
   }
 
-  function emitAll(eventName, payload) {
-    getAllPeople().forEach((otherPerson) => {
-      if (otherPerson.isConnected())
-        otherPerson.getClient().emit(eventName, payload);
-    });
+  
+  serialize(){
+    // @TODO
+    return {}
   }
-
-  function emitEveryone(eventName, payload) {
-    emitAll(eventName, payload);
+  unserialize(data){
+    // @TODO
   }
-
-  function emitOther(clientId, eventName, payload) {
-    getAllPeople().forEach((otherPerson) => {
-      if (otherPerson.getClientId() !== clientId && otherPerson.isConnected())
-        otherPerson.getClient().emit(eventName, payload);
-    });
-  }
-  function emitSelf(clientId, eventName, payload) {
-    let person = getPersonByClientId(clientId);
-    if (isDef(person)) person.getClient().emit(eventName, payload);
-  }
-
-  function doesAllPlayersHaveTheSameStatus(status) {
-    let everyoneHasStatus = true;
-    forEachPerson((person) => {
-      if (person.isConnected() && person.getStatus() !== status)
-        everyoneHasStatus = false;
-    });
-    return everyoneHasStatus;
-  }
-
-  function isAllPeopleConnected() {
-    return getConnectedPeopleCount() === getPersonCount();
-  }
-
-  function removePerson(personId) {
-    let person = getPersonInMap(personId);
-    if (isDef(person)) {
-      removePlayerObservers(personId);
-      let clientId = person.getClientId();
-      if (isDef(clientId)) removeClientIdPersonIdMap(clientId);
-    }
-  }
-
-  function getPersonByClientId(clientId) {
-    let personId = getClientIdPersonIdMap(clientId);
-    let person = getPerson(personId);
-    return person;
-  }
-
-  function disconnectedPlayerByClientId(clientId) {
-    let person = getPersonByClientId(clientId);
-    if (isDef(person)) {
-      person.disconnect();
-    }
-    removeClientIdPersonIdMap(clientId);
-  }
-
-  function destroy() {
-    removeAllPlayerObservers();
-  }
-
-  //==================================================
-
-  //                    Serialize
-
-  //==================================================
-  function serialize() {
-    let result = {};
-
-    // Serialize everything except the external references
-    let excludeKeys = [...mPrivateVars, ...mExternalRefs];
-    let keys = Object.keys(mRef).filter((key) => !excludeKeys.includes(key));
-
-    // Serialize each if possible, leave primitives as is
-    keys.forEach((key) => {
-      result[key] = isDef(mRef[key].serialize)
-        ? mRef[key].serialize()
-        : mRef[key];
-    });
-    return result;
-  }
-
-  //==================================================
-
-  //                    Export
-
-  //==================================================
-  const publicScope = {
-    createPerson,
-    generateNameVariant,
-
-    releaseTakenName,
-    setTakenName,
-
-
-
-    disconnectPerson,
-
-    removePersonById,
-    removePerson,
-    getPerson,
-    hasPerson,
-    getPersonByClientId,
-    getPersonCount,
-
-    associateClientIdToPersonId,
-    disconnectedPlayerByClientId,
-    getAllPeople,
-    getOtherConnectedPeople,
-    getConnectedPeople,
-    getConnectedPeopleCount,
-    forEachPerson,
-    findPerson,
-    filterPeople,
-    doesAllPlayersHaveTheSameStatus,
-    isAllPeopleConnected,
-
-    getClientManager,
-    setClientManager,
-    hasClientManager,
-
-    emitSelf,
-    emitOther,
-    emitAll,
-    emitEveryone, //same as emitAll
-
-    events: {
-      createPerson: mCreatePersonEvent,
-      removePerson: mRemovePersonEvent,
-      personDisconnect: mPersonDisconnectEvent,
-    },
-
-    destroy,
-    serialize,
-  };
-
-  function getPublic() {
-    return { ...publicScope };
-  }
-
-  return getPublic();
 }
 
 module.exports = PersonManager;

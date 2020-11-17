@@ -22,6 +22,7 @@ module.exports = function({
 
                         roomCode,
                         thisRoomCode: roomCode,
+                        roomManager,
                         room,
                         thisRoom: room,
 

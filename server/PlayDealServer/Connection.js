@@ -156,7 +156,10 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                 // Delete Room
                 // Handle leave room since the above handler requires the room to exist to notify people
                 if (room.getPersonManager().getConnectedPeopleCount() === 0) {
-                  roomManager.deleteRoom(room.getId())
+                    if(isDef(room)){
+                        console.log('#### DELETE ROOM MAYBE NOT NEEDED?');
+                        roomManager.deleteRoom(room.getId())
+                    }
                 }
                 
               })// end foreach affected room

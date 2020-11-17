@@ -5,6 +5,7 @@ const {
 
 
 const PERSON_STATUS = {
+  READY:        'ready',
   DISCONNECTED: 'disconnected', 
   CONNECTED:    'connected',
   UNDEFINED:    'undefined',
@@ -13,19 +14,24 @@ const PERSON_STATUS = {
 
 class Person
 {
-  constructor()
+  constructor(manager = null)
   {
     const person = this
 
     person.mData  = {}
     person.id     = 0
     person.name   = null
-    person.status = PERSON_STATUS.UNDEFINED
+    person.status = Person.STATUS.UNDEFINED
     
     person.mTags  = makeList(person.mData, "tags")
 
-    person.mManager
+    person.mManager = manager;
     person.client
+  }
+
+  static get STATUS()
+  {
+    return PERSON_STATUS;
   }
 
   setManager(manager)
@@ -47,7 +53,9 @@ class Person
 
     person.client = client
     person.setStatus(PERSON_STATUS.CONNECTED)
+    
     if (isDef(client)) {
+      personManager.connectPerson(person, client);
       client.events.disconnect.once(() => {
         personManager.disconnectPerson(person)
         person.disconnect()
@@ -57,9 +65,12 @@ class Person
 
   disconnect() {
     const person = this
+    const personManager = person.getManager()
     if (isDef(person.client)) {
-      person.client = null
+      let client = person.client;
       person.setStatus(PERSON_STATUS.DISCONNECTED)
+      person.client = null
+      personManager.disconnectPerson(person, client)
     }
   }
 

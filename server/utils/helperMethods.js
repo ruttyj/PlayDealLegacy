@@ -154,6 +154,7 @@ let getArrFromProp = (props, names, fallback = null) => {
 };
 
 // Used to accept either the id or object in get or has methods
+// Will call getId() or check if .id exists
 const getKeyFromProp = function (prop, getterName) {
   let key = null;
   if (isObj(prop)) {
@@ -413,6 +414,22 @@ const makeVar = function (
     set(original - value);
   }
 
+  function incGet(key, num = 1) {
+    // ++id
+    inc(key, num);
+    return get(key);
+  }
+
+  function getInc(key) {
+    // id ++
+    let val = get(key);
+    inc(key, num);
+    return val;
+  }
+
+  // @TODO decGet Or maybe just use incGet -1
+  // @TODO getDec 
+
   function serialize() {
     return get()
   }
@@ -426,6 +443,8 @@ const makeVar = function (
     remove,
     increment: inc,
     decrement: dec,
+    getInc,
+    incGet,
     inc,
     dec,
     serialize,
@@ -521,6 +540,19 @@ const makeMap = function (
 
   function getMap(key) {
     return get(key);
+  }
+
+  function incGet(key, num = 1) {
+    // ++id
+    inc(key, num);
+    return get(key);
+  }
+
+  function getInc(key) {
+    // id ++
+    let val = get(key);
+    inc(key, num);
+    return val;
   }
 
   function inc(key, value = 1) {
@@ -633,8 +665,8 @@ const makeMap = function (
     is,
     value: mMap,
     has,
-    inc,
-    dec,
+    inc, // ++ or +=
+    dec, // __ or -=
     set,
     add,
     addMap,
@@ -643,6 +675,8 @@ const makeMap = function (
     toArray,
     listAll,
     get,
+    incGet, // ++id
+    getInc, // id++
     getItems,
     remove,
     toObject,
@@ -709,6 +743,19 @@ const makeList = function (
       return defaultVal;
     }
     return toArray();
+  }
+  
+  function incGet(key, num = 1) {
+    // ++id
+    inc(key, num);
+    return get(key);
+  }
+
+  function getInc(key) {
+    // id ++
+    let val = get(key);
+    inc(key, num);
+    return val;
   }
 
   function set(index, value) {
@@ -817,6 +864,8 @@ const makeList = function (
     hasValue,
     set,
     get,
+    incGet,
+    getInc,
     toArray,
     setAll,
     getAll: toArray,
@@ -880,7 +929,20 @@ const makeSet = function (ref, field = "value", defaultValue = []) {
     if (has(index)) return mList[index];
     return defaultVal;
   }
+  
+  function incGet(key, num = 1) {
+    // ++id
+    inc(key, num);
+    return get(key);
+  }
 
+  function getInc(key) {
+    // id ++
+    let val = get(key);
+    inc(key, num);
+    return val;
+  }
+  
   function set(index, value) {
     if (!hasValue(value)) mList[index] = value;
   }
@@ -1005,6 +1067,8 @@ const makeSet = function (ref, field = "value", defaultValue = []) {
     hasValue,
     set,
     get,
+    incGet,
+    getInc,
     toArray,
     setAll,
     getAll: toArray,

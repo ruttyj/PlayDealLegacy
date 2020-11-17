@@ -3,6 +3,7 @@ module.exports = function ({
     registry,
     makeResponse,
     isDef,
+    isArr,
     getNestedValue,
     setNestedValue,
     AddressedResponse,
@@ -54,10 +55,6 @@ module.exports = function ({
                         ) {
                           person = personManager.getPerson(personId);
                           person.connect(thisClient);
-                          personManager.associateClientIdToPersonId(
-                            thisClient.id,
-                            person.getId()
-                          );
                           person.setStatus("ready");
                           hasReconnnected = true;
                           break;

@@ -12,6 +12,7 @@ module.exports = function({
     //-------------------------
     isDef,
     els,
+    isArr,
     getNestedValue,
     setNestedValue,
     getArrFromProp, 
@@ -80,6 +81,7 @@ module.exports = function({
             registry,
             makeResponse,
             isDef,
+            isArr,
             getNestedValue,
             setNestedValue,
             AddressedResponse,

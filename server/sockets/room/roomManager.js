@@ -55,7 +55,6 @@ module.exports = class RoomManager
     if (isDef(roomCode)) {
       let room = roomManager.mRooms.get(roomCode)
       if (isDef(room)) {
-        room.destroy()
         roomManager.mRooms.remove(roomCode)
       }
     }
