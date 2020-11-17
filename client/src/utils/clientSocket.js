@@ -117,6 +117,10 @@ function createSocketConnection(socket) {
     }
 
     thisClient.on("response", handleResponse);
+
+    thisClient.on("disconnect", () => {
+      alert('Lost connection with server')
+    })
   } // end attachSocketHandlers
 
   async function emitPromise(subject, action, data) {
