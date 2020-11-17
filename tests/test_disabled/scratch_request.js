@@ -5,7 +5,6 @@ const clientFolder = `${rootFolder}/client`;
 const utilsFolder = `${serverFolder}/utils`;
 const playDealFolder = `${serverFolder}/Game`;
 const gameFolder = `${serverFolder}/Game`;
-const GameInstance = require(`${gameFolder}/`);
 const {
   CONFIG, // CONFIG Options
   IS_TEST_MODE,
