@@ -2872,7 +2872,7 @@ class GameUI extends React.Component {
 
         <ArrowToolTip title="Super genious" placement="bottom">
           <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("super_genius")}>
-          🧑‍🎓
+          🎓
           </div>
         </ArrowToolTip>
 
