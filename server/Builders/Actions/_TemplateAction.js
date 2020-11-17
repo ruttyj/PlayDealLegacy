@@ -1,6 +1,6 @@
 /**
  * @SEARCH_REPLACE : TemplateAction | templateAction
- * const buildTemplateAction = require(`${serverFolder}/Lib/Room/TemplateAction`);
+ * const buildTemplateAction = require(`${serverFolder}/Builders/Room/TemplateAction`);
  */
 function buildTemplateAction({
     serverFolder,

@@ -1,7 +1,7 @@
 const rootFolder              = `../..`;
 const serverFolder            = `${rootFolder}/server`;
 const serverSocketFolder      = `${serverFolder}/sockets`;
-const libFolder               = `${serverFolder}/Lib`;
+const builderFolder           = `${serverFolder}/Builders`;
 
 const utils                   = require("./utils.js");
 
@@ -11,11 +11,11 @@ const RoomManager             = require(`${serverSocketFolder}/room/roomManager.
 
 const populateRegistry        = require(`./PopulateRegistry`);
 
-const buildHandleRoom         = require(`${libFolder}/HandleRoom`);
-const buildRegistry           = require(`${libFolder}/Registry`);
-const buildAffected           = require(`${libFolder}/Affected`);
-const buildOrderedTree        = require(`${libFolder}/OrderedTree`);
-const buildAddressedResponse  = require(`${libFolder}/AddressedResponse`);
+const buildHandleRoom         = require(`${builderFolder}/HandleRoom`);
+const buildRegistry           = require(`${builderFolder}/Registry`);
+const buildAffected           = require(`${builderFolder}/Affected`);
+const buildOrderedTree        = require(`${builderFolder}/OrderedTree`);
+const buildAddressedResponse  = require(`${builderFolder}/AddressedResponse`);
 const buildConnection         = require('../PlayDealServer/Connection.js');
 
 let {
