@@ -11,11 +11,11 @@ const RoomManager             = require(`${serverSocketFolder}/room/roomManager.
 
 const populateRegistry        = require(`./PopulateRegistry`);
 
-const buildHandleRoom         = require(`${builderFolder}/HandleRoom`);
-const buildRegistry           = require(`${builderFolder}/Registry`);
-const buildAffected           = require(`${builderFolder}/Affected`);
-const buildOrderedTree        = require(`${builderFolder}/OrderedTree`);
-const buildAddressedResponse  = require(`${builderFolder}/AddressedResponse`);
+const buildHandleRoom         = require(`${builderFolder}/Methods/HandleRoom`);
+const buildRegistry           = require(`${builderFolder}/Objects/Registry`);
+const buildAffected           = require(`${builderFolder}/Objects/Affected`);
+const buildOrderedTree        = require(`${builderFolder}/Objects/OrderedTree`);
+const buildAddressedResponse  = require(`${builderFolder}/Objects/AddressedResponse`);
 const buildConnection         = require('../PlayDealServer/Connection.js');
 
 let {

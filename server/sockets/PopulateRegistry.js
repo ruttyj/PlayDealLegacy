@@ -14,93 +14,93 @@ const Transaction             = require(`${gameFolder}/player/request/transfer/T
 const buildDeps               = require(`./Deps.js`);
 
 // Room
-const buildRegisterRoomMethods        = require(`${serverFolder}/Builders/Room/index`);
-const buildCreateRoom                 = require(`${serverFolder}/Builders/Room/CreateRoom`);
-const buildJoinRoom                   = require(`${serverFolder}/Builders/Room/JoinRoom`);
-const buildCheckExists                = require(`${serverFolder}/Builders/Room/CheckExists`);
-const buildGetRandomRoom              = require(`${serverFolder}/Builders/Room/GetRandomRoomCode`);
-const buildGetCurrentRoomCode         = require(`${serverFolder}/Builders/Room/GetCurrentRoomCode`);
-const buildGetRoom                    = require(`${serverFolder}/Builders/Room/GetRoom`);
-const buildGetAllRooms                = require(`${serverFolder}/Builders/Room/GetAllRooms`);
-const buildLeaveRoom                  = require(`${serverFolder}/Builders/Room/LeaveRoom`);
+const buildRegisterRoomMethods        = require(`${serverFolder}/Builders/Methods/Room/index`);
+const buildCreateRoom                 = require(`${serverFolder}/Builders/Methods/Room/CreateRoom`);
+const buildJoinRoom                   = require(`${serverFolder}/Builders/Methods/Room/JoinRoom`);
+const buildCheckExists                = require(`${serverFolder}/Builders/Methods/Room/CheckExists`);
+const buildGetRandomRoom              = require(`${serverFolder}/Builders/Methods/Room/GetRandomRoomCode`);
+const buildGetCurrentRoomCode         = require(`${serverFolder}/Builders/Methods/Room/GetCurrentRoomCode`);
+const buildGetRoom                    = require(`${serverFolder}/Builders/Methods/Room/GetRoom`);
+const buildGetAllRooms                = require(`${serverFolder}/Builders/Methods/Room/GetAllRooms`);
+const buildLeaveRoom                  = require(`${serverFolder}/Builders/Methods/Room/LeaveRoom`);
 
 // People
-const buildRegisterPeopleMethods            = require(`${serverFolder}/Builders/People/`);
+const buildRegisterPeopleMethods            = require(`${serverFolder}/Builders/Methods/People/`);
 
 // Game
-const buildRegisterGameMethods              = require(`${serverFolder}/Builders/Game/`);
+const buildRegisterGameMethods              = require(`${serverFolder}/Builders/Methods/Game/`);
 
 // Card
-const buildRegisterCardMethods              = require(`${serverFolder}/Builders/Card/`);
+const buildRegisterCardMethods              = require(`${serverFolder}/Builders/Methods/Card/`);
 
 // Player
-const buildRegisterPlayerMethods            = require(`${serverFolder}/Builders/Player/`);
+const buildRegisterPlayerMethods            = require(`${serverFolder}/Builders/Methods/Player/`);
 
 // Connections
-const buildRegisterConnectionMethods        = require(`${serverFolder}/Builders/Connections/`);
+const buildRegisterConnectionMethods        = require(`${serverFolder}/Builders/Methods/Connections/`);
 
 // Collections
-const buildRegisterCollectionsMethods        = require(`${serverFolder}/Builders/Collections/`);
+const buildRegisterCollectionsMethods        = require(`${serverFolder}/Builders/Methods/Collections/`);
 
 // Request Value
-const buildRegisterRequestValueMethods        = require(`${serverFolder}/Builders/RequestValue/`);
+const buildRegisterRequestValueMethods        = require(`${serverFolder}/Builders/Methods/RequestValue/`);
 
 // Cheat
-const buildRegisterCheatMethods             = require(`${serverFolder}/Builders/Cheat/`);
+const buildRegisterCheatMethods             = require(`${serverFolder}/Builders/Methods/Cheat/`);
 
 // Chat
-const buildRegisterChatMethods              = require(`${serverFolder}/Builders/Chat/`);
+const buildRegisterChatMethods              = require(`${serverFolder}/Builders/Methods/Chat/`);
 
 // Turn based
-const buildTurnStartingDrawAction           = require(`${serverFolder}/Builders/Actions/TurnPhase/TurnStartingDrawAction`);
-const buildAttemptFinishTurnAction          = require(`${serverFolder}/Builders/Actions/TurnPhase/AttemptFinishTurnAction`);
-const buildDiscardToHandLimitAction         = require(`${serverFolder}/Builders/Actions/TurnPhase/DiscardToHandLimitAction`);
+const buildTurnStartingDrawAction           = require(`${serverFolder}/Builders/Events/TurnPhase/TurnStartingDrawAction`);
+const buildAttemptFinishTurnAction          = require(`${serverFolder}/Builders/Events/TurnPhase/AttemptFinishTurnAction`);
+const buildDiscardToHandLimitAction         = require(`${serverFolder}/Builders/Events/TurnPhase/DiscardToHandLimitAction`);
 
 // Request Value
-const buildChargeRentAction                 = require(`${serverFolder}/Builders/Actions/RequestValue/ChargeRentAction`);
-const buildRequestValueAction               = require(`${serverFolder}/Builders/Actions/RequestValue/RequestValueAction`);
-const buildRespondToCollectValueAction      = require(`${serverFolder}/Builders/Actions/RequestValue/RespondToCollectValueAction`);
+const buildChargeRentAction                 = require(`${serverFolder}/Builders/Events/RequestValue/ChargeRentAction`);
+const buildRequestValueAction               = require(`${serverFolder}/Builders/Events/RequestValue/RequestValueAction`);
+const buildRespondToCollectValueAction      = require(`${serverFolder}/Builders/Events/RequestValue/RespondToCollectValueAction`);
 
 // Asset Collection
-const buildAcknowledgeCollectNothingAction  = require(`${serverFolder}/Builders/Actions/AssetCollection/AcknowledgeCollectNothingAction`);
-const buildCollectCardToBankAutoAction      = require(`${serverFolder}/Builders/Actions/AssetCollection/CollectCardToBankAutoAction`);
-const buildCollectCardToBankAction          = require(`${serverFolder}/Builders/Actions/AssetCollection/CollectCardToBankAction`);
-const buildCollectCardToCollectionAction    = require(`${serverFolder}/Builders/Actions/AssetCollection/CollectCardToCollectionAction`);
-const buildCollectCollectionAction          = require(`${serverFolder}/Builders/Actions/AssetCollection/CollectCollectionAction`);
+const buildAcknowledgeCollectNothingAction  = require(`${serverFolder}/Builders/Events/AssetCollection/AcknowledgeCollectNothingAction`);
+const buildCollectCardToBankAutoAction      = require(`${serverFolder}/Builders/Events/AssetCollection/CollectCardToBankAutoAction`);
+const buildCollectCardToBankAction          = require(`${serverFolder}/Builders/Events/AssetCollection/CollectCardToBankAction`);
+const buildCollectCardToCollectionAction    = require(`${serverFolder}/Builders/Events/AssetCollection/CollectCardToCollectionAction`);
+const buildCollectCollectionAction          = require(`${serverFolder}/Builders/Events/AssetCollection/CollectCollectionAction`);
 
 // Steal Collection
-const buildStealCollectionAction            = require(`${serverFolder}/Builders/Actions/StealCollection/StealCollectionAction`);
-const buildRespondToStealCollection         = require(`${serverFolder}/Builders/Actions/StealCollection/RespondToStealCollection`);
+const buildStealCollectionAction            = require(`${serverFolder}/Builders/Events/StealCollection/StealCollectionAction`);
+const buildRespondToStealCollection         = require(`${serverFolder}/Builders/Events/StealCollection/RespondToStealCollection`);
 
 // Steal Property
-const buildStealPropertyAction              = require(`${serverFolder}/Builders/Actions/StealProperty/StealPropertyAction`);
-const buildRespondToStealPropertyAction     = require(`${serverFolder}/Builders/Actions/StealProperty/RespondToStealPropertyAction`);
+const buildStealPropertyAction              = require(`${serverFolder}/Builders/Events/StealProperty/StealPropertyAction`);
+const buildRespondToStealPropertyAction     = require(`${serverFolder}/Builders/Events/StealProperty/RespondToStealPropertyAction`);
 
 // Swap Property
-const buildSwapPropertyAction               = require(`${serverFolder}/Builders/Actions/SwapProperty/SwapPropertyAction`);
-const buildRespondToPropertySwapAction      = require(`${serverFolder}/Builders/Actions/SwapProperty/RespondToPropertySwapAction`);
+const buildSwapPropertyAction               = require(`${serverFolder}/Builders/Events/SwapProperty/SwapPropertyAction`);
+const buildRespondToPropertySwapAction      = require(`${serverFolder}/Builders/Events/SwapProperty/RespondToPropertySwapAction`);
 
 // Draw Cards
-const buildDrawCardsAction                  = require(`${serverFolder}/Builders/Actions/DrawCardsAction`);
+const buildDrawCardsAction                  = require(`${serverFolder}/Builders/Events/DrawCardsAction`);
 
-const buildChangeCardActiveSetAction        = require(`${serverFolder}/Builders/Actions/ChangeCardActiveSetAction`);
+const buildChangeCardActiveSetAction        = require(`${serverFolder}/Builders/Events/ChangeCardActiveSetAction`);
 
 // Request Response 
-const buildRespondToJustSayNoAction         = require(`${serverFolder}/Builders/Actions/RespondToJustSayNoAction`);
+const buildRespondToJustSayNoAction         = require(`${serverFolder}/Builders/Events/RespondToJustSayNoAction`);
 
 
 // From Hand
-const buildAddCardToBankAction                      = require(`${serverFolder}/Builders/Actions/FromHand/AddCardToBankAction`);
-const buildAddPropertyToNewCollectionAction         = require(`${serverFolder}/Builders/Actions/FromHand/AddPropertyToNewCollectionAction`);
-const buildAddPropertyToExitingCollectionAction     = require(`${serverFolder}/Builders/Actions/FromHand/AddPropertyToExitingCollectionAction`);
-const buildAddSetAugmentToExistingCollectionAction  = require(`${serverFolder}/Builders/Actions/FromHand/AddSetAugmentToExistingCollectionAction`);
-const buildAddSetAugmentToNewCollectionAction       = require(`${serverFolder}/Builders/Actions/FromHand/AddSetAugmentToNewCollectionAction`);
+const buildAddCardToBankAction                      = require(`${serverFolder}/Builders/Events/FromHand/AddCardToBankAction`);
+const buildAddPropertyToNewCollectionAction         = require(`${serverFolder}/Builders/Events/FromHand/AddPropertyToNewCollectionAction`);
+const buildAddPropertyToExitingCollectionAction     = require(`${serverFolder}/Builders/Events/FromHand/AddPropertyToExitingCollectionAction`);
+const buildAddSetAugmentToExistingCollectionAction  = require(`${serverFolder}/Builders/Events/FromHand/AddSetAugmentToExistingCollectionAction`);
+const buildAddSetAugmentToNewCollectionAction       = require(`${serverFolder}/Builders/Events/FromHand/AddSetAugmentToNewCollectionAction`);
 
 // From Collection
-const buildTransferPropertyToNewCollectionFromExistingAction          = require(`${serverFolder}/Builders/Actions/FromCollection/TransferPropertyToNewCollectionFromExistingAction`);
-const buildTransferPropertyToExistingCollectionFromExistingAction     = require(`${serverFolder}/Builders/Actions/FromCollection/TransferPropertyToExistingCollectionFromExistingAction`);
-const buildTransferSetAugmentToExistingCollectionFromExistingAction   = require(`${serverFolder}/Builders/Actions/FromCollection/TransferSetAugmentToExistingCollectionFromExistingAction`);
-const buildTransferSetAugmentToNewCollectionFromExistingAction        = require(`${serverFolder}/Builders/Actions/FromCollection/TransferSetAugmentToNewCollectionFromExistingAction`);
+const buildTransferPropertyToNewCollectionFromExistingAction          = require(`${serverFolder}/Builders/Events/FromCollection/TransferPropertyToNewCollectionFromExistingAction`);
+const buildTransferPropertyToExistingCollectionFromExistingAction     = require(`${serverFolder}/Builders/Events/FromCollection/TransferPropertyToExistingCollectionFromExistingAction`);
+const buildTransferSetAugmentToExistingCollectionFromExistingAction   = require(`${serverFolder}/Builders/Events/FromCollection/TransferSetAugmentToExistingCollectionFromExistingAction`);
+const buildTransferSetAugmentToNewCollectionFromExistingAction        = require(`${serverFolder}/Builders/Events/FromCollection/TransferSetAugmentToNewCollectionFromExistingAction`);
 
 const {
   els,

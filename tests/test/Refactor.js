@@ -5,9 +5,9 @@ const utilsFolder = `${serverFolder}/utils`;
 const fs = require('fs');
 const assert = require("chai").assert;
 
-const buildAffected = require(`${serverFolder}/Builders/Affected`);
-const buildOrderedTree = require(`${serverFolder}/Builders/OrderedTree`);
-//const buildStealCollectionAction = require(`${serverFolder}/Builders/Actions/StealCollection/StealCollectionAction`);
+const buildAffected = require(`${serverFolder}/Builders/Objects/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Builders/Objects/OrderedTree`);
+//const buildStealCollectionAction = require(`${serverFolder}/Builders/Events/StealCollection/StealCollectionAction`);
 
 
 

@@ -15,7 +15,7 @@ module.exports = function ({
     return function (registry)
     {
         // CHARGE RENT
-        registry.public(['MY_TURN', 'CHARGE_RENT'], buildChargeRentAction({
+        registry.public('MY_TURN.CHARGE_RENT', buildChargeRentAction({
             ...commonDeps,
             makeConsumerFallbackResponse,
             handleGame,
@@ -24,7 +24,7 @@ module.exports = function ({
             registry,
         }))
             
-        registry.public(['MY_TURN', 'VALUE_COLLECTION'], buildRequestValueAction({
+        registry.public('MY_TURN.VALUE_COLLECTION', buildRequestValueAction({
             ...commonDeps,
             makeConsumerFallbackResponse,
             makeResponse,
@@ -34,7 +34,7 @@ module.exports = function ({
             registry,
         }))
             
-        registry.public(['RESPONSES', 'RESPOND_TO_COLLECT_VALUE'], buildRespondToCollectValueAction({
+        registry.public('RESPONSES.RESPOND_TO_COLLECT_VALUE', buildRespondToCollectValueAction({
             ...commonDeps,
             makeConsumerFallbackResponse,
             makeResponse,

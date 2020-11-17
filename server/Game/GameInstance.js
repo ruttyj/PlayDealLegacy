@@ -56,8 +56,8 @@ const TurnManager = require("./player/turnManager.js");
 const Transaction = require(`./player/request/transfer/Transaction.js`);
 
 const serverFolder = '..';
-const buildAffected = require(`${serverFolder}/Builders/Affected`);
-const buildOrderedTree = require(`${serverFolder}/Builders/OrderedTree`);
+const buildAffected = require(`${serverFolder}/Builders/Objects/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Builders/Objects/OrderedTree`);
 
 
 const OrderedTree = buildOrderedTree();
