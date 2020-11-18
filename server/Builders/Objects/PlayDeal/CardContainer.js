@@ -5,9 +5,10 @@ module.exports = function buildCardContainer({
   makeList,
   getKeyFromProp,
   reduceArrayToMap,
-  utils,
+  cardUtils,
   constants
 }) {
+  const utils = cardUtils;
   const CardContainer = function (gameRef) {
     let mState;
     let mGameRef;
