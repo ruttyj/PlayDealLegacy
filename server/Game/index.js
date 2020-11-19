@@ -2,6 +2,31 @@ const serverFolder              = '..'
 const builderFolder             = `${serverFolder}/Builders`
 const builderPlayDealFolder     = `${builderFolder}/Objects/PlayDeal`
 
+const pluralize                 = require(`pluralize`)
+
+// Object Builders
+const buildAffected             = require(`${serverFolder}/Builders/Objects/Affected`)
+const buildOrderedTree          = require(`${serverFolder}/Builders/Objects/OrderedTree`)
+const buildGame                 = require(`${builderPlayDealFolder}/Game`)
+const buildCardContainer        = require(`${builderPlayDealFolder}/CardContainer`)
+const buildCardManager          = require(`${builderPlayDealFolder}/CardManager`)
+const buildTransfer             = require(`${builderPlayDealFolder}/Transfer/Transfer`)
+const buildWealthTransfer       = require(`${builderPlayDealFolder}/Transfer/WealthTransfer`)
+const buildTransaction          = require(`${builderPlayDealFolder}/Transfer/Transaction`)
+const buildPlayerRequest        = require(`${builderPlayDealFolder}/PlayerRequest`)
+const buildPlayerRequestManager = require(`${builderPlayDealFolder}/PlayerRequestManager`)
+const buildPlayer               = require(`${builderPlayDealFolder}/Player`)
+const buildPlayerTurn           = require(`${builderPlayDealFolder}/PlayerTurn`)
+const buildPlayerTurnManager    = require(`${builderPlayDealFolder}/PlayerTurnManager`);
+const buildPlayerManager        = require(`${builderPlayDealFolder}/PlayerManager`)
+const buildCollection           = require(`${builderPlayDealFolder}/Collection`)
+const buildCollectionManager    = require(`${builderPlayDealFolder}/CollectionManager`)
+
+// Data Builders
+const buildConstants            = require(`${builderFolder}/Data/Constants`)
+const buildDefaultDeckTemplate  = require(`${builderFolder}/Data/DefaultDeckTemplate`)
+
+
 const {
   els,
   isDef,
@@ -24,32 +49,8 @@ const {
   stateSerialize,
 } = require(`${serverFolder}/utils/`)
 
-const buildAffected             = require(`${serverFolder}/Builders/Objects/Affected`)
-const buildOrderedTree          = require(`${serverFolder}/Builders/Objects/OrderedTree`)
-const pluralize                 = require(`pluralize`)
 
-
-const buildGame                 = require(`${builderPlayDealFolder}/Game`)
-const buildCardContainer        = require(`${builderPlayDealFolder}/CardContainer`)
-const buildCardManager          = require(`${builderPlayDealFolder}/CardManager`)
-const buildTransfer             = require(`${builderPlayDealFolder}/Transfer/Transfer`)
-const buildWealthTransfer       = require(`${builderPlayDealFolder}/Transfer/WealthTransfer`)
-const buildTransaction          = require(`${builderPlayDealFolder}/Transfer/Transaction`)
-const buildPlayerRequest        = require(`${builderPlayDealFolder}/PlayerRequest`)
-const buildPlayerRequestManager = require(`${builderPlayDealFolder}/PlayerRequestManager`)
-const buildPlayer               = require(`${builderPlayDealFolder}/Player`)
-const buildPlayerTurn           = require(`${builderPlayDealFolder}/PlayerTurn`)
-const buildPlayerTurnManager    = require(`${builderPlayDealFolder}/PlayerTurnManager`);
-const buildPlayerManager        = require(`${builderPlayDealFolder}/PlayerManager`)
-const buildCollection           = require(`${builderPlayDealFolder}/Collection`)
-const buildCollectionManager    = require(`${builderPlayDealFolder}/CollectionManager`)
-// Data builders
-const buildConstants            = require(`${builderFolder}/Data/Constants`)
-const buildDefaultDeckTemplate  = require(`${builderFolder}/Data/DefaultDeckTemplate`)
-const constants                 = buildConstants({})
-
-
-
+const constants                   = buildConstants({})
 const OrderedTree                 = buildOrderedTree()
 const Affected                    = buildAffected({OrderedTree})
 const Transfer                    = buildTransfer({
@@ -142,6 +143,8 @@ const CardManager                 = buildCardManager({
       
 
 module.exports = buildGame({
+  pluralize,
+
   els,
   isDef,
   isArr,
@@ -149,7 +152,6 @@ module.exports = buildGame({
   getNestedValue,
   getKeyFromProp,
   reduceToKeyed,
-  pluralize,
 
   Affected,
   Transaction,
