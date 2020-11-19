@@ -28,8 +28,8 @@ const {
 const buildAffected             = require(`${serverFolder}/Builders/Objects/Affected`)
 const buildOrderedTree          = require(`${serverFolder}/Builders/Objects/OrderedTree`)
 const pluralize                 = require(`pluralize`)
-const deckTemplate              = require("./card/deckTemplate_testDeck");
-const constants                 = require(`${thisDir}/config/constants.js`)
+
+
 const buildGame                 = require(`${builderPlayDealFolder}/Game`)
 const cardUtils                 = require(`./card/cardUtils`)
 const buildCardContainer        = require(`${builderPlayDealFolder}/CardContainer`)
@@ -45,25 +45,30 @@ const buildPlayerTurnManager    = require(`${builderPlayDealFolder}/PlayerTurnMa
 const buildPlayerManager        = require(`${builderPlayDealFolder}/PlayerManager`)
 const buildCollection           = require(`${builderPlayDealFolder}/Collection`)
 const buildCollectionManager    = require(`${builderPlayDealFolder}/CollectionManager`)
-                                    
+// Data builders
+const buildConstants            = require(`${builderFolder}/Data/Constants`)
+const buildDefaultDeckTemplate  = require(`${builderFolder}/Data/DefaultDeckTemplate`)
+const constants                 = buildConstants({})
 
-const OrderedTree               = buildOrderedTree()
-const Affected                  = buildAffected({OrderedTree})
-const Transfer                  = buildTransfer({
+
+
+const OrderedTree                 = buildOrderedTree()
+const Affected                    = buildAffected({OrderedTree})
+const Transfer                    = buildTransfer({
                                     makeVar, makeMap, isDef, isArr
                                   })
-const WealthTransfer            = buildWealthTransfer({
+const WealthTransfer              = buildWealthTransfer({
                                     Transfer,
                                     isObj, isDef, arrSum, makeMap,
                                   });
-const Transaction               = buildTransaction({
+const Transaction                 = buildTransaction({
                                     isObj,
                                     isDef,
                                     arrSum,
                                     makeMap,
                                     WealthTransfer
                                   });
-const PlayerRequest             =  buildPlayerRequest({
+const PlayerRequest               = buildPlayerRequest({
                                     makeVar,
                                     emptyFunction,
                                     isDef,
@@ -125,12 +130,10 @@ const PlayerManager               = buildPlayerManager({
                                       Player,
                                       constants
                                     })
-                 
-                                    
- 
-  
- const CardManager                = buildCardManager({
-                                    deckTemplate,
+
+const DATA_DefaultDeck            = buildDefaultDeckTemplate({constants})
+const CardManager                 = buildCardManager({
+                                    deckTemplate: DATA_DefaultDeck,
                                     constants,
                                     els,
                                     isDef,
@@ -140,6 +143,9 @@ const PlayerManager               = buildPlayerManager({
                                     makeMap,
                                   })
       
+
+
+
 module.exports = buildGame({
   els,
   isDef,

@@ -1,13 +1,15 @@
 #!/usr/bin/env node
+const serverFolder        = `../`
+const builderFolder       = `../Builders`
+const utils               = require(`${serverFolder}/utils/index.js`)
+const buildPlaydealServer = require(`${builderFolder}/Objects/Server`)
 
-/**
- * Module dependencies.
- */
-var cookie = require("cookie");
 
-var app = require("../server.dev.js");
-var debug = require("debug")("server:server");
-var http = require("http");
+const cookie  = require("cookie");
+
+const app     = require("../server.dev.js");
+const debug   = require("debug")("server:server");
+const http    = require("http");
 const { isDef, getNestedValue } = require("../utils/helperMethods");
 const CookieTokenManager = require("../CookieTokenManager");
 const cookieTokenManager = CookieTokenManager.getInstance();
@@ -16,16 +18,16 @@ const cookieTokenManager = CookieTokenManager.getInstance();
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || "3001");
+const port = normalizePort(process.env.PORT || "3001");
 app.set("port", port);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+const server = http.createServer(app);
 
-const PlayDealServer = require("../sockets/PlayDealServer");
+const PlayDealServer = buildPlaydealServer({utils});
 const playDealServer = new PlayDealServer();
 
 const io = require("socket.io")(server);
