@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-const serverFolder          = `.`
-const builderFolder         = `${serverFolder}/Builders`
-const buildPlaydealServer   = require(`${builderFolder}/Objects/Server`)
-const AppHelpers            = require(`${builderFolder}/Objects/App/AppHelpers`)
+const serverFolder                = `.`
+const builderFolder               = `${serverFolder}/Builders`
+const buildPlaydealServer         = require(`${builderFolder}/Objects/Server`)
+const AppHelpers                  = require(`${builderFolder}/Objects/App/AppHelpers`)
 
-const cookie                = require(`cookie`);
-const http                  = require(`http`);
-const utils                 = require(`${serverFolder}/utils/index.js`)
+const cookie                      = require(`cookie`);
+const http                        = require(`http`);
+const utils                       = require(`${serverFolder}/utils/index.js`)
 
-const PlayDealServer        = buildPlaydealServer({utils});
-const CookieTokenManager    = require(`${serverFolder}/CookieTokenManager`);
-const cookieTokenManager    = CookieTokenManager.getInstance();
+const PlayDealServer              = buildPlaydealServer({utils});
+const CookieTokenManager          = require(`${serverFolder}/CookieTokenManager`);
+const cookieTokenManager          = CookieTokenManager.getInstance();
 
 const app                         = require(`${serverFolder}/app.js`);
 const { normalizePort, onError }  = AppHelpers()
