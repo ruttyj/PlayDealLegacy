@@ -13,7 +13,7 @@ module.exports = function buildPlaydealServer({ utils})
   const populateRegistry        = require(`${serverFolder}/sockets/PopulateRegistry`);
 
   const buildHandleRoom         = require(`${builderFolder}/Methods/HandleRoom`);
-  const buildRegistry           = require(`${builderFolder}/Objects/Registry`);
+  const buildEventRegistry      = require(`${builderFolder}/Objects/EventRegistry`);
   const buildAffected           = require(`${builderFolder}/Objects/Affected`);
   const buildOrderedTree        = require(`${builderFolder}/Objects/OrderedTree`);
   const buildAddressedResponse  = require(`${builderFolder}/Objects/AddressedResponse`);
@@ -28,7 +28,7 @@ module.exports = function buildPlaydealServer({ utils})
   const AddressedResponse       = buildAddressedResponse(utils);
   const OrderedTree             = buildOrderedTree();
   const Affected                = buildAffected({ OrderedTree });
-  const Registry                = buildRegistry(utils)
+  const EventRegistry           = buildEventRegistry(utils)
   const Connection              = buildConnection({ ...utils, AddressedResponse });
 
 
@@ -76,7 +76,7 @@ module.exports = function buildPlaydealServer({ utils})
       const server              = this;
       server.services             = new Map();
       server.connections          = new Map();
-      server.registry             = new Registry();
+      server.registry             = new EventRegistry();
       server.cookieTokenManager   = CookieTokenManager.getInstance();
       server.clientManager        = ClientManager();
       server.roomManager          = new RoomManager({ server });
