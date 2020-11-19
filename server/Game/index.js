@@ -1,6 +1,5 @@
 const serverFolder              = '..'
 const builderFolder             = `${serverFolder}/Builders`
-const thisDir                   = '.'
 const builderPlayDealFolder     = `${builderFolder}/Objects/PlayDeal`
 
 const {
@@ -23,7 +22,7 @@ const {
   emptyFunction,
   emptyFunc,
   stateSerialize,
-} = require(`${thisDir}/utils.js`)
+} = require(`${serverFolder}/utils/`)
 
 const buildAffected             = require(`${serverFolder}/Builders/Objects/Affected`)
 const buildOrderedTree          = require(`${serverFolder}/Builders/Objects/OrderedTree`)
@@ -31,7 +30,6 @@ const pluralize                 = require(`pluralize`)
 
 
 const buildGame                 = require(`${builderPlayDealFolder}/Game`)
-const cardUtils                 = require(`./card/cardUtils`)
 const buildCardContainer        = require(`${builderPlayDealFolder}/CardContainer`)
 const buildCardManager          = require(`${builderPlayDealFolder}/CardManager`)
 const buildTransfer             = require(`${builderPlayDealFolder}/Transfer/Transfer`)
@@ -55,28 +53,28 @@ const constants                 = buildConstants({})
 const OrderedTree                 = buildOrderedTree()
 const Affected                    = buildAffected({OrderedTree})
 const Transfer                    = buildTransfer({
-                                    makeVar, makeMap, isDef, isArr
-                                  })
+                                      makeVar, makeMap, isDef, isArr
+                                    })
 const WealthTransfer              = buildWealthTransfer({
-                                    Transfer,
-                                    isObj, isDef, arrSum, makeMap,
-                                  });
+                                      Transfer,
+                                      isObj, isDef, arrSum, makeMap,
+                                    });
 const Transaction                 = buildTransaction({
-                                    isObj,
-                                    isDef,
-                                    arrSum,
-                                    makeMap,
-                                    WealthTransfer
-                                  });
+                                      isObj,
+                                      isDef,
+                                      arrSum,
+                                      makeMap,
+                                      WealthTransfer
+                                    });
 const PlayerRequest               = buildPlayerRequest({
-                                    makeVar,
-                                    emptyFunction,
-                                    isDef,
-                                    isFunc,
-                                    isArr,
-                                    recursiveBuild,
-                                    getNestedValue,
-                                  });
+                                      makeVar,
+                                      emptyFunction,
+                                      isDef,
+                                      isFunc,
+                                      isArr,
+                                      recursiveBuild,
+                                      getNestedValue,
+                                    });
 const PlayerRequestManager        = buildPlayerRequestManager({
                                       makeVar,
                                       isDef,
@@ -95,7 +93,6 @@ const CardContainer               = buildCardContainer({
                                       makeList,
                                       getKeyFromProp,
                                       reduceArrayToMap,
-                                      cardUtils,
                                       constants
                                     })
 const Player                      = buildPlayer({
@@ -133,18 +130,16 @@ const PlayerManager               = buildPlayerManager({
 
 const DATA_DefaultDeck            = buildDefaultDeckTemplate({constants})
 const CardManager                 = buildCardManager({
-                                    deckTemplate: DATA_DefaultDeck,
-                                    constants,
-                                    els,
-                                    isDef,
-                                    isArr,
-                                    makeList,
-                                    getKeyFromProp,
-                                    makeMap,
-                                  })
+                                      deckTemplate: DATA_DefaultDeck,
+                                      constants,
+                                      els,
+                                      isDef,
+                                      isArr,
+                                      makeList,
+                                      getKeyFromProp,
+                                      makeMap,
+                                    })
       
-
-
 
 module.exports = buildGame({
   els,
