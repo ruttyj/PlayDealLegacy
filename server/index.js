@@ -10,6 +10,7 @@ const utils                       = require(`${serverFolder}/utils/index.js`)
 
 const PlayDealServer              = buildPlaydealServer({utils});
 const CookieTokenManager          = require(`${serverFolder}/CookieTokenManager`);
+
 const cookieTokenManager          = CookieTokenManager.getInstance();
 
 const app                         = require(`${serverFolder}/app.js`);

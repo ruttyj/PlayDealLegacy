@@ -1,37 +1,70 @@
 module.exports = function buildPlaydealServer({ utils})
 {
-  const rootFolder              = `../../../`;
-  const serverFolder            = `${rootFolder}/server`;
-  const serverSocketFolder      = `${serverFolder}/sockets`;
-  const builderFolder           = `${serverFolder}/Builders`;
+  const rootFolder              = `../../../`
+  const serverFolder            = `${rootFolder}/server`
+  const serverSocketFolder      = `${serverFolder}/sockets`
+  const builderFolder           = `${serverFolder}/Builders`
+  const builderPlayDealFolder     = `${builderFolder}/Objects/PlayDeal`
 
-  const CookieTokenManager      = require(`${serverFolder}/CookieTokenManager/`);
-  const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
-  const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
+
+  const CookieTokenManager      = require(`${serverFolder}/CookieTokenManager/`)
 
   // @TODO seperate this to respective files
-  const populateRegistry        = require(`${serverFolder}/sockets/PopulateRegistry`);
+  const buildPopulateRegistryMethod        = require(`${serverFolder}/sockets/PopulateRegistry`)
+  
+  const buildClientManager      = require(`${builderFolder}/Objects/ClientManager`)
+  const buildPerson             = require(`${builderFolder}/Objects/Person`)
+  const buildPersonManager      = require(`${builderFolder}/Objects/PersonManager`)
+  const buildRoom               = require(`${builderFolder}/Objects/Room`)
+  const buildRoomManager        = require(`${builderFolder}/Objects/RoomManager`)
 
-  const buildHandleRoom         = require(`${builderFolder}/Methods/HandleRoom`);
-  const buildEventRegistry      = require(`${builderFolder}/Objects/EventRegistry`);
-  const buildAffected           = require(`${builderFolder}/Objects/Affected`);
-  const buildOrderedTree        = require(`${builderFolder}/Objects/OrderedTree`);
-  const buildAddressedResponse  = require(`${builderFolder}/Objects/AddressedResponse`);
-  const buildConnection         = require(`${builderFolder}/Objects/Connection.js`);
 
-  let {
-    isDef,
-    isFunc,
-  } = utils;
+  const buildHandleRoom         = require(`${builderFolder}/Methods/HandleRoom`)
+  const buildEventRegistry      = require(`${builderFolder}/Objects/EventRegistry`)
+  const buildAffected           = require(`${builderFolder}/Objects/Affected`)
+  const buildOrderedTree        = require(`${builderFolder}/Objects/OrderedTree`)
+  const buildAddressedResponse  = require(`${builderFolder}/Objects/AddressedResponse`)
+  const buildConnection         = require(`${builderFolder}/Objects/Connection.js`)
+
+  let { isDef, isArr, isObj, isStr, isFunc, els, elsFn, getKeyFromProp, arrSum, makeVar, makeList, makeMap, makeListener  } = utils
+
+  const buildTransfer             = require(`${builderPlayDealFolder}/Transfer/Transfer`)
+  const buildWealthTransfer       = require(`${builderPlayDealFolder}/Transfer/WealthTransfer`)
+  const buildTransaction          = require(`${builderPlayDealFolder}/Transfer/Transaction`)
+
+  const Transfer                    = buildTransfer({
+                                        makeVar, makeMap, isDef, isArr
+                                      })
+  const WealthTransfer              = buildWealthTransfer({
+                                        Transfer,
+                                        isObj, isDef, arrSum, makeMap,
+                                      });
+  const Transaction                 = buildTransaction({
+                                      isObj,
+                                      isDef,
+                                      arrSum,
+                                      makeMap,
+                                      WealthTransfer
+                                    })
 
   // Build required objects
-  const AddressedResponse       = buildAddressedResponse(utils);
-  const OrderedTree             = buildOrderedTree();
-  const Affected                = buildAffected({ OrderedTree });
+  const AddressedResponse       = buildAddressedResponse(utils)
+  const OrderedTree             = buildOrderedTree()
+  const Affected                = buildAffected({ OrderedTree })
   const EventRegistry           = buildEventRegistry(utils)
-  const Connection              = buildConnection({ ...utils, AddressedResponse });
+  const Connection              = buildConnection({ ...utils, AddressedResponse })
 
+  
+  const ClientManager           = buildClientManager({ isDef, makeVar, makeMap, makeListener })
+  const Person                  = buildPerson({ isDef, makeList })
+  const PersonManager           = buildPersonManager({ Person,  els,  isDef,  makeVar,  makeMap,  getKeyFromProp })
+  const Room                    = buildRoom({ PersonManager, makeMap })
+  const RoomManager             = buildRoomManager({ Room, elsFn,  isDef,  isStr,  makeMap })
 
+  const populateRegistry        = buildPopulateRegistryMethod({ 
+                                    Transaction,
+                                    utils 
+                                  });
 
   class BaseServer {
     constructor()
