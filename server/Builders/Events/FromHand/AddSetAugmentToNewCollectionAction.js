@@ -3,7 +3,6 @@ function buildAddSetAugmentToNewCollectionAction({
     makeConsumerFallbackResponse,
     registry,
     makeResponse,
-    packageCheckpoints,
     isDef,
     AddressedResponse,
     handleMyTurn,
@@ -17,7 +16,7 @@ function buildAddSetAugmentToNewCollectionAction({
         let status = "failure";
         return handleMyTurn(
           props,
-          (consumerData, checkpoints) => {
+          (consumerData) => {
             const { cardId } = consumerData;
             const {
               roomCode,
@@ -119,9 +118,7 @@ function buildAddSetAugmentToNewCollectionAction({
               }
             }
             // Confirm this executed
-            let payload = {
-              checkpoints: packageCheckpoints(checkpoints),
-            };
+            let payload = {};
             addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })

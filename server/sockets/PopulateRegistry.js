@@ -59,7 +59,6 @@ module.exports = function buildPopulateRegistryMethod({
 
           let {
             getAllKeyedResponse,
-            packageCheckpoints,
             canGameStart,
             createGameInstance,
             canPersonRemoveOtherPerson,
@@ -132,7 +131,6 @@ module.exports = function buildPopulateRegistryMethod({
                                             makeKeyedResponse,
     
                                             getAllKeyedResponse,
-                                            packageCheckpoints,
                                             canGameStart,
                                             createGameInstance,
     

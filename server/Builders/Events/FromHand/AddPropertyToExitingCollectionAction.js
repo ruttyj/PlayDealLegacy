@@ -3,7 +3,6 @@ function buildAddPropertyToExitingCollectionAction({
     makeConsumerFallbackResponse,
     registry,
     makeResponse,
-    packageCheckpoints,
     isDef,
     handCardConsumer,
     AddressedResponse,
@@ -115,9 +114,7 @@ function buildAddPropertyToExitingCollectionAction({
             }
 
             // confirm action for async await
-            let payload = {
-              checkpoints: packageCheckpoints(checkpoints),
-            };
+            let payload = {};
             addressedResponses.addToBucket(
               "default",
               makeResponse({ subject, action, status, payload })

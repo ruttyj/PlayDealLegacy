@@ -110,16 +110,6 @@ function buildDeps({
       return addressedResponses;
     }
 
-    function packageCheckpoints(checkpoints)
-    {
-      if (isDef(checkpoints)) {
-        let dumpCheckpoint = {};
-        checkpoints.forEach((value, message) => (dumpCheckpoint[message] = value));
-        return dumpCheckpoint;
-      }
-      return {};
-    }
-
     function canGameStart(game, personManager)
     {
 
@@ -874,9 +864,7 @@ function buildDeps({
             }
           }
   
-          payload = {
-            checkpoints: packageCheckpoints(checkpoints),
-          };
+          payload = {};
           addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
@@ -1077,9 +1065,7 @@ function buildDeps({
             }
           }
     
-          payload = {
-            checkpoints: packageCheckpoints(checkpoints),
-          };
+          payload = {};
           addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
@@ -1228,9 +1214,7 @@ function buildDeps({
             }
           }
   
-          payload = {
-            checkpoints: packageCheckpoints(checkpoints),
-          };
+          payload = {};
           addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })
@@ -1459,7 +1443,6 @@ function buildDeps({
         makeKeyedResponse,
 
         getAllKeyedResponse,
-        packageCheckpoints,
         canGameStart,
         createGameInstance,
         canPersonRemoveOtherPerson,

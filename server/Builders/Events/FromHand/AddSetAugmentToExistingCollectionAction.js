@@ -3,7 +3,6 @@ function buildAddSetAugmentToExistingCollectionAction({
     makeConsumerFallbackResponse,
     registry,
     makeResponse,
-    packageCheckpoints,
     isDef,
     handCardConsumer,
     AddressedResponse,
@@ -75,9 +74,7 @@ function buildAddSetAugmentToExistingCollectionAction({
                 }
               }
             }
-            let payload = {
-              checkpoints: packageCheckpoints(checkpoints),
-            };
+            let payload = {};
             // confirm action for async await
             addressedResponses.addToBucket(
               "default",

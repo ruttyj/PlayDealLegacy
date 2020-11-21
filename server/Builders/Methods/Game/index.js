@@ -85,7 +85,6 @@ module.exports = function ({
   makeRegularGetKeyed,
 
   getAllKeyedResponse,
-  packageCheckpoints,
   canGameStart,
   createGameInstance,
 
@@ -103,7 +102,7 @@ module.exports = function ({
   const commonDeps = {
     // Helpers
     isDef, isArr, isFunc, 
-    getArrFromProp, packageCheckpoints, makeProps,
+    getArrFromProp, makeProps,
     // Structures
     Affected, 
     Transaction,
@@ -585,7 +584,6 @@ module.exports = function ({
           registry,
           makeConsumerFallbackResponse,
           makeResponse,
-          packageCheckpoints,
           handCardConsumer,
           log,
         })
@@ -608,7 +606,6 @@ module.exports = function ({
         registry,
         makeConsumerFallbackResponse,
         makeResponse,
-        packageCheckpoints,
         handCardConsumer,
         log,
       })
@@ -618,7 +615,6 @@ module.exports = function ({
           registry,
           makeConsumerFallbackResponse,
           makeResponse,
-          packageCheckpoints,
           handCardConsumer,
           log,
         })
@@ -628,7 +624,6 @@ module.exports = function ({
           registry,
           makeConsumerFallbackResponse,
           makeResponse,
-          packageCheckpoints,
           handCardConsumer,
         })
       )
@@ -637,7 +632,6 @@ module.exports = function ({
           registry,
           makeConsumerFallbackResponse,
           makeResponse,
-          packageCheckpoints,
           handCardConsumer,
           handleMyTurn,
         })
@@ -663,7 +657,6 @@ module.exports = function ({
         registry,
         makeConsumerFallbackResponse,
         makeResponse,
-        packageCheckpoints,
         handCardConsumer,
         handleMyTurn,
       }))
@@ -672,7 +665,6 @@ module.exports = function ({
         registry,
         makeConsumerFallbackResponse,
         makeResponse,
-        packageCheckpoints,
         handCardConsumer,
         handleMyTurn,
       }))
@@ -681,7 +673,6 @@ module.exports = function ({
         registry,
         makeConsumerFallbackResponse,
         makeResponse,
-        packageCheckpoints,
         handCardConsumer,
         handleMyTurn,
       }))
@@ -690,7 +681,6 @@ module.exports = function ({
         registry,
         makeConsumerFallbackResponse,
         makeResponse,
-        packageCheckpoints,
         handCardConsumer,
         handleMyTurn,
       }))
@@ -1012,7 +1002,6 @@ module.exports = function ({
         makeResponse,
         handleMyTurn,
         makeConsumerFallbackResponse,
-        packageCheckpoints,
         makeResponse,
       }))
     }

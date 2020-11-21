@@ -2,7 +2,6 @@ function buildRespondToCollectValueAction({
     isDef,
     makeConsumerFallbackResponse,
     AddressedResponse,
-    packageCheckpoints,
     makeResponse,
     Affected,
     handleGame,
@@ -237,9 +236,7 @@ function buildRespondToCollectValueAction({
             }
           }
 
-          payload = {
-            checkpoints: packageCheckpoints(checkpoints),
-          };
+          payload = {};
           addressedResponses.addToBucket(
             "default",
             makeResponse({ subject, action, status, payload })

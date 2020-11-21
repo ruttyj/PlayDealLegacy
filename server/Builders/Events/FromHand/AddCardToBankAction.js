@@ -3,7 +3,6 @@ function buildAddCardToBankAction({
     makeConsumerFallbackResponse,
     registry,
     makeResponse,
-    packageCheckpoints,
     isDef,
     handCardConsumer,
     AddressedResponse,
@@ -78,9 +77,7 @@ function buildAddCardToBankAction({
                     }
 
                     // Confirm this executed
-                    let payload = {
-                      checkpoints: packageCheckpoints(checkpoints),
-                    };
+                    let payload = {};
                     addressedResponses.addToBucket(
                       "default",
                       makeResponse({ subject, action, status, payload })
