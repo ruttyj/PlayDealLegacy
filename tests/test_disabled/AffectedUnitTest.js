@@ -1,25 +1,14 @@
-const { identity, isObj, nDeep } = require("../../server/utils");
-const rootFolder = `../..`;
-const serverFolder = `${rootFolder}/server`;
-const utilsFolder = `${serverFolder}/utils`;
-const fs = require('fs');
-const assert = require("chai").assert;
-const buildAffected = require(`${serverFolder}/Builders/Affected`);
-const buildOrderedTree = require(`${serverFolder}/Builders/OrderedTree`);
-const {
-  isDef,
-  isDefNested,
-  setNestedValue,
-  getNestedValue,
-} = require(`${utilsFolder}`);
-let dump = (template) => console.log("@@@@@", JSON.stringify(template, null, 2));
-console.clear();
+const rootFolder        = `../..`;
+const serverFolder      = `${rootFolder}/server`;
+
+const assert            = require("chai").assert;
+const buildAffected     = require(`${serverFolder}/Builders/Affected`);
+const buildOrderedTree  = require(`${serverFolder}/Builders/OrderedTree`);
+
+const OrderedTree       = buildOrderedTree();
+const Affected          = buildAffected({OrderedTree});
 
 describe("Affected", async function () {
-
-  const OrderedTree = buildOrderedTree();
-  const Affected = buildAffected({OrderedTree});
-
   it(`Multiple Ids sould be able to be recorded in correct order`, async () => {
     let affected = new Affected();
     affected.setAffected("player", 2);
@@ -27,7 +16,6 @@ describe("Affected", async function () {
     let affectedPlayerIds = affected.getIdsAffected("player");
     assert.equal(JSON.stringify(affectedPlayerIds), JSON.stringify([2, 100]), "The ids should match exactly in order")
   });
-
 
   it(`Grouping ids by action`, async () => {
     let affected = new Affected();
@@ -41,7 +29,4 @@ describe("Affected", async function () {
     assert.equal(JSON.stringify(changed), JSON.stringify([2, 100]), "ids should match");
     assert.equal(JSON.stringify(removed), JSON.stringify([30]), "ids should match");
   });
-
-
-
 }); // end App description
