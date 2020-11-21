@@ -28,7 +28,7 @@ function buildRegisterChatMethods({
             let receivingPerson = personManager.getPerson(playerKey);
             if (isDef(receivingPerson)) {
               addressedResponses.addToSpecific(
-                receivingPerson.getClientId(),
+                receivingPerson.getSocketId(),
                 makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
               );
             }

@@ -67,14 +67,14 @@ module.exports = function buildPerson({ isDef, makeList }={})
       return isDef(this.client);
     }
   
-    getClient()
+    getSocket()
     {
       return this.client
     }
   
-    getClientId()
+    getSocketId()
     {
-      const client = this.getClient()
+      const client = this.getSocket()
       if (isDef(client)) {
         return String(client.id)
       }
@@ -82,7 +82,7 @@ module.exports = function buildPerson({ isDef, makeList }={})
     }
   
     emit(eventName, payload) {
-      const client = this.getClient()
+      const client = this.getSocket()
       if (isDef(client)) {
         client.emit(eventName, payload);
       }

@@ -175,7 +175,7 @@ function buildDeps({
               payload.order.push(ownerPersonId);
             });
             addressedResponses.addToSpecific(
-              receivingPerson.getClientId(),
+              receivingPerson.getSocketId(),
               makeResponse({
                 subject,
                 action,
@@ -443,7 +443,7 @@ function buildDeps({
             if (isDef(responses)) {
               let clientPersonMapping = {};
               personManager.getConnectedPeople().forEach((person) => {
-                clientPersonMapping[String(person.getClientId())] = true;
+                clientPersonMapping[String(person.getSocketId())] = true;
               });
               let clientIds = Object.keys(clientPersonMapping);
   

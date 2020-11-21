@@ -22,7 +22,7 @@ module.exports = function buildPersonManager({
   
       let id = person.getId()
       personManager.mItems.set(id, person)
-      personManager.mClientMap.set(person.getClientId(), id)
+      personManager.mClientMap.set(person.getSocketId(), id)
     }
   
     createPerson(clientSocket, name = "Guest")

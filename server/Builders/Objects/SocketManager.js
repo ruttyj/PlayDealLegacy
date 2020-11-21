@@ -15,7 +15,7 @@ module.exports = function buildSocketManager({
     const mPrivateVars = ["clients"];
     const {
       set: setClientInMap,
-      get: getClientInMap,
+      get: getSocketInMap,
       has: hasClientInMap,
       remove: removeClientInMap,
       map: mapClients,
@@ -50,8 +50,8 @@ module.exports = function buildSocketManager({
       };
     }
   
-    function getClient(clientId) {
-      return getClientInMap(clientId);
+    function getSocket(clientId) {
+      return getSocketInMap(clientId);
     }
   
     function addClient(client) {
@@ -78,7 +78,7 @@ module.exports = function buildSocketManager({
         clientId = client.id;
       } else if (["string", "number"].includes(typeofArg)) {
         clientId = clientOrId;
-        client = getClient(clientId);
+        client = getSocket(clientId);
       }
   
       if (isDef(client) && isDef(clientId)) {
@@ -129,7 +129,7 @@ module.exports = function buildSocketManager({
     //==================================================
     const publicScope = {
       addClient,
-      getClient,
+      getSocket,
       removeClient,
       serialize,
       count: mClientCount.get,

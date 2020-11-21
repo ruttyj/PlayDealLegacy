@@ -72,7 +72,7 @@ function CookieTokenManager() {
     }
   }
 
-  function getClientIdsForToken(token) {
+  function getSocketIdsForToken(token) {
     return Object.keys(mTokenHasClientsMap.get(token, {}));
   }
 
@@ -116,7 +116,7 @@ function CookieTokenManager() {
 
   const publicScope = {
     generateToken,
-    getClientIdsForToken,
+    getSocketIdsForToken,
     getTokensForClientId,
     getTokenForClientId,
     associateTokenAndClient,

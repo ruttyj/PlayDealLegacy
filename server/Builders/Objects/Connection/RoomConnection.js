@@ -90,7 +90,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                   clientIdsMap[connection.id] = true
                   handleRoom(payload, ({ personManager }) => {
                       personManager.getConnectedPeople().forEach((person) => {
-                          let personConnectionId = String(person.getClientId())
+                          let personConnectionId = String(person.getSocketId())
                           clientIdsMap[personConnectionId] = true
                           clientPersonMapping[personConnectionId] = person
                       });

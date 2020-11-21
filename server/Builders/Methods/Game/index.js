@@ -148,7 +148,7 @@ module.exports = function ({
 
 
 
-      
+
       registry.public(`GAME.GET_UPDATED_PILES`, (props) => {
         const { roomCode } = props;
 
@@ -425,7 +425,7 @@ module.exports = function ({
               value: canStart,
             };
             addressedResponses.addToSpecific(
-              host.getClientId(),
+              host.getSocketId(),
               makeResponse({ subject, action, status, payload })
             );
             return addressedResponses;

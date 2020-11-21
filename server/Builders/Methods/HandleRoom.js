@@ -40,7 +40,7 @@ module.exports = function({
                     if (isDef(responses)) {
                         let clientPersonMapping = {};
                         personManager.getConnectedPeople().forEach((person) => {
-                            clientPersonMapping[String(person.getClientId())] = true;
+                            clientPersonMapping[String(person.getSocketId())] = true;
                         });
                         let clientIds = Object.keys(clientPersonMapping);
                         reducedResponses.addToBucket(
