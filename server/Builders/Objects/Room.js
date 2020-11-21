@@ -12,14 +12,14 @@ module.exports = function buildRoom({ PersonManager, makeMap }={})
       room._data  = makeMap(room.mData, "data", {})
   
       room.mPersonManager = null
-      room.mClientManager = null
+      room.mSocketManager = null
       room.game           = null
     }
   
   
-    setClientManager(manager) 
+    setSocketManager(manager) 
     {
-      this.mClientManager = manager
+      this.mSocketManager = manager
       this.mPersonManager = new PersonManager()
     }
   

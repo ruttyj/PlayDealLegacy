@@ -3,11 +3,11 @@ module.exports = function buildBaseServer() {
   return class BaseServer {
     constructor()
     {
-      this.clientManager;
+      this.socketManager;
     }
 
     getSocketManager(){
-      return this.clientManager;
+      return this.socketManager;
     }
   }
 }

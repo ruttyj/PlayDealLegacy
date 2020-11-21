@@ -16,7 +16,7 @@ module.exports = function buildPlaydealServer({ utils })
 
   // @TODO seperate this to respective files
   const buildPopulateRegistryMethod        = require(`${serverFolder}/sockets/PopulateRegistry`)
-  const buildClientManager      = require(`${builderFolder}/Objects/ClientManager`)
+  const buildSocketManager      = require(`${builderFolder}/Objects/SocketManager`)
   const buildPerson             = require(`${builderFolder}/Objects/Person`)
   const buildPersonManager      = require(`${builderFolder}/Objects/PersonManager`)
   const buildRoom               = require(`${builderFolder}/Objects/Room`)
@@ -63,7 +63,7 @@ module.exports = function buildPlaydealServer({ utils })
   const RoomConnection          = buildRoomConnection({ BaseConnection, AddressedResponse, ...utils, })
 
   
-  const ClientManager           = buildClientManager({ isDef, makeVar, makeMap, makeListener })
+  const SocketManager           = buildSocketManager({ isDef, makeVar, makeMap, makeListener })
   const Person                  = buildPerson({ isDef, makeList })
   const PersonManager           = buildPersonManager({ Person,  els,  isDef,  makeVar,  makeMap,  getKeyFromProp })
   const Room                    = buildRoom({ PersonManager, makeMap })
@@ -108,7 +108,7 @@ module.exports = function buildPlaydealServer({ utils })
       const server                  = this;
       server.connections            = new Map();
       server.cookieTokenManager     = CookieTokenManager.getInstance();
-      server.clientManager          = ClientManager();
+      server.socketManager          = SocketManager();
       server.roomManager            = new RoomManager({ server });
 
       // EventRegistry
@@ -125,7 +125,7 @@ module.exports = function buildPlaydealServer({ utils })
                                       });
       const playDealActionProvider  = new PlayDealActionProvider({
                                         handleRoom              : server.handleRoom,
-                                        clientManager           : server.clientManager,
+                                        socketManager           : server.socketManager,
                                         roomManager             : server.roomManager,
                                         cookieTokenManager      : server.cookieTokenManager,
                                       });

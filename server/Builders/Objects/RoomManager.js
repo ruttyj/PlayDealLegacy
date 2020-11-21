@@ -24,7 +24,7 @@ module.exports = function buildRoomManager({ Room, elsFn,  isDef,  isStr,  makeM
       let socketManager = roomManager._getSocketManager()
       let room = new Room()
       let roomCode = elsFn(desiredRoomCode, () => roomManager.getRandomCode())
-      room.setClientManager(socketManager)
+      room.setSocketManager(socketManager)
       room.setCode(roomCode)
   
       roomManager.mRooms.set(roomCode, room)

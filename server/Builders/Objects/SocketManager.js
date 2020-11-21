@@ -1,10 +1,10 @@
-module.exports = function buildClientManager({
+module.exports = function buildSocketManager({
   isDef,
   makeVar,
   makeMap,
   makeListener,
 }){
-  return function ClientManager() {
+  return function SocketManager() {
     let mState = {};
   
     //==================================================
@@ -45,7 +45,7 @@ module.exports = function buildClientManager({
     //==================================================
     function makeEventPayload(client) {
       return {
-        clientManager: getPublic(),
+        socketManager: getPublic(),
         client,
       };
     }

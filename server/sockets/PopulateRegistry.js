@@ -39,13 +39,13 @@ module.exports = function buildPopulateRegistryMethod({
         constructor({
           //-------------------------
             handleRoom,
-            clientManager,
+            socketManager,
             roomManager,
             cookieTokenManager,
           })
         {
           this.handleRoom         = handleRoom
-          this.clientManager      = clientManager
+          this.socketManager      = socketManager
           this.roomManager        = roomManager
           this.cookieTokenManager = cookieTokenManager
         }
@@ -53,7 +53,7 @@ module.exports = function buildPopulateRegistryMethod({
         up(registry)
         {
           let handleRoom          = this.handleRoom
-          let clientManager       = this.clientManager
+          let socketManager       = this.socketManager
           let roomManager         = this.roomManager
           let cookieTokenManager  = this.cookieTokenManager
 
@@ -102,7 +102,7 @@ module.exports = function buildPopulateRegistryMethod({
           // Clients
           let ConnectionActionProvider = buildConnectionActionProvider({
                                             AddressedResponse,
-                                            clientManager,
+                                            socketManager,
                                             makeResponse,
                                             makeProps,
                                           })

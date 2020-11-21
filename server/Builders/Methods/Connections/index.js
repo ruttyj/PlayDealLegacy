@@ -1,6 +1,6 @@
 module.exports = function ({
     AddressedResponse,
-    clientManager,
+    socketManager,
     makeResponse,
 })
 {
@@ -14,7 +14,7 @@ module.exports = function ({
         const action = "GET_ONLINE_STATS";
         const status = "success";
         const payload = {
-          peopleOnlineCount: clientManager.count(),
+          peopleOnlineCount: socketManager.count(),
         };
   
         let { thisClientKey } = props;
