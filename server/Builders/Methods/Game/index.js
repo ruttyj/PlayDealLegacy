@@ -127,6 +127,28 @@ module.exports = function ({
   {
     up(registry)
     {
+
+      function canGameStart(game, personManager)
+      {
+  
+        // Are there enough people to play?
+        let readyPeople = personManager.filterPeople(
+          (person) => (person.isConnected() && person.getStatus() === "ready")
+        );
+        let isAcceptablePlayerCount = game.isAcceptablePlayerCount(readyPeople.length)
+  
+        // Does everyone have an acceptable status?
+        let acceptableStatuses = ["ready"]
+        let isEveryoneReady = personManager.doesAllSatisfy(
+          (person) => (person.isConnected() && acceptableStatuses.includes(person.getStatus()))
+        )
+  
+        return (isEveryoneReady && isAcceptablePlayerCount);
+      }
+
+
+
+      
       registry.public(`GAME.GET_UPDATED_PILES`, (props) => {
         const { roomCode } = props;
 

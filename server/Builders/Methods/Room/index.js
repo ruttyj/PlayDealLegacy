@@ -32,7 +32,6 @@ module.exports = function({
     //-------------------
     handleRoom,
     handlePerson,
-    canPersonRemoveOtherPerson,
 })
 {
 
@@ -58,7 +57,6 @@ module.exports = function({
                 AddressedResponse,
                 roomManager,
                 makeResponse,
-                canPersonRemoveOtherPerson,
                 makeConsumerFallbackResponse,
                 handleRoom,
                 handlePerson,

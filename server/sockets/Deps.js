@@ -110,48 +110,6 @@ function buildDeps({
       return addressedResponses;
     }
 
-    function canGameStart(game, personManager)
-    {
-
-      // Are there enough people to play?
-      let readyPeople = personManager.filterPeople(
-        (person) => (person.isConnected() && person.getStatus() === "ready")
-      );
-      let isAcceptablePlayerCount = game.isAcceptablePlayerCount(readyPeople.length)
-
-      // Does everyone have an acceptable status?
-      let acceptableStatuses = ["ready"]
-      let isEveryoneReady = personManager.doesAllSatisfy(
-        (person) => (person.isConnected() && acceptableStatuses.includes(person.getStatus()))
-      )
-
-      return (isEveryoneReady && isAcceptablePlayerCount);
-    }
-
-    function createGameInstance(room)
-    {
-      let gameInstance = GameInstance();
-
-      let constants = gameInstance.constants;
-      gameInstance.newGame();
-      gameInstance.updateConfig({
-        [constants.CONFIG.SHUFFLE_DECK]: true,
-        [constants.CONFIG.ALTER_SET_COST_ACTION]: false,
-      });
-
-      room.setGame(gameInstance);
-
-      return gameInstance;
-    }
-
-    function canPersonRemoveOtherPerson(thisPerson, otherPerson)
-    {
-      return (
-        thisPerson.hasTag("host") ||
-        String(otherPerson.getId()) === String(thisPerson.getId())
-      );
-    }
-
     /**
      * Will generate resposnes for each respective person regarding the relevent information
      * 
@@ -264,6 +222,32 @@ function buildDeps({
       };
     }
     
+
+
+
+    
+
+   
+
+
+
+    function createGameInstance(room)
+    {
+      let gameInstance = GameInstance();
+
+      let constants = gameInstance.constants;
+      gameInstance.newGame();
+      gameInstance.updateConfig({
+        [constants.CONFIG.SHUFFLE_DECK]: true,
+        [constants.CONFIG.ALTER_SET_COST_ACTION]: false,
+      });
+
+      room.setGame(gameInstance);
+
+      return gameInstance;
+    }
+
+
     function makeRegularGetKeyed({
       subject,
       singularKey,
@@ -410,6 +394,9 @@ function buildDeps({
         },
       };
     }
+
+
+
 
 
     //==================================================
@@ -1443,9 +1430,7 @@ function buildDeps({
         makeKeyedResponse,
 
         getAllKeyedResponse,
-        canGameStart,
         createGameInstance,
-        canPersonRemoveOtherPerson,
 
         makePersonSpecificResponses,
         makeConsumerFallbackResponse,

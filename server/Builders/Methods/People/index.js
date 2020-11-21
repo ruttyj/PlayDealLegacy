@@ -6,7 +6,6 @@ module.exports = function ({
     AddressedResponse,
     roomManager,
     makeResponse,
-    canPersonRemoveOtherPerson,
     makeConsumerFallbackResponse,
     handleRoom,
     handlePerson,
@@ -14,6 +13,15 @@ module.exports = function ({
 {
     return function (registry)
     {
+
+      function canPersonRemoveOtherPerson(thisPerson, otherPerson)
+      {
+        return (
+          thisPerson.hasTag("host") ||
+          String(otherPerson.getId()) === String(thisPerson.getId())
+        );
+      }
+
       registry.public('PEOPLE.UPDATE_MY_NAME', function(props) {
         const [subject, action] = ["PEOPLE", "UPDATE_MY_NAME"];
         const addressedResponses = new AddressedResponse();
@@ -254,7 +262,7 @@ module.exports = function ({
                   ++removedPersonCount;
                   payload.ids.push(personId);
 
-                  person.disconnect();
+                  person.removeClient();
                   personManager.removePerson(person);
 
                   // If it was the host who left, assing new host
@@ -360,7 +368,7 @@ module.exports = function ({
               let person = personManager.getPerson(personId);
               if (isDef(person)) {
                 disconnectedIds.push(person.getId());
-                person.disconnect();
+                person.removeClient();
               }
             });
 

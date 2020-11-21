@@ -7,6 +7,10 @@ module.exports = function buildPlaydealServer({ utils })
   const builderPlayDealFolder   = `${builderFolder}/Objects/PlayDeal`
 
 
+  const buildBaseServer = require(`${builderFolder}/Objects/Server/BaseServer`)
+
+
+  const BaseServer              = buildBaseServer();
   const CookieTokenManager      = require(`${serverFolder}/CookieTokenManager/`)
   const KeyedRequest            = require(`${serverSocketFolder}/KeyedRequest.js`)
 
@@ -24,7 +28,10 @@ module.exports = function buildPlaydealServer({ utils })
   const buildAffected           = require(`${builderFolder}/Objects/Affected`)
   const buildOrderedTree        = require(`${builderFolder}/Objects/OrderedTree`)
   const buildAddressedResponse  = require(`${builderFolder}/Objects/AddressedResponse`)
-  const buildConnection         = require(`${builderFolder}/Objects/Connection.js`)
+  
+  const buildBaseConnection     = require(`${builderFolder}/Objects/Connection/BaseConnection`)
+  const buildRoomConnection         = require(`${builderFolder}/Objects/Connection/RoomConnection`)
+
 
   let { isDef, isArr, isObj, isStr, isFunc, els, elsFn, getKeyFromProp, arrSum, makeVar, makeList, makeMap, makeListener  } = utils
 
@@ -52,7 +59,8 @@ module.exports = function buildPlaydealServer({ utils })
   const OrderedTree             = buildOrderedTree()
   const Affected                = buildAffected({ OrderedTree })
   const EventRegistry           = buildEventRegistry(utils)
-  const Connection              = buildConnection({ ...utils, AddressedResponse })
+  const BaseConnection          = buildBaseConnection()
+  const RoomConnection          = buildRoomConnection({ BaseConnection, AddressedResponse, ...utils, })
 
   
   const ClientManager           = buildClientManager({ isDef, makeVar, makeMap, makeListener })
@@ -68,17 +76,6 @@ module.exports = function buildPlaydealServer({ utils })
                                     OrderedTree,
                                     utils,
                                   });
-
-  class BaseServer {
-    constructor()
-    {
-      this.clientManager;
-    }
-
-    getSocketManager(){
-      return this.clientManager;
-    }
-  }
 
   /**
    * 
@@ -98,7 +95,6 @@ module.exports = function buildPlaydealServer({ utils })
       this.registry;
       this.connections;
       this.utils;
-      this.services;
 
       this.init();
     }
@@ -110,13 +106,16 @@ module.exports = function buildPlaydealServer({ utils })
     init()
     {
       const server                  = this;
-      server.services               = new Map();
       server.connections            = new Map();
-      server.registry               = new EventRegistry();
       server.cookieTokenManager     = CookieTokenManager.getInstance();
       server.clientManager          = ClientManager();
       server.roomManager            = new RoomManager({ server });
 
+      // EventRegistry
+      server.registry               = new EventRegistry();
+
+      //=====================================================================
+      // @TODO encapsulate elsewhere
       // @TODO remove need for handleRoom from Connection
       server.handleRoom             = buildHandleRoom({
                                         isDef,
@@ -124,15 +123,17 @@ module.exports = function buildPlaydealServer({ utils })
                                         AddressedResponse,
                                         roomManager: server.roomManager,
                                       });
-
       const playDealActionProvider  = new PlayDealActionProvider({
                                         handleRoom              : server.handleRoom,
                                         clientManager           : server.clientManager,
                                         roomManager             : server.roomManager,
                                         cookieTokenManager      : server.cookieTokenManager,
                                       });
+      //____________________________________________________________________
 
+      // Register COMPLETE list of actions a socket can preform
       playDealActionProvider.up(server.registry)
+
     }
 
     /**
@@ -143,7 +144,7 @@ module.exports = function buildPlaydealServer({ utils })
     onConnected(socket)
     {
       let server      = this;
-      let connection  = new Connection({ server, socket });
+      let connection  = new RoomConnection({ server, socket });
       this.connections.set(connection.id, connection);
       connection.registerEvents();
     }

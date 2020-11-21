@@ -1,15 +1,19 @@
 module.exports = function ({
-    makeProps,
-    registry,
-    makeResponse,
-    isDef,
-    isArr,
-    getNestedValue,
-    setNestedValue,
-    AddressedResponse,
-    els,
-    handleRoom,
-    cookieTokenManager,
+  AddressedResponse,
+  
+  isDef,
+  isArr,
+  els,
+  
+  getNestedValue,
+  setNestedValue,
+  
+  makeProps,
+  makeResponse,
+  handleRoom,
+
+  cookieTokenManager,
+  registry,
 })
 {
     return function (props)
@@ -18,14 +22,11 @@ module.exports = function ({
         const addressedResponses = new AddressedResponse();
 
         let { roomCode, username, thisClientKey, thisClient } = props;
-        username = els(username, "Player");
         return handleRoom(
           props,
           (consumerData) => {
             let { room, personManager } = consumerData;
-            let token = cookieTokenManager.getTokenForClientId(
-              thisClientKey
-            );
+            let token = cookieTokenManager.getTokenForClientId(thisClientKey);
 
             // Check if user can reconnect
             let person;
@@ -36,15 +37,8 @@ module.exports = function ({
                 if (isDef(token)) {
                   let tokenData = cookieTokenManager.get(token);
                   if (isDef(tokenData)) {
-                    let tokenDataPersonList = getNestedValue(
-                      tokenData,
-                      ["room", roomCode],
-                      null
-                    );
-                    if (
-                      isDef(tokenDataPersonList) &&
-                      isArr(tokenDataPersonList)
-                    ) {
+                    let tokenDataPersonList = getNestedValue(tokenData, ["room", roomCode], null);
+                    if (isArr(tokenDataPersonList)) {
                       for (let i = 0; i < tokenDataPersonList.length; ++i) {
                         let data = tokenDataPersonList[i];
                         let { personId } = data;
@@ -54,7 +48,7 @@ module.exports = function ({
                           !personManager.getPerson(personId).isConnected()
                         ) {
                           person = personManager.getPerson(personId);
-                          person.connect(thisClient);
+                          person.setClient(thisClient);
                           person.setStatus("ready");
                           hasReconnnected = true;
                           break;
@@ -66,14 +60,15 @@ module.exports = function ({
               }
             }
 
+            // Create a new person
             if (!isDef(person)) {
+              username = els(username, "Player");
               person = personManager.createPerson(thisClient, username);
             }
 
-            let status = "";
-            let payload = null;
-
             if (isDef(person)) {
+              let status = "";
+              let payload = {};
               let personId = person.getId();
 
               // associate cookie to session
@@ -140,7 +135,7 @@ module.exports = function ({
                 registry.execute('PEOPLE.GET_HOST', makeProps(props))
               );
 
-              let payload = {
+              payload = {
                 personId,
               };
               // Confirm action

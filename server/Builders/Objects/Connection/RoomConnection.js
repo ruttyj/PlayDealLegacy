@@ -1,11 +1,13 @@
-module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedResponse }) {
-  return class Connection 
+module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedResponse, BaseConnection }) {
+  return class RoomConnection extends BaseConnection
   {
-      constructor({socket, server})
+      constructor(...args)
       {
-          this.id = String(socket.id);
-          this.socket = socket
-          this.server = server
+        super(...args)
+        const connection = this;
+
+        connection.room
+        connection.person
       }
 
       /**

@@ -34,7 +34,7 @@ module.exports = function buildPerson({ isDef, makeList }={})
   
   
   
-    connect(client)
+    setClient(client)
     {
       const person = this
       const personManager = person.getManager()
@@ -46,12 +46,12 @@ module.exports = function buildPerson({ isDef, makeList }={})
         personManager.connectPerson(person, client);
         client.events.disconnect.once(() => {
           personManager.disconnectPerson(person)
-          person.disconnect()
+          person.removeClient()
         })
       }
     }
   
-    disconnect() {
+    removeClient() {
       const person = this
       const personManager = person.getManager()
       if (isDef(person.client)) {

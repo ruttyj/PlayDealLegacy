@@ -33,7 +33,7 @@ module.exports = function buildPersonManager({
       let topIdCounter = personManager.mTopId
       person.setId(topIdCounter.incGet())
       person.setName(name)
-      person.connect(clientSocket)
+      person.setClient(clientSocket)
       personManager._addPerson(person)
   
       
@@ -94,7 +94,7 @@ module.exports = function buildPersonManager({
   
       if (isDef(person)) {
         if (person.isConnected()) {
-          person.disconnect()
+          person.removeClient()
         }
       }
     }

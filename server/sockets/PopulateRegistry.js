@@ -59,9 +59,7 @@ module.exports = function buildPopulateRegistryMethod({
 
           let {
             getAllKeyedResponse,
-            canGameStart,
             createGameInstance,
-            canPersonRemoveOtherPerson,
   
             makeProps,
             makeResponse,
@@ -131,7 +129,6 @@ module.exports = function buildPopulateRegistryMethod({
                                             makeKeyedResponse,
     
                                             getAllKeyedResponse,
-                                            canGameStart,
                                             createGameInstance,
     
                                             makePersonSpecificResponses,
@@ -170,7 +167,6 @@ module.exports = function buildPopulateRegistryMethod({
                                             //-------------------
                                             handleRoom,
                                             handlePerson,
-                                            canPersonRemoveOtherPerson,
                                           })
         
           this.connectionActionProvider  = new ConnectionActionProvider()
