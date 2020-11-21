@@ -38,6 +38,33 @@ module.exports = function ({
             }
         }
 
+        remove(identifier)
+        {
+            let deleted = false
+            identifier = this._processIdentifier(identifier);
+            if (isArr(identifier)) {
+                let [subject, action] = identifier;
+                if (isDef(this.PUBLIC_SUBJECTS[subject])){
+                    delete this.PUBLIC_SUBJECTS[subject][action]
+                    if(Object.keys(this.PUBLIC_SUBJECTS[subject]).length === 0){
+                        delete this.PUBLIC_SUBJECTS[subject]
+                    }
+                    deleted = true
+                }
+                
+
+                if (!deleted) {
+                    if (isDef(this.PRIVATE_SUBJECTS[subject])){
+                        delete this.PRIVATE_SUBJECTS[subject][action]
+                        if(Object.keys(this.PRIVATE_SUBJECTS[subject]).length === 0){
+                            delete this.PRIVATE_SUBJECTS[subject]
+                        }
+                        deleted = true
+                    }
+                }
+            }
+            return deleted
+        }
         _processIdentifier(identifier)
         {
             if(isStr(identifier)) {

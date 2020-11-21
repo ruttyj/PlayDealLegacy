@@ -4,13 +4,14 @@ module.exports = function buildPlaydealServer({ utils})
   const serverFolder            = `${rootFolder}/server`
   const serverSocketFolder      = `${serverFolder}/sockets`
   const builderFolder           = `${serverFolder}/Builders`
-  const builderPlayDealFolder     = `${builderFolder}/Objects/PlayDeal`
+  const builderPlayDealFolder   = `${builderFolder}/Objects/PlayDeal`
 
 
   const CookieTokenManager      = require(`${serverFolder}/CookieTokenManager/`)
 
   // @TODO seperate this to respective files
   const buildPopulateRegistryMethod        = require(`${serverFolder}/sockets/PopulateRegistry`)
+  const KeyedRequest                       = require(`${serverSocketFolder}/container/keyedRequest.js`)
   
   const buildClientManager      = require(`${builderFolder}/Objects/ClientManager`)
   const buildPerson             = require(`${builderFolder}/Objects/Person`)
@@ -62,6 +63,7 @@ module.exports = function buildPlaydealServer({ utils})
   const RoomManager             = buildRoomManager({ Room, elsFn,  isDef,  isStr,  makeMap })
 
   const populateRegistry        = buildPopulateRegistryMethod({ 
+                                    KeyedRequest,
                                     Transaction,
                                     utils 
                                   });
@@ -106,7 +108,7 @@ module.exports = function buildPlaydealServer({ utils})
      */
     init()
     {
-      const server              = this;
+      const server                = this;
       server.services             = new Map();
       server.connections          = new Map();
       server.registry             = new EventRegistry();

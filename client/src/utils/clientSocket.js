@@ -132,15 +132,6 @@ function createSocketConnection(socket) {
   }
 
   async function emitSingleRequest(subject, action, other = {}) {
-    let data = [
-      subject,
-      action,
-      {
-        subject,
-        action,
-        ...other,
-      },
-    ];
     return await emitPromise(subject, action, [
       {
         subject,
@@ -160,7 +151,7 @@ function createSocketConnection(socket) {
 
   function serialize() {
     return {
-      ROOM: ROOM.serialize(),
+      ROOM                : ROOM.serialize(),
       PEROPLE             : PEROPLE.serialize(),
      
       GAME_CONFIG         : GAME_CONFIG.serialize(),

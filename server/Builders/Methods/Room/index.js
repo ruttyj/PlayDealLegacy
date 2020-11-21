@@ -1,14 +1,16 @@
+const builderFolder = `../../../Builders`
+
+const buildCreateRoom                 = require(`${builderFolder}/Methods/Room/CreateRoom`)
+const buildJoinRoom                   = require(`${builderFolder}/Methods/Room/JoinRoom`)
+const buildCheckExists                = require(`${builderFolder}/Methods/Room/CheckExists`)
+const buildGetRandomRoom              = require(`${builderFolder}/Methods/Room/GetRandomRoomCode`)
+const buildGetCurrentRoomCode         = require(`${builderFolder}/Methods/Room/GetCurrentRoomCode`)
+const buildGetRoom                    = require(`${builderFolder}/Methods/Room/GetRoom`)
+const buildGetAllRooms                = require(`${builderFolder}/Methods/Room/GetAllRooms`)
+const buildLeaveRoom                  = require(`${builderFolder}/Methods/Room/LeaveRoom`)
+
 module.exports = function({
     AddressedResponse,
-    //-------------------------
-    buildCreateRoom,
-    buildJoinRoom,
-    buildCheckExists,
-    buildGetRandomRoom,
-    buildGetCurrentRoomCode,
-    buildGetRoom,
-    buildGetAllRooms,
-    buildLeaveRoom,
     //-------------------------
     isDef,
     els,
