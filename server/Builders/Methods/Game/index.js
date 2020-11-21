@@ -196,9 +196,7 @@ module.exports = function ({
             const game = room.getGame();
 
             // Only alter config before the game has started
-            checkpoints.set("gameHasNotYetStarted", false);
             if (!game.isGameStarted()) {
-              checkpoints.set("gameHasNotYetStarted", true);
               if (isDef(config)) {
                 status = "success";
                 game.updateConfig(config);
@@ -725,7 +723,6 @@ module.exports = function ({
             .getRequest(requestId);
 
           if (isDef(data)) {
-            checkpoints.set("requestExists", true);
             result = data.serialize();
           }
           return result;
@@ -1384,29 +1381,28 @@ module.exports = function ({
       })
 
       let collectionStuff = makeRegularGetKeyed({
-        subject: "COLLECTIONS",
-        singularKey: "collectionId",
-        pluralKey: "collectionIds",
-        makeGetDataFn: ({ game }, checkpoints) => (collectionId) => {
+        subject:      "COLLECTIONS",
+        singularKey:  "collectionId",
+        pluralKey:    "collectionIds",
+        makeGetDataFn: ({ game }) => (collectionId) => {
           let result = game.getCollectionManager().getCollection(collectionId);
           if (isDef(result)) {
-            checkpoints.set("collectionExists", true);
             return result.serialize();
           }
         },
-        makeGetAllKeysFn: ({ game }, checkpoints) => () => {
+        makeGetAllKeysFn: ({ game }) => () => {
           return game.getCollectionManager().getAllCollectionIds();
         },
-        makeGetAlMyKeysFn: ({ game, thisPersonId }, checkpoints) => () => {
+        makeGetAlMyKeysFn: ({ game, thisPersonId }) => () => {
           return game
             .getPlayerManager()
             .getAllCollectionIdsForPlayer(thisPersonId);
         },
       })
-      registry.public(`COLLECTIONS.GET_KEYED`, collectionStuff.GET_KEYED);
-      registry.public(`COLLECTIONS.GET_ALL_KEYED`, collectionStuff.GET_ALL_KEYED);
+      registry.public(`COLLECTIONS.GET_KEYED`,        collectionStuff.GET_KEYED);
+      registry.public(`COLLECTIONS.GET_ALL_KEYED`,    collectionStuff.GET_ALL_KEYED);
       registry.public(`COLLECTIONS.GET_ALL_MY_KEYED`, collectionStuff.GET_ALL_MY_KEYED);
-      registry.public(`COLLECTIONS.REMOVE_KEYED`, collectionStuff.REMOVE_KEYED);
+      registry.public(`COLLECTIONS.REMOVE_KEYED`,     collectionStuff.REMOVE_KEYED);
     }
 
     down(registry)

@@ -1435,23 +1435,15 @@ module.exports = function buildGameManager({
       cardId,
       _Affected,
     }) {
-  
       let consumerData = {
         request,
         _Affected,
         thisPersonId,
       }
-      
       let requestManager = getRequestManager();
-  
       request.setStatus("decline");
-  
       let hand = game.getPlayerHand(thisPersonId);
-      checkpoints.set("isCardInHand", false);
-  
       if (hand.hasCard(cardId)) {
-        checkpoints.set("isCardInHand", true);
-  
         //can the card decline the request
         if (
           game.doesCardHaveTag(cardId, "declineRequest")
@@ -1464,8 +1456,6 @@ module.exports = function buildGameManager({
                 .giveCard(cardId)
             );
           _Affected.setAffected('HAND', thisPersonId);
-  
-  
           _Affected.setAffected('ACTIVE_PILE', thisPersonId);
   
           let doTheDecline = function ({
@@ -1704,13 +1694,8 @@ module.exports = function buildGameManager({
         request.getTargetKey() === thisPersonId &&
         request.getType() === "justSayNo"
       ) {
-        checkpoints.set("isValidResponseKey", false);
         if (isDef(responseKey) && isDef(validResponses[responseKey])) {
-          checkpoints.set("isValidResponseKey", true);
-  
           checkpoints.set("success", false);
-  
-  
           let doTheDecline = function ({
             request,
             _Affected,

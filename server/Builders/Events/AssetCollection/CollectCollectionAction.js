@@ -20,7 +20,6 @@ function buildCollectCollectionAction({
             let playerManager = game.getPlayerManager();
       
             // if card is in list of transfer cards and has not already been processed
-            checkpoints.set("isValidTransferCard", false);
             if (transfering.has("collection")) {
               let transferToMe = transfering.get("collection");
               let collectionIds = transferToMe.getRemainingList();

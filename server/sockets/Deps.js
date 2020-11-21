@@ -495,7 +495,6 @@ function buildDeps({
           if (isDef(personManager)) {
             let person = personManager.getPersonByClientId(thisClientKey);
             if (isDef(person)) {
-              checkpoints.set("person", true);
               return fn(
                 {
                   personId: person.getId(),
@@ -525,7 +524,6 @@ function buildDeps({
 
 
           if (isDef(game)) {
-            checkpoints.set("game", true);
             return fn(
               {
                 ...props2,
@@ -533,8 +531,6 @@ function buildDeps({
               },
               checkpoints
             );
-          } else {
-            console.log("game not defined");
           }
           if (isFunc(fallback2)) return fallback2(checkpoints);
           return fallback2;
@@ -613,19 +609,13 @@ function buildDeps({
         ){
             {
                 let boolFailed = true;
-                checkpoints.set("the card", false);
-                checkpoints.set("isCardInHand", false);
-          
                 let { hand, game } = consumerData;
           
                 let { cardId } = consumerData;
                 if (isDef(cardId)) {
-                  checkpoints.set("the card", true);
                   let card = hand.getCard(cardId);
                   if (isDef(card)) {
-                    checkpoints.set("isCardInHand", true);
                     boolFailed = false;
-          
                     addressedResponses.addToBucket(
                       "default",
                       fn(
@@ -718,39 +708,26 @@ function buildDeps({
           let actionNum = currentTurn.getActionCount();
   
           // Request manager exists
-          checkpoints.set("requestManagerExists", false);
           if (isDef(currentTurn) && isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
   
             // Is request phase
-  
             let player = game.getPlayer(thisPersonId);
             let playerBank = player.getBank();
             let request = requestManager.getRequest(requestId);
-            checkpoints.set("isRequestDefined", false);
             if (isDef(request)) {
-              checkpoints.set("isRequestDefined", true);
   
               let requestPayload = request.getPayload();
               let transaction = requestPayload.transaction;
-  
-              checkpoints.set("hasTransaction", false);
               if (isDef(transaction)) {
-                checkpoints.set("hasTransaction", true);
   
                 let isApplicable = false;
                 let isAuthor = request.getAuthorKey() === thisPersonId;
                 let isTarget = request.getTargetKey() === thisPersonId;
-  
                 if (isAuthor || isTarget) {
                   isApplicable = true;
                 }
-  
                 // If is related to request
-                checkpoints.set("isApplicable", false);
                 if (isApplicable) {
-                  checkpoints.set("isApplicable", true);
-  
                   // Log what is to be reported back to the user
                   let _Affected = new Affected();
                   
@@ -924,33 +901,24 @@ function buildDeps({
         props,
         function (consumerData, checkpoints) {
           let { requestId } = consumerData;
-          let { roomCode, game, personManager, thisPersonId } = consumerData;
+          let { game, personManager, thisPersonId } = consumerData;
     
           let currentTurn = game.getCurrentTurn();
-          let phaseKey = currentTurn.getPhaseKey();
           let requestManager = currentTurn.getRequestManager();
           let actionNum = currentTurn.getActionCount();
     
           // Request manager exists
-          checkpoints.set("requestManagerExists", false);
           if (isDef(currentTurn) && isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
     
             // Is request phase
             let player = game.getPlayer(thisPersonId);
             let playerBank = player.getBank();
             let request = requestManager.getRequest(requestId);
-            checkpoints.set("isRequestDefined", false);
             if (isDef(request)) {
-              checkpoints.set("isRequestDefined", true);
-    
               let requestPayload = request.getPayload();
               let transaction = requestPayload.transaction;
     
-              checkpoints.set("hasTransaction", false);
               if (isDef(transaction)) {
-                checkpoints.set("hasTransaction", true);
-    
                 let isApplicable = false;
                 let isAuthor = request.getAuthorKey() === thisPersonId;
                 let isTarget = request.getTargetKey() === thisPersonId;
@@ -964,10 +932,8 @@ function buildDeps({
                 }
     
                 // If is related to request
-                checkpoints.set("isApplicable", false);
                 if (isApplicable) {
                   if (transaction.has(transferField)) {
-                    checkpoints.set("isApplicable", true);
     
                     // Get what is being transferd to me
                     let transfering = transaction.get(transferField);
@@ -1149,20 +1115,13 @@ function buildDeps({
   
           // request manager exists?
           let requestManager = currentTurn.getRequestManager();
-          checkpoints.set("requestManagerExists", false);
           if (isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
   
             // Is action phase?
-            checkpoints.set("action", false);
             if (currentTurn.getPhaseKey() === "action") {
-              checkpoints.set("action", true);
               let hand = game.getPlayerHand(thisPersonId);
               let card = game.getCard(cardId);
-              checkpoints.set("isValidCard", false);
               if (isDef(card) && game.isActionCard(card) && hand.hasCard(card)) {
-                checkpoints.set("isValidCard", true);
-  
                 // Determine request cardnality
                 let target = isDef(card.target) ? card.target : "one";
                 if (target === "one") {
@@ -1305,50 +1264,33 @@ function buildDeps({
           let actionNum = currentTurn.getActionCount();
           // request manager exists?
           let requestManager = currentTurn.getRequestManager();
-          checkpoints.set("requestManagerExists", false);
           if (isDef(requestManager)) {
-            checkpoints.set("requestManagerExists", true);
   
             // Is action phase?
-            checkpoints.set("action", false);
             if (currentTurn.getPhaseKey() === "action") {
               let collectionManager = game.getCollectionManager();
-              checkpoints.set("action", true);
   
               if (isDef(collectionId)) {
                 let collection = collectionManager.getCollection(collectionId);
   
-                checkpoints.set("collectionExists", false);
                 if (isDef(collection)) {
-                  checkpoints.set("collectionExists", true);
                   let collectionPropertySetKey = collection.getPropertySetKey();
   
-                  checkpoints.set("isMyCollection", false);
                   if (collection.getPlayerKey() === thisPersonId) {
-                    checkpoints.set("isMyCollection", true);
   
                     let hand = game.getPlayerHand(thisPersonId);
                     let card = game.getCard(cardId);
-                    checkpoints.set("isValidCard", false);
                     if (
                       isDef(card) &&
                       game.isRentCard(card) &&
                       hand.hasCard(card)
                     ) {
-                      checkpoints.set("isValidCard", true);
-  
                       let rentCardApplicableSets = game.getSetChoicesForCard(
                         card
                       );
-                      checkpoints.set("rentCanBeChargedForThisCollection", false);
                       if (
                         rentCardApplicableSets.includes(collectionPropertySetKey)
                       ) {
-                        checkpoints.set(
-                          "rentCanBeChargedForThisCollection",
-                          true
-                        );
-  
                         let activePile = game.getActivePile();
                         activePile.addCard(hand.giveCard(card));
   
