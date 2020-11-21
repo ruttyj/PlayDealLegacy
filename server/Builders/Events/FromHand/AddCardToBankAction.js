@@ -19,25 +19,18 @@ function buildAddCardToBankAction({
         return handCardConsumer(
           props,
           (props2, checkpoints) => {
-            checkpoints.set("isActionPhase", false);
-            checkpoints.set("isCardInHand", false);
-            checkpoints.set("cardCanBeAddedToBank", false);
+            checkpoints.set("junk", false); // @TODO for some reason this is still needed
 
             let { cardId } = props2;
-            let { hand, roomCode, game, personManager, thisPersonId } = props2;
+            let { hand, roomCode, game, thisPersonId } = props2;
             if (game.getCurrentTurn().getPhaseKey() === "action") {
-              checkpoints.set("isActionPhase", true);
 
               let card = hand.getCardById(cardId);
               if (isDef(card)) {
-                checkpoints.set("isCardInHand", true);
 
-                checkpoints.set("isWithinActionLimit", false);
                 if (game.getCurrentTurn().isWithinActionLimit()) {
-                  checkpoints.set("isWithinActionLimit", true);
 
                   if (game.canCardBeAddedToBank(card)) {
-                    checkpoints.set("cardCanBeAddedToBank", true);
 
                     let isWildCard = game.doesCardHaveTag(card, "wild");
 
