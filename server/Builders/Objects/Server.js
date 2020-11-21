@@ -1,6 +1,6 @@
-module.exports = function buildPlaydealServer({ utils})
+module.exports = function buildPlaydealServer({ utils })
 {
-  const rootFolder              = `../../../`
+  const rootFolder              = `../../..`
   const serverFolder            = `${rootFolder}/server`
   const serverSocketFolder      = `${serverFolder}/sockets`
   const builderFolder           = `${serverFolder}/Builders`
@@ -8,11 +8,10 @@ module.exports = function buildPlaydealServer({ utils})
 
 
   const CookieTokenManager      = require(`${serverFolder}/CookieTokenManager/`)
+  const KeyedRequest            = require(`${serverSocketFolder}/KeyedRequest.js`)
 
   // @TODO seperate this to respective files
   const buildPopulateRegistryMethod        = require(`${serverFolder}/sockets/PopulateRegistry`)
-  const KeyedRequest                       = require(`${serverSocketFolder}/KeyedRequest.js`)
-  
   const buildClientManager      = require(`${builderFolder}/Objects/ClientManager`)
   const buildPerson             = require(`${builderFolder}/Objects/Person`)
   const buildPersonManager      = require(`${builderFolder}/Objects/PersonManager`)
@@ -33,20 +32,20 @@ module.exports = function buildPlaydealServer({ utils})
   const buildWealthTransfer       = require(`${builderPlayDealFolder}/Transfer/WealthTransfer`)
   const buildTransaction          = require(`${builderPlayDealFolder}/Transfer/Transaction`)
 
-  const Transfer                    = buildTransfer({
-                                        makeVar, makeMap, isDef, isArr
-                                      })
-  const WealthTransfer              = buildWealthTransfer({
-                                        Transfer,
-                                        isObj, isDef, arrSum, makeMap,
-                                      });
-  const Transaction                 = buildTransaction({
-                                      isObj,
-                                      isDef,
-                                      arrSum,
-                                      makeMap,
-                                      WealthTransfer
-                                    })
+  const Transfer                  = buildTransfer({
+                                    makeVar, makeMap, isDef, isArr
+                                  })
+  const WealthTransfer            = buildWealthTransfer({
+                                    Transfer,
+                                    isObj, isDef, arrSum, makeMap,
+                                  });
+  const Transaction               = buildTransaction({
+                                    isObj,
+                                    isDef,
+                                    arrSum,
+                                    makeMap,
+                                    WealthTransfer
+                                  })
 
   // Build required objects
   const AddressedResponse       = buildAddressedResponse(utils)
@@ -61,11 +60,13 @@ module.exports = function buildPlaydealServer({ utils})
   const PersonManager           = buildPersonManager({ Person,  els,  isDef,  makeVar,  makeMap,  getKeyFromProp })
   const Room                    = buildRoom({ PersonManager, makeMap })
   const RoomManager             = buildRoomManager({ Room, elsFn,  isDef,  isStr,  makeMap })
-
-  const populateRegistry        = buildPopulateRegistryMethod({ 
+  const PlayDealActionProvider  = buildPopulateRegistryMethod({ 
                                     KeyedRequest,
                                     Transaction,
-                                    utils 
+                                    AddressedResponse,
+                                    Affected,
+                                    OrderedTree,
+                                    utils,
                                   });
 
   class BaseServer {
@@ -108,35 +109,30 @@ module.exports = function buildPlaydealServer({ utils})
      */
     init()
     {
-      const server                = this;
-      server.services             = new Map();
-      server.connections          = new Map();
-      server.registry             = new EventRegistry();
-      server.cookieTokenManager   = CookieTokenManager.getInstance();
-      server.clientManager        = ClientManager();
-      server.roomManager          = new RoomManager({ server });
+      const server                  = this;
+      server.services               = new Map();
+      server.connections            = new Map();
+      server.registry               = new EventRegistry();
+      server.cookieTokenManager     = CookieTokenManager.getInstance();
+      server.clientManager          = ClientManager();
+      server.roomManager            = new RoomManager({ server });
 
       // @TODO remove need for handleRoom from Connection
-      server.handleRoom           = buildHandleRoom({
-                                    isDef,
-                                    isFunc,
-                                    AddressedResponse,
-                                    roomManager: server.roomManager,
-                                  });
-      
-      populateRegistry({
-        registry                : server.registry,
-        //-------------------------
-        AddressedResponse,
-        Affected,
-        OrderedTree,
-        //-------------------------
-        handleRoom              : server.handleRoom,
-        clientManager           : server.clientManager,
-        roomManager             : server.roomManager,
-        cookieTokenManager      : server.cookieTokenManager,
-      })
+      server.handleRoom             = buildHandleRoom({
+                                        isDef,
+                                        isFunc,
+                                        AddressedResponse,
+                                        roomManager: server.roomManager,
+                                      });
 
+      const playDealActionProvider  = new PlayDealActionProvider({
+                                        handleRoom              : server.handleRoom,
+                                        clientManager           : server.clientManager,
+                                        roomManager             : server.roomManager,
+                                        cookieTokenManager      : server.cookieTokenManager,
+                                      });
+
+      playDealActionProvider.up(server.registry)
     }
 
     /**

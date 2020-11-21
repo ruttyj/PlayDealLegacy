@@ -54,7 +54,6 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
           let server          = connection.server
           let registry        = server.registry
           let handleRoom      = server.handleRoom
-          let roomManager     = server.roomManager; 
 
           let events              = isStr(jsonData) ? JSON.parse(jsonData) : jsonData
           let clientPersonMapping = {}
