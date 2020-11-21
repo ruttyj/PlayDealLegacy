@@ -94,7 +94,7 @@ module.exports = function buildPersonManager({
   
       if (isDef(person)) {
         if (person.isConnected()) {
-          person.removeClient()
+          person.removeSocket()
         }
       }
     }

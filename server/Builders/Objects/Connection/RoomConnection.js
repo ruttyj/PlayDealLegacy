@@ -32,7 +32,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
           let server = connection.server
           let socket = connection.socket
 
-          server.socketManager.addClient(socket);
+          server.socketManager.addSocket(socket);
       }
 
       /**
@@ -166,7 +166,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
             })// end foreach affected room
           }
 
-          socketManager.removeClient(socket)
+          socketManager.removeSocket(socket)
           server.onDisconnected(connection)
       }
   }

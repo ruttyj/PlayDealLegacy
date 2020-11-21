@@ -262,7 +262,7 @@ module.exports = function ({
                   ++removedPersonCount;
                   payload.ids.push(personId);
 
-                  person.removeClient();
+                  person.removeSocket();
                   personManager.removePerson(person);
 
                   // If it was the host who left, assing new host
@@ -368,7 +368,7 @@ module.exports = function ({
               let person = personManager.getPerson(personId);
               if (isDef(person)) {
                 disconnectedIds.push(person.getId());
-                person.removeClient();
+                person.removeSocket();
               }
             });
 

@@ -46,12 +46,12 @@ module.exports = function buildPerson({ isDef, makeList }={})
         personManager.connectPerson(person, client);
         client.events.disconnect.once(() => {
           personManager.disconnectPerson(person)
-          person.removeClient()
+          person.removeSocket()
         })
       }
     }
   
-    removeClient() {
+    removeSocket() {
       const person = this
       const personManager = person.getManager()
       if (isDef(person.client)) {

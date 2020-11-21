@@ -17,7 +17,7 @@ module.exports = function buildSocketManager({
       set: setClientInMap,
       get: getSocketInMap,
       has: hasClientInMap,
-      remove: removeClientInMap,
+      remove: removeSocketInMap,
       map: mapClients,
     } = makeMap(mState, "clients");
   
@@ -54,7 +54,7 @@ module.exports = function buildSocketManager({
       return getSocketInMap(clientId);
     }
   
-    function addClient(client) {
+    function addSocket(client) {
       // clientSockets use .id as the priamry way to get the id
       if (isDef(client) && isDef(client.id)) {
         client.events = {
@@ -69,7 +69,7 @@ module.exports = function buildSocketManager({
       return null;
     }
   
-    function removeClient(clientOrId) {
+    function removeSocket(clientOrId) {
       let client;
       let clientId;
       let typeofArg = typeof clientOrId;
@@ -91,7 +91,7 @@ module.exports = function buildSocketManager({
         mDisconnectEvent.emit(makeEventPayload(client));
   
         if (hasClientInMap(clientId)) {
-          removeClientInMap(clientId);
+          removeSocketInMap(clientId);
           mClientCount.dec();
         }
       }
@@ -128,9 +128,9 @@ module.exports = function buildSocketManager({
   
     //==================================================
     const publicScope = {
-      addClient,
+      addSocket,
       getSocket,
-      removeClient,
+      removeSocket,
       serialize,
       count: mClientCount.get,
   
