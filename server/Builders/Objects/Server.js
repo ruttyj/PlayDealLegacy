@@ -11,7 +11,7 @@ module.exports = function buildPlaydealServer({ utils})
 
   // @TODO seperate this to respective files
   const buildPopulateRegistryMethod        = require(`${serverFolder}/sockets/PopulateRegistry`)
-  const KeyedRequest                       = require(`${serverSocketFolder}/container/keyedRequest.js`)
+  const KeyedRequest                       = require(`${serverSocketFolder}/KeyedRequest.js`)
   
   const buildClientManager      = require(`${builderFolder}/Objects/ClientManager`)
   const buildPerson             = require(`${builderFolder}/Objects/Person`)

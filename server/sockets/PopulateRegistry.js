@@ -200,8 +200,10 @@ module.exports = function buildPopulateRegistryMethod({
        
         // register methods to socket eventRegistry
         registerConnectionsMethods(registry);
-        registerPeopleMethods(registry);
+
         registerRoomMethods(registry);
+        registerPeopleMethods(registry);
+
         registerChatMethods(registry);
         gameActionProvider.up(registry);
       }

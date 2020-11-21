@@ -77,7 +77,6 @@ function buildAddCardToBankAction({
                       );
                     }
 
-                    //ADD_CARD_TO_MY_BANK_FROM_HAND
                     // Confirm this executed
                     let payload = {
                       checkpoints: packageCheckpoints(checkpoints),
@@ -104,7 +103,6 @@ function buildAddCardToBankAction({
           },
           makeConsumerFallbackResponse({ subject, action, addressedResponses })
         );
-      
     }
 }
 

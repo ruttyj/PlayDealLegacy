@@ -117,7 +117,7 @@ function buildDeps({
         checkpoints.forEach((value, message) => (dumpCheckpoint[message] = value));
         return dumpCheckpoint;
       }
-      return null;
+      return {};
     }
 
     function canGameStart(game, personManager)

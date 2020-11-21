@@ -1,4 +1,4 @@
-const { makeVar, serializeState, log, logBlock } = require("../utils.js");
+const { makeVar, serializeState } = require("./utils.js");
 
 function KeyedRequest() {
   const mState = {};
