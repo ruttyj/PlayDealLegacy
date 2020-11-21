@@ -30,12 +30,6 @@ describe("Just Say No", async function () {
     if (1) {
       let checkpoints = new Map();
       let _Affected = new Affected();
-      let affected = {
-        requests: false,
-      };
-      let affectedIds = {
-        requests: [],
-      };
       let thisPersonId = 1;
       let validAugmentCardsIds = [];
       let targetPeopleIds = [2];
@@ -49,9 +43,7 @@ describe("Just Say No", async function () {
         targetPeopleIds,
         validAugmentCardsIds,
         thisPersonId, 
-        affectedIds, 
         _Affected,
-        affected, 
         checkpoints,
       })
     }
@@ -64,18 +56,6 @@ describe("Just Say No", async function () {
       let cardId = 24;// 23, 24, 25
       let _Affected = new Affected();
       
-      let affected = {
-        hand: false,
-        bank: false,
-        requests: false,
-        collections: false,
-      };
-      let affectedIds = {
-        requests: [],
-        playerRequests: [],
-        collections: [],
-        playerCollections: [],
-      };
 
       game.declineCollectValueRequest({
         request,
@@ -84,8 +64,6 @@ describe("Just Say No", async function () {
         thisPersonId,
         cardId,
         _Affected,
-        affected,
-        affectedIds,
       })
     }
 
@@ -96,30 +74,14 @@ describe("Just Say No", async function () {
       let cardId = 23;// 23, 24, 25
       let responseKey = "decline";
 
-      let request = requestManager.getRequest(requestId);
       let checkpoints = new Map();
       let _Affected = new Affected();
-
-      let affected = {
-        hand: false,
-        bank: false,
-        requests: false,
-        collections: false,
-      };
-      let affectedIds = {
-        requests: [],
-        playerRequests: [],
-        collections: [],
-        playerCollections: [],
-      };
 
       game.respondToJustSayNo({ 
         cardId, 
         requestId, 
         responseKey, 
         _Affected,
-        affected,
-        affectedIds,
         checkpoints,
         thisPersonId 
       });
@@ -133,34 +95,17 @@ describe("Just Say No", async function () {
       let cardId = 25;// 23, 24, 25
       let responseKey = "decline";
 
-      let request = requestManager.getRequest(requestId);
       let checkpoints = new Map();
       let _Affected = new Affected();
-
-      let affected = {
-        hand: false,
-        bank: false,
-        requests: false,
-        collections: false,
-      };
-      let affectedIds = {
-        requests: [],
-        playerRequests: [],
-        collections: [],
-        playerCollections: [],
-      };
 
       game.respondToJustSayNo({ 
         cardId, 
         requestId, 
         responseKey, 
         _Affected,
-        affected,
-        affectedIds,
         checkpoints,
         thisPersonId 
       });
-
     }
 
     // Player 1 accepts the "Just say no"
@@ -170,30 +115,14 @@ describe("Just Say No", async function () {
       let cardId = null;// 23, 24, 25
       let responseKey = "accept";
 
-      let request = requestManager.getRequest(requestId);
       let checkpoints = new Map();
       let _Affected = new Affected();
-
-      let affected = {
-        hand: false,
-        bank: false,
-        requests: false,
-        collections: false,
-      };
-      let affectedIds = {
-        requests: [],
-        playerRequests: [],
-        collections: [],
-        playerCollections: [],
-      };
 
       game.respondToJustSayNo({ 
         cardId, 
         requestId, 
         responseKey, 
         _Affected,
-        affected,
-        affectedIds,
         checkpoints,
         thisPersonId 
       });

@@ -109,7 +109,7 @@ module.exports = function buildPlayerRequestManager({
   
     function _reconstructRequest(
       thisRequest,
-      { affected, affectedIds, _Affected }
+      { _Affected }
     ) {
       // sure, it did go away.... but its baccccck
       let reconstruct = thisRequest.getPayload("reconstruct");
@@ -126,13 +126,6 @@ module.exports = function buildPlayerRequestManager({
         _Affected.setAffected('PLAYER_REQUEST', newRequest.getAuthorKey(), Affected.ACTION.UPDATE);
         _Affected.setAffected('PLAYER_REQUEST', newRequest.getTargetKey(), Affected.ACTION.UPDATE);
         _Affected.setAffected('REQUEST', thisRequest.getId(), Affected.ACTION.UPDATE);
-  
-      } else {
-        affected.requests = true;
-        affectedIds.requests.push(newRequest.getId());
-        affectedIds.playerRequests.push(newRequest.getAuthorKey());
-        affectedIds.playerRequests.push(newRequest.getTargetKey());
-        affectedIds.requests.push(thisRequest.getId());
       }
   
       _justSayNoClose(thisRequest);
@@ -141,7 +134,7 @@ module.exports = function buildPlayerRequestManager({
   
     function _justSayNoTransitive(
       thisRequest,
-      { cardId, affected, affectedIds, _Affected }
+      { cardId, _Affected }
     ) {
       let counterJustSayNo = makeJustSayNo(thisRequest, cardId);
   
@@ -151,14 +144,7 @@ module.exports = function buildPlayerRequestManager({
         _Affected.setAffected('REQUEST', counterJustSayNo.getId(), Affected.ACTION.UPDATE);
         _Affected.setAffected('PLAYER_REQUEST', counterJustSayNo.getAuthorKey(), Affected.ACTION.UPDATE);
         _Affected.setAffected('PLAYER_REQUEST', counterJustSayNo.getTargetKey(), Affected.ACTION.UPDATE);
-      } else {
-        affected.requests = true;
-        affectedIds.requests.push(thisRequest.getId());
-        affectedIds.requests.push(counterJustSayNo.getId());
-        affectedIds.playerRequests.push(counterJustSayNo.getAuthorKey());
-        affectedIds.playerRequests.push(counterJustSayNo.getTargetKey());
       }
-      
     }
   
     function makeJustSayNo(request, cardId) {
