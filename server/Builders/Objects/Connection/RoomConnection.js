@@ -179,8 +179,16 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
         return this.room
       }
 
+      setRoom(room){
+        this.room = room;
+      }
+
       getPerson(){
         return this.person
+      }
+
+      setPerson(person){
+        this.person = person;
       }
   }
 }

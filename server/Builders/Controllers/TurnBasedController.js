@@ -22,25 +22,33 @@ module.exports = function buildTurnBasedController({
 
   /*
   function handleGame(props, fn, fallback = undefined) {
+    let checkpoints = new Map();
     const { connection } = props;
     if (isDef(connection)) {
-      let room = connection.getRoom();
-      let person = connection.getPerson();
+      const room = connection.getRoom()
+      const personManager = room.getPersonManager()
+      const person = connection.getPerson()
       if (isDef(room)) {
-        let game = room.getGame();
+        const roomCode = room.getCode()
+        const game = room.getGame()
         return fn({
           ...props,
+          room,
+
           game,
+          personManager,
           person,
           // dep
+          roomManager,
+          thisRoomCode: roomCode,
           thisPersonId: person.getId()
-        })
+        }, checkpoints)
       }
     }
     if (isFunc(fallback)) {
-      return fallback(checkpoints);
+      return fallback(checkpoints)
     }
-    return fallback;
+    return fallback
   }
   */
   return class TurnBasedController {

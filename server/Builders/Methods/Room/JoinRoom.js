@@ -25,7 +25,7 @@ module.exports = function ({
         return handleRoom(
           props,
           (consumerData) => {
-            let { room, personManager } = consumerData;
+            let { connection, room, personManager } = consumerData;
             let token = cookieTokenManager.getTokenForClientId(thisClientKey);
 
             // Check if user can reconnect
@@ -70,6 +70,9 @@ module.exports = function ({
               let status = "";
               let payload = {};
               let personId = person.getId();
+
+              connection.setPerson(person)
+              connection.setRoom(room)
 
               // associate cookie to session
               if (isDef(token)) {

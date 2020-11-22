@@ -127,6 +127,7 @@ module.exports = function buildPlaydealServer({ utils })
       const playDealActionProvider  = new PlayDealActionProvider({
                                       handleRoom              : server.handleRoom,
                                       socketManager           : server.socketManager,
+                                      connectionManager       : server.connectionManager,
                                       roomManager             : server.roomManager,
                                       cookieTokenManager      : server.cookieTokenManager,
                                     })
