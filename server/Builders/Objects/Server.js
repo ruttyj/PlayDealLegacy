@@ -1,6 +1,11 @@
 module.exports = function buildPlaydealServer({ utils })
 {
-  const { isDef, isArr, isObj, isStr, isFunc, els, elsFn, getKeyFromProp, arrSum, makeVar, makeList, makeMap, makeListener  } = utils
+  // Unpack Methods
+  const { isDef, isStr, isArr, isObj, isFunc }        = utils
+  const { makeVar, makeList, makeMap, makeListener }  = utils
+  const { getKeyFromProp, arrSum }                    = utils
+  const { els, jsonEncode }                           = utils
+  const { elsFn }                                     = utils
 
   // Define Paths
   const rootFolder                  = `../../..`
@@ -36,14 +41,14 @@ module.exports = function buildPlaydealServer({ utils })
   const SocketManager               = buildSocketManager({ isDef, makeVar, makeMap, makeListener, getKeyFromProp })
   const AddressedResponse           = buildAddressedResponse(utils)
   const BaseConnection              = buildBaseConnection()
-  const RoomConnection              = buildRoomConnection({ BaseConnection, AddressedResponse, ...utils, })
+  const RoomConnection              = buildRoomConnection({ BaseConnection, AddressedResponse, els, isDef, isStr, isArr, jsonEncode })
   const ConnectionManager           = buildConnectionManager({ getKeyFromProp, isDef })
   const CookieTokenManager          = require(`${serverFolder}/CookieTokenManager/`)
   
   const Person                      = buildPerson({ isDef, makeList })
-  const PersonManager               = buildPersonManager({ Person, ...utils })
+  const PersonManager               = buildPersonManager({ Person, els,  isDef,  makeVar,  makeMap,  getKeyFromProp })
   const Room                        = buildRoom({ PersonManager, makeMap })
-  const RoomManager                 = buildRoomManager({ Room, ...utils })
+  const RoomManager                 = buildRoomManager({ Room, elsFn,  isDef,  isStr,  makeMap })
 
   const OrderedTree                 = buildOrderedTree()
   const Affected                    = buildAffected({ OrderedTree })
@@ -85,14 +90,14 @@ module.exports = function buildPlaydealServer({ utils })
     constructor()
     {
       super()
-      this.registry          // event Registry
-      this.roomManager
-      this.cookieTokenManager
-      this.registry
-      this.connections
-      this.utils
-
-      this.init()
+      const server = this
+      server.registry          // event Registry
+      server.roomManager
+      server.cookieTokenManager
+      server.registry
+      server.connections
+      server.utils
+      server.init()
     }
     
 
@@ -103,7 +108,7 @@ module.exports = function buildPlaydealServer({ utils })
     {
       const server                  = this
       server.socketManager          = new SocketManager()
-      server.connections            = new ConnectionManager()
+      server.connectionManager      = new ConnectionManager()
       server.cookieTokenManager     = CookieTokenManager.getInstance()
       server.roomManager            = new RoomManager({ server })
 
@@ -139,9 +144,11 @@ module.exports = function buildPlaydealServer({ utils })
     onConnected(socket)
     {
       const server      = this
-      const connections = this.connections
-      let connection  = new RoomConnection({ server, socket })
+      const connections = this.connectionManager
+
+      let connection = new RoomConnection({ server, socket })
       connections.set(connection.id, connection)
+
       // Attach events
       connection.registerEvents()
     }
