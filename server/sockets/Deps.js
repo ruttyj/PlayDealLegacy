@@ -27,8 +27,14 @@ function buildDeps({
       };
     }
 
-    function makeResponse({ status, subject, action, payload, message })
+    function makeResponse({ event, status, subject, action, payload, message })
     {
+
+      if (isDef(event)) {
+        let temp = event.split('.')
+        subject = temp[0]
+        action = temp[1]
+      }
       let result = {
         status: status,
         subject: subject,
@@ -191,8 +197,13 @@ function buildDeps({
       return addressedResponses;
     }
 
-    function makeConsumerFallbackResponse({ subject, action, addressedResponses })
+    function makeConsumerFallbackResponse({ event, subject, action, addressedResponses })
     {
+      if (isDef(event)) {
+        let temp = event.split('.')
+        subject = temp[0]
+        action = temp[1]
+      }
       return function (checkpoints) {
         let serializecheckpoints = {
           items: {},
@@ -496,9 +507,6 @@ function buildDeps({
         function(props2, checkpoints) {
           let { room } = props2;
           let game = room.getGame();
-
-
-
 
           if (isDef(game)) {
             return fn(
@@ -1425,28 +1433,24 @@ function buildDeps({
     }
 
     return {
-        makeProps,
-        makeResponse,
-        makeKeyedResponse,
+      getAllKeyedResponse,
+      createGameInstance,
 
-        getAllKeyedResponse,
-        createGameInstance,
+      makeProps,
+      makeResponse,
+      makeKeyedResponse,
+      makePersonSpecificResponses,
+      makeConsumerFallbackResponse,
+      makeRegularGetKeyed,
 
-        makePersonSpecificResponses,
-        makeConsumerFallbackResponse,
-        makeRegularGetKeyed,
-
-        handleRoom,
-        handlePerson,
-
-        handleGame,
-
-        handleMyTurn,
-        handCardConsumer,
-        handleTransactionResponse,
-        handleTransferResponse,
-        handleRequestCreation,
-        handleCollectionBasedRequestCreation,
+      handlePerson,
+      handleGame,
+      handleMyTurn,
+      handCardConsumer,
+      handleTransactionResponse,
+      handleTransferResponse,
+      handleRequestCreation,
+      handleCollectionBasedRequestCreation,
     }
 }
 

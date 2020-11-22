@@ -44,18 +44,26 @@ module.exports = function buildPopulateRegistryMethod({
             cookieTokenManager,
           })
         {
-          this.handleRoom         = handleRoom
-          this.socketManager      = socketManager
-          this.roomManager        = roomManager
-          this.cookieTokenManager = cookieTokenManager
+          const playDealActionProvider = this
+
+          playDealActionProvider.mDeps = {
+            handleRoom,
+            socketManager,
+            roomManager,
+            cookieTokenManager,
+          }
         }
 
         up(registry)
         {
-          let handleRoom          = this.handleRoom
-          let socketManager       = this.socketManager
-          let roomManager         = this.roomManager
-          let cookieTokenManager  = this.cookieTokenManager
+          const playDealActionProvider = this
+
+          let {
+            handleRoom,
+            socketManager,
+            roomManager,
+            cookieTokenManager,
+          } = playDealActionProvider.mDeps
 
           let {
             getAllKeyedResponse,
@@ -91,7 +99,7 @@ module.exports = function buildPopulateRegistryMethod({
             registry,
             //-------------------
             roomManager,
-          });
+          })
   
   
           //=========================================================================
@@ -181,7 +189,9 @@ module.exports = function buildPopulateRegistryMethod({
         
         down (registry)
         {
-          //@TODO
+          this.connectionActionProvider.down(registry)
+          this.gameActionProvider.down(registry)
+          this.roomActionProvider.down(registry)
         }
       }
   }

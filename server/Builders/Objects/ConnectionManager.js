@@ -5,33 +5,33 @@ module.exports = function buildConnectionManager({ getKeyFromProp, isDef })
     constructor()
     {
       const connectionManager = this
-      connectionManager.connections = new Map()
+      connectionManager.mConnections = new Map()
     }
 
     set(connectionId, connection)
     {
       const connectionManager = this
-      connectionManager.connections.set(connectionId, connection)
+      connectionManager.mConnections.set(connectionId, connection)
     }
 
     add(connection)
     {
       const connectionManager = this
-      connectionManager.connections.set(connection.id, connection)
+      connectionManager.mConnections.set(connection.id, connection)
     }
 
     get(connectionOrId) {
       const connectionManager = this
       let connectionId = getKeyFromProp(connectionOrId, `id`)
-      return connectionManager.connections.get(connectionId)
+      return connectionManager.mConnections.get(connectionId)
     }
 
     remove(connectionOrId)
     {
       const connectionManager = this
-      let connection = get(connectionOrId)
+      let connection = connectionManager.get(connectionOrId)
       if (isDef(connection)) {
-        connectionManager.connections.remove(connection.id)
+        connectionManager.mConnections.delete(connection.id)
       }
     }
   }

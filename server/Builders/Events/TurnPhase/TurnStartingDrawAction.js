@@ -1,7 +1,7 @@
 function buildTurnStartingDrawAction({
     makeProps,
     AddressedResponse,
-    registry,
+    
     makeConsumerFallbackResponse,
     handleMyTurn,
     makeResponse,
@@ -15,7 +15,7 @@ function buildTurnStartingDrawAction({
         return handleMyTurn(
           props,
           (props2) => {
-            let { roomCode, game, thisPersonId } = props2;
+            let { roomCode, game, thisPersonId, actionRegistry } = props2;
 
             if (game.getCurrentTurn().canDrawTurnStartingCards()) {
               // Draw Card from deck ------------------------------------
@@ -38,7 +38,7 @@ function buildTurnStartingDrawAction({
               // Let people know --------------------------------------------------------
               addressedResponses.addToBucket(
                 "everyone",
-                registry.execute('PLAYERS.PERSON_DREW_CARDS_KEYED', makeProps(props, {
+                actionRegistry.execute('PLAYERS.PERSON_DREW_CARDS_KEYED', makeProps(props, {
                   personId: thisPersonId,
                   cardIds: cardIdsDelta,
                 }))
@@ -46,14 +46,14 @@ function buildTurnStartingDrawAction({
 
               addressedResponses.addToBucket(
                 "default",
-                registry.execute('DRAW_PILE.GET', makeProps(props))
+                actionRegistry.execute('DRAW_PILE.GET', makeProps(props))
               );
 
               // Update everyone with my new hand
               let allPlayerIds = game.getAllPlayerKeys();
               addressedResponses.addToBucket(
                 "default",
-                registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
+                actionRegistry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                   roomCode,
                   personId: thisPersonId,
                   receivingPeopleIds: allPlayerIds,
@@ -74,7 +74,7 @@ function buildTurnStartingDrawAction({
               // Update current turn state
               addressedResponses.addToBucket(
                 "everyone",
-                registry.execute('PLAYER_TURN.GET', makeProps(props))
+                actionRegistry.execute('PLAYER_TURN.GET', makeProps(props))
               );
               //___________________________________________________________________________
             }

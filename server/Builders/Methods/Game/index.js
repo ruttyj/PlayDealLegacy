@@ -20,10 +20,7 @@ const buildAddPropertyToExitingCollectionAction     = require(`${builderFolder}/
 const buildAddSetAugmentToExistingCollectionAction  = require(`${builderFolder}/Events/FromHand/AddSetAugmentToExistingCollectionAction`)
 const buildAddSetAugmentToNewCollectionAction       = require(`${builderFolder}/Events/FromHand/AddSetAugmentToNewCollectionAction`)
 
-// Turn based
-const buildTurnStartingDrawAction                   = require(`${builderFolder}/Events/TurnPhase/TurnStartingDrawAction`)
-const buildAttemptFinishTurnAction                  = require(`${builderFolder}/Events/TurnPhase/AttemptFinishTurnAction`)
-const buildDiscardToHandLimitAction                 = require(`${builderFolder}/Events/TurnPhase/DiscardToHandLimitAction`)
+
 
 // From Collection
 const buildTransferPropertyToNewCollectionFromExistingAction          = require(`${builderFolder}/Events/FromCollection/TransferPropertyToNewCollectionFromExistingAction`)
@@ -85,7 +82,6 @@ module.exports = function ({
   makeRegularGetKeyed,
 
   getAllKeyedResponse,
-  canGameStart,
   createGameInstance,
 
   handleRoom,
@@ -111,17 +107,6 @@ module.exports = function ({
     roomManager, 
   }
 
-  class BaseActionProvider
-  {
-    up(registry)
-    {
-    }
-
-    down(registry)
-    {
-      //registry.remove()
-    }
-  }  
   
   class GameCoreActionProvider
   {
@@ -447,81 +432,45 @@ module.exports = function ({
     }
   }
 
-  class TurnBaseActionProvider
-  {
-    up(registry)
-    {
-      registry.public(`PLAYER_TURN.GET`, (props) => {
-        let subject = "PLAYER_TURN";
-        let action = "GET";
-        const addressedResponses = new AddressedResponse();
-        return handleGame(
-          props,
-          (consumerData) => {
-            let { game, thisPersonId } = consumerData;
-            let currentTurn = game.getCurrentTurn();
 
-            if (currentTurn.getPhaseKey() === "discard") {
-              let thisPlayerHand = game.getPlayerHand(thisPersonId);
-              let remaining =
-                thisPlayerHand.getCount() - game.getHandMaxCardCount();
-              if (remaining > 0) {
-                currentTurn.setPhaseData({
-                  remainingCountToDiscard: remaining,
-                });
-              }
-            }
+  const buildTurnBasedActionProvider = require(`../../../Builders/Providers/Action/TurnBasedActionProvider`)
 
-            let payload = game.getCurrentTurn().serialize();
-
-            addressedResponses.addToBucket(
-              "default",
-              makeResponse({ subject, action, status: "success", payload })
-            );
-
-            return addressedResponses;
-          },
-          makeConsumerFallbackResponse({ subject, action, addressedResponses })
-        );
-      })
-      registry.public(`MY_TURN.TURN_STARTING_DRAW`, buildTurnStartingDrawAction({
-        ...commonDeps,
-        registry,
-        AddressedResponse,
-        makeConsumerFallbackResponse,
-        handleMyTurn,
-        makeResponse,
-      }))
-      registry.public(`MY_TURN.FINISH_TURN`, buildAttemptFinishTurnAction({
-        ...commonDeps,
-        registry,
-        AddressedResponse,
-        makeConsumerFallbackResponse,
-        handleMyTurn,
-        makeResponse,
-        makeProps,
-      }))
-      registry.public(`MY_TURN.DISCARD_REMAINING`, buildDiscardToHandLimitAction({
-        ...commonDeps,
-        registry,
-        AddressedResponse,
-        makeConsumerFallbackResponse,
-        handleMyTurn,
-        makeResponse,
-        makeProps,
-        els,
-      }) )
-
-    }
-
-    down(registry)
-    {
-      registry.remove(`PLAYER_TURN.GET`)
-      registry.remove(`MY_TURN.TURN_STARTING_DRAW`)
-      registry.remove(`MY_TURN.FINISH_TURN`)
-      registry.remove(`MY_TURN.DISCARD_REMAINING`)
-    }
-  }  
+  const buildTurnBasedController = require(`../../../Builders/Controllers/TurnBasedController`)
+  const TurnBasedController = buildTurnBasedController({
+    els,
+    AddressedResponse,
+    makeProps,
+    makeResponse,
+    makeConsumerFallbackResponse,
+    handleGame,
+    handleMyTurn,
+    // Props
+    roomManager, 
+    // Helpers
+    isDef, isArr, isFunc, 
+    getArrFromProp,
+    // Structures
+    Affected, 
+    Transaction,
+  })
+  const TurnBasedActionProvider  = buildTurnBasedActionProvider({
+    TurnBasedController,
+    els,
+    AddressedResponse,
+    makeProps,
+    makeResponse,
+    makeConsumerFallbackResponse,
+    handleGame,
+    handleMyTurn,
+    // Props
+    roomManager, 
+    // Helpers
+    isDef, isArr, isFunc, 
+    getArrFromProp,
+    // Structures
+    Affected, 
+    Transaction,
+  })
 
   class PileActionProvider
   {
@@ -1471,80 +1420,41 @@ module.exports = function ({
   {
     constructor()
     {
-      this.gameCoreActions                = new GameCoreActionProvider()
-      this.turnBaseActions                = new TurnBaseActionProvider()
-      this.pileActions                    = new PileActionProvider()
-      this.bankActions                    = new BankActionProvider()
-      this.collectionFromHandActions      = new CollectionFromHandActionProvider()
-      this.betweenCollectionActions       = new BetweenCollectionActionProvider()
+      const gameActionProvider = this;
+      const providers = new Map()
+     
+      providers.set('gameCoreActions',              new GameCoreActionProvider)
+      providers.set('turnBasedActions',             new TurnBasedActionProvider)
+      providers.set('pileActions',                  new PileActionProvider)
+      providers.set('bankActions',                  new BankActionProvider)
+      providers.set('collectionFromHandActions',    new CollectionFromHandActionProvider)
+      providers.set('betweenCollectionActions',     new BetweenCollectionActionProvider)
 
-      this.requestCoreActions             = new RequestCoreActionProvider()
-      this.requestCounterActions          = new RequestCounterActionProvider()
-      this.resourceCollectionActions      = new ResourceCollectionActionProvider()
-      this.stealCollectionActions         = new StealCollectionActionProvider()
-      this.stealPropertyActions           = new StealPropertyActionProvider()
-      this.swapPropertyActions            = new SwapPropertyActionProvider()
-      this.drawCardActions                = new DrawCardActionProvider()
-      this.cardActions                    = new CardActionProvider()
-      this.requestValueActionProvider     = new RequestValueActionProvider()
-      this.playerActionProvider           = new PlayerActionProvider()
-      this.collectionCoreActionProvider   = new CollectionCoreActionProvider()
-      this.cheatActionProvider            = new CheatActionProvider()
+      providers.set('requestCoreActions',           new RequestCoreActionProvider)
+      providers.set('requestCounterActions',        new RequestCounterActionProvider)
+      providers.set('resourceCollectionActions',    new ResourceCollectionActionProvider)
+      providers.set('stealCollectionActions',       new StealCollectionActionProvider)
+      providers.set('stealPropertyActions',         new StealPropertyActionProvider)
+      providers.set('swapPropertyActions',          new SwapPropertyActionProvider)
+      providers.set('drawCardActions',              new DrawCardActionProvider)
+      providers.set('cardActions',                  new CardActionProvider)
+      providers.set('requestValueActionProvider',   new RequestValueActionProvider)
+      providers.set('playerActionProvider',         new PlayerActionProvider)
+      providers.set('collectionCoreActionProvider', new CollectionCoreActionProvider)
+      providers.set('cheatActionProvider',          new CheatActionProvider)
+
+      gameActionProvider.providers = providers
     }
     up(registry)
     {
-      this.gameCoreActions.up(registry)
-
-      this.playerActionProvider.up(registry)
-      this.pileActions.up(registry)
-      this.cardActions.up(registry)
-
-      this.turnBaseActions.up(registry)
-      this.bankActions.up(registry)
-
-      this.collectionCoreActionProvider.up(registry)
-      this.collectionFromHandActions.up(registry)
-      this.betweenCollectionActions.up(registry)
-      
-      this.drawCardActions.up(registry)
-
-      this.requestCoreActions.up(registry)
-      this.requestValueActionProvider.up(registry)
-      this.stealCollectionActions.up(registry)
-      this.stealPropertyActions.up(registry)
-      this.swapPropertyActions.up(registry)
-      this.resourceCollectionActions.up(registry)
-      this.requestCounterActions.up(registry)
-
-      this.cheatActionProvider.up(registry)
+      const providers = this.providers
+      providers.forEach(provider => provider.up(registry))
     }
     
     down(registry)
     {
-      this.gameCoreActions.up(registry)
-
-      this.playerActionProvider.up(registry)
-      this.pileActions.up(registry)
-      this.cardActions.up(registry)
-
-      this.turnBaseActions.up(registry)
-      this.bankActions.up(registry)
-
-      this.collectionCoreActionProvider.up(registry)
-      this.collectionFromHandActions.up(registry)
-      this.betweenCollectionActions.up(registry)
-      
-      this.drawCardActions.up(registry)
-
-      this.requestCoreActions.up(registry)
-      this.requestValueActionProvider.up(registry)
-      this.stealCollectionActions.up(registry)
-      this.stealPropertyActions.up(registry)
-      this.swapPropertyActions.up(registry)
-      this.resourceCollectionActions.up(registry)
-      this.requestCounterActions.up(registry)
-
-      this.cheatActionProvider.up(registry)
+      const providers = this.providers
+      providers.forEach(provider => provider.down(registry))
     }
   }
 }

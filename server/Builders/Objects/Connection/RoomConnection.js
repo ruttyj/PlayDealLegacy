@@ -24,7 +24,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
       }
 
       /**
-       * When connection is initialized and ready to do the conconnect logic
+       * When connection is initialized
        */
       onConnected()
       {
@@ -79,6 +79,10 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                   let payload = els(request.props, els(request.payload, {}))
                   payload.thisClientKey   = socket.id
                   payload.thisClient      = socket
+                  payload.connection      = connection
+                  payload.actionRegistry  = registry
+
+                  
 
                   // Collect the addressed responses
                   let eventResponses = new AddressedResponse()
@@ -168,6 +172,15 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
 
           socketManager.removeSocket(socket)
           server.onDisconnected(connection)
+      }
+
+
+      getRoom(){
+        return this.room
+      }
+
+      getPerson(){
+        return this.person
       }
   }
 }

@@ -1,8 +1,8 @@
 function buildDiscardToHandLimitAction({
     makeProps,
-    els, isDef,
+    els, 
+    isDef,
     AddressedResponse,
-    registry,
     makeConsumerFallbackResponse,
     handleMyTurn,
     makeResponse,
@@ -20,11 +20,11 @@ function buildDiscardToHandLimitAction({
             let {
               cardIds,
               game,
-              personManager,
               hand,
               currentTurn,
               roomCode,
               thisPersonId,
+              actionRegistry,
             } = props2;
             cardIds = els(cardIds, []);
 
@@ -75,7 +75,7 @@ function buildDiscardToHandLimitAction({
             if (hasWildCard) {
               addressedResponses.addToBucket(
                 "everyone",
-                registry.execute('CARDS.GET_KEYED', makeProps(props, {
+                actionRegistry.execute('CARDS.GET_KEYED', makeProps(props, {
                   cardId: wildCardIds,
                 }))
               );
@@ -85,7 +85,7 @@ function buildDiscardToHandLimitAction({
             let allPlayerIds = game.getAllPlayerKeys();
             addressedResponses.addToBucket(
               "default",
-              registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
+              actionRegistry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                 roomCode,
                 personId: thisPersonId,
                 receivingPeopleIds: allPlayerIds,
@@ -97,17 +97,17 @@ function buildDiscardToHandLimitAction({
             );
             addressedResponses.addToBucket(
               "everyone",
-              registry.execute('DISCARD_PILE.GET', makeProps(props))
+              actionRegistry.execute('DISCARD_PILE.GET', makeProps(props))
             );
             addressedResponses.addToBucket(
               "everyone",
-              registry.execute('PLAYER_TURN.GET', makeProps(props))
+              actionRegistry.execute('PLAYER_TURN.GET', makeProps(props))
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
                 "everyone",
-                registry.execute('GAME.STATUS', makeProps(props))
+                actionRegistry.execute('GAME.STATUS', makeProps(props))
               );
             }
 

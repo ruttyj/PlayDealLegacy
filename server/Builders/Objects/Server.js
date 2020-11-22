@@ -144,13 +144,9 @@ module.exports = function buildPlaydealServer({ utils })
     onConnected(socket)
     {
       const server      = this
-      const connections = this.connectionManager
-
       let connection = new RoomConnection({ server, socket })
-      connections.set(connection.id, connection)
-
-      // Attach events
       connection.registerEvents()
+      server.connectionManager.set(connection.id, connection)
     }
 
     /**
@@ -165,6 +161,8 @@ module.exports = function buildPlaydealServer({ utils })
      * 
      */
     onDisconnected(connection){
+      const server = this
+      server.connectionManager.remove(connection)
       connection.unregisterEvents()
     }
   }
