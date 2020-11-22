@@ -3,147 +3,102 @@ module.exports = function buildSocketManager({
   makeVar,
   makeMap,
   makeListener,
+  getKeyFromProp,
 }){
-  return function SocketManager() {
-    let mState = {};
-  
-    //==================================================
-  
-    //                    Variables
-  
-    //==================================================
-    const mPrivateVars = ["clients"];
-    const {
-      set: setClientInMap,
-      get: getSocketInMap,
-      has: hasClientInMap,
-      remove: removeSocketInMap,
-      map: mapClients,
-    } = makeMap(mState, "clients");
-  
-    const mClientCount = makeVar(mState, "clientCount", 0);
-    
-    //==================================================
-  
-    //              External references
-  
-    //==================================================
-    const mExternalRefs = [];
-  
-    //==================================================
-  
-    //                    Events
-  
-    //==================================================
-    const mConnectEvent = makeListener();
-    const mDisconnectEvent = makeListener();
-  
-    //==================================================
-  
-    //                Additional Logic
-  
-    //==================================================
-    function makeEventPayload(client) {
-      return {
-        socketManager: getPublic(),
-        client,
-      };
+  return class SocketManager {
+    constructor()
+    {
+      const socketManager = this
+
+      socketManager._data = {}
+      let makeCounter = (name) => makeVar(socketManager._data, name, 0)
+
+      const entityType = `clients`
+      socketManager.mItemCount      = makeCounter(`${entityType}Count`)
+      socketManager.mItems          = makeMap(socketManager._data, `${entityType}s`) // @TODO add pluralize
+      socketManager.onConnected     = makeListener()
+      socketManager.onDisconnected  = makeListener()
     }
-  
-    function getSocket(clientId) {
-      return getSocketInMap(clientId);
+
+    getSocket(id){
+      const socketManager = this
+
+      return socketManager.mItems.get(id);
     }
-  
-    function addSocket(client) {
+
+    addSocket(socket) {
+      const socketManager = this
+
       // clientSockets use .id as the priamry way to get the id
-      if (isDef(client) && isDef(client.id)) {
-        client.events = {
-          disconnect: makeListener(),
+      if (isDef(socket) && isDef(socket.id)) {
+
+        // Attach a addional events to the socket
+        // For server side logic to subscribe to
+        // @WARNING will over write existing listeners on socket
+        socket.events = {
+          disconnect: makeListener(),       // this will trigger Person disconnect in a Room
         };
   
-        setClientInMap(client.id, client);
-        mClientCount.inc();
-        mConnectEvent.emit(makeEventPayload(client));
-        return client;
+        socketManager.mItems.set(socketManager.mItemCount.getInc(), socket);
+        socketManager.onConnected.emit(socketManager.makeEventPayload(socket));
+        return socket;
       }
       return null;
     }
+    
+    removeSocket(socketOrId){
+      const socketManager = this
+
+      let socketId = getKeyFromProp(socketOrId, `id`);
+      let socket = socketManager.getSocket(socketId);
   
-    function removeSocket(clientOrId) {
-      let client;
-      let clientId;
-      let typeofArg = typeof clientOrId;
-      if (typeofArg === "object") {
-        client = clientOrId;
-        clientId = client.id;
-      } else if (["string", "number"].includes(typeofArg)) {
-        clientId = clientOrId;
-        client = getSocket(clientId);
-      }
+      if (isDef(socket) && isDef(socketId)) {
+        let socketId = socket.id;
   
-      if (isDef(client) && isDef(clientId)) {
-        let clientId = client.id;
-  
-        //let everything associated to this client know
-        client.events.disconnect.emit(makeEventPayload(client));
-  
+        //let everything associated to this socket know
+        socket.events.disconnect.emit(socketManager.makeEventPayload(socket));
         // deprecated
-        mDisconnectEvent.emit(makeEventPayload(client));
+        socketManager.onDisconnected.emit(socketManager.makeEventPayload(socket));
   
-        if (hasClientInMap(clientId)) {
-          removeSocketInMap(clientId);
-          mClientCount.dec();
+        if (socketManager.mItems.has(socketId)) {
+          socketManager.mItems.remove(socketId)
+          socketManager.mItemCount.inc(-1)
         }
       }
     }
-  
-    //==================================================
-  
-    //                    Serialize
-  
-    //==================================================
-    function serialize() {
-      let result = {};
-  
-      // Serialize everything except the external references
-      let excludeKeys = [...mPrivateVars, ...mExternalRefs];
-      let keys = Object.keys(mState).filter((key) => !excludeKeys.includes(key));
-  
-      // Serialize each if possible, leave primitives as is
-      keys.forEach((key) => {
-        result[key] = isDef(mState[key].serialize)
-          ? mState[key].serialize()
-          : mState[key];
-      });
-  
-      result.clients = mapClients((client) => ({
-        id: client.id,
-      }));
-      return result;
+
+    makeEventPayload(socket) {
+      const socketManager = this
+
+      return {
+        socketManager,
+        socket,
+        client: socket, // @deprecated
+      };
     }
-  
-    //==================================================
-  
-    //                    Export
-  
-    //==================================================
-    const publicScope = {
-      addSocket,
-      getSocket,
-      removeSocket,
-      serialize,
-      count: mClientCount.get,
-  
-      events: {
-        connect:    mConnectEvent,
-        disconnect: mDisconnectEvent,
-      },
-    };
-  
-    function getPublic() {
-      return { ...publicScope };
+
+    serialize(){
+      // @TODO
     }
-  
-    return getPublic();
+
+    unSerialize(){
+      // @TODO
+    }
+
+    count(){
+      const socketManager = this
+      return socketManager.mItemCount.get()
+    }
+
+    get events()
+    {
+      const socketManager = this
+
+      return {
+        connect: socketManager.onConnected,
+        disconnect: socketManager.onDisconnected,
+      }
+    }
+
   }
 }

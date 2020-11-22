@@ -9,6 +9,7 @@ module.exports = function() {
           connection.server = server
       }
       registerEvents(){}
+      unregisterEvents(){}
       onConnected(){}
       onDisconnected(){}
       onTrigger(){}

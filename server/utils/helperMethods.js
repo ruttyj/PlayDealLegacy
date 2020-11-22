@@ -420,7 +420,7 @@ const makeVar = function (
     return get(key);
   }
 
-  function getInc(key) {
+  function getInc(key, num = 1) {
     // id ++
     let val = get(key);
     inc(key, num);
@@ -548,7 +548,7 @@ const makeMap = function (
     return get(key);
   }
 
-  function getInc(key) {
+  function getInc(key, num = 1) {
     // id ++
     let val = get(key);
     inc(key, num);
@@ -751,7 +751,7 @@ const makeList = function (
     return get(key);
   }
 
-  function getInc(key) {
+  function getInc(key, num = 1) {
     // id ++
     let val = get(key);
     inc(key, num);
@@ -936,7 +936,7 @@ const makeSet = function (ref, field = "value", defaultValue = []) {
     return get(key);
   }
 
-  function getInc(key) {
+  function getInc(key, num = 1) {
     // id ++
     let val = get(key);
     inc(key, num);
