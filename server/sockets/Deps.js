@@ -20,6 +20,7 @@ function buildDeps({
     function makeProps(props, data = {})
     {
       return { 
+        connection    : props.connection, 
         roomCode      : props.roomCode, 
         thisClientKey : props.thisClientKey,
         thisClient    : props.thisClient,
@@ -421,8 +422,6 @@ function buildDeps({
       let { roomCode, thisClientKey } = props;
       // define which points were reached before failure
       let checkpoints = new Map();
-  
-      let reducedResponses = new AddressedResponse();
       let responses = null;
       
       if (isDef(roomCode)) {
@@ -449,20 +448,7 @@ function buildDeps({
               });
             }
   
-            responses = fn(newProps, checkpoints);
-  
-            if (isDef(responses)) {
-              let clientPersonMapping = {};
-              personManager.getConnectedPeople().forEach((person) => {
-                clientPersonMapping[String(person.getSocketId())] = true;
-              });
-              let clientIds = Object.keys(clientPersonMapping);
-  
-              reducedResponses.addToBucket(
-                responses.reduce(thisClientKey, clientIds)
-              );
-            }
-            return responses;
+            return fn(newProps, checkpoints);
           }
         }
       }

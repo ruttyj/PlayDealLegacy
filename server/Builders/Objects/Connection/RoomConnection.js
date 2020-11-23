@@ -56,6 +56,8 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
           let server          = connection.server
           let registry        = server.registry
           let handleRoom      = server.handleRoom
+          let roomManager         = server.roomManager
+
 
           let events              = isStr(jsonData) ? JSON.parse(jsonData) : jsonData
           let clientPersonMapping = {}
@@ -81,9 +83,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                   payload.thisClient      = socket
                   payload.connection      = connection
                   payload.actionRegistry  = registry
-
                   
-
                   // Collect the addressed responses
                   let eventResponses = new AddressedResponse()
                   eventResponses.addToBucket("default", registry.execute(eventType, payload))

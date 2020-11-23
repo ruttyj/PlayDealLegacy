@@ -1,15 +1,24 @@
 module.exports = function buildTurnBasedActionProvider({
+  isDef, isArr, isFunc, 
+  AddressedResponse,
   TurnBasedController,
 }){
+
+
+
+
+
   return class TurnBasedActionProvider
   {
     constructor()
     {
       this.turnBasedController = new TurnBasedController()
     }
+
     up(registry)
     {
       const turnBasedController = this.turnBasedController
+      //processWithBeforeMiddleWare(socketRequest, turnBasedController.getPlayerTurn)
       registry.public(`PLAYER_TURN.GET`,            turnBasedController.getPlayerTurn)
       registry.public(`MY_TURN.TURN_STARTING_DRAW`, turnBasedController.drawCards)
       registry.public(`MY_TURN.FINISH_TURN`,        turnBasedController.finishTurn)

@@ -20,77 +20,240 @@ module.exports = function buildTurnBasedController({
   Transaction,
 }) {
 
-  /*
-  function handleGame(props, fn, fallback = undefined) {
-    let checkpoints = new Map();
-    const { connection } = props;
-    if (isDef(connection)) {
-      const room = connection.getRoom()
-      const personManager = room.getPersonManager()
-      const person = connection.getPerson()
-      if (isDef(room)) {
-        const roomCode = room.getCode()
-        const game = room.getGame()
-        return fn({
-          ...props,
-          room,
 
-          game,
-          personManager,
-          person,
-          // dep
-          roomManager,
-          thisRoomCode: roomCode,
-          thisPersonId: person.getId()
-        }, checkpoints)
-      }
+
+  class SocketRequest 
+  {
+    constructor(event, props = {})
+    {
+      this.response = new AddressedResponse()
+      this.event = event
+      this.props = props
     }
-    if (isFunc(fallback)) {
-      return fallback(checkpoints)
+
+    getEvent()
+    {
+      return this.event
     }
-    return fallback
+
+    getResponse()
+    {
+      return this.response
+    }
+
+    getProps()
+    {
+      return this.props
+    }
+
+    setProps(props)
+    {
+      this.props = props
+    }
   }
-  */
-  return class TurnBasedController {
+
+  class SocketResponse
+  {
+    constructor(event)
+    {
+      this.event = event
+      this.response = new AddressedResponse()
+      this.affected = new Affected()
+      this.status = `failure`
+    }
+
+    getEvent()
+    {
+      return this.event
+    }
+
+    getStatus()
+    {
+      return this.status
+    }
+
+    setStatus(status)
+    {
+      this.status = status
+    }
+
+    getAddressedResponse()
+    {
+      return this.response
+    }
+
+    add(responses)
+    {
+      this.response.addToBucket("default", responses)
+    }
+
+    setAffected(entityKey, id=0, action=null)
+    {
+      this.affected.setAffected(entityKey, id, action)
+    }
+
+    getAffected()
+    {
+      return this.affected;
+    }
+  }
+
+  class BaseMiddleware 
+  {
     constructor()
     {
+      this.nextCheck = null;
     }
+  
+    then(nextCheck) {
+      this.nextCheck = nextCheck;
+    }
+
+    check(socketRequest) {
+      this.next(socketRequest)
+    }
+
+    next(socketRequest) {
+      if (this.nextCheck !== null) {
+        this.nextCheck.check(socketRequest)
+      }
+    }
+  }
+
+  class RoomMiddleware extends BaseMiddleware {
+    check(socketRequest)
+    {
+      const { connection } = socketRequest.props;
+      if (!connection) {
+        throw `Connection not defined`
+      }
+
+      const server      = connection.getServer();
+      const roomManager = server.getRoomManager()
+      const room        = connection.getRoom();
+      const person      = connection.getPerson();
+
+      if (!isDef(room)) {
+        throw `Room not defined`
+      }
+
+      socketRequest.setProps({
+        ...socketRequest.getProps(),  // contains roomCode
+        thisRoomCode: room.getCode(), 
+        connection,
+        roomManager,
+        room,
+        thisRoom      : room,
+        personManager : room.getPersonManager(),
+        person,
+        personId      : person.getId(),
+        thisPersonId  : person.getId(),
+        thisPerson    : person,
+        server,
+      })
+
+      this.next(socketRequest)
+    }
+  }
+
+  class GameMiddleware extends BaseMiddleware {
+    check(socketRequest)
+    {
+      const { room } = socketRequest.props;
+      if (room) {
+        const game = room.getGame();
+
+        if (!isDef(game)) {
+          throw `Game not defined`
+        }
+
+        socketRequest.setProps({
+          ...socketRequest.getProps(),
+          game
+        })
+
+        this.next(socketRequest)
+      }
+    }
+  }
+
+  return class TurnBasedController {
+    constructor(){}
       
-    getPlayerTurn(props) {
-      let event = "PLAYER_TURN.GET";
-      const addressedResponses = new AddressedResponse();
-      return handleGame(
-        props,
-        (consumerData) => {
-          let { game, thisPersonId } = consumerData;
-          let currentTurn = game.getCurrentTurn();
-  
-          if (currentTurn.getPhaseKey() === "discard") {
-            let thisPlayerHand = game.getPlayerHand(thisPersonId);
-            let remaining = thisPlayerHand.getCount() - game.getHandMaxCardCount();
-            if (remaining > 0) {
-              currentTurn.setPhaseData({
-                remainingCountToDiscard: remaining,
-              });
-            }
+    getPlayerTurn(props) 
+    {
+      const doTheThing = (socketRequest, socketResponse) => {
+        let event         = socketRequest.getEvent()
+        let consumerData  = socketRequest.getProps()
+      
+        let { game, thisPersonId } = consumerData;
+        let currentTurn = game.getCurrentTurn();
+
+        if (currentTurn.getPhaseKey() === "discard") {
+          let thisPlayerHand = game.getPlayerHand(thisPersonId);
+          let remaining = thisPlayerHand.getCount() - game.getHandMaxCardCount();
+          if (remaining > 0) {
+            currentTurn.setPhaseData({
+              remainingCountToDiscard: remaining,
+            });
           }
-  
-          addressedResponses.addToBucket(
-            "default",
-            makeResponse({ 
-              event, 
-              status  : "success", 
-              payload : game.getCurrentTurn().serialize()
-            })
-          );
-  
-          return addressedResponses;
-        },
-        makeConsumerFallbackResponse({ event, addressedResponses })
-      );
+        }
+
+        // @TODO set affected current turn
+
+
+        // @TODO move this to central response processing
+        socketResponse.setStatus("success");
+        socketResponse.add(makeResponse({ 
+            event   : event, 
+            status  : "success", 
+            payload : game.getCurrentTurn().serialize()
+          }))
+
+        return socketResponse.getAddressedResponse();
+      }
+
+
+      let event = "PLAYER_TURN.GET"
+      //#######################################################
+      // @TODO move this into the connection
+      const socketRequest  = new SocketRequest(event)
+      const socketResponse = new SocketResponse(event)
+      socketRequest.setProps(props)
+
+      // Define before middleware
+      let beforeMiddleware = new BaseMiddleware()
+      const roomMiddleware = new RoomMiddleware()
+      const gameMiddleware = new GameMiddleware()
+      beforeMiddleware.then(roomMiddleware)
+      roomMiddleware.then(gameMiddleware)
+
+      // Define after middleware
+      let afterMiddleware = new BaseMiddleware()
+
+      // Execute
+      try {
+        // Execute before middleware
+        beforeMiddleware.check(socketRequest)
+
+        // Execute primary logic
+        doTheThing(socketRequest, socketResponse)
+
+        // Execute after middleware
+        afterMiddleware.check(socketResponse)
+      } catch (e) {
+        // Failure
+        makeConsumerFallbackResponse({
+          event, 
+          addressedResponses: socketResponse.getAddressedResponse() 
+        })
+      }
+
+      return socketResponse.getAddressedResponse();
     }
   
-    drawCards(props) {
+    drawCards(props) 
+    {
       return buildTurnStartingDrawAction({
         els,
         makeProps,

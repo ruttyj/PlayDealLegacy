@@ -13,5 +13,11 @@ module.exports = function() {
       onConnected(){}
       onDisconnected(){}
       onTrigger(){}
+
+      getServer()
+      {
+        const connection = this
+        return connection.server
+      }
   }
 }

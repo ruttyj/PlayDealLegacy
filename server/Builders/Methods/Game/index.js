@@ -1420,8 +1420,12 @@ module.exports = function ({
   {
     constructor()
     {
-      const gameActionProvider = this;
+      const gameActionProvider = this
       const providers = new Map()
+
+      const middleWare = new Map()
+      //middleWare.set('game', handleGame)
+
      
       providers.set('gameCoreActions',              new GameCoreActionProvider)
       providers.set('turnBasedActions',             new TurnBasedActionProvider)
@@ -1445,6 +1449,7 @@ module.exports = function ({
 
       gameActionProvider.providers = providers
     }
+
     up(registry)
     {
       const providers = this.providers

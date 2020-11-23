@@ -154,17 +154,26 @@ module.exports = function buildPlaydealServer({ utils })
      * Update loop for "Live events"
      * Ex: Play timers
      */
-    onUpdate() {
+    onUpdate() 
+    {
       // @TODO - not implemented yet
     }
     
     /**
      * 
      */
-    onDisconnected(connection){
+    onDisconnected(connection)
+    {
       const server = this
       server.connectionManager.remove(connection)
       connection.unregisterEvents()
+    }
+
+
+    getRoomManager()
+    {
+      const server = this
+      return server.roomManager
     }
   }
 }
