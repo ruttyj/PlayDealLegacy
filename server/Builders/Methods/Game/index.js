@@ -9,6 +9,7 @@ const builderFolder = `../../../Builders`
  * 
  */
 
+
 const buildChangeCardActiveSetAction                = require(`${builderFolder}/Events/ChangeCardActiveSetAction`)
 
 const buildRegisterCardMethods                      = require(`${builderFolder}/Methods/Card/`)
@@ -71,6 +72,11 @@ module.exports = function ({
   Transaction,
   AddressedResponse,
   KeyedRequest,
+  SocketRequest,
+  SocketResponse,
+  BaseMiddleware,
+  RoomBeforeMiddleware,
+  GameBeforeMiddleware,
 
   roomManager,
 
@@ -439,6 +445,11 @@ module.exports = function ({
   const TurnBasedController = buildTurnBasedController({
     els,
     AddressedResponse,
+    SocketRequest,
+    SocketResponse,
+    BaseMiddleware,
+    RoomBeforeMiddleware,
+    GameBeforeMiddleware,
     makeProps,
     makeResponse,
     makeConsumerFallbackResponse,
@@ -457,6 +468,11 @@ module.exports = function ({
     TurnBasedController,
     els,
     AddressedResponse,
+    SocketRequest,
+    SocketResponse,
+    BaseMiddleware,
+    RoomBeforeMiddleware,
+    GameBeforeMiddleware,
     makeProps,
     makeResponse,
     makeConsumerFallbackResponse,

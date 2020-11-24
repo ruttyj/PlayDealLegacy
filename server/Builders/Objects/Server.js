@@ -18,6 +18,13 @@ module.exports = function buildPlaydealServer({ utils })
   const buildBaseServer             = require(`${builderFolder}/Objects/Server/BaseServer`)
   const buildSocketManager          = require(`${builderFolder}/Objects/SocketManager`)
   const buildConnectionManager      = require(`${builderFolder}/Objects/ConnectionManager`)
+  const buildSocketRequest          = require(`${builderFolder}/Objects/Socket/SocketRequest`)
+  const buildSocketResponse         = require(`${builderFolder}/Objects/Socket/SocketResponse`)
+
+  const buildBaseMiddleware         = require(`../../Builders/Objects/Middleware/BaseMiddleware`)
+  const buildRoomBeforeMiddleware   = require(`../../Builders/Objects/Middleware/Before/RoomBeforeMiddleware`)
+  const buildGameBeforeMiddleware   = require(`../../Builders/Objects/Middleware/Before/GameBeforeMiddleware`)
+
   const buildPerson                 = require(`${builderFolder}/Objects/Person`)
   const buildPersonManager          = require(`${builderFolder}/Objects/PersonManager`)
   const buildRoom                   = require(`${builderFolder}/Objects/Room`)
@@ -39,7 +46,18 @@ module.exports = function buildPlaydealServer({ utils })
   // Build Objects
   const BaseServer                  = buildBaseServer();
   const SocketManager               = buildSocketManager({ isDef, makeVar, makeMap, makeListener, getKeyFromProp })
+
+  
+  const OrderedTree                 = buildOrderedTree()
+  const Affected                    = buildAffected({ OrderedTree })
   const AddressedResponse           = buildAddressedResponse(utils)
+  const SocketRequest               = buildSocketRequest({ AddressedResponse })
+  const SocketResponse              = buildSocketResponse({ AddressedResponse, Affected })
+
+  const BaseMiddleware              = buildBaseMiddleware({ isDef })
+  const RoomBeforeMiddleware        = buildRoomBeforeMiddleware({ isDef, BaseMiddleware })
+  const GameBeforeMiddleware        = buildGameBeforeMiddleware({ isDef, BaseMiddleware })
+
   const BaseConnection              = buildBaseConnection()
   const RoomConnection              = buildRoomConnection({ BaseConnection, AddressedResponse, els, isDef, isStr, isArr, jsonEncode })
   const ConnectionManager           = buildConnectionManager({ getKeyFromProp, isDef })
@@ -50,8 +68,6 @@ module.exports = function buildPlaydealServer({ utils })
   const Room                        = buildRoom({ PersonManager, makeMap })
   const RoomManager                 = buildRoomManager({ Room, elsFn,  isDef,  isStr,  makeMap })
 
-  const OrderedTree                 = buildOrderedTree()
-  const Affected                    = buildAffected({ OrderedTree })
   const Transfer                    = buildTransfer({
                                       makeVar, makeMap, isDef, isArr
                                     })
@@ -72,6 +88,11 @@ module.exports = function buildPlaydealServer({ utils })
                                       Transaction,
                                       AddressedResponse,
                                       Affected,
+                                      SocketRequest,
+                                      SocketResponse,
+                                      BaseMiddleware,
+                                      RoomBeforeMiddleware,
+                                      GameBeforeMiddleware,
                                       OrderedTree,
                                       utils,
                                     })

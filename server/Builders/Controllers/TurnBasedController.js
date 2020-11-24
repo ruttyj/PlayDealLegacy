@@ -5,6 +5,12 @@ const buildDiscardToHandLimitAction                 = require(`${builderFolder}/
 module.exports = function buildTurnBasedController({
   els,
   AddressedResponse,
+  SocketRequest,
+  SocketResponse,
+  BaseMiddleware,
+  RoomBeforeMiddleware,
+  GameBeforeMiddleware,
+
   makeProps,
   makeResponse,
   makeConsumerFallbackResponse,
@@ -22,166 +28,58 @@ module.exports = function buildTurnBasedController({
 
 
 
-  class SocketRequest 
-  {
-    constructor(event, props = {})
-    {
-      this.response = new AddressedResponse()
-      this.event = event
-      this.props = props
-    }
+  function handleSocketRequest(event, props, method, beforeMiddleware, afterMiddleware) {
+    //#######################################################
+    // @TODO move this into the connection
+    const socketRequest  = new SocketRequest(event)
+    const socketResponse = new SocketResponse(event)
+    socketRequest.setProps(props)
 
-    getEvent()
-    {
-      return this.event
-    }
-
-    getResponse()
-    {
-      return this.response
-    }
-
-    getProps()
-    {
-      return this.props
-    }
-
-    setProps(props)
-    {
-      this.props = props
-    }
-  }
-
-  class SocketResponse
-  {
-    constructor(event)
-    {
-      this.event = event
-      this.response = new AddressedResponse()
-      this.affected = new Affected()
-      this.status = `failure`
-    }
-
-    getEvent()
-    {
-      return this.event
-    }
-
-    getStatus()
-    {
-      return this.status
-    }
-
-    setStatus(status)
-    {
-      this.status = status
-    }
-
-    getAddressedResponse()
-    {
-      return this.response
-    }
-
-    add(responses)
-    {
-      this.response.addToBucket("default", responses)
-    }
-
-    setAffected(entityKey, id=0, action=null)
-    {
-      this.affected.setAffected(entityKey, id, action)
-    }
-
-    getAffected()
-    {
-      return this.affected;
-    }
-  }
-
-  class BaseMiddleware 
-  {
-    constructor()
-    {
-      this.nextCheck = null;
-    }
-  
-    then(nextCheck) {
-      this.nextCheck = nextCheck;
-    }
-
-    check(socketRequest) {
-      this.next(socketRequest)
-    }
-
-    next(socketRequest) {
-      if (this.nextCheck !== null) {
-        this.nextCheck.check(socketRequest)
-      }
-    }
-  }
-
-  class RoomMiddleware extends BaseMiddleware {
-    check(socketRequest)
-    {
-      const { connection } = socketRequest.props;
-      if (!connection) {
-        throw `Connection not defined`
+    // Execute
+    try {
+      // Execute before middleware
+      if (isDef(beforeMiddleware)) {
+        beforeMiddleware.check(socketRequest)
       }
 
-      const server      = connection.getServer();
-      const roomManager = server.getRoomManager()
-      const room        = connection.getRoom();
-      const person      = connection.getPerson();
+      // Execute primary logic
+      method(socketRequest, socketResponse)
 
-      if (!isDef(room)) {
-        throw `Room not defined`
+      // Execute after middleware
+      if (isDef(afterMiddleware)) {
+        afterMiddleware.check(socketResponse)
       }
-
-      socketRequest.setProps({
-        ...socketRequest.getProps(),  // contains roomCode
-        thisRoomCode: room.getCode(), 
-        connection,
-        roomManager,
-        room,
-        thisRoom      : room,
-        personManager : room.getPersonManager(),
-        person,
-        personId      : person.getId(),
-        thisPersonId  : person.getId(),
-        thisPerson    : person,
-        server,
+    } catch (e) {
+      // Failure
+      makeConsumerFallbackResponse({
+        event, 
+        addressedResponses: socketResponse.getAddressedResponse() 
       })
-
-      this.next(socketRequest)
     }
+
+    return socketResponse.getAddressedResponse();
   }
 
-  class GameMiddleware extends BaseMiddleware {
-    check(socketRequest)
-    {
-      const { room } = socketRequest.props;
-      if (room) {
-        const game = room.getGame();
 
-        if (!isDef(game)) {
-          throw `Game not defined`
-        }
-
-        socketRequest.setProps({
-          ...socketRequest.getProps(),
-          game
-        })
-
-        this.next(socketRequest)
-      }
-    }
-  }
 
   return class TurnBasedController {
-    constructor(){}
+    constructor(){
+      const beforeMiddleware  = new BaseMiddleware()
+      const roomMiddleware    = new RoomBeforeMiddleware()
+      const gameMiddleware    = new GameBeforeMiddleware()
+      beforeMiddleware.then(roomMiddleware)
+      roomMiddleware.then(gameMiddleware)
+      this.gameBeforeMiddleware = beforeMiddleware
+
+
+      // Define after middleware
+      const afterMiddleware = new BaseMiddleware()
+      this.gameAfterMiddleware = afterMiddleware
+    }
       
     getPlayerTurn(props) 
     {
+      const controller = this;
       const doTheThing = (socketRequest, socketResponse) => {
         let event         = socketRequest.getEvent()
         let consumerData  = socketRequest.getProps()
@@ -213,43 +111,9 @@ module.exports = function buildTurnBasedController({
         return socketResponse.getAddressedResponse();
       }
 
-
       let event = "PLAYER_TURN.GET"
-      //#######################################################
-      // @TODO move this into the connection
-      const socketRequest  = new SocketRequest(event)
-      const socketResponse = new SocketResponse(event)
-      socketRequest.setProps(props)
 
-      // Define before middleware
-      let beforeMiddleware = new BaseMiddleware()
-      const roomMiddleware = new RoomMiddleware()
-      const gameMiddleware = new GameMiddleware()
-      beforeMiddleware.then(roomMiddleware)
-      roomMiddleware.then(gameMiddleware)
-
-      // Define after middleware
-      let afterMiddleware = new BaseMiddleware()
-
-      // Execute
-      try {
-        // Execute before middleware
-        beforeMiddleware.check(socketRequest)
-
-        // Execute primary logic
-        doTheThing(socketRequest, socketResponse)
-
-        // Execute after middleware
-        afterMiddleware.check(socketResponse)
-      } catch (e) {
-        // Failure
-        makeConsumerFallbackResponse({
-          event, 
-          addressedResponses: socketResponse.getAddressedResponse() 
-        })
-      }
-
-      return socketResponse.getAddressedResponse();
+      return handleSocketRequest(event, props, doTheThing, controller.gameBeforeMiddleware, controller.gameAfterMiddleware)
     }
   
     drawCards(props) 

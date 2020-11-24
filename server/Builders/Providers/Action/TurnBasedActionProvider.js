@@ -2,6 +2,8 @@ module.exports = function buildTurnBasedActionProvider({
   isDef, isArr, isFunc, 
   AddressedResponse,
   TurnBasedController,
+  SocketRequest,
+  SocketResponse,
 }){
 
 
@@ -19,10 +21,10 @@ module.exports = function buildTurnBasedActionProvider({
     {
       const turnBasedController = this.turnBasedController
       //processWithBeforeMiddleWare(socketRequest, turnBasedController.getPlayerTurn)
-      registry.public(`PLAYER_TURN.GET`,            turnBasedController.getPlayerTurn)
-      registry.public(`MY_TURN.TURN_STARTING_DRAW`, turnBasedController.drawCards)
-      registry.public(`MY_TURN.FINISH_TURN`,        turnBasedController.finishTurn)
-      registry.public(`MY_TURN.DISCARD_REMAINING`,  turnBasedController.discardRemainingCards)
+      registry.public(`PLAYER_TURN.GET`,            (...args) => turnBasedController.getPlayerTurn(...args))// @TODO move middle ware here ->before()->after()
+      registry.public(`MY_TURN.TURN_STARTING_DRAW`, (...args) => turnBasedController.drawCards(...args))
+      registry.public(`MY_TURN.FINISH_TURN`,        (...args) => turnBasedController.finishTurn(...args))
+      registry.public(`MY_TURN.DISCARD_REMAINING`,  (...args) => turnBasedController.discardRemainingCards(...args))
     }
 
     down(registry)

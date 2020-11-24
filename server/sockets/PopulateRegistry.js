@@ -9,6 +9,11 @@ module.exports = function buildPopulateRegistryMethod({
   utils,
   AddressedResponse,
   Affected,
+  SocketRequest,
+  SocketResponse,
+  BaseMiddleware,
+  RoomBeforeMiddleware,
+  GameBeforeMiddleware,
 })
 {
   const {
@@ -129,6 +134,11 @@ module.exports = function buildPopulateRegistryMethod({
                                             Transaction,
                                             AddressedResponse,
                                             KeyedRequest,
+                                            SocketRequest,
+                                            SocketResponse,
+                                            BaseMiddleware,
+                                            RoomBeforeMiddleware,
+                                            GameBeforeMiddleware,
                                             //-------------------
                                             roomManager,
                                             //-------------------
