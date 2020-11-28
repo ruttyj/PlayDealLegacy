@@ -49,7 +49,9 @@ const identityMutator = functionMutator;
 const makeSeq = (num, fn = identity) => Array.from(Array(num).keys()).map(fn);
 
 // Flatten the mess of classes given as props into a usable attribute
-// @usage <div {...classes(["a1", "b1", ["c1", ["d1"]]], "e1", ["f1"], "g1 h1")} /> produces <div className={classNames("a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1")}/>
+// @usage 
+//   input  <div {...classes(["a1", "b1", ["c1", ["d1"]]], "e1", ["f1"], "g1 h1")} /> 
+//   output <div className={classNames("a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1")}/>
 function classes(...args) {
   let _args = [];
   if (isDef(args)) {
