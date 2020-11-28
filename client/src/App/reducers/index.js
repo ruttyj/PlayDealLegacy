@@ -1,11 +1,6 @@
 import { combineReducers } from "redux";
 
-import roomReducers from "./roomReducers";
-import peopleReducers from "./peopleReducers";
-import gameReducers from "./gameReducers";
-
+import generalReducers from "./generalReducers";
 export default combineReducers({
-  rooms: roomReducers,
-  people: peopleReducers,
-  game: gameReducers
+  general: generalReducers,
 });

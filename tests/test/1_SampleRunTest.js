@@ -5,7 +5,7 @@ const serverFolder        = `${rootFolder}/server`;
 const clientFolder        = `${rootFolder}/client`;
 const assert              = require("chai").assert;
 
-const clientConnection    = require(`${clientFolder}/src/utils/clientSocket.js`)    // Client Connection
+const clientConnection    = require(`${rootFolder}/clientSocket.js`)    // Client Connection
 const utils               = require(`${serverFolder}/utils/index.js`)
 
 const buildTestHost       = require(`${builderFolder}/Objects/TestUtil/TestHost`)

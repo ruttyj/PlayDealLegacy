@@ -1,2 +1,4 @@
-import Room from "./Components/index";
-export default Room;
+import React from "react";
+export default function () {
+  return <div>Hello</div>
+};
