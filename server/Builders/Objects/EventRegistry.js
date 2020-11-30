@@ -3,24 +3,58 @@ module.exports = function ({
     isArr,
     isDef,
     isFunc,
+    SocketRoute,
+    SocketRequest,
+    SocketResponse,
 }) {
     return class Registry {
         constructor()
         {
-            this.PRIVATE_SUBJECTS = {};
-            this.PUBLIC_SUBJECTS  = {};
+            this.mPrivateEvents = {};
+
+            this.mPublicEvents  = {};
+            this.mPublicRoutes  = {}; // replacing mPublicEvents with a (request, response) signature
+        }
+
+        on(identifier, fn)
+        {
+            let socketRoute = new SocketRoute(fn)
+            let token = this._processToken(identifier)
+            this.mPublicRoutes[token] = socketRoute;
+            return socketRoute;
         }
     
+        trigger(identifier, socketRequest, socketResponse, fallback = null)
+        {
+            let token = this._processToken(identifier)
+            if (isDef(this.mPublicRoutes[token])) {
+                this.mPublicRoutes[token].execute(socketRequest, socketResponse, fallback)
+            }
+        }
+
+        // Ment to adapt to the old way
+        triggerUsingProps(identifier, props)
+        {
+            let token = this._processToken(identifier)
+
+            let socketRequest   = new SocketRequest(token)
+            let socketResponse  = new SocketResponse(token)
+
+            socketRequest.setProps(props)
+
+            this.trigger(token, socketRequest, socketResponse)
+
+            return socketResponse.getAddressedResponse()
+        }
+
+
         public(identifier, fn)
         {
             identifier = this._processIdentifier(identifier);
            
             if (isArr(identifier)) {
                 let [subject, action] = identifier;
-                if (!isDef(this.PUBLIC_SUBJECTS[subject])){
-                    this.PUBLIC_SUBJECTS[subject] = {};
-                }
-                this.PUBLIC_SUBJECTS[subject][action] = fn;
+                this.mPublicEvents[`${subject}.${action}`] = fn;
             }
         }
     
@@ -30,11 +64,7 @@ module.exports = function ({
 
             if (isArr(identifier)) {
                 let [subject, action] = identifier;
-                if (!isDef(this.PRIVATE_SUBJECTS[subject])){
-                    this.PRIVATE_SUBJECTS[subject] = {};
-                }
-                
-                this.PRIVATE_SUBJECTS[subject][action] = fn;
+                this.mPrivateEvents[`${subject}.${action}`] = fn;
             }
         }
 
@@ -44,21 +74,17 @@ module.exports = function ({
             identifier = this._processIdentifier(identifier);
             if (isArr(identifier)) {
                 let [subject, action] = identifier;
-                if (isDef(this.PUBLIC_SUBJECTS[subject])){
-                    delete this.PUBLIC_SUBJECTS[subject][action]
-                    if(Object.keys(this.PUBLIC_SUBJECTS[subject]).length === 0){
-                        delete this.PUBLIC_SUBJECTS[subject]
-                    }
+                let token = `${subject}.${action}`;
+
+                if (isDef(this.mPublicEvents[token])){
+                    delete this.mPublicEvents[token]
                     deleted = true
                 }
                 
-
                 if (!deleted) {
-                    if (isDef(this.PRIVATE_SUBJECTS[subject])){
-                        delete this.PRIVATE_SUBJECTS[subject][action]
-                        if(Object.keys(this.PRIVATE_SUBJECTS[subject]).length === 0){
-                            delete this.PRIVATE_SUBJECTS[subject]
-                        }
+                    if (isDef(this.mPrivateEvents[subject])){
+                        delete this.mPrivateEvents[token]
+                       
                         deleted = true
                     }
                 }
@@ -72,26 +98,46 @@ module.exports = function ({
             }
             return identifier;
         }
+
+        _processToken(identifier)
+        {
+            let token = identifier;
+            if (isArr(identifier)) {
+                token = identifier.join('.');
+            }
+            return token;
+        }
     
         getAllPublic()
         {
-            return this.PUBLIC_SUBJECTS;
+            return this.mPublicEvents;
         }
     
         getAllPrivate()
         {
-            return this.PRIVATE_SUBJECTS;
+            return this.mPrivateEvents;
         }
 
         execute(identifier, props)
         {
-            identifier = this._processIdentifier(identifier);
+            const registry = this;
+
+            identifier = registry._processIdentifier(identifier);
             let [subject, action] = identifier;
+            let token = `${subject}.${action}`;
+            
             let fn;
             
-            fn = this.PUBLIC_SUBJECTS[subject][action];
+            fn = registry.mPublicEvents[token];
+
             if (!isFunc(fn)) {
-                fn = this.PRIVATE_SUBJECTS[subject][action];
+                fn = this.mPrivateEvents[token];
+            }
+
+            if (!isFunc(fn)) {
+                if (isDef(registry.mPublicRoutes[token])) {
+                    fn = (props) => registry.triggerUsingProps(identifier, props)
+                }
             }
 
             if (isFunc(fn)) {

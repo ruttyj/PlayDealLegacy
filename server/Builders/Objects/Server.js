@@ -3,7 +3,7 @@ module.exports = function buildPlaydealServer({ utils })
   // Unpack Methods
   const { isDef, isStr, isArr, isObj, isFunc }        = utils
   const { makeVar, makeList, makeMap, makeListener }  = utils
-  const { getKeyFromProp, arrSum }                    = utils
+  const { getKeyFromProp, getArrFromProp, arrSum }    = utils
   const { els, jsonEncode }                           = utils
   const { elsFn }                                     = utils
 
@@ -16,7 +16,7 @@ module.exports = function buildPlaydealServer({ utils })
 
   // Get Builders
   const buildBaseServer             = require(`${builderFolder}/Objects/Server/BaseServer`)
-  const buildSocketManager          = require(`${builderFolder}/Objects/SocketManager`)
+  const buildSocketManager          = require(`${builderFolder}/Objects/Socket/SocketManager`)
   const buildConnectionManager      = require(`${builderFolder}/Objects/ConnectionManager`)
   const buildSocketRequest          = require(`${builderFolder}/Objects/Socket/SocketRequest`)
   const buildSocketResponse         = require(`${builderFolder}/Objects/Socket/SocketResponse`)
@@ -31,6 +31,7 @@ module.exports = function buildPlaydealServer({ utils })
   const buildRoomManager            = require(`${builderFolder}/Objects/RoomManager`)
 
   const buildHandleRoom             = require(`${builderFolder}/Methods/HandleRoom`)
+  const buildSocketRoute            = require(`${builderFolder}/Objects/Socket/SocketRoute`);
   const buildEventRegistry          = require(`${builderFolder}/Objects/EventRegistry`)
   const buildAffected               = require(`${builderFolder}/Objects/Affected`)
   const buildOrderedTree            = require(`${builderFolder}/Objects/OrderedTree`)
@@ -41,6 +42,7 @@ module.exports = function buildPlaydealServer({ utils })
   const buildWealthTransfer         = require(`${builderPlayDealFolder}/Transfer/WealthTransfer`)
   const buildTransaction            = require(`${builderPlayDealFolder}/Transfer/Transaction`)
   const buildPlayDealActionProvider = require(`${serverFolder}/sockets/PopulateRegistry`)
+  const buildDeps2                  = require(`${serverFolder}/sockets/Deps2.js`)
 
 
   // Build Objects
@@ -51,12 +53,36 @@ module.exports = function buildPlaydealServer({ utils })
   const OrderedTree                 = buildOrderedTree()
   const Affected                    = buildAffected({ OrderedTree })
   const AddressedResponse           = buildAddressedResponse(utils)
+  const {
+    makeProps,
+    makeResponse,
+    makeKeyedResponse,
+    makePersonSpecificResponses,
+    makeConsumerFallbackResponse,
+  } = buildDeps2({
+    els,
+    isDef,
+    getArrFromProp,
+    AddressedResponse,
+  })
   const SocketRequest               = buildSocketRequest({ AddressedResponse })
   const SocketResponse              = buildSocketResponse({ AddressedResponse, Affected })
-
   const BaseMiddleware              = buildBaseMiddleware({ isDef })
   const RoomBeforeMiddleware        = buildRoomBeforeMiddleware({ isDef, BaseMiddleware })
   const GameBeforeMiddleware        = buildGameBeforeMiddleware({ isDef, BaseMiddleware })
+  const SocketRoute                 = buildSocketRoute({
+    isDef,
+    isFunc,
+    BaseMiddleware,
+    makeConsumerFallbackResponse,
+  })
+const EventRegistry               = buildEventRegistry({
+    SocketRequest,
+    SocketResponse,
+    SocketRoute, 
+    ...utils
+  })
+
 
   const BaseConnection              = buildBaseConnection()
   const RoomConnection              = buildRoomConnection({ BaseConnection, AddressedResponse, els, isDef, isStr, isArr, jsonEncode })
@@ -83,6 +109,9 @@ module.exports = function buildPlaydealServer({ utils })
                                       WealthTransfer
                                     })
   const KeyedRequest                = require(`${serverSocketFolder}/KeyedRequest.js`)
+
+
+
   const PlayDealActionProvider      = buildPlayDealActionProvider({ 
                                       KeyedRequest,
                                       Transaction,
@@ -95,8 +124,14 @@ module.exports = function buildPlaydealServer({ utils })
                                       GameBeforeMiddleware,
                                       OrderedTree,
                                       utils,
+
+                                      makeProps,
+                                      makeResponse,
+                                      makeKeyedResponse,
+                                      makePersonSpecificResponses,
+                                      makeConsumerFallbackResponse,
                                     })
-  const EventRegistry               = buildEventRegistry(utils)
+ 
 
 
   /**#$%^&$#^&$%#^&%$^&%$#%^&$%#$%^&$#^&$%#^&%$^&%$#%^&$%

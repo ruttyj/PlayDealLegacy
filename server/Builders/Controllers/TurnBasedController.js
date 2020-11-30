@@ -63,7 +63,8 @@ module.exports = function buildTurnBasedController({
 
 
   return class TurnBasedController {
-    constructor(){
+    constructor()
+    {
       const beforeMiddleware  = new BaseMiddleware()
       const roomMiddleware    = new RoomBeforeMiddleware()
       const gameMiddleware    = new GameBeforeMiddleware()

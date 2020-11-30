@@ -14,6 +14,12 @@ module.exports = function buildPopulateRegistryMethod({
   BaseMiddleware,
   RoomBeforeMiddleware,
   GameBeforeMiddleware,
+
+  makeProps,
+  makeResponse,
+  makeKeyedResponse,
+  makePersonSpecificResponses,
+  makeConsumerFallbackResponse,
 })
 {
   const {
@@ -70,17 +76,14 @@ module.exports = function buildPopulateRegistryMethod({
             cookieTokenManager,
           } = playDealActionProvider.mDeps
 
+
+          
+
+
           let {
             getAllKeyedResponse,
             createGameInstance,
-  
-            makeProps,
-            makeResponse,
-            makeKeyedResponse,
-            makePersonSpecificResponses,
-            makeConsumerFallbackResponse,
             makeRegularGetKeyed,
-  
             handlePerson,
             handleGame,
             handleMyTurn,
@@ -104,6 +107,12 @@ module.exports = function buildPopulateRegistryMethod({
             registry,
             //-------------------
             roomManager,
+            //-------------------
+            makeProps,
+            makeResponse,
+            makeKeyedResponse,
+            makePersonSpecificResponses,
+            makeConsumerFallbackResponse,
           })
   
   
