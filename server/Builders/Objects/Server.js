@@ -2,6 +2,7 @@ module.exports = function buildPlaydealServer({ utils })
 {
   // Unpack Methods
   const { isDef, isStr, isArr, isObj, isFunc }        = utils
+  const { isDefNested, getNestedValue }               = utils
   const { makeVar, makeList, makeMap, makeListener }  = utils
   const { getKeyFromProp, getArrFromProp, arrSum }    = utils
   const { els, jsonEncode }                           = utils
@@ -65,7 +66,7 @@ module.exports = function buildPlaydealServer({ utils })
     getArrFromProp,
     AddressedResponse,
   })
-  const SocketRequest               = buildSocketRequest({ AddressedResponse })
+  const SocketRequest               = buildSocketRequest({ isDefNested, AddressedResponse, })
   const SocketResponse              = buildSocketResponse({ AddressedResponse, Affected })
   const BaseMiddleware              = buildBaseMiddleware({ isDef })
   const RoomBeforeMiddleware        = buildRoomBeforeMiddleware({ isDef, BaseMiddleware })

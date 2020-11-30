@@ -44,7 +44,7 @@ function buildSampleRunTestCase({
   
   if (runTestCases) {
     let testNumber    = 0;
-    let executeUnill  = 8888; // @TOGGLE execution of tests until number
+    let executeUnill  = 8; // @TOGGLE execution of tests until number
     if (++testNumber < executeUnill)
       it(`${testNumber} - create room ${roomCode}`, async () => {
         let result = await player1Con.emitSingleRequest(

@@ -27,26 +27,30 @@ module.exports = function buildSocketRoute({
       this.mTopAfterMiddleware   = this.mRootAfterMiddleware
     }
 
-    before(middleware)
+    before(middleware=null)
     {
       if (isDef(middleware)) {
-        this.mTopBeforeMiddleware.then(middleware)
+        if (isDef(this.mTopBeforeMiddleware)){
+          this.mTopBeforeMiddleware.then(middleware)
+        }
         this.mTopBeforeMiddleware = middleware
       }
 
       return this
     }
 
-    after(middleware)
+    after(middleware=null)
     {
       if (isDef(middleware)) {
-        this.mTopAfterMiddleware.then(middleware)
+        if (isDef(this.mTopAfterMiddleware)) {
+          this.mTopAfterMiddleware.then(middleware)
+        }
         this.mTopAfterMiddleware = middleware
       }
       return this
     }
 
-    execute(socketRequest, socketResponse, fallback = null)
+    execute(socketRequest=null, socketResponse=null, fallback = null)
     {
       try {
         this.mRootBeforeMiddleware.check(socketRequest)

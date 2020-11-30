@@ -1,14 +1,25 @@
 module.exports = function buildSocketRequest({
-  AddressedResponse,
+  isDefNested, AddressedResponse,
 })
 {
   return class SocketRequest 
   {
-    constructor(event, props = {})
+    constructor(event, props = {}, context = null)
     {
+      // Publicly visible
       this.response = new AddressedResponse()
       this.event = event
       this.props = props
+
+      // Check if context in Props
+      if (context === null) {
+        if (isDefNested(props, ['context'])) { 
+          context = props.context
+        } else {
+          context = {}
+        }
+      }
+      this.context = context
     }
 
     getEvent()
@@ -29,6 +40,24 @@ module.exports = function buildSocketRequest({
     setProps(props)
     {
       this.props = props
+    }
+
+    unpackAttrs(props)
+    {
+      const socketRequest = this
+      Object.keys(props).forEach(key => {
+        socketRequest[key] = props[key]
+      })
+    }
+
+    getContext()
+    {
+      return this.context
+    }
+
+    setContext(context)
+    {
+      this.context = context;
     }
   }
 }

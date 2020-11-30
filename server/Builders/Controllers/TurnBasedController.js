@@ -26,14 +26,20 @@ module.exports = function buildTurnBasedController({
   Transaction,
 }) {
 
+  let executedOnce = false;
 
 
-  function handleSocketRequest(event, props, method, beforeMiddleware, afterMiddleware) {
+  function handleSocketRequest(event, props, method, beforeMiddleware, afterMiddleware, socketRequest=null, socketResponse=null) {
     //#######################################################
     // @TODO move this into the connection
-    const socketRequest  = new SocketRequest(event)
-    const socketResponse = new SocketResponse(event)
-    socketRequest.setProps(props)
+    if (!isDef(socketRequest)) {
+      socketRequest  = new SocketRequest(event)
+      socketRequest.setProps(props)
+    }
+
+    if (!isDef(socketResponse)) {
+      socketResponse  = new SocketResponse(event)
+    }
 
     // Execute
     try {
@@ -78,8 +84,16 @@ module.exports = function buildTurnBasedController({
       this.gameAfterMiddleware = afterMiddleware
     }
       
-    getPlayerTurn(props) 
+    getPlayerTurn(props, varA=null) 
     {
+
+      if (!executedOnce) { 
+        console.log('getPlayerTurn', {props})
+        executedOnce = true;
+      }
+
+     
+
       const controller = this;
       const doTheThing = (socketRequest, socketResponse) => {
         let event         = socketRequest.getEvent()
@@ -112,9 +126,20 @@ module.exports = function buildTurnBasedController({
         return socketResponse.getAddressedResponse();
       }
 
-      let event = "PLAYER_TURN.GET"
 
-      return handleSocketRequest(event, props, doTheThing, controller.gameBeforeMiddleware, controller.gameAfterMiddleware)
+
+      let socketRequest = null
+      if (props instanceof SocketRequest) {
+        socketRequest = props
+      }
+
+      let socketResponse = null
+      if (varA instanceof SocketResponse) {
+        socketResponse = varA
+      }
+      
+      let event = "PLAYER_TURN.GET"
+      return handleSocketRequest(event, props, doTheThing, controller.gameBeforeMiddleware, controller.gameAfterMiddleware, socketRequest, socketResponse)
     }
   
     drawCards(props) 

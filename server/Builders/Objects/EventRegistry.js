@@ -39,14 +39,15 @@ module.exports = function ({
 
             let socketRequest   = new SocketRequest(token)
             let socketResponse  = new SocketResponse(token)
-
             socketRequest.setProps(props)
+            // Support legacy
+            // This will allow you to access the same data the same way as legacy but with the added benifit of the new interface - for migration #runOnComment
+            socketRequest.unpackAttrs(props)
 
             this.trigger(token, socketRequest, socketResponse)
 
             return socketResponse.getAddressedResponse()
         }
-
 
         public(identifier, fn)
         {
@@ -136,7 +137,10 @@ module.exports = function ({
 
             if (!isFunc(fn)) {
                 if (isDef(registry.mPublicRoutes[token])) {
-                    fn = (props) => registry.triggerUsingProps(identifier, props)
+                    fn = (props) => {
+                        console.log({identifier, props})
+                        return registry.triggerUsingProps(identifier, props)
+                    }
                 }
             }
 
