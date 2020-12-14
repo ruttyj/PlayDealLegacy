@@ -61,7 +61,7 @@ function buildAddCardToBankAction({
                       }))
                     );
 
-                    //PLAYER_TURN
+                    // PLAYER_TURN
                     // Update current turn state
                     addressedResponses.addToBucket(
                       "everyone",

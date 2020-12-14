@@ -28,12 +28,12 @@ module.exports = function ({
         {
             let token = this._processToken(identifier)
             if (isDef(this.mPublicRoutes[token])) {
-                this.mPublicRoutes[token].execute(socketRequest, socketResponse, fallback)
+                return this.mPublicRoutes[token].execute(socketRequest, socketResponse, fallback)
             }
         }
 
         // Ment to adapt to the old way
-        triggerUsingProps(identifier, props)
+        triggerUsingProps(identifier, props, response = null)
         {
             let token = this._processToken(identifier)
 
@@ -44,7 +44,11 @@ module.exports = function ({
             // This will allow you to access the same data the same way as legacy but with the added benifit of the new interface - for migration #runOnComment
             socketRequest.unpackAttrs(props)
 
-            this.trigger(token, socketRequest, socketResponse)
+            return this.trigger(token, socketRequest, socketResponse)
+
+            if (isDef(response) && response instanceof SocketResponse) {
+                socketResponse.mergeAddressedResponses(addressedResponse, mergeMethod = 'default')
+            }
 
             return socketResponse.getAddressedResponse()
         }
@@ -119,7 +123,7 @@ module.exports = function ({
             return this.mPrivateEvents;
         }
 
-        execute(identifier, props)
+        execute(identifier, props, response = null)
         {
             const registry = this;
 
@@ -132,14 +136,14 @@ module.exports = function ({
             fn = registry.mPublicEvents[token];
 
             if (!isFunc(fn)) {
-                fn = this.mPrivateEvents[token];
+                fn = registry.mPrivateEvents[token];
             }
 
             if (!isFunc(fn)) {
                 if (isDef(registry.mPublicRoutes[token])) {
                     fn = (props) => {
                         console.log({identifier, props})
-                        return registry.triggerUsingProps(identifier, props)
+                        return registry.triggerUsingProps(identifier, props, response)
                     }
                 }
             }

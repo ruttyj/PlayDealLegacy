@@ -11,7 +11,7 @@ module.exports = function buildTurnBasedActionProvider({
 
 let executedOnce = false;
 
-
+  // register routes
   return class TurnBasedActionProvider
   {
     constructor()
@@ -21,23 +21,27 @@ let executedOnce = false;
 
     up(registry)
     {
+      /**
+       * Whats going on here?
+       * 
+       * Register routes the socket is able to request
+       * 
+       * Each controller contains the handler for that specific request
+       * Each manager handle specific tasks
+       * 
+       * 
+       */
+      
       const turnBasedController = this.turnBasedController
       //processWithBeforeMiddleWare(socketRequest, turnBasedController.getPlayerTurn)
 
       //================================================================================
-      registry.public(`PLAYER_TURN.GET`, (...args) => turnBasedController.getPlayerTurn(...args))// @TODO move middle ware here ->before()->after()
+      registry.public(`PLAYER_TURN.GET`, (...args) => turnBasedController.getPlayerTurn(...args)) // @TODO move middle ware here ->before()->after()
       //--------------------------------------------------------------------------------
-
       /*
-        @TODO
-          - Create a middleware to adapt from legacy to new format
-      //*/
-
-
       // When socketEvent `PLAYER_TURN.GET` is requested, ask the controller
       registry.on(`PLAYER_TURN.GET`, 
         (...args) => {
-
           if (!executedOnce) {
             //console.log("PLAYER_TURN.GET args", ...args)
             executedOnce = true
@@ -47,6 +51,7 @@ let executedOnce = false;
         .before(new RoomBeforeMiddleware())
         .before(new GameBeforeMiddleware())
         //.after()
+      //*/
 
       //================================================================================
       registry.public(`MY_TURN.TURN_STARTING_DRAW`, (...args) => turnBasedController.drawCards(...args))

@@ -84,11 +84,15 @@ function buildDrawCardsAction({
                     makeResponse({ subject, action, status, payload })
                   );
 
-                  // update player turn - must be last
+                  
                   addressedResponses.addToBucket(
                     "everyone",
                     registry.execute('PLAYER_TURN.GET', makeProps(props))
                   );
+
+                  
+                  //registry.execute('PLAYER_TURN.GET', request, response)
+
 
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
                     addressedResponses.addToBucket(

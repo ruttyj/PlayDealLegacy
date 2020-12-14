@@ -19,7 +19,6 @@ function buildTransferPropertyToNewCollectionFromExistingAction({
           props,
           (consumerData) => {
             const {
-              roomCode,
               game,
               thisPersonId,
               fromCollectionId,
