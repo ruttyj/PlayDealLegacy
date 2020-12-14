@@ -25,6 +25,7 @@
     "url": "https://github.com/ruttyj/ReactBase/issues"
   },
   "dependencies": {
+    "@geckos.io/typed-array-buffer-schema": "^1.0.2",
     "concurrently": "latest",
     "dotenv": "^8.2.0"
   },
