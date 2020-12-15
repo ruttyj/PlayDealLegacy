@@ -3,9 +3,9 @@ module.exports = function buildGameBeforeMiddleware({
   BaseMiddleware
 }){
   return class GameBeforeMiddleware extends BaseMiddleware {
-    check(socketRequest)
+    check(req, res)
     {
-      const { room } = socketRequest.props;
+      const { room } = req.props;
       if (room) {
         const game = room.getGame();
 
@@ -13,12 +13,12 @@ module.exports = function buildGameBeforeMiddleware({
           throw `Game not defined`
         }
 
-        socketRequest.setProps({
-          ...socketRequest.getProps(),
+        req.setProps({
+          ...req.getProps(),
           game
         })
 
-        this.next(socketRequest)
+        this.next(req, res)
       }
     }
   }

@@ -1,28 +1,28 @@
 module.exports = function buildBaseMiddleware({
-  isDef
+    isDef
 }){
-  return class BaseMiddleware 
-  {
-    constructor(parent = null)
+    return class BaseMiddleware 
     {
-      this.nextCheck = null;
-      if (isDef(parent)) {
-        parent.then(this);
-      }
-    }
-  
-    then(nextCheck) {
-      this.nextCheck = nextCheck;
-    }
+        constructor(parent = null)
+        {
+            this.nextCheck = null;
+            if (isDef(parent)) {
+                parent.then(this);
+            }
+        }
 
-    check(socketRequest) {
-      this.next(socketRequest)
-    }
+        then(nextCheck) {
+            this.nextCheck = nextCheck;
+        }
 
-    next(socketRequest) {
-      if (this.nextCheck !== null) {
-        this.nextCheck.check(socketRequest)
-      }
+        check(request, response) {
+            this.next(request, response)
+        }
+
+        next(request, response) {
+            if (this.nextCheck !== null) {
+                this.nextCheck.check(request, response)
+            }
+        }
     }
-  }
 }

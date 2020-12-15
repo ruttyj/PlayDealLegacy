@@ -3,9 +3,9 @@ module.exports = function buildRoomBeforeMiddleware({
   BaseMiddleware
 }){
   return class RoomBeforeMiddleware extends BaseMiddleware {
-    check(socketRequest)
+    check(req, res)
     {
-      const { connection } = socketRequest.props;
+      const { connection } = req.props;
       if (!connection) {
         throw `Connection not defined`
       }
@@ -19,8 +19,8 @@ module.exports = function buildRoomBeforeMiddleware({
         throw `Room not defined`
       }
 
-      socketRequest.setProps({
-        ...socketRequest.getProps(),  // contains roomCode
+      req.setProps({
+        ...req.getProps(),  // contains roomCode
         thisRoomCode: room.getCode(), 
         connection,
         roomManager,
@@ -34,7 +34,7 @@ module.exports = function buildRoomBeforeMiddleware({
         server,
       })
 
-      this.next(socketRequest)
+      this.next(req, res)
     }
   }
 }

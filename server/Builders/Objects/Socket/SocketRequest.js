@@ -4,11 +4,12 @@ module.exports = function buildSocketRequest({
 {
   return class SocketRequest 
   {
-    constructor(event, props = {})
+    constructor(event, props = {}, context={})
     {
-      this.response = new AddressedResponse()
-      this.event = event
-      this.props = props
+      this.response = new AddressedResponse() // #public
+      this.event = event // #public
+      this.props = props // #public
+      this.context = context // #public
     }
 
     getEvent()
@@ -29,6 +30,16 @@ module.exports = function buildSocketRequest({
     setProps(props)
     {
       this.props = props
+    }
+
+    getContext()
+    {
+        return this.context
+    }
+
+    setContext(context)
+    {
+        this.context = context
     }
   }
 }
