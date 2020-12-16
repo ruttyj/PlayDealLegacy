@@ -19,17 +19,19 @@ module.exports = function buildMiddlewareWrapper({
             this.mBeforeMiddlewareTop
             this.mAfterMiddlewareTop
             this.mDoneMiddlewareTop
+
+            this._init()
         }
 
         _init()
         {
             this.mBeforeMiddlewareRoot = new BaseMiddleware()
             this.mAfterMiddlewareRoot  = new BaseMiddleware()
-            this.mDoneMiddlewareRoot  = new BaseMiddleware()
+            this.mDoneMiddlewareRoot   = new BaseMiddleware()
 
             this.mBeforeMiddlewareTop  = this.mBeforeMiddlewareRoot
             this.mAfterMiddlewareTop   = this.mAfterMiddlewareRoot
-            this.mDoneMiddlewareTop   = this.mDoneMiddlewareRoot
+            this.mDoneMiddlewareTop    = this.mDoneMiddlewareRoot
         }
 
         before(middleware=null)

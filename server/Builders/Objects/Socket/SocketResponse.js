@@ -33,9 +33,9 @@ module.exports = function buildSocketResponse({
       return this.response
     }
 
-    add(responses)
+    add(responses, bucket="default")
     {
-      this.response.addToBucket("default", responses)
+      this.response.addToBucket(bucket, responses)
     }
 
     setAffected(entityKey, id=0, action=null)

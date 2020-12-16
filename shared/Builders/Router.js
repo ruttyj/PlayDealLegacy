@@ -56,7 +56,7 @@ module.exports = function buildRouter({
         add(route=null)
         {
             if (isDef(route) && route instanceof Route) {
-                routeKey = route.getKey()
+                let routeKey = route.getKey()
                 this.set(routeKey, route)
                 return route;
             }
