@@ -9,18 +9,7 @@ const {
     isObj,
     isStr,
     isFunc,
-    isDefNested,
-    getNestedValue,
-    getKeyFromProp,
-    reduceToKeyed,
-    recursiveBuild,
-    reduceArrayToMap,
-    arrSum, 
     makeMap,
-    makeVar,
-    makeList,
-    makeListener,
-    emptyFunction,
     emptyFunc,
     stateSerialize,
 } = require(`../../server/utils/`)
@@ -34,16 +23,20 @@ const buildAddressedResponse = require(`${serverFolder}/Builders/Objects/Address
 const buildAffected          = require(`${serverFolder}/Builders/Objects/Affected`)
 const buildOrderedTree       = require(`${serverFolder}/Builders/Objects/OrderedTree`)
 const buildBaseMiddleware    = require(`${serverFolder}/Builders/Objects/Middleware/BaseMiddleware`)
+const buildCustomMiddleware  = require(`${serverFolder}/Builders/Objects/Middleware/CustomMiddleware`)
 
 
+// ###############################
 
-// Provider ----------------------------
+//          PROVIDERS 
+
+// ###############################
 
 // Constants
 const TO_EVERYONE = 'everyone'
 
 // Classes
-const AddressedResponse = buildAddressedResponse({isDef, isArr, makeMap, stateSerialize})
+const AddressedResponse = buildAddressedResponse({ stateSerialize, makeMap, isDef, isArr})
 const SocketRequest     = buildSocketRequest({
                             AddressedResponse,
                         })
@@ -55,10 +48,12 @@ const SocketResponse    = buildSocketResponse({
                         })
 
 const BaseMiddleware    = buildBaseMiddleware({ isDef })
+const CustomMiddleware = buildCustomMiddleware({ BaseMiddleware })
 const MiddlewareWrapper = buildMiddlewareWrapper({
                             isDef,
                             isFunc,
                             BaseMiddleware,
+                            CustomMiddleware,
                             Response: SocketResponse,
                         })
 const Route             = buildRoute({
@@ -72,21 +67,15 @@ const Router            = buildRouter({
                             isFunc,
                             Request: SocketRequest,
                         })
-
-
-class BaseController {
-
-}
-
-class MockController extends BaseController {
+class MockController 
+{
     sayMessage(req, res, fallback)
     {
         let props   = req.getProps()
-        let context = req.getContext()
-
-        let responses = res.getAddressedResponse()
         let affected  = res.getAffected()
 
+
+        // Add a response for everyone
         res.add({
             event: 'SAY.MESSAGE',
             data:  props.message,
@@ -94,21 +83,18 @@ class MockController extends BaseController {
 
 
         affected.setAffected('MESSAGE', 25, Affected.ACTION.CREATE)
-        console.log('SAY.MESSAGE', {
-            props,
-            context,
-            responses: JSON.stringify(responses.serialize()),
-            affected:  JSON.stringify(affected.serialize()),
-        })
     }
 }
+//_____________________________________
 
 
 
-//======================================
 
+// ###############################
 
+//             TESTS 
 
+//###############################
 describe("Shared", async function () {
     it(`Should do the thing`, async () => {
 
@@ -116,12 +102,60 @@ describe("Shared", async function () {
 
         const router = new Router()
 
-        router.add(new Route('SAY.MESSAGE', (req, res, fallback) => {
-            mockController.sayMessage(req, res, fallback)
-        }));
+
+
+
+        router
+            .add(new Route('SAY.MESSAGE', (...args) => {
+                // Execute controller
+                mockController.sayMessage(...args)
+            }))
+            // Add "middleware" array to context 
+            .before((req) => {
+                let context = req.getContext()
+                if (!isDef(context.middleware)) {
+                    context.middleware = [];
+                }
+            })
+            // add "before 1"
+            .before((req) => {
+                let context = req.getContext()
+                context.middleware.push('before 1')
+            })
+            // add "before 2"
+            .before((req) => {
+                let context = req.getContext()
+                context.middleware.push('before 2')
+            })
+            // add "after 1"
+            .after((req) => {
+                let context = req.getContext()
+                context.middleware.push('after 1')
+            })
+            // Finalize
+            .done((req, res) => {
+                let props   = req.getProps()
+                let context = req.getContext()
+        
+                let responses = res.getAddressedResponse()
+                let affected  = res.getAffected()
+        
+                console.log(req.getEvent(), {
+                    request: {
+                        props: JSON.stringify(props),
+                        context: JSON.stringify(context),
+                    },
+                    response: {
+                        responses: JSON.stringify(responses.serialize()),
+                        affected:  JSON.stringify(affected.serialize()),
+                    }
+                })
+            })
+
+
 
         const context = {
-            iAm: 'A Joke'
+            like: 'joke'
         }
         const props = {
             message: 'Something funny'

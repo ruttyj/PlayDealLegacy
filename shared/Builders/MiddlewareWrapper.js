@@ -2,9 +2,42 @@ module.exports = function buildMiddlewareWrapper({
     isDef,
     isFunc,
     BaseMiddleware,
+    CustomMiddleware,
     Response,
 })
 {
+
+    class MiddlewareBucket 
+    {
+        constructor() 
+        {
+            this.mTop = new BaseMiddleware()
+            this.mRoot = this.mTop
+        }
+
+        add(mxd)
+        {
+            let assign = mxd;
+
+            if (isFunc(mxd)) {
+                // If Function wrap with custom middleware
+                assign = new CustomMiddleware(mxd);
+            } 
+
+            if (isDef(assign)){
+                if (isDef(this.mTop)){
+                    this.mTop.then(assign)
+                }
+                this.mTop = assign
+            }
+        }
+
+        check(...args)
+        {
+            this.mRoot.check(...args)
+        }
+    }
+
     return class MiddlewareWrapper
     {
         constructor(callback, fallback=null)
@@ -12,60 +45,49 @@ module.exports = function buildMiddlewareWrapper({
             this.mCallback = callback
             this.mFallback = fallback
             
-            this.mBeforeMiddlewareRoot
-            this.mAfterMiddlewareRoot
-            this.mDoneMiddlewareRoot
+            this.mMiddlewareBuckets = new Map()
 
-            this.mBeforeMiddlewareTop
-            this.mAfterMiddlewareTop
-            this.mDoneMiddlewareTop
-
-            this._init()
+            this._initDefaultBuckets()
         }
 
-        _init()
+        _initDefaultBuckets()
         {
-            this.mBeforeMiddlewareRoot = new BaseMiddleware()
-            this.mAfterMiddlewareRoot  = new BaseMiddleware()
-            this.mDoneMiddlewareRoot   = new BaseMiddleware()
-
-            this.mBeforeMiddlewareTop  = this.mBeforeMiddlewareRoot
-            this.mAfterMiddlewareTop   = this.mAfterMiddlewareRoot
-            this.mDoneMiddlewareTop    = this.mDoneMiddlewareRoot
+            this._newBucket('BEFORE')
+            this._newBucket('AFTER')
+            this._newBucket('DONE')
         }
 
-        before(middleware=null)
+        _newBucket(key) 
         {
-            if (isDef(middleware)) {
-                if (isDef(this.mBeforeMiddlewareTop)){
-                    this.mBeforeMiddlewareTop.then(middleware)
-                }
-                this.mBeforeMiddlewareTop = middleware
-            }
+            let bucket = new MiddlewareBucket()
+            this.mMiddlewareBuckets.set(key, bucket)
+
+            return bucket;
+        }
+
+        _getBucket(key)
+        {
+            return this.mMiddlewareBuckets.get(key)
+        }
+
+
+        before(mxd = null)
+        {
+            this._getBucket('BEFORE').add(mxd)
 
             return this
         }
 
-        after(middleware=null)
+        after(mxd = null)
         {
-            if (isDef(middleware)) {
-                if (isDef(this.mAfterMiddlewareTop)) {
-                    this.mAfterMiddlewareTop.then(middleware)
-                }
-                this.mAfterMiddlewareTop = middleware
-            }
+            this._getBucket('AFTER').add(mxd)
 
             return this
         }
 
-        done(middleware=null)
+        done(mxd = null)
         {
-            if (isDef(middleware)) {
-                if (isDef(this.mDoneMiddlewareTop)) {
-                    this.mDoneMiddlewareTop.then(middleware)
-                }
-                this.mDoneMiddlewareTop = middleware
-            }
+            this._getBucket('DONE').add(mxd)
 
             return this
         }
@@ -85,17 +107,17 @@ module.exports = function buildMiddlewareWrapper({
                 response = new Response();
             }
             try {
-                this.mBeforeMiddlewareRoot.check(request, response)
+                this._getBucket('BEFORE').check(request, response)
                 this.mCallback(request, response)
-                this.mAfterMiddlewareRoot.check(request, response)
+                this._getBucket('AFTER').check(request, response)
             } catch (e) {
                 let callbackMethod = this.getFallback(fallback)
                 if (isFunc(callbackMethod)) {
                     callbackMethod(request, response, e)
                 }
             }
+            this._getBucket('DONE').check(request, response)
 
-            this.mDoneMiddlewareRoot.check(request, response)
 
             return response;
         }
