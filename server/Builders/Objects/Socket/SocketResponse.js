@@ -38,14 +38,14 @@ module.exports = function buildSocketResponse({
       this.response.addToBucket(bucket, responses)
     }
 
-    setAffected(entityKey, id=0, action=null)
-    {
-      this.affected.setAffected(entityKey, id, action)
-    }
-
-    getAffected()
+    getAffectedContainer()
     {
       return this.affected;
+    }
+
+    addAffected(...args)
+    {
+        return this.affected.setAffected(...args)
     }
   }
 }

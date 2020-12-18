@@ -13,17 +13,17 @@ const {
     emptyFunc,
     stateSerialize,
 } = require(`../../server/utils/`)
-const buildRouter  = require(`../../shared/Builders/Router`)    // #Shared
-const buildRoute   = require(`../../shared/Builders/Route`)     // #Shared
-const buildMiddlewareWrapper = require(`../../shared/Builders/MiddlewareWrapper`) // #Shared
+const buildRouter               = require(`../../shared/Builders/Router`)    // #Shared
+const buildRoute                = require(`../../shared/Builders/Route`)     // #Shared
+const buildMiddlewareWrapper    = require(`../../shared/Builders/MiddlewareWrapper`) // #Shared
 
-const buildSocketRequest     = require(`${serverFolder}/Builders/Objects/Socket/SocketRequest`)    // #Server
-const buildSocketResponse    = require(`${serverFolder}/Builders/Objects/Socket/SocketResponse`)   // #Server
-const buildAddressedResponse = require(`${serverFolder}/Builders/Objects/AddressedResponse`)       // #Server
-const buildAffected          = require(`${serverFolder}/Builders/Objects/Affected`)
-const buildOrderedTree       = require(`${serverFolder}/Builders/Objects/OrderedTree`)
-const buildBaseMiddleware    = require(`${serverFolder}/Builders/Objects/Middleware/BaseMiddleware`)
-const buildCustomMiddleware  = require(`${serverFolder}/Builders/Objects/Middleware/CustomMiddleware`)
+const buildSocketRequest        = require(`${serverFolder}/Builders/Objects/Socket/SocketRequest`)    // #Server
+const buildSocketResponse       = require(`${serverFolder}/Builders/Objects/Socket/SocketResponse`)   // #Server
+const buildAddressedResponse    = require(`${serverFolder}/Builders/Objects/AddressedResponse`)       // #Server
+const buildAffected             = require(`${serverFolder}/Builders/Objects/Affected`)
+const buildOrderedTree          = require(`${serverFolder}/Builders/Objects/OrderedTree`)
+const buildBaseMiddleware       = require(`${serverFolder}/Builders/Objects/Middleware/BaseMiddleware`)
+const buildCallbackMiddleware   = require(`${serverFolder}/Builders/Objects/Middleware/CallbackMiddleware`)
 
 
 // ###############################
@@ -48,13 +48,14 @@ const SocketResponse    = buildSocketResponse({
                         })
 
 const BaseMiddleware    = buildBaseMiddleware({ isDef })
-const CustomMiddleware = buildCustomMiddleware({ BaseMiddleware })
+const CallbackMiddleware = buildCallbackMiddleware({ BaseMiddleware })
 const MiddlewareWrapper = buildMiddlewareWrapper({
+                            Response: SocketResponse,
+                            CallbackMiddleware,
+                            BaseMiddleware,
                             isDef,
                             isFunc,
-                            BaseMiddleware,
-                            CustomMiddleware,
-                            Response: SocketResponse,
+                            isArr,
                         })
 const Route             = buildRoute({
                             MiddlewareWrapper
@@ -69,20 +70,20 @@ const Router            = buildRouter({
                         })
 class MockController 
 {
-    sayMessage(req, res, fallback)
+    sayMessage(req, res)
     {
-        let props   = req.getProps()
-        let affected  = res.getAffected()
+        let props     = req.getProps()
+        let context   = req.getContext()
 
-
-        // Add a response for everyone
-        res.add({
+        // create item
+        let id = 11;
+        context.messages[id] = {
             event: 'SAY.MESSAGE',
             data:  props.message,
-        }, TO_EVERYONE)
+        }
 
-
-        affected.setAffected('MESSAGE', 25, Affected.ACTION.CREATE)
+        // log affected to everyone
+        res.addAffected('MESSAGE', id, Affected.ACTION.CREATE, TO_EVERYONE)
     }
 }
 //_____________________________________
@@ -99,47 +100,50 @@ describe("Shared", async function () {
     it(`Should do the thing`, async () => {
 
         const mockController = new MockController()
-
         const router = new Router()
 
 
+        // Define some default middleware to be reused for multiple routes
+        let defaultBeforeMiddleware = [
+            (req) => {
+                let context = req.getContext()
+                context.middleware = []
+                context.messages = {}
+            },
+            (req) => {
+                let context = req.getContext()
+                context.middleware.push('default before 1')
+            }
+        ]
 
+        let defaultAfterMiddleware = [
+            (req, res) => {
+                let context = req.getContext()
+                context.middleware.push('affectedToResponse')
 
-        router
-            .add(new Route('SAY.MESSAGE', (...args) => {
-                // Execute controller
-                mockController.sayMessage(...args)
-            }))
-            // Add "middleware" array to context 
-            .before((req) => {
-                let context = req.getContext()
-                if (!isDef(context.middleware)) {
-                    context.middleware = [];
-                }
-            })
-            // add "before 1"
-            .before((req) => {
-                let context = req.getContext()
-                context.middleware.push('before 1')
-            })
-            // add "before 2"
-            .before((req) => {
-                let context = req.getContext()
-                context.middleware.push('before 2')
-            })
-            // add "after 1"
-            .after((req) => {
-                let context = req.getContext()
-                context.middleware.push('after 1')
-            })
-            // Finalize
-            .done((req, res) => {
+                // No real point to add to mesasges at this point
+                // We could just respond directly in the done 
+                // without going though responses
+                let messages = context.messages
+                let messagesIds = res.affected.getIdsAffected('MESSAGE')
+                messagesIds.forEach(messageId => {
+                    res.getAddressedResponse().addToBucket('DEFAULT', {
+                        evernt:  'GET.MESSAGE',
+                        status: 'success',
+                        payload: messages[messageId]
+                    })
+                })
+            }
+        ]
+
+        let defaultDoneMiddleware = [
+            (req, res) => {
                 let props   = req.getProps()
                 let context = req.getContext()
         
                 let responses = res.getAddressedResponse()
-                let affected  = res.getAffected()
-        
+                let affected  = res.getAffectedContainer()
+
                 console.log(req.getEvent(), {
                     request: {
                         props: JSON.stringify(props),
@@ -150,10 +154,38 @@ describe("Shared", async function () {
                         affected:  JSON.stringify(affected.serialize()),
                     }
                 })
+            }
+        ]
+
+
+
+        // Add Say message route
+        router
+            .add(new Route('SAY.MESSAGE', (...args) => {
+                // Execute controller
+                mockController.sayMessage(...args)
+            }))
+            .before(defaultBeforeMiddleware)
+            .before((req) => {
+                req.context.middleware.push('before 1')
             })
+            .before((req) => {
+                req.context.middleware.push('before 2')
+            })
+            .after((req) => {
+                req.context.middleware.push('after 1')
+            })
+            .after((req) => {
+                req.context.middleware.push('after 1')
+            })
+            .after(defaultAfterMiddleware)
+            // Finalize
+            .done(defaultDoneMiddleware)
 
 
 
+
+        // Execute a route
         const context = {
             like: 'joke'
         }

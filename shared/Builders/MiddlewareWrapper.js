@@ -1,8 +1,9 @@
 module.exports = function buildMiddlewareWrapper({ 
     isDef,
     isFunc,
+    isArr,
     BaseMiddleware,
-    CustomMiddleware,
+    CallbackMiddleware,
     Response,
 })
 {
@@ -17,18 +18,23 @@ module.exports = function buildMiddlewareWrapper({
 
         add(mxd)
         {
-            let assign = mxd;
-
-            if (isFunc(mxd)) {
-                // If Function wrap with custom middleware
-                assign = new CustomMiddleware(mxd);
-            } 
-
-            if (isDef(assign)){
-                if (isDef(this.mTop)){
-                    this.mTop.then(assign)
+            const bucket = this;
+            if (isArr(mxd)) {
+                mxd.forEach(item => {
+                    bucket.add(item)
+                })
+            } else {
+                let assign = mxd;
+                if (isFunc(mxd)) {
+                    // If Function wrap with custom middleware
+                    assign = new CallbackMiddleware(mxd);
+                } 
+                if (isDef(assign)){
+                    if (isDef(this.mTop)){
+                        this.mTop.then(assign)
+                    }
+                    this.mTop = assign
                 }
-                this.mTop = assign
             }
         }
 

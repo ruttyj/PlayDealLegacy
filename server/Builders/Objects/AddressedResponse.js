@@ -44,6 +44,7 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
     }
 
     addArrToBucket(buckeyKey, arrItems) {
+        buckeyKey = String(buckeyKey).toUpperCase()
       if (!this.mBuckets.has(buckeyKey)) this.mBuckets.set(buckeyKey, []);
       this.mBuckets.get(buckeyKey).push(...arrItems);
     }

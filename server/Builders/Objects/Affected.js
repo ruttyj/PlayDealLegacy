@@ -20,7 +20,7 @@ module.exports = function ({OrderedTree}) {
                 DELETE: 'delete',
             };
         }
-    
+        
         static get ACTION_GROUP() {
             let actions = this.ACTION;
             return {
@@ -48,7 +48,7 @@ module.exports = function ({OrderedTree}) {
             return this.mRoot.get(path, fallback);
         }
         
-        setAffected(entityKey, id=0, action=null) {
+        setAffected(entityKey, id=0, action=null, scope='DEFAULT') {
             // Log that the entity was affected
             if (!this.mRoot.has([entityKey, id])) {
                 this.mRoot.set([entityKey, id], this.mRoot.newNode());
@@ -56,7 +56,7 @@ module.exports = function ({OrderedTree}) {
 
             // log the action 
             if (action !== null) {
-                let actionPath = [entityKey, id, action];
+                let actionPath = [entityKey, id, action, scope];
                 if (!this.mRoot.has(actionPath)) {
                     this.mRoot.set(actionPath, true);
                 }

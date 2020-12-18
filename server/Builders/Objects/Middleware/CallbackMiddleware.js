@@ -1,7 +1,7 @@
 module.exports = function buildBaseMiddleware({
     BaseMiddleware
 }){
-    return class CustomMiddleware extends BaseMiddleware
+    return class CallbackMiddleware extends BaseMiddleware
     {
         constructor(callback = () => {})
         {
