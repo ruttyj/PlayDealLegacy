@@ -4,6 +4,7 @@ module.exports = function buildRouter({
     isStr,
     isFunc,
     Request,
+    Response,
 })
 {
     return class Router
@@ -14,6 +15,11 @@ module.exports = function buildRouter({
             this.mContext = {}
         }
 
+        addToContext(additionalContext)
+        {
+            this.mContext = { ...this.mContext, ...additionalContext }
+        }
+        
         setContext(context)
         {
             if (isDef(context)) {
@@ -66,7 +72,10 @@ module.exports = function buildRouter({
         {
             let route = this.get(routeKey)
             if (isDef(route) && isFunc(route.execute)) {
-                route.execute(new Request(routeKey, props, this.getExecutionContext(localContext)))
+                const request = new Request(routeKey, props, this.getExecutionContext(localContext))
+                const response = new Response()
+                route.execute(request, response)
+                return { request, response }
             }
         }
     }

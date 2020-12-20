@@ -2,14 +2,10 @@
     const SOCKET_RESPONSE_BUFFER = 'b_';
     const SOCKET_DISCONNECT = 'disconnect';
 
-    /*
-
-
-
-
-    */
-
-
+    /**
+     * ClientConnector
+     * @param {*} param0 
+     */
 
     module.exports = function buildClientConnection({
         makeListnerTree,

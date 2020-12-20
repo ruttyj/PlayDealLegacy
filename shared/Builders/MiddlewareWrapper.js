@@ -8,6 +8,7 @@ module.exports = function buildMiddlewareWrapper({
 })
 {
 
+    // @TODO move to seprate file
     class MiddlewareBucket 
     {
         constructor() 
@@ -110,7 +111,7 @@ module.exports = function buildMiddlewareWrapper({
         execute(request=null, response=null, fallback = null)
         {
             if (!isDef(response)) {
-                response = new Response();
+                response = new Response()
             }
             try {
                 this._getBucket('BEFORE').check(request, response)
@@ -124,8 +125,7 @@ module.exports = function buildMiddlewareWrapper({
             }
             this._getBucket('DONE').check(request, response)
 
-
-            return response;
+            return response
         }
     }
 }
