@@ -26,7 +26,7 @@ module.exports = function({
           createGameInstance(room);
 
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
           );
         }

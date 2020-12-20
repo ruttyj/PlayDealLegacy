@@ -77,7 +77,7 @@ function buildRespondToCollectValueAction({
                           );
 
                           addressedResponses.addToBucket(
-                            "default",
+                            AddressedResponse.DEFAULT_BUCKET,
                             registry.execute('PLAYER_BANKS.GET_KEYED', 
                               makeProps(consumerData, {
                                 peopleIds: thisPersonId,
@@ -96,7 +96,7 @@ function buildRespondToCollectValueAction({
                           // Add updated collections to be GET
                           if (collectionChanges.updated.length > 0) {
                             addressedResponses.addToBucket(
-                              "everyone",
+                              AddressedResponse.EVERYONE_BUCKET,
                               registry.execute('COLLECTIONS.GET_KEYED', 
                                 makeProps(consumerData, {
                                   personId: thisPersonId,
@@ -109,7 +109,7 @@ function buildRespondToCollectValueAction({
                           // Add removed collections to REMOVE
                           if (collectionChanges.removed.length > 0) {
                             addressedResponses.addToBucket(
-                              "everyone",
+                              AddressedResponse.EVERYONE_BUCKET,
                               registry.execute('COLLECTIONS.REMOVE_KEYED', 
                                 makeProps(consumerData, {
                                   personId: thisPersonId,
@@ -122,7 +122,7 @@ function buildRespondToCollectValueAction({
 
 
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                             makeProps(consumerData, {
                               personId: thisPersonId,
@@ -130,7 +130,7 @@ function buildRespondToCollectValueAction({
                           )
                         );
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('REQUESTS.GET_KEYED', 
                             makeProps(consumerData, {
                               requestId: request.getId(),
@@ -138,7 +138,7 @@ function buildRespondToCollectValueAction({
                           )
                         );
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('PLAYER_TURN.GET', 
                             makeProps(consumerData)
                           )
@@ -157,7 +157,7 @@ function buildRespondToCollectValueAction({
 
                         let allPlayerIds = game.getAllPlayerKeys();
                         addressedResponses.addToBucket(
-                            "default",
+                          AddressedResponse.DEFAULT_BUCKET,
                             registry.execute('PLAYER_HANDS.GET_KEYED', 
                                 makeProps(consumerData, {
                                   personId: thisPersonId,
@@ -170,7 +170,7 @@ function buildRespondToCollectValueAction({
                         
                         if (_Affected.isAffected('ACTIVE_PILE')) {
                             addressedResponses.addToBucket(
-                                "everyone",
+                                AddressedResponse.EVERYONE_BUCKET,
                                 registry.execute('ACTIVE_PILE.GET', makeProps(consumerData))
                             );
                         }
@@ -178,7 +178,7 @@ function buildRespondToCollectValueAction({
                         if (_Affected.isAffected('HAND')) {
                             let allPlayerIds = game.getAllPlayerKeys();
                             addressedResponses.addToBucket(
-                                "default",
+                              AddressedResponse.DEFAULT_BUCKET,
                                 registry.execute('PLAYER_HANDS.GET_KEYED', 
                                     makeProps(consumerData, {
                                         personId: thisPersonId,
@@ -189,7 +189,7 @@ function buildRespondToCollectValueAction({
                         }
                         if (_Affected.isAffected('COLLECTION')) {
                             addressedResponses.addToBucket(
-                                "everyone",
+                                AddressedResponse.EVERYONE_BUCKET,
                                 registry.execute('COLLECTIONS.GET_KEYED', 
                                     makeProps(consumerData, {
                                         collectionIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
@@ -202,7 +202,7 @@ function buildRespondToCollectValueAction({
                         if (_Affected.isAffected('REQUEST')) {
                           
                             addressedResponses.addToBucket(
-                                "everyone",
+                                AddressedResponse.EVERYONE_BUCKET,
                                 registry.execute('REQUESTS.GET_KEYED', 
                                     makeProps(consumerData, {
                                         requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
@@ -214,7 +214,7 @@ function buildRespondToCollectValueAction({
 
                         if (_Affected.isAffected('PLAYER_REQUEST')) {
                             addressedResponses.addToBucket(
-                                "everyone",
+                                AddressedResponse.EVERYONE_BUCKET,
                                 registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                                     makeProps(consumerData, {
                                       peopleIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
@@ -225,7 +225,7 @@ function buildRespondToCollectValueAction({
 
 
                         addressedResponses.addToBucket(
-                            "everyone",
+                            AddressedResponse.EVERYONE_BUCKET,
                             registry.execute('PLAYER_TURN.GET', makeProps(consumerData))
                         );
                       } // end decline
@@ -238,13 +238,13 @@ function buildRespondToCollectValueAction({
 
           payload = {};
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
           );
 
           if (game.checkWinConditionForPlayer(thisPersonId)) {
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               registry.execute('GAME.STATUS', makeProps(props))
             );
           }

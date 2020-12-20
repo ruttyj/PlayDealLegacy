@@ -23,7 +23,7 @@ module.exports = function({
                         personId: thisPerson.getId(),
                     };
                     addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         makeResponse({
                             subject,
                             action,
@@ -53,14 +53,14 @@ module.exports = function({
 
                     if (reconnectAllowed) {
                         addressedResponses.addToBucket(
-                            "everyoneElse",
+                            AddressedResponse.EVERYONE_ELSE_BUCKET,
                             registry.execute('PEOPLE.GET_KEYED', makeProps(props, {
                                 personId: thisPersonId,
                             }))
                         );
 
                         addressedResponses.addToBucket(
-                            "default",
+                            AddressedResponse.DEFAULT_BUCKET,
                             registry.execute('PEOPLE.DISCONNECT', makeProps(props, {
                                 personId: thisPerson.getId(),
                             }))
@@ -71,7 +71,7 @@ module.exports = function({
                         if (isDef(otherPeople[0])) {
                             if (thisPerson.hasTag("host")) {
                                 addressedResponses.addToBucket(
-                                    "everyone",
+                                    AddressedResponse.EVERYONE_BUCKET,
                                     registry.execute('PEOPLE.SET_HOST', makeProps(props, {
                                         personId: otherPeople[0].getId(),
                                     }))
@@ -85,7 +85,7 @@ module.exports = function({
 
                         // Remove person from room
                         addressedResponses.addToBucket(
-                            "everyone",
+                            AddressedResponse.EVERYONE_BUCKET,
                             registry.execute('PEOPLE.REMOVE', makeProps(props, {
                                 personId: thisPersonId,
                             }))

@@ -20,7 +20,7 @@ module.exports = function ({
         let { thisClientKey } = props;
   
         addressedResponses.addToBucket(
-          "default",
+          AddressedResponse.DEFAULT_BUCKET,
           makeResponse({ subject, action, status, payload })
         );
   

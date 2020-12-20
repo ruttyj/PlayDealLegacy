@@ -70,7 +70,7 @@ function buildAddSetAugmentToNewCollectionAction({
 
                     if (removedCollectionIds.length > 0) {
                       addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('COLLECTIONS.REMOVE_KEYED', makeProps(props, {
                           personId: thisPersonId,
                           collectionIds: removedCollectionIds,
@@ -87,13 +87,13 @@ function buildAddSetAugmentToNewCollectionAction({
                       receivingPeopleIds: peopleIds,
                     });
                     addressedResponses.addToBucket(
-                      "default",
+                      AddressedResponse.DEFAULT_BUCKET,
                       registry.execute('PLAYER_HANDS.GET_KEYED', specificPropsForEveryone)
                     );
 
                     // Notify player collections
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('PLAYER_COLLECTIONS.GET_KEYED', makeProps(props, {
                         personId: thisPersonId,
                       }))
@@ -101,7 +101,7 @@ function buildAddSetAugmentToNewCollectionAction({
 
                     // Notift collection contents
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                         collectionIds: playerManager.getAllCollectionIdsForPlayer(
                           thisPersonId
@@ -110,7 +110,7 @@ function buildAddSetAugmentToNewCollectionAction({
                     );
 
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('PLAYER_TURN.GET', makeProps(props))
                     );
                   }
@@ -120,13 +120,13 @@ function buildAddSetAugmentToNewCollectionAction({
             // Confirm this executed
             let payload = {};
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 registry.execute('GAME.STATUS', makeProps(props))
               );
             }

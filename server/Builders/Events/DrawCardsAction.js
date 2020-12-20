@@ -56,13 +56,13 @@ function buildDrawCardsAction({
 
                   // updated card piles
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('GAME.GET_UPDATED_PILES', makeProps(props))
                   );
 
                   // Cards Drawn
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('PLAYERS.PERSON_DREW_CARDS_KEYED', makeProps(props, {
                       personId: thisPersonId,
                       cardIds: cardIdsDelta,
@@ -72,7 +72,7 @@ function buildDrawCardsAction({
                   // Update everyone with my new hand
                   let allPlayerIds = game.getAllPlayerKeys();
                   addressedResponses.addToBucket(
-                    "default",
+                    AddressedResponse.DEFAULT_BUCKET,
                     registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                       personId: thisPersonId,
                       receivingPeopleIds: allPlayerIds,
@@ -80,19 +80,19 @@ function buildDrawCardsAction({
                   );
 
                   addressedResponses.addToBucket(
-                    "default",
+                    AddressedResponse.DEFAULT_BUCKET,
                     makeResponse({ subject, action, status, payload })
                   );
 
                   // update player turn - must be last
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('PLAYER_TURN.GET', makeProps(props))
                   );
 
                   if (game.checkWinConditionForPlayer(thisPersonId)) {
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('GAME.STATUS', makeProps(props))
                     );
                   }
@@ -106,7 +106,7 @@ function buildDrawCardsAction({
             payload = {
             };
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 

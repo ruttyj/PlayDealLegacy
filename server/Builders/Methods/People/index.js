@@ -39,7 +39,7 @@ module.exports = function ({
                 status = "success";
                 thisPerson.setName(username);
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   registry.execute('PEOPLE.GET_KEYED', makeProps(props, {
                     personId: thisPersonId,
                     roomCode,
@@ -49,7 +49,7 @@ module.exports = function ({
             }
 
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 
@@ -73,7 +73,7 @@ module.exports = function ({
             };
 
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
             return addressedResponses;
@@ -104,7 +104,7 @@ module.exports = function ({
             payload.host = host;
 
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 
@@ -142,19 +142,19 @@ module.exports = function ({
                 status = "success";
                 payload.host = personId;
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   makeResponse({ subject, action, status, payload })
                 );
               }
             } else {
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeResponse({ subject, action, status, payload })
               );
             }
 
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               registry.execute('PEOPLE.GET_HOST', makeProps(props))
             );
 
@@ -180,14 +180,14 @@ module.exports = function ({
             .map((person) => person.getId());
 
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             registry.execute('PEOPLE.GET_KEYED', makeProps(props, {
               peopleIds,
             }))
           );
         }
         addressedResponses.addToBucket(
-          "default",
+          AddressedResponse.DEFAULT_BUCKET,
           makeResponse({ subject, action, status, payload })
         );
 
@@ -220,7 +220,7 @@ module.exports = function ({
 
             let status = personFoundCount > 0 ? "success" : "failure";
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 
@@ -276,12 +276,12 @@ module.exports = function ({
               status = "success";
               message = `Removed ${removedPersonCount} people successfully.`;
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 makeResponse({ subject, action, status, payload, message })
               );
             } else {
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeResponse({ subject, action, status, payload, message })
               );
             }
@@ -292,7 +292,7 @@ module.exports = function ({
               );
               if (isDef(nextHost)) {
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   registry.execute('PEOPLE.SET_HOST', makeProps(props, {
                     personId: nextHost.getId(),
                   }))
@@ -321,19 +321,19 @@ module.exports = function ({
             }
             requestStatus = "success";
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status: requestStatus, payload })
             );
 
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               registry.execute('PEOPLE.GET_KEYED', makeProps(props, {
                 personId: thisPersonId,
               }))
             );
 
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               registry.execute('GAME.CAN_START', makeProps(props))
             );
             return addressedResponses;
@@ -373,7 +373,7 @@ module.exports = function ({
             });
 
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               registry.execute('PEOPLE.GET_KEYED', makeProps(props, {
                 peopleIds: disconnectedIds,
               }))

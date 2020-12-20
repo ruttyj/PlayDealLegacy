@@ -52,11 +52,11 @@ function buildAttemptFinishTurnAction({
 
           if (currentTurn.getPhaseKey() === "done") {
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               actionRegistry.execute('PLAYER_REQUESTS.REMOVE_ALL', makeProps(consumerData))
             );
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               actionRegistry.execute('REQUESTS.REMOVE_ALL', makeProps(consumerData))
             );
             game.nextPlayerTurn();
@@ -64,11 +64,11 @@ function buildAttemptFinishTurnAction({
           }
 
           addressedResponses.addToBucket(
-            "everyone",
+            AddressedResponse.EVERYONE_BUCKET,
             actionRegistry.execute('PLAYER_REQUESTS.REMOVE_ALL', makeProps(consumerData))
           );
           addressedResponses.addToBucket(
-            "everyone",
+            AddressedResponse.EVERYONE_BUCKET,
             actionRegistry.execute('REQUESTS.REMOVE_ALL', makeProps(consumerData))
           );
 
@@ -82,18 +82,18 @@ function buildAttemptFinishTurnAction({
 
           // Emit updated player turn
           addressedResponses.addToBucket(
-            "everyone",
+            AddressedResponse.EVERYONE_BUCKET,
             actionRegistry.execute('PLAYER_TURN.GET', makeProps(props))
           );
 
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
           );
 
           if (game.checkWinConditionForPlayer(thisPersonId)) {
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               actionRegistry.execute('GAME.STATUS', makeProps(props))
             );
           }

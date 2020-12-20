@@ -74,7 +74,7 @@ function buildDiscardToHandLimitAction({
 
             if (hasWildCard) {
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 actionRegistry.execute('CARDS.GET_KEYED', makeProps(props, {
                   cardId: wildCardIds,
                 }))
@@ -84,7 +84,7 @@ function buildDiscardToHandLimitAction({
             // Update everyone with my new hand
             let allPlayerIds = game.getAllPlayerKeys();
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               actionRegistry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                 roomCode,
                 personId: thisPersonId,
@@ -92,21 +92,21 @@ function buildDiscardToHandLimitAction({
               }))
             );
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               actionRegistry.execute('DISCARD_PILE.GET', makeProps(props))
             );
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               actionRegistry.execute('PLAYER_TURN.GET', makeProps(props))
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 actionRegistry.execute('GAME.STATUS', makeProps(props))
               );
             }

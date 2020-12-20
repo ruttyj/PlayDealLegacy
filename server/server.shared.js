@@ -1,3 +1,4 @@
+const sharedFolder = `../shared`
 const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
@@ -7,7 +8,8 @@ const cors = require("cors"); // cross domain
 const request = require("request");
 const url = require("url");
 const proxy = require("express-http-proxy");
-const { isDef, getNestedValue } = require("./utils/helperMethods");
+const { isDef, getNestedValue } = require(`${sharedFolder}/Utils`)
+
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");

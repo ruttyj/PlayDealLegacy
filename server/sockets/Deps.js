@@ -83,7 +83,7 @@ function buildDeps({
       }
 
       addressedResponses.addToBucket(
-        "default",
+        AddressedResponse.DEFAULT_BUCKET,
         makeResponse({ subject, action, status, payload })
       );
       return addressedResponses;
@@ -100,7 +100,7 @@ function buildDeps({
 
       const addressedResponses = new AddressedResponse();
       addressedResponses.addToSpecific(
-        "default",
+        AddressedResponse.DEFAULT_BUCKET,
         makeResponse({ subject, action, status: "success", payload: null })
       );
       let getProps = {
@@ -110,7 +110,7 @@ function buildDeps({
       };
       getProps[propName] = getAllKeys();
       addressedResponses.addToBucket(
-        "default",
+        AddressedResponse.DEFAULT_BUCKET,
         registry.execute(`${subject}.GET_KEYED`, makeProps(getProps, getProps))
       );
 
@@ -221,7 +221,7 @@ function buildDeps({
         });
 
         addressedResponses.addToBucket(
-          "default",
+          AddressedResponse.DEFAULT_BUCKET,
           makeResponse({
             subject,
             action,
@@ -287,7 +287,7 @@ function buildDeps({
   
               // deliver data
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeKeyedResponse(myKeyedRequest)
               );
   
@@ -316,13 +316,13 @@ function buildDeps({
   
               // Get data
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 getAllKeyedResponse(myKeyedRequest)
               );
   
               // confirm the all command
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeResponse({
                   subject,
                   action,
@@ -355,13 +355,13 @@ function buildDeps({
   
               // Get data
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 getAllKeyedResponse(myKeyedRequest)
               );
   
               // confirm the all command
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeResponse({
                   subject,
                   action,
@@ -391,7 +391,7 @@ function buildDeps({
                 removeItemsIds: getArrFromProp(props, nomenclature, []),
               };
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeResponse({
                   subject,
                   action,
@@ -547,7 +547,7 @@ function buildDeps({
         let boolFailed = false;
         let { game } = consumerData;
         addressedResponses.addToBucket(
-          "default",
+          AddressedResponse.DEFAULT_BUCKET,
           fn(
             {
               ...consumerData,
@@ -588,7 +588,7 @@ function buildDeps({
                   if (isDef(card)) {
                     boolFailed = false;
                     addressedResponses.addToBucket(
-                      "default",
+                      AddressedResponse.DEFAULT_BUCKET,
                       fn(
                         {
                           ...consumerData,
@@ -645,9 +645,9 @@ function buildDeps({
           if (boolFailed) {
             if (isFunc(fallback)) {
               let fallbackResult = fallback(checkpoints);
-              addressedResponses.addToBucket("default", fallbackResult);
+              addressedResponses.addToBucket(AddressedResponse.DEFAULT_BUCKET, fallbackResult);
             } else {
-              addressedResponses.addToBucket("default", fallback);
+              addressedResponses.addToBucket(AddressedResponse.DEFAULT_BUCKET, fallback);
             }
           }
           return addressedResponses;
@@ -736,7 +736,7 @@ function buildDeps({
                   if (_Affected.isAffected('HAND')) {
                     let allPlayerIds = game.getAllPlayerKeys();
                     addressedResponses.addToBucket(
-                      "default",
+                      AddressedResponse.DEFAULT_BUCKET,
                       registry.execute('PLAYER_HANDS.GET_KEYED', 
                         makeProps(consumerData, {
                           personId: thisPersonId,
@@ -755,7 +755,7 @@ function buildDeps({
   
                     if (updatedCollectionIds.length > 0) {
                       addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('COLLECTIONS.GET_KEYED', 
                           makeProps(consumerData, {
                             collectionIds: updatedCollectionIds,
@@ -766,7 +766,7 @@ function buildDeps({
   
                     if (removedCollectionIds.length > 0) {
                       addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('COLLECTIONS.REMOVE_KEYED', 
                           makeProps(consumerData, {
                             collectionIds: removedCollectionIds,
@@ -781,7 +781,7 @@ function buildDeps({
                   if (_Affected.isAffected('PLAYER_COLLECTION')) {
                     // Update who has what collection
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('PLAYER_COLLECTIONS.GET_KEYED', 
                         makeProps(consumerData, {
                           peopleIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
@@ -793,7 +793,7 @@ function buildDeps({
                   // REQUESTS
                   if (_Affected.isAffected('REQUEST')) {
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('REQUESTS.GET_KEYED', 
                         makeProps(consumerData, {
                           requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
@@ -804,7 +804,7 @@ function buildDeps({
   
                   if (_Affected.isAffected('PLAYER_REQUEST')) {
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                         makeProps(consumerData, {
                           peopleIds: _Affected.getIdsAffectedByAction("PLAYER_REQUEST", Affected.ACTION_GROUP.CHANGE),
@@ -823,7 +823,7 @@ function buildDeps({
                       person.getId()
                     );
                     addressedResponses.addToBucket(
-                      "default",
+                      AddressedResponse.DEFAULT_BUCKET,
                       registry.execute('PLAYER_BANKS.GET_KEYED', 
                         makeProps(consumerData, {
                           peopleIds: thisPersonId,
@@ -836,7 +836,7 @@ function buildDeps({
                   // PLAYER TURN
                   if (_Affected.isAffected('TURN')) {
                     addressedResponses.addToBucket(
-                      "everyone",
+                      AddressedResponse.EVERYONE_BUCKET,
                       registry.execute('PLAYER_TURN.GET', makeProps(props))
                     );
                   }
@@ -847,7 +847,7 @@ function buildDeps({
   
           payload = {};
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
           );
   
@@ -944,7 +944,7 @@ function buildDeps({
                     if (_Affected.isAffected('HAND')) {
                       let allPlayerIds = game.getAllPlayerKeys();
                       addressedResponses.addToBucket(
-                        "default",
+                        AddressedResponse.DEFAULT_BUCKET,
                         registry.execute('PLAYER_HANDS.GET_KEYED', 
                           makeProps(consumerData, {
                             personId: thisPersonId,
@@ -962,7 +962,7 @@ function buildDeps({
     
                       if (updatedCollectionIds.length > 0) {
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('COLLECTIONS.GET_KEYED', 
                             makeProps(consumerData, {
                               collectionIds: updatedCollectionIds,
@@ -973,7 +973,7 @@ function buildDeps({
     
                       if (removedCollectionIds.length > 0) {
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('COLLECTIONS.REMOVE_KEYED', 
                             makeProps(consumerData, {
                               collectionIds: removedCollectionIds,
@@ -986,7 +986,7 @@ function buildDeps({
                     if (_Affected.isAffected('PLAYER_COLLECTION')) {
                       // Update who has what collection
                       addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('PLAYER_COLLECTIONS.GET_KEYED', 
                           makeProps(consumerData, {
                             peopleIds: _Affected.getIdsAffectedByAction("PLAYER_COLLECTIONS", Affected.ACTION_GROUP.CHANGE),
@@ -998,7 +998,7 @@ function buildDeps({
                     // REQUESTS
                     if (_Affected.isAffected('REQUEST')) {
                       addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('REQUESTS.GET_KEYED', 
                           makeProps(consumerData, {
                             requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
@@ -1006,7 +1006,7 @@ function buildDeps({
                         )
                       );
                       addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                           makeProps(consumerData, { personId: thisPersonId })
                         )
@@ -1023,7 +1023,7 @@ function buildDeps({
                         person.getId()
                       );
                       addressedResponses.addToBucket(
-                        "default",
+                        AddressedResponse.DEFAULT_BUCKET,
                         registry.execute('PLAYER_BANKS.GET_KEYED', 
                           makeProps(consumerData, {
                             peopleIds: thisPersonId,
@@ -1036,7 +1036,7 @@ function buildDeps({
                     // PLAYER TURN
                     if (_Affected.isAffected('TURN')) {
                       addressedResponses.addToBucket(
-                        "everyone",
+                        AddressedResponse.EVERYONE_BUCKET,
                         registry.execute('PLAYER_TURN.GET', makeProps(consumerData))
                       );
                     }
@@ -1048,7 +1048,7 @@ function buildDeps({
     
           payload = {};
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
           );
     
@@ -1128,7 +1128,7 @@ function buildDeps({
                 let allPlayerIds = game.getAllPlayerKeys();
                
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PLAYER_HANDS.GET_KEYED', 
                     makeProps(consumerData, {
                       personId: thisPersonId,
@@ -1138,14 +1138,14 @@ function buildDeps({
                 );
                 if (_Affected.isAffected('ACTIVE_PILE')) {
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('ACTIVE_PILE.GET', makeProps(consumerData))
                   );
                 }
   
                 if (_Affected.isAffected('COLLECTION')) {
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('COLLECTIONS.GET_KEYED', 
                       makeProps(consumerData, {
                         collectionIds: _Affected.getIdsAffectedByAction("COLLECTION", Affected.ACTION_GROUP.CHANGE),
@@ -1157,7 +1157,7 @@ function buildDeps({
                 if (_Affected.isAffected('PLAYER_COLLECTION')) {
                   // Update who has what collection
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('PLAYER_COLLECTIONS.GET_KEYED', 
                       makeProps(consumerData, {
                         peopleIds: _Affected.getIdsAffectedByAction("PLAYER_COLLECTION", Affected.ACTION_GROUP.CHANGE),
@@ -1168,7 +1168,7 @@ function buildDeps({
   
                 if (_Affected.isAffected('PLAYER_REQUEST')) {
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                       makeProps(consumerData, { peopleIds: targetPeopleIds })
                     )
@@ -1178,7 +1178,7 @@ function buildDeps({
   
                 if (_Affected.isAffected('REQUEST')) {
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('REQUESTS.GET_KEYED', 
                       makeProps(consumerData, {
                         requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
@@ -1188,7 +1188,7 @@ function buildDeps({
                 }
   
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   registry.execute('PLAYER_TURN.GET', makeProps(consumerData))
                 );
               }
@@ -1197,7 +1197,7 @@ function buildDeps({
   
           payload = {};
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
           );
           return addressedResponses;
@@ -1355,7 +1355,7 @@ function buildDeps({
                         // Player Hands
                         let allPlayerIds = game.getAllPlayerKeys();
                         addressedResponses.addToBucket(
-                          "default",
+                          AddressedResponse.DEFAULT_BUCKET,
                           registry.execute('PLAYER_HANDS.GET_KEYED', 
                             makeProps(consumerData, {
                               personId: thisPersonId,
@@ -1367,7 +1367,7 @@ function buildDeps({
                         // Active Pile
                         if (_Affected.isAffected('ACTIVE_PILE')) {
                           addressedResponses.addToBucket(
-                            "everyone",
+                            AddressedResponse.EVERYONE_BUCKET,
                             registry.execute('ACTIVE_PILE.GET', 
                               makeProps(consumerData)
                             )
@@ -1377,7 +1377,7 @@ function buildDeps({
                         // Requests
                         if (_Affected.isAffected('REQUEST')) {
                           addressedResponses.addToBucket(
-                            "everyone",
+                            AddressedResponse.EVERYONE_BUCKET,
                             registry.execute('PLAYER_REQUESTS.GET_KEYED', 
                               makeProps(consumerData, {
                                 peopleIds: targetPeopleIds,
@@ -1385,7 +1385,7 @@ function buildDeps({
                             )
                           );
                           addressedResponses.addToBucket(
-                            "everyone",
+                            AddressedResponse.EVERYONE_BUCKET,
                             registry.execute('REQUESTS.GET_KEYED', 
                               makeProps(consumerData, {
                                 requestIds: _Affected.getIdsAffectedByAction("REQUEST", Affected.ACTION_GROUP.CHANGE),
@@ -1396,7 +1396,7 @@ function buildDeps({
   
                         // Player Turn
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('PLAYER_TURN.GET', makeProps(consumerData))
                         );
                       }
@@ -1408,7 +1408,7 @@ function buildDeps({
           }
   
           addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
           );
   

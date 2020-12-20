@@ -33,7 +33,7 @@ module.exports = function buildSocketResponse({
       return this.response
     }
 
-    add(responses, bucket="default")
+    add(responses, bucket=AddressedResponse.DEFAULT_BUCKET)
     {
       this.response.addToBucket(bucket, responses)
     }

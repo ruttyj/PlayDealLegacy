@@ -101,7 +101,7 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
 
                 if (removedCollectionIds.length > 0) {
                   addressedResponses.addToBucket(
-                    "everyone",
+                    AddressedResponse.EVERYONE_BUCKET,
                     registry.execute('COLLECTIONS.REMOVE_KEYED', makeProps(props, {
                       roomCode,
                       personId: thisPersonId,
@@ -111,14 +111,14 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
                 }
 
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   registry.execute('PLAYER_COLLECTIONS.GET_KEYED', makeProps(props, {
                     personId: thisPersonId,
                   }))
                 );
 
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                     collectionIds: playerManager.getAllCollectionIdsForPlayer(
                       thisPersonId
@@ -127,7 +127,7 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
                 );
 
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   registry.execute('PLAYER_TURN.GET', makeProps(props))
                 );
               }
@@ -135,20 +135,20 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 registry.execute('GAME.STATUS', makeProps(props))
               );
             }
 
             // Confirm this executed
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload: null })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 registry.execute('GAME.STATUS', makeProps(props))
               );
             }

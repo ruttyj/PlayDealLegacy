@@ -1,4 +1,6 @@
-const serverFolder              = '..'
+const rootFolter                = `../../`
+const serverFolder              = `${rootFolter}/server`
+const sharedFolder              = `${rootFolter}shared`
 const builderFolder             = `${serverFolder}/Builders`
 const builderPlayDealFolder     = `${builderFolder}/Objects/PlayDeal`
 
@@ -49,7 +51,7 @@ const {
   emptyFunction,
   emptyFunc,
   stateSerialize,
-} = require(`${serverFolder}/utils/`)
+} = require(`${sharedFolder}/Utils`)
 
 
 const constants                   = buildConstants({})

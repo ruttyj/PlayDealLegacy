@@ -30,7 +30,7 @@ function buildRegisterCardMethods({
             });
 
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeKeyedResponse(myKeyedRequest)
             );
 
@@ -59,7 +59,7 @@ function buildRegisterCardMethods({
 
             // Get data
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               getAllKeyedResponse(myKeyedRequest)
             );
 
@@ -88,7 +88,7 @@ function buildRegisterCardMethods({
 
             // Get data
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeKeyedResponse(myKeyedRequest)
             );
 
@@ -117,13 +117,13 @@ function buildRegisterCardMethods({
 
             // Get data
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               getAllKeyedResponse(myKeyedRequest)
             );
 
             // Confirm
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({
                 subject,
                 action,

@@ -86,7 +86,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                   
                   // Collect the addressed responses
                   let eventResponses = new AddressedResponse()
-                  eventResponses.addToBucket("default", registry.execute(eventType, payload))
+                  eventResponses.addToBucket(AddressedResponse.DEFAULT_BUCKET, registry.execute(eventType, payload))
 
                   // @TODO need reference to Room and handleRoom
                   // Collect person Ids

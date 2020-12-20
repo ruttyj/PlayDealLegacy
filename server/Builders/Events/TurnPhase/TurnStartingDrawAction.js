@@ -37,7 +37,7 @@ function buildTurnStartingDrawAction({
 
               // Let people know --------------------------------------------------------
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 actionRegistry.execute('PLAYERS.PERSON_DREW_CARDS_KEYED', makeProps(props, {
                   personId: thisPersonId,
                   cardIds: cardIdsDelta,
@@ -45,14 +45,14 @@ function buildTurnStartingDrawAction({
               );
 
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 actionRegistry.execute('DRAW_PILE.GET', makeProps(props))
               );
 
               // Update everyone with my new hand
               let allPlayerIds = game.getAllPlayerKeys();
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 actionRegistry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                   roomCode,
                   personId: thisPersonId,
@@ -62,7 +62,7 @@ function buildTurnStartingDrawAction({
 
               // Confirm this executed
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeResponse({
                   subject,
                   action,
@@ -73,7 +73,7 @@ function buildTurnStartingDrawAction({
 
               // Update current turn state
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 actionRegistry.execute('PLAYER_TURN.GET', makeProps(props))
               );
               //___________________________________________________________________________

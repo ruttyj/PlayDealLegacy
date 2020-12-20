@@ -1,5 +1,7 @@
-const cookieParser = require("cookie-parser");
-const { isDef, getNestedValue, makeMap, makeVar } = require("../utils/");
+const cookieParser = require("cookie-parser")
+const sharedFolder = `../../shared`
+const { isDef, makeMap, makeVar } = require(`${sharedFolder}/Utils`)
+
 function CookieTokenManager() {
   cookieParser.JSONCookie("token");
 

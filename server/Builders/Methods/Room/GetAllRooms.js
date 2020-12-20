@@ -14,7 +14,7 @@ module.exports = function ({
         const addressedResponses = new AddressedResponse();
         let roomCodes = roomManager.listAllRoomCodes();
         addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             registry.execute('ROOM.GET_KEYED', makeProps(props, {
                 roomCodes: roomCodes,
             }))
@@ -23,7 +23,7 @@ module.exports = function ({
             roomCodes,
         };
         addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({ subject, action, status, payload })
         );
 

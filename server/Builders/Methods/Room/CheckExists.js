@@ -25,7 +25,7 @@ module.exports = function({
           payload.exists[code] = isDef(room);
         });
         addressedResponses.addToBucket(
-          "default",
+          AddressedResponse.DEFAULT_BUCKET,
           makeResponse({ subject, action, status, payload })
         );
 

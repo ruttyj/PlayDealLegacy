@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 const serverFolder                = `.`
+const sharedFolder                = `../shared`
+
 const builderFolder               = `${serverFolder}/Builders`
 const buildPlaydealServer         = require(`${builderFolder}/Objects/Server`)
 const AppHelpers                  = require(`${builderFolder}/Objects/App/AppHelpers`)
 
 const cookie                      = require(`cookie`);
 const http                        = require(`http`);
-const utils                       = require(`${serverFolder}/utils/index.js`)
+const utils                       = require(`${sharedFolder}/Utils`)
+
 
 const PlayDealServer              = buildPlaydealServer({utils});
 const CookieTokenManager          = require(`${serverFolder}/CookieTokenManager`);

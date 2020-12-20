@@ -56,7 +56,7 @@ function buildRegisterChatMethods({
             };
 
             addressedResponses.addToBucket(
-              "everyone",
+              AddressedResponse.EVERYONE_BUCKET,
               makeResponse({ subject, action: "RECEIVE_MESSAGE", status, payload })
             );
 
@@ -82,7 +82,7 @@ function buildRegisterChatMethods({
             };
 
             addressedResponses.addToBucket(
-              "everyoneElse",
+              AddressedResponse.EVERYONE_ELSE_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 

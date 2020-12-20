@@ -32,7 +32,7 @@ module.exports = function({
         });
 
         addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({
             status: successCount > 0 ? "success" : "failure",
             subject,

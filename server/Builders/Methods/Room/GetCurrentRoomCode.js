@@ -21,7 +21,7 @@ module.exports = function ({
         }
 
         addressedResponses.addToBucket(
-            "default",
+            AddressedResponse.DEFAULT_BUCKET,
             makeResponse({
                 status: isDef(payload) ? "success" : "failure",
                 subject,

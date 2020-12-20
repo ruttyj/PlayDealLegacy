@@ -46,13 +46,13 @@ function buildAddSetAugmentToExistingCollectionAction({
 
                         // Emit updated player turn
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('PLAYER_TURN.GET', makeProps(props))
                         );
 
                         //Update collection contents
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                             collectionId: collection.getId(),
                           }))
@@ -61,7 +61,7 @@ function buildAddSetAugmentToExistingCollectionAction({
                         // Update everyone with my new hand
                         let allPlayerIds = game.getAllPlayerKeys();
                         addressedResponses.addToBucket(
-                          "default",
+                          AddressedResponse.DEFAULT_BUCKET,
                           registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                             roomCode,
                             personId: thisPersonId,
@@ -77,13 +77,13 @@ function buildAddSetAugmentToExistingCollectionAction({
             let payload = {};
             // confirm action for async await
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 registry.execute('GAME.STATUS', makeProps(props))
               );
             }

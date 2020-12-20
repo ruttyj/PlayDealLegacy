@@ -21,7 +21,7 @@ function buildChangeCardActiveSetAction({
           (consumerData) => {
             let { cardId, chosenSetKey, collectionId } = consumerData;
             const { roomCode, game, thisPersonId } = consumerData;
-            let scope = "default";
+            let scope = AddressedResponse.DEFAULT_BUCKET;
             let player = game.getPlayer(thisPersonId);
             if (isDef(player)) {
               if (isDef(cardId)) {
@@ -34,7 +34,7 @@ function buildChangeCardActiveSetAction({
                   if (hand.hasCard(cardId)) {
                     game.updateCardSet(cardId, chosenSetKey);
                     status = "success";
-                    scope = "default";
+                    scope = AddressedResponse.DEFAULT_BUCKET;
                   } else {
                     //Is in collection?
                     if (
@@ -48,12 +48,12 @@ function buildChangeCardActiveSetAction({
                       // is only card in set? all good
                       if (collection.propertyCount() === 1) {
                         status = "success";
-                        scope = "everyone";
+                        scope = AddressedResponse.EVERYONE_BUCKET;
                         game.updateCardSet(cardId, chosenSetKey);
                         collection.setPropertySetKey(chosenSetKey);
 
                         addressedResponses.addToBucket(
-                          "everyone",
+                          AddressedResponse.EVERYONE_BUCKET,
                           registry.execute('COLLECTIONS.GET_KEYED', makeProps(props, {
                             roomCode,
                             collectionId: collection.getId(),
@@ -78,13 +78,13 @@ function buildChangeCardActiveSetAction({
             if (!isDef(payload)) payload = {};
 
             addressedResponses.addToBucket(
-              "default",
+              AddressedResponse.DEFAULT_BUCKET,
               makeResponse({ subject, action, status, payload })
             );
 
             if (game.checkWinConditionForPlayer(thisPersonId)) {
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 registry.execute('GAME.STATUS', makeProps(props))
               );
             }

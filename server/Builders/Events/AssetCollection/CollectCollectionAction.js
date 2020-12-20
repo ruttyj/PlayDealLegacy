@@ -48,7 +48,7 @@ function buildCollectCollectionAction({
       
               if (game.checkWinConditionForPlayer(thisPersonId)) {
                 addressedResponses.addToBucket(
-                  "everyone",
+                  AddressedResponse.EVERYONE_BUCKET,
                   registry.execute('GAME.STATUS', makeProps(props))
                 );
               }

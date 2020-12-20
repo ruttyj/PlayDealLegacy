@@ -102,13 +102,13 @@ module.exports = function ({
               }
 
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 registry.execute('PEOPLE.ME', makeProps(props))
               );
 
               if (personManager.getConnectedPeopleCount() === 1) {
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PEOPLE.SET_HOST', makeProps(props, {
                     personId,
                   }))
@@ -117,24 +117,24 @@ module.exports = function ({
 
               // send room data
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 registry.execute('ROOM.GET_CURRENT', makeProps(props))
               );
 
               // Get the full player list for myself
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 registry.execute('PEOPLE.GET_ALL_KEYED', makeProps(props))
               );
 
               // Let everyone else know the new users has joined
               addressedResponses.addToBucket(
-                "everyoneElse",
+                AddressedResponse.EVERYONE_ELSE_BUCKET,
                 registry.execute('PEOPLE.GET_KEYED', makeProps(props, {personId}))
               );
 
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 registry.execute('PEOPLE.GET_HOST', makeProps(props))
               );
 
@@ -147,7 +147,7 @@ module.exports = function ({
               
 
               addressedResponses.addToBucket(
-                "everyone",
+                AddressedResponse.EVERYONE_BUCKET,
                 makeResponse({
                   subject,
                   action,
@@ -161,27 +161,27 @@ module.exports = function ({
                 let allPlayerIds = game.getAllPlayerKeys();
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PROPERTY_SETS.GET_ALL_KEYED', makeProps(props))
                 );
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('CARDS.GET_ALL_KEYED', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PLAYERS.GET', makeProps(props, {person}))
                 );
 
                 // @TODO store client side
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('GAME.GET_CONFIG', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PLAYER_HANDS.GET_KEYED', makeProps(props, {
                     person,
                     peopleIds: allPlayerIds,
@@ -190,54 +190,54 @@ module.exports = function ({
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PLAYER_BANKS.GET_ALL_KEYED', makeProps(props, {person}))
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('COLLECTIONS.GET_ALL_KEYED', makeProps(props, {peopleIds: allPlayerIds}))
                 );
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PLAYER_COLLECTIONS.GET_ALL_KEYED', makeProps(props, {peopleIds: allPlayerIds}))
                 );
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('DRAW_PILE.GET', makeProps(props))
                 );
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('ACTIVE_PILE.GET', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('DISCARD_PILE.GET', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('GAME.STATUS', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PLAYER_REQUESTS.GET_KEYED', makeProps(props, {peopleIds: allPlayerIds}))
                 );
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('REQUESTS.GET_ALL_KEYED', makeProps(props))
                 );
 
                 addressedResponses.addToBucket(
-                  "default",
+                  AddressedResponse.DEFAULT_BUCKET,
                   registry.execute('PLAYER_TURN.GET', makeProps(props))
                 );
               }
 
               addressedResponses.addToBucket(
-                "default",
+                AddressedResponse.DEFAULT_BUCKET,
                 makeResponse({
                   subject,
                   action: "I_JOINED_ROOM",

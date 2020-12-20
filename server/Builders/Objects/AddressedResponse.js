@@ -17,6 +17,10 @@
 module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
   class AddressedResponse {
 
+    static DEFAULT_BUCKET = 'DEFAULT'
+    static EVERYONE_BUCKET = 'EVERYONE'
+    static EVERYONE_ELSE_BUCKET = 'EVERYONEELSE'
+
     constructor()
     {
       this.mState = {};
@@ -24,8 +28,17 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
       this.mSpecific = makeMap(this.mState, "specific", [], {
         keyMutator: v => String(v)
       });
+
+      // There must be a better way...
+      this.DEFAULT_BUCKET       = AddressedResponse.DEFAULT_BUCKET
+      this.EVERYONE_BUCKET      = AddressedResponse.EVERYONE_BUCKET
+      this.EVERYONE_ELSE_BUCKET = AddressedResponse.EVERYONE_ELSE_BUCKET
     }
 
+    bucketNameTransform(name)
+    {
+      return String(name).toUpperCase()
+    }
     get buckets()
     {
       return this.mBuckets;
@@ -44,12 +57,13 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
     }
 
     addArrToBucket(buckeyKey, arrItems) {
-        buckeyKey = String(buckeyKey).toUpperCase()
+        buckeyKey = this.bucketNameTransform(buckeyKey)
       if (!this.mBuckets.has(buckeyKey)) this.mBuckets.set(buckeyKey, []);
       this.mBuckets.get(buckeyKey).push(...arrItems);
     }
 
     addObjToBucket(buckeyKey, obj) {
+      buckeyKey = this.bucketNameTransform(buckeyKey)
       this.addArrToBucket(buckeyKey, [obj]);
     }
 
@@ -74,10 +88,14 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
 
     // Transfer from default to a specific bucket
     transferToBucket(newBucketKey, objA) {
+      const response = this;
+
       let serialA = objA.serialize();
 
       Object.keys(serialA.buckets).forEach(bucketKey => {
-        let targetBucketKey = bucketKey === "default" ? newBucketKey : bucketKey;
+        let targetBucketKey = bucketKey === response.DEFAULT_BUCKET ? newBucketKey : bucketKey;
+        targetBucketKey = this.bucketNameTransform(targetBucketKey)
+
         this.addArrToBucket(targetBucketKey, serialA.buckets[bucketKey]);
       });
 
@@ -87,13 +105,15 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
     }
 
     addToBucket(mxdA, mxdB = null) {
+      const response = this
+      
       if (!isDef(mxdB)) {
         if (this.isSameType(mxdA)) {
           this.addSocketReponse(mxdA);
         } else if (isArr(mxdA)) {
-          this.transferToBucket("default", mxdA);
+          this.transferToBucket(response.DEFAULT_BUCKET, mxdA);
         } else {
-          this.addObjToBucket("default", mxdA);
+          this.addObjToBucket(response.DEFAULT_BUCKET, mxdA);
         }
       } else if (this.isSameType(mxdB)) {
         this.transferToBucket(mxdA, mxdB);
@@ -119,37 +139,38 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
     // Take information from the buckets and assign to relevent clients
     // Returns a new object
     reduce(thisId, ids) {
+      const response = this;
+      
       let newBuckets = new AddressedResponse();
       let b = this.buckets;
       let s = this.specific;
 
-      let defaultBuckets = {
-        default: 1,
-        everyoneElse: 1,
-        everyone: 1
-      };
+      let defaultBuckets = {};
+      defaultBuckets[this.DEFAULT_BUCKET] = 1
+      defaultBuckets[this.EVERYONE_ELSE_BUCKET] = 1
+      defaultBuckets[this.EVERYONE_BUCKET] = 1
+      // dev warning since my application wont be using any other buckets - @TODO remove 
       this.mBuckets.keys().forEach(bucket => {
         if (!isDef(defaultBuckets[bucket])) {
-          console.log("HEYYY!!!, WRONG BUCKET NAME!!");
+          console.log("HEYYY!!!, WRONG BUCKET NAME!!", bucket);
         }
       });
 
       // move default to thisId
-      if (b.has("default")) newBuckets.addToSpecific(thisId, b.get("default"));
-
-      let hasEveryoneBucket = b.has("everyone");
-      let hasEveryoneElseBucket = b.has("everyoneElse");
+      if (b.has(response.DEFAULT_BUCKET)) newBuckets.addToSpecific(thisId, b.get(response.DEFAULT_BUCKET));
+      let hasEveryoneBucket = b.has(response.EVERYONE_BUCKET);
+      let hasEveryoneElseBucket = b.has(response.EVERYONE_ELSE_BUCKET);
       ids.forEach(id => {
         // add Everyone else
         if (hasEveryoneElseBucket) {
           if (id !== thisId) {
-            newBuckets.addToSpecific(id, b.get("everyoneElse"));
+            newBuckets.addToSpecific(id, b.get(response.EVERYONE_ELSE_BUCKET));
           }
         }
 
         // Add to everyone
         if (hasEveryoneBucket) {
-          newBuckets.addToSpecific(id, b.get("everyone"));
+          newBuckets.addToSpecific(id, b.get(response.EVERYONE_BUCKET));
         }
 
         // add any specific ones
