@@ -14,7 +14,8 @@
  * Additional information can be places into specific buckets indexed by the client id.
  * All buckets will eventually be reduced to their correponding client id.
  */
-module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
+module.exports = function ({isDef, isArr, makeMap, stateSerialize})
+{
   class AddressedResponse {
 
     static DEFAULT_BUCKET = 'DEFAULT'
@@ -23,16 +24,17 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize}) {
 
     constructor()
     {
+      const addressedResponse = this
       this.mState = {};
       this.mBuckets = makeMap(this.mState, "buckets");
       this.mSpecific = makeMap(this.mState, "specific", [], {
         keyMutator: v => String(v)
       });
 
-      // There must be a better way...
-      this.DEFAULT_BUCKET       = AddressedResponse.DEFAULT_BUCKET
-      this.EVERYONE_BUCKET      = AddressedResponse.EVERYONE_BUCKET
-      this.EVERYONE_ELSE_BUCKET = AddressedResponse.EVERYONE_ELSE_BUCKET
+      // Allow static variables to be visible to the instance
+      Object.entries(AddressedResponse).forEach(([key, value]) => {
+        addressedResponse[key] = value
+      })
     }
 
     bucketNameTransform(name)
