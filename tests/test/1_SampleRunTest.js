@@ -8,14 +8,13 @@ const assert              = require("chai").assert
 const clientConnection    = require(`${rootFolder}/clientSocket.js`)    // Client Connection
 const utils               = require(`${sharedFolder}/Utils`)
 
-
 const buildTestHost       = require(`${builderFolder}/Objects/TestUtil/TestHost`)
 const buildConstants      = require(`${builderFolder}/Data/Constants`)
 const buildPlaydealServer = require(`${builderFolder}/Objects/Server`)
 
 const TestHost            = buildTestHost(utils)
-const constants           = buildConstants({});
-const PlayDealServer      = buildPlaydealServer({utils});
+const constants           = buildConstants({})
+const PlayDealServer      = buildPlaydealServer({utils})
 
 // Check the responses on the client's side of the socket
 const checks = require(`../checks/`);
@@ -36,7 +35,8 @@ function buildSampleRunTestCase({
   getOtherPlayersIds,
   getNextPlayerId,
   skipTurn,
-}){
+})
+{
   const runTestCases = true;
   const { CONFIG } = constants;
   const initalHandSize      = 5;

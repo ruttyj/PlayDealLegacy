@@ -46,38 +46,47 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize})
       return this.mBuckets;
     }
 
-    get specific(){
+    get specific()
+    {
       return this.mSpecific;
     }
 
-    isSameType(obj) {
+    isSameType(obj) 
+    {
       return obj instanceof AddressedResponse;
     }
 
-    is() {
+    is() 
+    {
       return AddressedResponse;
     }
 
-    addArrToBucket(buckeyKey, arrItems) {
+    addArrToBucket(buckeyKey, arrItems) 
+    {
         buckeyKey = this.bucketNameTransform(buckeyKey)
       if (!this.mBuckets.has(buckeyKey)) this.mBuckets.set(buckeyKey, []);
       this.mBuckets.get(buckeyKey).push(...arrItems);
     }
 
-    addObjToBucket(buckeyKey, obj) {
+    addObjToBucket(buckeyKey, obj) 
+    {
       buckeyKey = this.bucketNameTransform(buckeyKey)
       this.addArrToBucket(buckeyKey, [obj]);
     }
 
-    addArrToSpecific(sKey, arrItems) {
+    addArrToSpecific(sKey, arrItems) 
+    {
       if (!this.mSpecific.has(sKey)) this.mSpecific.set(sKey, []);
       this.mSpecific.get(sKey).push(...arrItems);
     }
-    addObjToSpecific(sKey, obj) {
+
+    addObjToSpecific(sKey, obj) 
+    {
       this.addArrToSpecific(sKey, [obj]);
     }
 
-    addSocketReponse(objA) {
+    addSocketReponse(objA) 
+    {
       let serialA = objA.serialize();
       Object.keys(serialA.buckets).forEach(bucketKey => {
         this.addArrToBucket(bucketKey, serialA.buckets[bucketKey]);
@@ -89,7 +98,8 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize})
     }
 
     // Transfer from default to a specific bucket
-    transferToBucket(newBucketKey, objA) {
+    transferToBucket(newBucketKey, objA) 
+    {
       const response = this;
 
       let serialA = objA.serialize();
@@ -106,7 +116,8 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize})
       });
     }
 
-    addToBucket(mxdA, mxdB = null) {
+    addToBucket(mxdA, mxdB = null) 
+    {
       const response = this
       
       if (!isDef(mxdB)) {
@@ -126,7 +137,8 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize})
       }
     }
 
-    addToSpecific(sKey, mxdB) {
+    addToSpecific(sKey, mxdB) 
+    {
       if (isArr(mxdB)) {
         this.addArrToSpecific(sKey, mxdB);
       } else {
@@ -134,13 +146,15 @@ module.exports = function ({isDef, isArr, makeMap, stateSerialize})
       }
     }
 
-    serialize() {
+    serialize() 
+    {
       return stateSerialize(this.mState);
     }
 
     // Take information from the buckets and assign to relevent clients
     // Returns a new object
-    reduce(thisId, ids) {
+    reduce(thisId, ids) 
+    {
       const response = this;
       
       let newBuckets = new AddressedResponse();

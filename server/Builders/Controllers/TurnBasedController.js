@@ -1,7 +1,7 @@
-const builderFolder = `../../Builders/`
-const buildTurnStartingDrawAction                   = require(`${builderFolder}/Events/TurnPhase/TurnStartingDrawAction`)
-const buildAttemptFinishTurnAction                  = require(`${builderFolder}/Events/TurnPhase/AttemptFinishTurnAction`)
-const buildDiscardToHandLimitAction                 = require(`${builderFolder}/Events/TurnPhase/DiscardToHandLimitAction`)
+const builderFolder                  = `../../Builders/`
+const buildTurnStartingDrawAction    = require(`${builderFolder}/Events/TurnPhase/TurnStartingDrawAction`)
+const buildAttemptFinishTurnAction   = require(`${builderFolder}/Events/TurnPhase/AttemptFinishTurnAction`)
+const buildDiscardToHandLimitAction  = require(`${builderFolder}/Events/TurnPhase/DiscardToHandLimitAction`)
 module.exports = function buildTurnBasedController({
   els,
   AddressedResponse,
@@ -25,8 +25,6 @@ module.exports = function buildTurnBasedController({
   Affected, 
   Transaction,
 }) {
-
-
 
   function handleSocketRequest(event, props, method, beforeMiddleware, afterMiddleware) {
     //#######################################################
@@ -60,10 +58,9 @@ module.exports = function buildTurnBasedController({
     return socketResponse.getAddressedResponse();
   }
 
-
-
   return class TurnBasedController {
-    constructor(){
+    constructor()
+    {
       const beforeMiddleware  = new BaseMiddleware()
       const roomMiddleware    = new RoomBeforeMiddleware()
       const gameMiddleware    = new GameBeforeMiddleware()

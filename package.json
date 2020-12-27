@@ -13,7 +13,8 @@
     "serverInstall": "cd server && npm install",
     "clientInstall": "cd client && npm install",
     "testInstall": "cd tests && npm install",
-    "install": "concurrently \"npm run serverInstall\" \"npm run clientInstall\" \"npm run testInstall\""
+    "sharedInstall": "cd shared && npm install",
+    "install": "concurrently \"npm run sharedInstall\" \"npm run serverInstall\" \"npm run clientInstall\" \"npm run testInstall\""
   },
   "repository": {
     "type": "git",

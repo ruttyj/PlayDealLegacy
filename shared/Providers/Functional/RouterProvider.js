@@ -1,9 +1,9 @@
 /**
  * RouterProvider.js
  */
-const rootFolder   = `../..`;
-const sharedFolder = `${rootFolder}/shared`;
-const serverFolder = `${rootFolder}/server`;
+const rootFolder   = `../../..`
+const sharedFolder = `${rootFolder}/shared`
+const serverFolder = `${rootFolder}/server`
 const {
     isDef,
     isArr,
@@ -42,7 +42,7 @@ module.exports = class RouterProvider
                                     AddressedResponse,
                                 })
         const OrderedTree       = buildOrderedTree()
-        const Affected          = buildAffected({OrderedTree})
+        const Affected          = buildAffected({ OrderedTree })
         const SocketResponse    = buildSocketResponse({
                                     AddressedResponse,
                                     Affected,
@@ -62,7 +62,7 @@ module.exports = class RouterProvider
                                     MiddlewareWrapper
                                 })
 
-        const Router            = buildRouter({ 
+        const Router            = buildRouter({
                                     Route,
                                     isDef,
                                     isStr,

@@ -1,43 +1,13 @@
-const rootFolder   = `../..`;
-const sharedFolder = `${rootFolder}/shared`;
+const rootFolder   = `../..`
+const sharedFolder = `${rootFolder}/shared`
 
-const assert       = require("chai").assert;
+const assert       = require("chai").assert
+const utils        = require(`../../shared/Utils/index`);
 
 // Obtain Builders
-const BuildBaseApp = require(`../../shared/Builders/App`)
-
-
-// Build App
-const App = BuildBaseApp({})
-const app = new App()
-// Obtain Providers & provide to app
-const RouterProvider = require(`${sharedFolder}/Providers/RouterProvider`)
-const routerSeriveProvider = new RouterProvider()
-routerSeriveProvider.provide(app)
-
-
-// Random consts
-const TO_EVERYONE   = app.context.TO_EVERYONE
-const Affected      = app.context.Affected
-
-class MockController 
-{
-    sayMessage(req, res)
-    {
-        let props     = req.getProps()
-        let context   = req.getContext()
-
-        // create item
-        let id = 11;
-        context.messages[id] = {
-            event: 'SAY.MESSAGE',
-            data:  props.message,
-        }
-
-        // log affected to everyone
-        res.addAffected('MESSAGE', id, Affected.ACTION.CREATE, TO_EVERYONE)
-    }
-}
+const buildApp = require(`${sharedFolder}/Providers/App/AppProvider`) 
+const buildMockController = require('../../server/Builders/Controllers/MockController')
+const buildGameController = require(`../../server/Builders/Controllers/GameController`)
 //_____________________________________
 
 
@@ -47,14 +17,18 @@ class MockController
 
 //             TESTS 
 
-//###############################
+// ###############################
 describe("Shared", async function () {
-    it(`Should do the thing`, async () => {
-        const Router = app.context.Router
-        const Route = app.context.Route
+    it(`Should process route middleware as expected`, async () => {
+        // Depends on Application Context working properly
+        const app = buildApp()
 
+        const Router = app.context.Router
+        const Route  = app.context.Route
+
+        const MockController = buildMockController({ app })
         const mockController = new MockController()
-        const router = new Router()
+        const router         = new Router()
 
         // ===================================
         // Define some default middleware to be reused for multiple routes
@@ -62,7 +36,7 @@ describe("Shared", async function () {
             (req) => {
                 let context = req.getContext()
                 context.middleware = []
-                context.messages = {}
+                context.messages   = {}
             },
             (req) => {
                 let context = req.getContext()
@@ -78,12 +52,12 @@ describe("Shared", async function () {
                 // No real point to add to mesasges at this point
                 // We could just respond directly in the done 
                 // without going though responses
-                let messages = context.messages
+                let messages    = context.messages
                 let messagesIds = res.affected.getIdsAffected('MESSAGE')
                 messagesIds.forEach(messageId => {
                     res.getAddressedResponse().addToBucket('DEFAULT', {
                         evernt:  'GET.MESSAGE',
-                        status: 'success',
+                        status:  'success',
                         payload: messages[messageId]
                     })
                 })
@@ -150,6 +124,7 @@ describe("Shared", async function () {
         }
         const result = router.execute('SAY.MESSAGE', props, context)
 
+
         // ===================================
         // Test resulting state
         const req = result.request
@@ -165,10 +140,25 @@ describe("Shared", async function () {
             }
         }
       
-        assert.equal(serialized.request.props.message, "Something funny");
-        assert.equal(serialized.request.context.like, "joke");
-        assert.equal(serialized.request.context.done, true);
-        assert.equal(JSON.stringify(serialized.request.context.middleware), '["default before 1","before 1","before 2","after 1","after 1","affectedToResponse"]');
-        assert.equal(JSON.stringify(serialized.response.responses), '{"buckets":{"DEFAULT":[{"evernt":"GET.MESSAGE","status":"success","payload":{"event":"SAY.MESSAGE","data":"Something funny"}}]},"specific":{}}');
+
+        // Check that the context mateches
+        // Props passed in from request
+        // Some additional context passed
+        // and context modified by a middleware
+        assert.equal(serialized.request.props.message, "Something funny")
+        assert.equal(serialized.request.context.like, "joke")
+        assert.equal(serialized.request.context.done, true)
+
+        assert.equal(JSON.stringify(serialized.request.context.middleware), '["default before 1","before 1","before 2","after 1","after 1","affectedToResponse"]')
+        assert.equal(JSON.stringify(serialized.response.responses), '{"buckets":{"DEFAULT":[{"evernt":"GET.MESSAGE","status":"success","payload":{"event":"SAY.MESSAGE","data":"Something funny"}}]},"specific":{}}')
     });
+
+
+    it(`Should not be able to start a game yet`, async () => {
+        // buildGameController
+        // Unpack Methods
+       
+    })
+
+
 }); // end App description
