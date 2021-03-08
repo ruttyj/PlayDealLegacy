@@ -11,6 +11,7 @@ module.exports = function({
     buildLeaveRoom,
     //-------------------------
     isDef,
+    isArr,
     els,
     getNestedValue,
     setNestedValue,
@@ -80,6 +81,7 @@ module.exports = function({
             registry,
             makeResponse,
             isDef,
+            isArr,
             getNestedValue,
             setNestedValue,
             AddressedResponse,

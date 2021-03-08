@@ -1,5 +1,4 @@
 var HtmlWebpackPlugin = require("html-webpack-plugin");
-const path = require("path");
 const webpack = require("webpack");
 const { CONNECT } = require("./config");
 
@@ -9,15 +8,6 @@ module.exports = (env) => {
     entry: "./src/index.jsx",
     resolve: {
       extensions: [".js", ".jsx"],
-    },
-    devServer: {
-      proxy: {
-        '/socket.io/**': {
-          target: 'http://localhost:3001',
-          secure: false,
-          changeOrigin: true
-        }
-      }
     },
     module: {
       rules: [

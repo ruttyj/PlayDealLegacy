@@ -317,6 +317,7 @@ module.exports = function ({
                                     buildLeaveRoom,
                                     //-------------------------
                                     isDef,
+                                    isArr,
                                     els,
                                     getNestedValue,
                                     setNestedValue,

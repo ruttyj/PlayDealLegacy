@@ -419,7 +419,7 @@ class GameUI extends React.Component {
       // When joining the room - check if we should display the welcome screen
       game.on(["ROOM", "I_JOINED_ROOM"], async (data) => {
         if (!game.isStarted()) {
-          windowManager.invokeWindow("welcomeScreen");
+          //windowManager.invokeWindow("welcomeScreen");
         } 
       })
 
@@ -1969,7 +1969,6 @@ class GameUI extends React.Component {
                 }}
                 onActiveSetChange={async ({ e, cardId, propertySetKey }) => {
                   if (isDefNested(e, "stopPropagation")) {
-                    console.log("stopPropagation");
                     e.stopPropagation();
                   }
                   let result = await game.flipWildPropertyCard(
@@ -2258,7 +2257,6 @@ class GameUI extends React.Component {
                                       propertySetKey,
                                     }) => {
                                       if (isDefNested(e, "stopPropagation")) {
-                                        console.log("stopPropagation");
                                         e.stopPropagation();
                                       }
 
@@ -2872,7 +2870,7 @@ class GameUI extends React.Component {
 
         <ArrowToolTip title="Super genious" placement="bottom">
           <div style={{ cursor: "pointer", fontSize: "2em" }} onClick={() => game.sendSound("super_genius")}>
-          🧑‍🎓
+          🎓
           </div>
         </ArrowToolTip>
 

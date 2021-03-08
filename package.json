@@ -28,5 +28,8 @@
     "concurrently": "latest",
     "dotenv": "^8.2.0"
   },
-  "Home": "https://github.com/ruttyj/ReactBase#readme"
+  "Home": "https://github.com/ruttyj/ReactBase#readme",
+  "devDependencies": {
+    "file-loader": "^6.2.0"
+  }
 }

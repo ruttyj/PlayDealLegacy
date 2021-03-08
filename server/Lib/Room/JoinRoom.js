@@ -3,6 +3,7 @@ module.exports = function ({
     registry,
     makeResponse,
     isDef,
+    isArr,
     getNestedValue,
     setNestedValue,
     AddressedResponse,
