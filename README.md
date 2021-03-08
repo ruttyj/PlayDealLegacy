@@ -19,7 +19,7 @@ Install packages
 
     npm install
 
-Run in development mode:
+Run in development mode: Note the project will run on port 3001 by default
 
     npm run dev
 
