@@ -5,8 +5,8 @@ const GameInstance = require(`${gameFolder}/`);
 const fs = require('fs');
 const assert = require("chai").assert;
 
-const buildAffected = require(`${serverFolder}/Lib/Affected`);
-const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+const buildAffected = require(`${serverFolder}/Lib/Builders/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Lib/Builders/OrderedTree`);
 
 const OrderedTree = buildOrderedTree();
 const Affected = buildAffected({OrderedTree});

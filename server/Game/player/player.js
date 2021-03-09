@@ -1,6 +1,5 @@
-const { isDef, els, isNum, isObj, makeVar, makeList } = require("../utils.js");
+const { makeVar, makeList } = require("../utils.js");
 const CardContainer = require("../card/cardContainer.js");
-const Collection = require("../collection/collection.js");
 
 function makePlayerHand(gameRef) {
   return {

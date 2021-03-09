@@ -6,10 +6,7 @@ const utilsFolder = `${serverFolder}/utils`;
 const playDealFolder = `${serverFolder}/Game`;
 const assert = require("chai").assert;
 const {
-  isDef,
-  isArr,
   getNestedValue,
-  jsonLog,
 } = require(`${utilsFolder}`);
 const gameConstants = require(`${playDealFolder}/config/constants.js`);
 const { CONFIG } = gameConstants;

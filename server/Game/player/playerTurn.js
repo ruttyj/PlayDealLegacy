@@ -1,4 +1,4 @@
-const { jsonLog, isDef, makeVar } = require("../utils.js");
+const { isDef, makeVar } = require("../utils.js");
 const PlayerRequestManager = require("./request/playerRequestManager.js");
 
 function PlayerTurn(gameRef, playerKey = null) {

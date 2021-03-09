@@ -42,6 +42,5 @@ module.exports = function ({
             handleTransactionResponse,
             registry,
         }))
-
     }
 }

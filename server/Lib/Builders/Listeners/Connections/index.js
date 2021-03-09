@@ -6,6 +6,7 @@ module.exports = function ({
 {
   return function (registry)
   {
+    // @TODO rename CLIENT.GET_ONLINE_STATS
     registry.public(`CLIENTS.GET_ONLINE_STATS`, (props) => {
       const addressedResponses = new AddressedResponse();
       const subject = "CLIENTS";

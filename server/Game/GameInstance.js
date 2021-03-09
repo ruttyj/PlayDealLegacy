@@ -28,23 +28,18 @@
  *              ✅ Request set
  *                 ✅ "Deal Breaker" Card
  *              ✅ Responses
- *            ❌ "Just say NO"
- *                  functional but bug exists on the 3rd consecutive response of a "Just say no".
+ *            ✅ "Just say NO"
  */
 
 const pluralize = require("pluralize");
 const constants = require("./config/constants.js");
 const { CONFIG } = constants;
 const {
-  log,
   els,
   isDef,
   isArr,
   isDefNested,
-  jsonLog,
   getNestedValue,
-  makeVar,
-  emptyFunction,
   getKeyFromProp,
   reduceToKeyed,
 } = require("./utils.js");
@@ -56,52 +51,14 @@ const TurnManager = require("./player/turnManager.js");
 const Transaction = require(`./player/request/transfer/Transaction.js`);
 
 const serverFolder = '..';
-const buildAffected = require(`${serverFolder}/Lib/Affected`);
-const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
-
+const buildAffected = require(`${serverFolder}/Lib/Builders/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Lib/Builders/OrderedTree`);
 
 const OrderedTree = buildOrderedTree();
 const Affected = buildAffected({OrderedTree});
 
-/*
-  class GameConfig {
-
-    let mConfig = {
-      mMinPlayerCount
-      mMinPlayerCount
-      mInitialCardCount
-      mMaxCardCount
-
-      drawCardCountAtTurnStart: 2,
-
-      shuffleDeck: false,
-      canWinBySetsOfSameColor: false,
-      alterSetCostAction: false,
-      testMode: false,
-    };
-
-
-    constructor() {}
-
-    serialize(){
-      return JSON.parse(JSON.stringify(mConfig))
-    }
-
-    unserialize(){
-
-    }
-
-  }
-
-
-  class DeckTemplate {}
-*/
-
-
 
 let GameInstance = () => {
-
-
   let mConfig;
   let mMaxPlayerCount;
   let mMinPlayerCount;

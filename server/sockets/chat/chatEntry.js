@@ -1,4 +1,4 @@
-const { isDef, emptyFunction, makeVar } = require("../utils.js");
+const { isDef, makeVar } = require("../utils.js");
 
 //##################################################
 

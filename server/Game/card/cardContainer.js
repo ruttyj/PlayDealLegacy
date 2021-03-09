@@ -1,10 +1,6 @@
 const {
   isDef,
-  els,
-  isNum,
-  isObj,
   isArr,
-  jsonLog,
   makeVar,
   makeList,
   getKeyFromProp,

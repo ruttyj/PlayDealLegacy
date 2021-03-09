@@ -1,9 +1,7 @@
 const {
   isDef,
-  isDefNested,
   makeVar,
   makeMap,
-  stateSerialize,
   getKeyFromProp,
 } = require("../utils.js");
 const Collection = require("./collection.js");

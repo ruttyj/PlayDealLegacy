@@ -1,5 +1,5 @@
 const cookieParser = require("cookie-parser");
-const { isDef, getNestedValue, makeMap, makeVar } = require("../utils/");
+const { isDef, makeMap, makeVar } = require("../utils/");
 function CookieTokenManager() {
   cookieParser.JSONCookie("token");
 

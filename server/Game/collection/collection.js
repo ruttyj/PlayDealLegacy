@@ -1,7 +1,6 @@
 const {
   isDef,
   makeVar,
-  makeMap,
   makeList,
   stateSerialize,
   getKeyFromProp,

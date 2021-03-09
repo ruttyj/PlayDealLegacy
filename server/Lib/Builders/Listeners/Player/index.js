@@ -210,9 +210,7 @@ module.exports = function ({
               })
             );
 
-            let peopleIds = game.getAllPlayerKeys().map((person) =>
-              person.getId()
-            );
+            let peopleIds = game.getAllPlayerKeys();
             addressedResponses.addToBucket(
               "default",
               registry.execute(`${subject}.GET_KEYED`, makeProps(props, {

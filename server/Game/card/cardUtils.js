@@ -1,13 +1,3 @@
-function removeByFn(arr, fn) {
-  const index = arr.findIndex(fn);
-  if (index > -1) {
-    let item = arr[index];
-    arr.splice(index, 1);
-    return item;
-  }
-  return false;
-}
-
 const utils = {
   sort: function (arr, order = "asc", propertyRetriever = (v) => v) {
     let c = String(order).toLowerCase() === "asc" ? 1 : -1;

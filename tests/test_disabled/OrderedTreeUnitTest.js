@@ -1,7 +1,7 @@
 const rootFolder = `../..`;
 const serverFolder = `${rootFolder}/server`;
 const assert = require("chai").assert;
-const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+const buildOrderedTree = require(`${serverFolder}/Lib/Builders/OrderedTree`);
 
 describe("OrderedTree", async function () {
   const OrderedTree = buildOrderedTree();

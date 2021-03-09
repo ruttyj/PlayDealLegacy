@@ -6,17 +6,12 @@ const {
   makeList,
   getKeyFromProp,
   makeMap,
-  stateSerialize,
 } = require("../utils.js");
 const {
   AMBIGUOUS_SET_KEY,
-  USELESS_PROPERTY_SET_KEY,
 } = require("../config/constants.js");
 
 function CardManager() {
-
-  // static variables
-  let mExcludeKeys = ["gameRef"];
 
   // Instance varaibles
   let mState;

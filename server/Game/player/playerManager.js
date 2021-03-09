@@ -1,5 +1,4 @@
-const { isDef, isDefNested, isObj, isArr, makeMap, getKeyFromProp } = require("../utils.js");
-const PlayerTurn = require("./playerTurn.js");
+const { isDef, isDefNested, isObj, makeMap, getKeyFromProp } = require("../utils.js");
 const TurnManager = require("./turnManager.js");
 const CollectionManager = require("../collection/collectionManager.js");
 const Player = require("./player.js");

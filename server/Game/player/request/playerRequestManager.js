@@ -11,8 +11,8 @@ const {
 const Transaction = require("./transfer/Transaction.js");
 
 const serverFolder = '../../..';
-const buildAffected = require(`${serverFolder}/Lib/Affected`);
-const buildOrderedTree = require(`${serverFolder}/Lib/OrderedTree`);
+const buildAffected = require(`${serverFolder}/Lib/Builders/Affected`);
+const buildOrderedTree = require(`${serverFolder}/Lib/Builders/OrderedTree`);
 const OrderedTree = buildOrderedTree();
 const Affected = buildAffected({OrderedTree});
 
