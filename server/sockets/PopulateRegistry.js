@@ -1,17 +1,88 @@
 const rootFolder          = `../..`;
 const serverFolder        = `${rootFolder}/server`;
 const serverSocketFolder  = `${serverFolder}/sockets`;
-const gameFolder          = `${serverFolder}/Game`;
+
+const {
+  els,
+  isDef,
+  isDefNested,
+  isFunc,
+  isStr,
+  isArr,
+  arrSum, 
+  makeMap, 
+  isObj,
+  getNestedValue,
+  setNestedValue,
+  log,
+  jsonEncode,
+  getArrFromProp,
+  makeVar, 
+  serializeState,
+  getKeyFromProp,
+  reduceToKeyed,
+} = require(`../utils`);
 
 const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
 const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
-const GameInstance            = require(`${gameFolder}/`);
+
 
 // Import generic logic for indexed game data
-const KeyedRequest            = require(`${serverSocketFolder}/container/keyedRequest.js`);
-const Transaction             = require(`${gameFolder}/player/request/transfer/Transaction.js`);
+const buildKeyedRequest       = require(`${serverFolder}/Lib/Builders/KeyedRequest.js`);
 
-const buildDeps               = require(`./Deps.js`);
+const buildDeps               = require(`${serverSocketFolder}/Deps.js`);
+
+
+const buildTransaction      = require(`${serverFolder}/Lib/Builders/Transactions/Transaction`);
+const buildWealthTransfer   = require(`${serverFolder}/Lib/Builders/Transactions/WealthTransfer`);
+const buildTransfer         = require(`${serverFolder}/Lib/Builders/Transactions/Transfer`);
+const buildAffected         = require(`${serverFolder}/Lib/Builders/Affected`);
+const buildOrderedTree      = require(`${serverFolder}/Lib/Builders/OrderedTree`);
+
+
+const Transfer              = buildTransfer({makeVar, makeMap, isDef, isArr});
+const WealthTransfer        = buildWealthTransfer({isObj, isDef, arrSum, makeMap, Transfer});
+const Transaction           = buildTransaction({
+    WealthTransfer, 
+    isObj,
+    isDef,
+    arrSum,
+    makeMap
+})
+
+const pluralize = require("pluralize");
+const constants = require(`${serverFolder}/Game/config/constants.js`);
+
+const CardContainer = require(`${serverFolder}/Game/card/cardContainer`);
+const PlayerManager = require(`${serverFolder}/Game/player/playerManager.js`);
+const CardManager   = require(`${serverFolder}/Game/card/cardManager.js`);
+const TurnManager   = require(`${serverFolder}/Game/player/turnManager.js`);
+
+
+const OrderedTree = buildOrderedTree();
+const Affected = buildAffected({OrderedTree});
+
+
+
+const buildGame = require(`${serverFolder}/Lib/Builders/Game`)
+const GameInstance            = buildGame({
+  els,
+  isDef,
+  isArr,
+  isDefNested,
+  getNestedValue,
+  getKeyFromProp,
+  reduceToKeyed,
+  constants,
+  pluralize,
+  CardContainer,
+  PlayerManager,
+  CardManager,
+  TurnManager,
+  Transaction,
+  Affected
+});
+
 
 // Room
 const buildRegisterRoomMethods        = require(`${serverFolder}/Lib/Builders/Listeners/Room/index`);
@@ -102,19 +173,9 @@ const buildTransferPropertyToExistingCollectionFromExistingAction     = require(
 const buildTransferSetAugmentToExistingCollectionFromExistingAction   = require(`${serverFolder}/Lib/Builders/Actions/FromCollection/TransferSetAugmentToExistingCollectionFromExistingAction`);
 const buildTransferSetAugmentToNewCollectionFromExistingAction        = require(`${serverFolder}/Lib/Builders/Actions/FromCollection/TransferSetAugmentToNewCollectionFromExistingAction`);
 
-const {
-  els,
-  isDef,
-  isDefNested,
-  isFunc,
-  isStr,
-  isArr,
-  getNestedValue,
-  setNestedValue,
-  log,
-  jsonEncode,
-  getArrFromProp,
-} = require("./utils.js");
+
+
+const KeyedRequest = buildKeyedRequest({makeVar, serializeState});
 
 /**
  * 
@@ -136,6 +197,7 @@ module.exports = function ({
       AddressedResponse,
       Affected,
       OrderedTree,
+      GameInstance,
     })
     {
       //==================================================

@@ -1,7 +1,11 @@
 const rootFolder = `../..`;
 const serverFolder = `${rootFolder}/server`;
 const gameFolder = `${serverFolder}/Game`;
-const GameInstance = require(`${gameFolder}/`);
+
+const PlayDealServer = require(`../../server/sockets/PlayDealServer`);
+
+const tempPlayDealServer = new PlayDealServer();
+
 const fs = require('fs');
 const assert = require("chai").assert;
 
@@ -14,12 +18,9 @@ const Affected = buildAffected({OrderedTree});
 describe("Just Say No", async function () {
   it(`Tripple JSN`, async () => {
 
-    let game;
-    let template;
-    
     // Load state from file
-    template = JSON.parse(fs.readFileSync(`${__dirname}/../data/TrippleJustSayNo.json`, 'utf8'));
-    game = GameInstance();
+    let template = JSON.parse(fs.readFileSync(`${__dirname}/../data/TrippleJustSayNo.json`, 'utf8'));
+    let game = tempPlayDealServer.makeGame();
     game.unserialize(template);
     game.nextPlayerTurn();
 

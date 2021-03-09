@@ -43,8 +43,6 @@ const buildCurrencySystem = ({isDef, isDefNested}) => {
     let setUnitValue = (unitKey, v) => (ref.unitValueMap[unitKey] = v);
     let getUnitValue = (unitKey) => ref.unitValueMap[unitKey];
     let getAllUnitsOrder = () => ref.unitsOrder;
-    let getAllUnitsAscendingOrder = () => getAllUnitsOrder();
-    let getUnitsCount = () => ref.unitsOrder.length;
     let setAllUnitsOrder = (v) => (ref.unitsOrder = v);
 
     // Add unit to map and keep track of order

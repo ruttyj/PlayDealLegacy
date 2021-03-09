@@ -1,5 +1,62 @@
-const { isDef, makeVar } = require("../utils.js");
-const PlayerRequestManager = require("./request/playerRequestManager.js");
+const {
+    makeVar,
+    isDef,
+    isObj,
+    isArr,
+    isFunc,
+    makeListener,
+    makeMap,
+    arrSum,
+    emptyFunction,
+    recursiveBuild,
+    getNestedValue,
+} = require("../utils.js");
+
+const serverFolder = '../..';
+
+const buildRequest          = require(`${serverFolder}/Lib/Builders/Requests/Request`)
+const buildTransaction      = require(`${serverFolder}/Lib/Builders/Transactions/Transaction`);
+const buildWealthTransfer   = require(`${serverFolder}/Lib/Builders/Transactions/WealthTransfer`);
+const buildTransfer         = require(`${serverFolder}/Lib/Builders/Transactions/Transfer`);
+const buildAffected         = require(`${serverFolder}/Lib/Builders/Affected`);
+const buildOrderedTree      = require(`${serverFolder}/Lib/Builders/OrderedTree`);
+const buildRequestManager   = require(`${serverFolder}/Lib/Builders/Requests/RequestManager`);
+
+
+const OrderedTree           = buildOrderedTree();
+const Transfer              = buildTransfer({makeVar, makeMap, isDef, isArr});
+const WealthTransfer        = buildWealthTransfer({isObj, isDef, arrSum, makeMap, Transfer});
+const PlayerRequest = buildRequest({
+  makeVar,
+  emptyFunction,
+  isDef,
+  isFunc,
+  isArr,
+  recursiveBuild,
+  getNestedValue,
+})
+const Transaction           = buildTransaction({
+    WealthTransfer, 
+    isObj,
+    isDef,
+    arrSum,
+    makeMap
+})
+const Affected = buildAffected({OrderedTree});
+
+
+const PlayerRequestManager = buildRequestManager({
+  PlayerRequest,
+  makeVar,
+  isDef,
+  isObj,
+  makeListener,
+  makeMap,
+  emptyFunc: emptyFunction, 
+  Transaction, 
+  Affected
+})
+
 
 function PlayerTurn(gameRef, playerKey = null) {
   let mGameRef = gameRef;

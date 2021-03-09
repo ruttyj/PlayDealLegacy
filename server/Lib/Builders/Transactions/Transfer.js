@@ -1,8 +1,8 @@
-const { makeVar, makeMap, isDef, isArr } = require("../../../utils.js");
-const sterilize = (v) => parseInt(v, 10);
-
 // Transfer of a single category
-function Transfer() {
+module.exports = ({makeVar, makeMap, isDef, isArr}) => function() {
+
+  const sterilize = (v) => parseInt(v, 10);
+
   let mState = {};
 
   let mItems = makeMap(mState, "items");
@@ -152,5 +152,3 @@ function Transfer() {
 
   return getPublic();
 }
-
-module.exports = Transfer;

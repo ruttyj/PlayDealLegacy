@@ -18,10 +18,32 @@ const buildOrderedTree        = require(`${buildersFolder}/OrderedTree`);
 const buildAddressedResponse  = require(`${buildersFolder}/AddressedResponse`);
 const buildConnection         = require('../PlayDealServer/Connection.js');
 
-let {
+const buildTransaction      = require(`${serverFolder}/Lib/Builders/Transactions/Transaction`);
+const buildWealthTransfer   = require(`${serverFolder}/Lib/Builders/Transactions/WealthTransfer`);
+const buildTransfer         = require(`${serverFolder}/Lib/Builders/Transactions/Transfer`);
+
+const buildGame = require(`${serverFolder}/Lib/Builders/Game`)
+
+const {
+  els,
   isDef,
+  isDefNested,
   isFunc,
-} = utils;
+  isStr,
+  isArr,
+  arrSum, 
+  makeMap, 
+  isObj,
+  getNestedValue,
+  setNestedValue,
+  log,
+  jsonEncode,
+  getArrFromProp,
+  makeVar, 
+  serializeState,
+  getKeyFromProp,
+  reduceToKeyed,
+} = utils
 
 // Build required objects
 const AddressedResponse       = buildAddressedResponse(utils);
@@ -30,6 +52,42 @@ const Affected                = buildAffected({ OrderedTree });
 const Registry                = buildRegistry(utils)
 const Connection              = buildConnection({ ...utils, AddressedResponse });
 
+const Transfer              = buildTransfer({makeVar, makeMap, isDef, isArr});
+const WealthTransfer        = buildWealthTransfer({isObj, isDef, arrSum, makeMap, Transfer});
+const Transaction           = buildTransaction({
+    WealthTransfer, 
+    isObj,
+    isDef,
+    arrSum,
+    makeMap
+})
+
+const pluralize = require("pluralize");
+const constants = require(`${serverFolder}/Game/config/constants.js`);
+
+const CardContainer = require(`${serverFolder}/Game/card/cardContainer`);
+const PlayerManager = require(`${serverFolder}/Game/player/playerManager.js`);
+const CardManager   = require(`${serverFolder}/Game/card/cardManager.js`);
+const TurnManager   = require(`${serverFolder}/Game/player/turnManager.js`);
+
+
+const GameInstance            = buildGame({
+  els,
+  isDef,
+  isArr,
+  isDefNested,
+  getNestedValue,
+  getKeyFromProp,
+  reduceToKeyed,
+  constants,
+  pluralize,
+  CardContainer,
+  PlayerManager,
+  CardManager,
+  TurnManager,
+  Transaction,
+  Affected
+});
 
 
 class BaseServer {
@@ -64,6 +122,8 @@ module.exports = class PlayDealServer extends BaseServer
     this.utils;
     this.services;
 
+    
+
     this.init();
   }
 
@@ -73,7 +133,7 @@ module.exports = class PlayDealServer extends BaseServer
    */
   init()
   {
-    const server              = this;
+    const server                = this;
     server.services             = new Map();
     server.connections          = new Map();
     server.registry             = new Registry();
@@ -92,6 +152,7 @@ module.exports = class PlayDealServer extends BaseServer
     populateRegistry({
       registry                : server.registry,
       //-------------------------
+      GameInstance,
       AddressedResponse,
       Affected,
       OrderedTree,
@@ -102,6 +163,15 @@ module.exports = class PlayDealServer extends BaseServer
       cookieTokenManager      : server.cookieTokenManager,
     })
 
+  }
+
+  /**
+   * Create an instance of a game
+   * @returns Game instance
+   */
+  makeGame()
+  {
+    return GameInstance();
   }
 
   /**
