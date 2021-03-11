@@ -1,20 +1,18 @@
 function buildDeps({
+    GameInstance,
+    registry,
+    roomManager,
+    //-------------------
     els,
     isDef,
     isFunc,
     isArr,
     getNestedValue,
     getArrFromProp,
-
     //-------------------
     Affected,
-    GameInstance,
     AddressedResponse,
     KeyedRequest,
-    registry,
-
-    //-------------------
-    roomManager,
     //-------------------
 }){
     function makeProps(props, data = {})
@@ -417,7 +415,7 @@ function buildDeps({
 
     //==================================================
   
-    //                    CONSUMERS
+    //              Consumers / Providers
   
     //==================================================
 
@@ -1073,8 +1071,7 @@ function buildDeps({
                     // BANK
                     if (_Affected.isAffected('BANK')) {
                       let attendingPeople = personManager.filterPeople(
-                        (person) =>
-                          person.isConnected() && person.getStatus() === "ready"
+                        (person) => person.isConnected() && person.getStatus() === "ready"
                       );
                       let peopleIds = attendingPeople.map((person) =>
                         person.getId()

@@ -9,7 +9,7 @@ const CookieTokenManager      = require("../CookieTokenManager/");
 const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
 const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
 
-const populateRegistry        = require(`./PopulateRegistry`);
+const buildEventRoster   = require(`${buildersFolder}/EventRoster`);
 
 const buildHandleRoom         = require(`${buildersFolder}/HandleRoom`);
 const buildRegistry           = require(`${buildersFolder}/Registry`);
@@ -18,11 +18,12 @@ const buildOrderedTree        = require(`${buildersFolder}/OrderedTree`);
 const buildAddressedResponse  = require(`${buildersFolder}/AddressedResponse`);
 const buildConnection         = require('../PlayDealServer/Connection.js');
 
-const buildTransaction      = require(`${serverFolder}/Lib/Builders/Transactions/Transaction`);
-const buildWealthTransfer   = require(`${serverFolder}/Lib/Builders/Transactions/WealthTransfer`);
-const buildTransfer         = require(`${serverFolder}/Lib/Builders/Transactions/Transfer`);
+const buildTransaction        = require(`${serverFolder}/Lib/Builders/Transactions/Transaction`);
+const buildWealthTransfer     = require(`${serverFolder}/Lib/Builders/Transactions/WealthTransfer`);
+const buildTransfer           = require(`${serverFolder}/Lib/Builders/Transactions/Transfer`);
+const buildKeyedRequest       = require(`${serverFolder}/Lib/Builders/KeyedRequest.js`);
 
-const buildGame = require(`${serverFolder}/Lib/Builders/Game`)
+const buildGame               = require(`${serverFolder}/Lib/Builders/Game`)
 
 const {
   els,
@@ -71,7 +72,9 @@ const CardManager   = require(`${serverFolder}/Game/card/cardManager.js`);
 const TurnManager   = require(`${serverFolder}/Game/player/turnManager.js`);
 
 
-const GameInstance            = buildGame({
+const KeyedRequest = buildKeyedRequest({makeVar, serializeState});
+
+const GameInstance = buildGame({
   els,
   isDef,
   isArr,
@@ -87,6 +90,30 @@ const GameInstance            = buildGame({
   TurnManager,
   Transaction,
   Affected
+});
+
+
+const EventRoster = buildEventRoster({
+  KeyedRequest,
+  Transaction, 
+  RoomManager, 
+  ClientManager, 
+  GameInstance,
+  AddressedResponse,
+  Affected,
+  OrderedTree,
+
+  els,
+  isDef,
+  isDefNested,
+  isFunc,
+  isStr,
+  isArr,
+  getNestedValue,
+  setNestedValue,
+  log,
+  jsonEncode,
+  getArrFromProp,
 });
 
 
@@ -122,8 +149,6 @@ module.exports = class PlayDealServer extends BaseServer
     this.utils;
     this.services;
 
-    
-
     this.init();
   }
 
@@ -149,20 +174,8 @@ module.exports = class PlayDealServer extends BaseServer
                                   roomManager: server.roomManager,
                                 });
     
-    populateRegistry({
-      registry                : server.registry,
-      //-------------------------
-      GameInstance,
-      AddressedResponse,
-      Affected,
-      OrderedTree,
-      //-------------------------
-      handleRoom              : server.handleRoom,
-      clientManager           : server.clientManager,
-      roomManager             : server.roomManager,
-      cookieTokenManager      : server.cookieTokenManager,
-    })
-
+    let eventRoster = new EventRoster(server);
+    eventRoster.populate(server.registry);
   }
 
   /**

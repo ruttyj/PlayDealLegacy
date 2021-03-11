@@ -7,7 +7,6 @@ module.exports = ({
     getKeyFromProp,
     reduceToKeyed,
     constants,
-    CONFIG,
     pluralize,
     CardContainer,
     PlayerManager,
@@ -52,9 +51,6 @@ module.exports = ({
      initDiscardPile();
      initDeck();
      initTurnManager();
- 
-     
-     
    }
  
    //--------------------------------

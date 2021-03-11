@@ -289,12 +289,11 @@ module.exports = function ({
                 },
                 makeConsumerFallbackResponse({ subject, action, addressedResponses })
               );
-            })
+    })
     registry.public(`GAME.START`, (props) => {
       const [subject, action] = ["GAME", "START"];
       const addressedResponses = new AddressedResponse();
-      return handlePerson(
-        props,
+      return handlePerson(props,
         (consumerData) => {
           let { roomCode, personManager, thisPerson, room } = consumerData;
           let game = room.getGame();
@@ -402,11 +401,7 @@ module.exports = function ({
       // roomCode
       const [subject, action] = ["GAME", "CAN_START"];
       const addressedResponses = new AddressedResponse();
-      return handlePerson(
-        props,
-        (props2) => {
-          let { room, personManager } = props2;
-
+      return handlePerson(props, ({ room, personManager }) => {
           let game = room.getGame();
           let canStart = canGameStart(game, personManager);
           let host = personManager.findPerson((person) =>
@@ -524,12 +519,12 @@ module.exports = function ({
       handleMyTurn,
     }))
     registry.public('MY_TURN.TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION', buildTransferPropertyToExistingCollectionFromExistingAction({
-      ...commonDeps,
       registry,
+      makeProps,
       makeConsumerFallbackResponse,
       makeResponse,
-      packageCheckpoints,
-      handCardConsumer,
+      isDef,
+      AddressedResponse,
       handleMyTurn,
     }))
     registry.public('MY_TURN.TRANSFER_SET_AUGMENT_TO_EXISTING_COLLECTION_FROM_COLLECTION', buildTransferSetAugmentToExistingCollectionFromExistingAction({

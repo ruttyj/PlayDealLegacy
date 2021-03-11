@@ -69,7 +69,7 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                     let eventType;
                     if (isDef(request.type)) {
                         eventType = request.type
-                    } else {
+                    } else { // legacy
                         eventType = `${request.subject}.${request.action}`
                     }
 
@@ -95,8 +95,9 @@ module.exports = function({ els, isDef, isStr, isArr, jsonEncode, AddressedRespo
                     });
 
                     // Merge the results for the room into the list of final addressed responses
-                    let clientIds = Object.keys(clientIdsMap)
-                    resultResponses.addToBucket(eventResponses.reduce(connection.id, clientIds))
+                    const myId = connection.id;
+                    const everyoneIds = Object.keys(clientIdsMap)
+                    resultResponses.addToBucket(eventResponses.reduce(myId, everyoneIds))
                 });
             }
 

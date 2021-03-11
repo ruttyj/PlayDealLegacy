@@ -1,88 +1,8 @@
-const rootFolder          = `../..`;
+const rootFolder          = '../../../';
 const serverFolder        = `${rootFolder}/server`;
 const serverSocketFolder  = `${serverFolder}/sockets`;
 
-const {
-  els,
-  isDef,
-  isDefNested,
-  isFunc,
-  isStr,
-  isArr,
-  arrSum, 
-  makeMap, 
-  isObj,
-  getNestedValue,
-  setNestedValue,
-  log,
-  jsonEncode,
-  getArrFromProp,
-  makeVar, 
-  serializeState,
-  getKeyFromProp,
-  reduceToKeyed,
-} = require(`../utils`);
-
-const ClientManager           = require(`${serverSocketFolder}/client/clientManager.js`);
-const RoomManager             = require(`${serverSocketFolder}/room/roomManager.js`);
-
-
-// Import generic logic for indexed game data
-const buildKeyedRequest       = require(`${serverFolder}/Lib/Builders/KeyedRequest.js`);
-
 const buildDeps               = require(`${serverSocketFolder}/Deps.js`);
-
-
-const buildTransaction      = require(`${serverFolder}/Lib/Builders/Transactions/Transaction`);
-const buildWealthTransfer   = require(`${serverFolder}/Lib/Builders/Transactions/WealthTransfer`);
-const buildTransfer         = require(`${serverFolder}/Lib/Builders/Transactions/Transfer`);
-const buildAffected         = require(`${serverFolder}/Lib/Builders/Affected`);
-const buildOrderedTree      = require(`${serverFolder}/Lib/Builders/OrderedTree`);
-
-
-const Transfer              = buildTransfer({makeVar, makeMap, isDef, isArr});
-const WealthTransfer        = buildWealthTransfer({isObj, isDef, arrSum, makeMap, Transfer});
-const Transaction           = buildTransaction({
-    WealthTransfer, 
-    isObj,
-    isDef,
-    arrSum,
-    makeMap
-})
-
-const pluralize = require("pluralize");
-const constants = require(`${serverFolder}/Game/config/constants.js`);
-
-const CardContainer = require(`${serverFolder}/Game/card/cardContainer`);
-const PlayerManager = require(`${serverFolder}/Game/player/playerManager.js`);
-const CardManager   = require(`${serverFolder}/Game/card/cardManager.js`);
-const TurnManager   = require(`${serverFolder}/Game/player/turnManager.js`);
-
-
-const OrderedTree = buildOrderedTree();
-const Affected = buildAffected({OrderedTree});
-
-
-
-const buildGame = require(`${serverFolder}/Lib/Builders/Game`)
-const GameInstance            = buildGame({
-  els,
-  isDef,
-  isArr,
-  isDefNested,
-  getNestedValue,
-  getKeyFromProp,
-  reduceToKeyed,
-  constants,
-  pluralize,
-  CardContainer,
-  PlayerManager,
-  CardManager,
-  TurnManager,
-  Transaction,
-  Affected
-});
-
 
 // Room
 const buildRegisterRoomMethods        = require(`${serverFolder}/Lib/Builders/Listeners/Room/index`);
@@ -175,8 +95,6 @@ const buildTransferSetAugmentToNewCollectionFromExistingAction        = require(
 
 
 
-const KeyedRequest = buildKeyedRequest({makeVar, serializeState});
-
 /**
  * 
  * TODO #$%^&$#^&$%#^&%$^&%$#%^&$%
@@ -187,20 +105,35 @@ const KeyedRequest = buildKeyedRequest({makeVar, serializeState});
  */
 
 
-module.exports = function ({
-      //-------------------------
-      handleRoom,
-      registry,
-      clientManager,
-      roomManager,
-      cookieTokenManager,
-      AddressedResponse,
-      Affected,
-      OrderedTree,
-      GameInstance,
-    })
-    {
-      //==================================================
+module.exports = ({
+  KeyedRequest,
+  Transaction, 
+  RoomManager, 
+  ClientManager, 
+  els,
+  isDef,
+  isDefNested,
+  isFunc,
+  isStr,
+  isArr,
+  getNestedValue,
+  setNestedValue,
+  log,
+  jsonEncode,
+  getArrFromProp,
+
+  AddressedResponse,
+  Affected,
+  OrderedTree,
+  GameInstance
+}) => class EventRoster {
+  constructor(server) {
+    this.mServer = server;
+  }
+ 
+
+  populate(registry) {
+    //==================================================
 
       //                  DEPENDENCIES
 
@@ -249,9 +182,9 @@ module.exports = function ({
         KeyedRequest,
         registry,
         //-------------------
-        clientManager,
-        roomManager,
-        cookieTokenManager,
+        clientManager: this.mServer.clientManager,
+        roomManager: this.mServer.roomManager,
+        cookieTokenManager: this.mServer.cookieTokenManager,
         //-------------------
       });
 
@@ -267,7 +200,7 @@ module.exports = function ({
       // Clients
       let registerConnectionsMethods = buildRegisterConnectionMethods({
         AddressedResponse,
-        clientManager,
+        clientManager: this.mServer.clientManager,
         makeResponse,
         makeProps,
       })
@@ -287,7 +220,7 @@ module.exports = function ({
         AddressedResponse,
         KeyedRequest,
         //-------------------
-        roomManager,
+        roomManager: this.mServer.roomManager,
         //-------------------
         makeProps,
         makeResponse,
@@ -302,7 +235,7 @@ module.exports = function ({
         makeConsumerFallbackResponse,
         makeRegularGetKeyed,
 
-        handleRoom,
+        handleRoom: this.mServer.handleRoom,
         handlePerson,
         handleGame,
         handleMyTurn,
@@ -352,11 +285,11 @@ module.exports = function ({
                                     isStr,
                                     getArrFromProp,
                                     AddressedResponse,
-                                    roomManager,
+                                    roomManager: this.mServer.roomManager,
                                     makeResponse,
                                     canPersonRemoveOtherPerson,
                                     makeConsumerFallbackResponse,
-                                    handleRoom,
+                                    handleRoom: this.mServer.handleRoom,
                                     handlePerson,
                                     makeProps,
                                   })
@@ -385,15 +318,15 @@ module.exports = function ({
                                     setNestedValue,
                                     getArrFromProp, 
                                     //-------------------
-                                    roomManager,
-                                    cookieTokenManager,
+                                    roomManager: this.mServer.roomManager,
+                                    cookieTokenManager: this.mServer.cookieTokenManager,
                                     makeProps,
                                     //-------------------
                                     makeResponse,
                                     createGameInstance,
                                     makeConsumerFallbackResponse,
                                     //-------------------
-                                    handleRoom,
+                                    handleRoom: this.mServer.handleRoom,
                                   })
       let registerChatMethods   = buildRegisterChatMethods({
                                     isDef,
@@ -408,8 +341,7 @@ module.exports = function ({
       registerPeopleMethods(registry);
       registerRoomMethods(registry);
       registerChatMethods(registry);
-
       registerGameMethods(registry);
       registerCheatMethods(registry);
-      
-    }
+  }
+}

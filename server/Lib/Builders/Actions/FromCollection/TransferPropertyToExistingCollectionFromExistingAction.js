@@ -1,7 +1,7 @@
 function buildTransferPropertyToExistingCollectionFromExistingAction({
+    registry,
     makeProps,
     makeConsumerFallbackResponse,
-    registry,
     makeResponse,
     isDef,
     AddressedResponse,
@@ -10,7 +10,6 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
 {
     return function (props)
     {
-
         let subject = "MY_TURN";
         let action = "TRANSFER_PROPERTY_TO_EXISTING_COLLECTION_FROM_COLLECTION";
         const addressedResponses = new AddressedResponse();
@@ -161,5 +160,3 @@ function buildTransferPropertyToExistingCollectionFromExistingAction({
 }
 
 module.exports = buildTransferPropertyToExistingCollectionFromExistingAction;
-
-
