@@ -1,6 +1,5 @@
 const {
   isDef,
-  emptyFunction,
   identity,
   makeVar,
   makeList,

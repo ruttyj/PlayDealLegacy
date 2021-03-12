@@ -1,7 +1,6 @@
 const {
   isDef,
   makeVar,
-  makeMap,
   makeList,
   stateSerialize,
   getKeyFromProp,
@@ -125,6 +124,14 @@ function Collection(gameRef = null) {
     return result;
   }
 
+  function unserialize(data) {
+    setPlayerKey(data.playerKey);
+    setPropertySetKey(data.propertySetKey);
+    data.cardIds.forEach(cardId => {
+      addCard(cardId);
+    })
+  }
+
   function filterCardsKeyed(fn) {
     let result = {};
     let selfRef = getPublic();
@@ -187,6 +194,8 @@ function Collection(gameRef = null) {
     );
   }
 
+ 
+
   const publicScope = {
     getId,
     setId,
@@ -225,6 +234,7 @@ function Collection(gameRef = null) {
     augmentCount: mPropertyAugmentCount.get,
 
     serialize,
+    unserialize,
   };
 
   function getPublic() {

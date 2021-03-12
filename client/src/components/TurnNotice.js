@@ -10,7 +10,8 @@ const TurnNotice = ({ children }) => {
         backgroundColor: "#00000073",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
+        zIndex: 5,
       }}
     >
       {children}

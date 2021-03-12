@@ -1,15 +1,8 @@
 const {
-  isUndef,
   isDef,
-  isTrue,
-  isFalse,
-  identityMutator,
-  emptyFunction,
   makeVar,
   makeList,
-  makeMap,
   makeListener,
-  prettyLog,
 } = require("../utils.js");
 
 function Person() {

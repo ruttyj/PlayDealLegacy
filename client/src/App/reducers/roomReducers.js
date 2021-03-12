@@ -1,6 +1,6 @@
 import { GET_ROOMS, CREATE_ROOM, SET_CURRENT_ROOM } from "../actions/types";
 
-const initialState = {
+const roomsInitialState = {
   currentRoom: null,
   items: {},
 };
@@ -35,10 +35,10 @@ function setCurrentRoom(state, action) {
   return newState;
 }
 
-const reducer = function (state = initialState, action) {
+const reducer = function(state = roomsInitialState, action) {
   switch (action.type) {
     case "RESET":
-      return JSON.parse(JSON.stringify(initialState));
+      return JSON.parse(JSON.stringify(roomsInitialState));
     case GET_ROOMS:
       return getRooms(state, action);
     case CREATE_ROOM:
@@ -50,4 +50,5 @@ const reducer = function (state = initialState, action) {
   }
 };
 
+export { roomsInitialState };
 export default reducer;

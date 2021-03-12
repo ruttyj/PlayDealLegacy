@@ -23,6 +23,8 @@ function createSocketConnection(socket) {
 
   const mRetreived = {};
   const ROOM = makeMap(mRetreived, "ROOM");
+  const CHAT = makeMap(mRetreived, "CHAT");
+
   const PEROPLE = makeMap(mRetreived, "PEOPLE");
   const PLAYERS = makeMap(mRetreived, "PLAYERS");
   const GAME = makeMap(mRetreived, "GAME");
@@ -31,7 +33,6 @@ function createSocketConnection(socket) {
   const DRAW_PILE = makeMap(mRetreived, "DRAW_PILE");
 
   const GAME_CONFIG = makeMap(mRetreived, "GAME_CONFIG");
-  const CHAT = makeMap(mRetreived, "CHAT");
   const CARDS = makeMap(mRetreived, "CARDS");
   const PROPERTY_SETS = makeMap(mRetreived, "PROPERTY_SETS");
   const PILES = makeMap(mRetreived, "PILES");
@@ -94,6 +95,10 @@ function createSocketConnection(socket) {
           if (isDef(response)) {
             let subject = els(response.subject, null);
             let action = els(response.action, null);
+
+            if (subject === "CHEAT") {
+              console.log(subject, action, response);
+            }
             let payload = els(response.payload, null);
             if (isDef(mRetreived[subject])) {
               listnerTree.emit([subject, action], { payload, subject, action });

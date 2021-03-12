@@ -22,19 +22,18 @@ function IntroContainer(props) {
   let { content, actions } = props;
   return (
     <Card
-      className="input_container"
+      className="input-container"
       style={{ maxWidth: "400px", pointerEvents: "all" }}
     >
       <CardActionArea>
         <CardMedia
-          className="card_media"
+          className="card-media"
           style={{
             height: "200px",
             backgroundImage:
               "linear-gradient(45deg, #820773, #1c026c 40%, #0087d6)",
             color: "white",
           }}
-          title="Contemplative Reptile"
         >
           <FullFlexColumnCenter>{content}</FullFlexColumnCenter>
         </CardMedia>

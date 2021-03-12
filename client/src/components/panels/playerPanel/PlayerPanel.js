@@ -1,5 +1,5 @@
 import React from "react";
-
+import BlurredBackground from "../../../packages/ReactWindows/Components/Containers/BlurredWrapper/";
 export default ({ children, style = {} }) => {
   return (
     <div
@@ -7,13 +7,12 @@ export default ({ children, style = {} }) => {
         display: "flex",
         flexDirection: "row",
         width: "100%",
-        backgroundColor: "#00000026",
-        backdropFilter: "blur(15px)",
+        backgroundColor: "#3d3d3d",
         position: "relative",
-        ...style
+        ...style,
       }}
     >
-      {children}
+      <BlurredBackground>{children}</BlurredBackground>
     </div>
   );
 };

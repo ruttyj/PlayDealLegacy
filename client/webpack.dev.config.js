@@ -4,21 +4,20 @@ const webpack = require("webpack");
 const { CONNECT } = require("./config");
 
 module.exports = (env) => {
-  let tst = path.resolve(__dirname, "src/components/");
-  console.log("@@@@@@@@", CONNECT);
   return {
     mode: "development",
     entry: "./src/index.jsx",
     resolve: {
       extensions: [".js", ".jsx"],
-      //alias: {
-      //  "@components": path.resolve(__dirname, "src/components/"),
-      //},
     },
     devServer: {
-      hot: false,
-      inline: false,
-      liveReload: false,
+      proxy: {
+        '/socket.io/**': {
+          target: 'http://localhost:3001',
+          secure: false,
+          changeOrigin: true
+        }
+      }
     },
     module: {
       rules: [
@@ -34,6 +33,17 @@ module.exports = (env) => {
         {
           test: /\.css$/i,
           use: ["style-loader", "css-loader"],
+        },
+        {
+          test: /\.s[ac]ss$/i,
+          use: [
+            // Creates `style` nodes from JS strings
+            "style-loader",
+            // Translates CSS into CommonJS
+            "css-loader",
+            // Compiles Sass to CSS
+            "sass-loader",
+          ],
         },
         {
           test: /\.(png|jpg|gif)$/,

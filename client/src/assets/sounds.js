@@ -118,6 +118,18 @@ let confirmSprite1 = Sound({
   volume: 0.05,
 });
 
+
+
+let booSprite = Sound({
+  src: "/audio/booo.mp3",
+  sprite: {
+    normal: [0, 4000, false],
+  },
+  rate: 1,
+  overlap: 50,
+  volume: 0.4,
+});
+
 let birthdaySprite = Sound({
   src: "/audio/birthday_trumpets.mp3",
   sprite: {
@@ -234,6 +246,11 @@ let sounds = {
     overlap: 50,
     volume: 0.5,
   }),
+  boo: {
+    play(num = 1) {
+      booSprite.play(num, "normal");
+    }
+  },
   birthday: {
     play(num = 1) {
       birthdaySprite.play(num, "normal");
@@ -266,7 +283,7 @@ let sounds = {
     src: "/audio/awww.mp3",
     rate: 1,
     overlap: 50,
-    volume: 0.1,
+    volume: 1,
   }),
   quietAcceptChime: {
     play(num = 1) {
@@ -312,6 +329,89 @@ let sounds = {
     overlap: 100,
     volume: 0.5,
   }),
+  farting: Sound({
+    src: "/audio/reactions/farting.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+    sprite: {
+      v1: [0, 1000, false],
+      v2: [1500, 3000, false],
+      v3: [4000, 5000, false],
+    },
+  }),
+  love_to: Sound({
+    src: "/audio/reactions/love_to.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+  oh_pretty_please: Sound({
+    src: "/audio/reactions/oh_pretty_please.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+  na_na: Sound({
+    src: "/audio/reactions/na-na.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+    sprite: {
+      main: [0, 1750, false],
+    },
+  }),
+  na_na_poo_poo: Sound({
+    src: "/audio/reactions/na-na-na-na-poo-poo.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+
+  super_genius: Sound({
+    src: "/audio/reactions/super-genius.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.4,
+  }),
+
+  wise_guy_eh: Sound({
+    src: "/audio/reactions/wise-guy-eh.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+
+  shazaam: Sound({
+    src: "/audio/reactions/shazaam.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 1,
+  }),
+
+  whats_the_big_idea: Sound({
+    src: "/audio/reactions/whats-the-big-idea.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
+  annoying_excuse_me: Sound({
+    src: "/audio/reactions/annoying-excuse-me.mp3",
+    rate: 1,
+    loop: false,
+    overlap: 100,
+    volume: 0.5,
+  }),
 };
+
 
 export default sounds;

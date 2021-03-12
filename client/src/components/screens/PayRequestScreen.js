@@ -17,6 +17,8 @@ import FillContent from "../fillContainer/FillContent";
 import FillHeader from "../fillContainer/FillHeader";
 import FillFooter from "../fillContainer/FillFooter";
 
+import BlurredWrapper from "../../packages/ReactWindows/Components/Containers/BlurredWrapper";
+
 // Cards
 import RenderCard from "../RenderCard";
 import RenderInteractableCard from "../RenderInteractableCard";
@@ -26,7 +28,7 @@ import CurrencyText from "../cards/elements/CurrencyText";
 import PropertySetContainer from "../panels/playerPanel/PropertySetContainer";
 import ActionBar from "../formUi/ActionBar";
 import sounds from "../../assets/sounds";
-
+import "./PayRequestScreen.scss";
 import grey from "@material-ui/core/colors/grey";
 const darkGreyButtonStyle = { backgroundColor: grey[900], color: "white" };
 const darkGreyButtonStyleSelected = {
@@ -95,15 +97,24 @@ const PayRequestScreen = ({
 
   let sumSelected = getSelectedSum();
   let noMoreNeeded = checkIsMoreNeeded();
-  let isConfirmDisabled = !(
-    cardSelection.selected.isAllSelected() ||
-    noMoreNeeded ||
-    cardSelection.selectable.count() === 0
+  let isConfirmDisabled =
+    false &&
+    !(
+      cardSelection.selected.isAllSelected() ||
+      noMoreNeeded ||
+      cardSelection.selectable.count() === 0
+    );
+
+  let noItemsAvailable = (
+    <div className={"no-content"}>
+      <div className={"message"}>No items available</div>
+    </div>
   );
 
+  // BANK ====================================
   // cache the card data - sort by value
   let cardsKeyed = {};
-  let bankContents = [];
+  let bankCardsContents = [];
   bankCardIds.forEach((cardId) => {
     let card = getCard(cardId);
     cardsKeyed[cardId] = card;
@@ -113,226 +124,270 @@ const PayRequestScreen = ({
     let valueB = getNestedValue(cardsKeyed, [cardIdB, "value"], 0);
     return valueA - valueB;
   });
-  bankCardIds.forEach((cardId) => {
-    let appendConent = `${cardsKeyed[cardId].value}M`;
+  if (bankCardIds.length > 0) {
+    bankCardIds.forEach((cardId) => {
+      let appendConent = `${cardsKeyed[cardId].value}M`;
 
-    bankContents.push(
-      <RenderInteractableCard
-        overlap="10px"
-        key={cardId}
-        card={cardsKeyed[cardId]}
-        append={appendConent}
-        propertySetMap={propertySetsKeyed}
-        selectionEnabled={cardSelection.isEnabled()}
-        isSelectable={cardSelection.selectable.has(cardId)}
-        selectType={cardSelection.getType()}
-        isSelected={cardSelection.selected.has(cardId)}
-        notApplicable={noMoreNeeded && !cardSelection.selected.has(cardId)}
-        onSelected={() => {
-          if (!cardSelection.selected.has(cardId)) {
-            sounds.quietAcceptChime.play();
-          } else {
-            sounds.putBack.play();
-          }
-          cardSelection.selected.toggle(cardId);
+      bankCardsContents.push(
+        <RenderInteractableCard
+          overlap="10px"
+          key={cardId}
+          card={cardsKeyed[cardId]}
+          append={appendConent}
+          propertySetMap={propertySetsKeyed}
+          selectionEnabled={cardSelection.isEnabled()}
+          isSelectable={cardSelection.selectable.has(cardId)}
+          selectType={cardSelection.getType()}
+          isSelected={cardSelection.selected.has(cardId)}
+          notApplicable={noMoreNeeded && !cardSelection.selected.has(cardId)}
+          onSelected={() => {
+            if (!cardSelection.selected.has(cardId)) {
+              sounds.quietAcceptChime.play();
+            } else {
+              sounds.putBack.play();
+            }
+            cardSelection.selected.toggle(cardId);
+          }}
+          scaledPercent={bankScaledPercent}
+          hoverPercent={bankScaledPercentHover}
+        />
+      );
+    });
+  } else {
+    bankCardsContents = noItemsAvailable;
+  }
+
+  let bankContents = (
+    <FlexColumn style={{ width: "100%", flexGrow: 0 }}>
+      <Flex>
+        <Typography variant="h6" gutterBottom>
+          Bank
+        </Typography>
+      </Flex>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "20px",
+          alignItems: "flex-end",
+          flexGrow: 1,
+          width: "100%",
+          flexWrap: "wrap",
         }}
-        scaledPercent={bankScaledPercent}
-        hoverPercent={bankScaledPercentHover}
-      />
-    );
+      >
+        {bankCardsContents}
+      </div>
+    </FlexColumn>
+  );
+
+  // COLLECTIONS ====================================
+
+  let filteredCardMap = new Map();
+  collectionIds.map((collectionId) => {
+    let filteredCardIds = [];
+    let cardIds = getCollectionCardIds(collectionId);
+    cardIds.map((cardId) => {
+      let card = getCard(cardId);
+      if (isDef(card.value) && card.value > 0) {
+        filteredCardIds.push(cardId);
+      }
+    });
+    if (filteredCardIds.length > 0) {
+      filteredCardMap.set(collectionId, filteredCardIds);
+    }
   });
+
+  let collectionContents = "";
+  let collectionInnerContents = "";
+  if (filteredCardMap.size > 0) {
+    collectionInnerContents = collectionIds.map((collectionId) => {
+      let cardIds = getCollectionCardIds(collectionId);
+
+      let filteredCards = [];
+      cardIds.map((cardId) => {
+        let card = getCard(cardId);
+        if (isDef(card.value) && card.value > 0) {
+          filteredCards.push(cardId);
+        }
+      });
+
+      let returnContents = "";
+      if (filteredCards.length > 0) {
+        returnContents = (
+          <PropertySetContainer
+            key={collectionId}
+            transparent={true}
+            collectionId={collectionId}
+            selectionEnabled={false}
+            isSelectable={false}
+            isSelected={false}
+            isFull={false}
+            cards={filteredCards.map((cardId) => {
+              let card = getCard(cardId);
+              let appendConent = `${card.value}M`;
+
+              return (
+                <RenderInteractableCard
+                  key={cardId}
+                  card={getCard(cardId)}
+                  append={appendConent}
+                  propertySetMap={propertySetsKeyed}
+                  selectionEnabled={cardSelection.isEnabled()}
+                  isSelectable={cardSelection.selectable.has(cardId)}
+                  selectType={cardSelection.getType()}
+                  isSelected={cardSelection.selected.has(cardId)}
+                  notApplicable={
+                    noMoreNeeded && !cardSelection.selected.has(cardId)
+                  }
+                  onSelected={() => {
+                    if (!cardSelection.selected.has(cardId)) {
+                      sounds.quietAcceptChime.play();
+                    } else {
+                      sounds.putBack.play();
+                    }
+                    cardSelection.selected.toggle(cardId);
+                  }}
+                  scaledPercent={collectionScaledPercent}
+                  hoverPercent={collectionScaledPercentHover}
+                />
+              );
+            })}
+          />
+        );
+      }
+      return returnContents;
+    });
+  } else {
+    collectionInnerContents = noItemsAvailable;
+  }
+
+  collectionContents = (
+    <FlexColumn style={{ width: "100%", flexGrow: 0 }}>
+      <Flex>
+        <Typography variant="h6" gutterBottom>
+          Property
+        </Typography>
+      </Flex>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          padding: "20px",
+          flexWrap: "wrap",
+        }}
+      >
+        {collectionInnerContents}
+      </div>
+    </FlexColumn>
+  );
 
   return (
     <AbsLayer>
       <div style={{ width: "100%", height: "100%", padding: "10px" }}>
-        <div
-          style={{
-            backgroundColor: "#000000a1",
-            width: "100%",
-            height: "100%",
-            overflow: "auto",
-          }}
-        >
-          <RelLayer>
-            <FillContainer>
-              <FillContent>
-                <FlexRow
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    padding: "40px 25px 20px 25px",
-                  }}
-                >
-                  <FlexColumn
+        <BlurredWrapper>
+          <div
+            style={{
+              backgroundColor: "#000000a1",
+              width: "100%",
+              height: "100%",
+              overflow: "auto",
+            }}
+          >
+            <RelLayer>
+              <FillContainer>
+                <FillContent>
+                  <FlexRow
                     style={{
-                      alignItems: "center",
-                      width: "50%",
-                      padding: "40px",
+                      width: "100%",
+                      height: "100%",
+                      padding: "40px 25px 20px 25px",
                     }}
                   >
-                    <FlexColumn style={{ alignItems: "center", width: "100%" }}>
-                      <FlexRow
-                        style={{ fontSize: "25px", marginBottom: "20px" }}
-                      >{`Pay ${authorName}`}</FlexRow>
+                    <FlexColumn
+                      style={{
+                        alignItems: "center",
+                        width: "50%",
+                        padding: "40px",
+                      }}
+                    >
                       <FlexColumn
-                        style={{
-                          fontSize: "25px",
-                          alignItems: "center",
-                          marginBottom: "20px",
-                        }}
+                        style={{ alignItems: "center", width: "100%" }}
                       >
-                        <div style={{ fontSize: "15px" }}>Amount Remaining</div>
-                        <div>
-                          <CurrencyText fontSizeEm={1}>
-                            {amountRemaining}
-                          </CurrencyText>
-                        </div>
-                      </FlexColumn>
-                      <FlexColumn
-                        style={{
-                          fontSize: "25px",
-                          alignItems: "center",
-                          marginBottom: "20px",
-                        }}
-                      >
-                        <div style={{ fontSize: "15px" }}>Value selected</div>
-                        <div>
-                          <CurrencyText fontSizeEm={1}>
-                            {sumSelected}
-                          </CurrencyText>
-                        </div>
-                      </FlexColumn>
-                    </FlexColumn>
-                  </FlexColumn>
-                  <BlurredPanel style={{ width: "100%" }}>
-                    {/* Collections */}
-                    <FlexColumn style={{ width: "100%" }}>
-                      <FlexColumn style={{ width: "100%", flexGrow: 0 }}>
-                        <Flex>
-                          <Typography variant="h6" gutterBottom>
-                            Bank
-                          </Typography>
-                        </Flex>
-                        <div
+                        <FlexRow
+                          style={{ fontSize: "25px", marginBottom: "20px" }}
+                        >{`Pay ${authorName}`}</FlexRow>
+                        <FlexColumn
                           style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            padding: "20px",
-                            alignItems: "flex-end",
-                            flexGrow: 1,
-                            width: "100%",
-                            flexWrap: "wrap",
+                            fontSize: "25px",
+                            alignItems: "center",
+                            marginBottom: "20px",
                           }}
                         >
-                          {bankContents}
-                        </div>
-                      </FlexColumn>
-                      <FlexColumn style={{ width: "100%", flexGrow: 0 }}>
-                        <Flex>
-                          <Typography variant="h6" gutterBottom>
-                            Property
-                          </Typography>
-                        </Flex>
-                        <div
+                          <div style={{ fontSize: "15px" }}>Amount</div>
+                          <div>
+                            <CurrencyText fontSizeEm={1}>
+                              {amountRemaining}
+                            </CurrencyText>
+                          </div>
+                        </FlexColumn>
+                        <FlexColumn
                           style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            padding: "20px",
-                            flexWrap: "wrap",
+                            fontSize: "25px",
+                            alignItems: "center",
+                            marginBottom: "20px",
                           }}
                         >
-                          {collectionIds.map((collectionId) => {
-                            let cardIds = getCollectionCardIds(collectionId);
-                            return (
-                              <PropertySetContainer
-                                key={collectionId}
-                                transparent={true}
-                                collectionId={collectionId}
-                                selectionEnabled={false}
-                                isSelectable={false}
-                                isSelected={false}
-                                isFull={false}
-                                cards={cardIds.map((cardId) => {
-                                  let card = getCard(cardId);
-                                  let appendConent = `${card.value}M`;
-
-                                  return (
-                                    <RenderInteractableCard
-                                      key={cardId}
-                                      card={getCard(cardId)}
-                                      append={appendConent}
-                                      propertySetMap={propertySetsKeyed}
-                                      selectionEnabled={cardSelection.isEnabled()}
-                                      isSelectable={cardSelection.selectable.has(
-                                        cardId
-                                      )}
-                                      selectType={cardSelection.getType()}
-                                      isSelected={cardSelection.selected.has(
-                                        cardId
-                                      )}
-                                      notApplicable={
-                                        noMoreNeeded &&
-                                        !cardSelection.selected.has(cardId)
-                                      }
-                                      onSelected={() => {
-                                        if (
-                                          !cardSelection.selected.has(cardId)
-                                        ) {
-                                          sounds.quietAcceptChime.play();
-                                        } else {
-                                          sounds.putBack.play();
-                                        }
-                                        cardSelection.selected.toggle(cardId);
-                                      }}
-                                      scaledPercent={collectionScaledPercent}
-                                      hoverPercent={
-                                        collectionScaledPercentHover
-                                      }
-                                    />
-                                  );
-                                })}
-                              />
-                            );
-                          })}
-                        </div>
+                          <div style={{ fontSize: "15px" }}>Value selected</div>
+                          <div>
+                            <CurrencyText fontSizeEm={1}>
+                              {sumSelected}
+                            </CurrencyText>
+                          </div>
+                        </FlexColumn>
                       </FlexColumn>
                     </FlexColumn>
-                  </BlurredPanel>
-                </FlexRow>
-              </FillContent>
-              <FillFooter height={50} style={{ textAlign: "right" }}>
-                <Button
-                  color="primary"
-                  style={{ margin: "4px" }}
-                  variant="contained"
-                  onClick={(e) => {
-                    playClickSound(false);
-                    onCancel(e);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={isConfirmDisabled}
-                  color="primary"
-                  style={{ margin: "4px" }}
-                  variant="contained"
-                  onClick={(e) => {
-                    playClickSound(isConfirmDisabled);
-                    onConfirm({
-                      responseKey: "accept",
-                      cardIds: cardSelection.selected.get(),
-                    });
-                  }}
-                >
-                  Confirm
-                </Button>
-              </FillFooter>
-            </FillContainer>
-
-            <ActionBar />
-          </RelLayer>
-        </div>
+                    <BlurredPanel style={{ width: "100%" }}>
+                      {/* ----------------- MAIN WINDOW ----------------- */}
+                      <FlexColumn style={{ width: "100%" }}>
+                        {bankContents}
+                        {collectionContents}
+                      </FlexColumn>
+                    </BlurredPanel>
+                  </FlexRow>
+                </FillContent>
+                <FillFooter height={50} style={{ textAlign: "right" }}>
+                  <Button
+                    color="primary"
+                    style={{ margin: "4px" }}
+                    variant="contained"
+                    onClick={(e) => {
+                      playClickSound(false);
+                      onCancel(e);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={isConfirmDisabled}
+                    color="primary"
+                    style={{ margin: "4px" }}
+                    variant="contained"
+                    onClick={(e) => {
+                      playClickSound(isConfirmDisabled);
+                      onConfirm({
+                        responseKey: "accept",
+                        cardIds: cardSelection.selected.get(),
+                      });
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                </FillFooter>
+              </FillContainer>
+              <ActionBar />
+            </RelLayer>
+          </div>
+        </BlurredWrapper>
       </div>
     </AbsLayer>
   );

@@ -28,6 +28,7 @@ const styles = makeStyles((theme) => ({
     backgroundColor: "#333",
     color: "white",
     height: "100%",
+    display: "block",
   },
 }));
 
@@ -119,7 +120,7 @@ export default () => {
 
   return (
     <DndProvider backend={Backend}>
-      <div className={classes.root}>
+      <div>
         <button onClick={() => sounds.notification.play(1)}>
           Notification
         </button>
@@ -128,6 +129,34 @@ export default () => {
         </button>
         <button onClick={() => sounds.introMusic.stop()}>
           introMusic stop
+        </button>
+        <button onClick={() => sounds.love_to.play(1)}>love_to</button>
+        <button onClick={() => sounds.oh_pretty_please.play(1)}>
+          oh_pretty_please
+        </button>
+        <button onClick={() => sounds.farting.play(1, "v1")}>farting v1</button>
+        <button onClick={() => sounds.farting.play(1, "v2")}>farting v2</button>
+        <button onClick={() => sounds.farting.play(1, "v3")}>farting v3</button>
+        <button onClick={() => sounds.na_na.play(1, "main")}>na_na main</button>
+        <button onClick={() => sounds.super_genius.play(1)}>
+          super_genius
+        </button>
+        <button onClick={() => sounds.wise_guy_eh.play(1)}>wise_guy_eh</button>
+        <button onClick={() => sounds.whats_the_big_idea.play(1)}>
+          whats_the_big_idea
+        </button>
+        <button onClick={() => sounds.annoying_excuse_me.play(1)}>
+          annoying_excuse_me
+        </button>
+        <button onClick={() => sounds.shazaam.play(1)}>shazaam</button>
+        <button
+          onClick={() =>
+            responsiveVoice.speak(`It's jordan's turn!`, "US English Male", {
+              volume: 1,
+            })
+          }
+        >
+          text to speach
         </button>
         <button onClick={() => sounds.swipe.play(1)}>swipe</button>
         <button onClick={() => sounds.shuffle.play()}>shuffle</button>

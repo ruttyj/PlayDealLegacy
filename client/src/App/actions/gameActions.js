@@ -1,7 +1,8 @@
 ///"START_GAME";//GAME.START
 
-import gameBuffer from "../buffers/gameBuffer";
-import { isDef, makeListenerMap } from "../../utils/";
+import ReduxState from "../controllers/reduxState";
+import gameReducers from "../reducers/gameReducers";
+import { isDef, makeListenerMap, getNestedValue } from "../../utils/";
 import {
   GET_GAME_PROPERTY_SETS,
   GET_PLAYER_HANDS,
@@ -25,6 +26,8 @@ import {
   UPDATE_DISPLAY_MODE,
 } from "./types";
 
+const reduxState = ReduxState.getInstance();
+
 const defaultProps = (roomCode, moreProps = {}) => {
   return {
     props: {
@@ -34,8 +37,11 @@ const defaultProps = (roomCode, moreProps = {}) => {
   };
 };
 
-const flush = () => async (dispatch) => {
-  gameBuffer.flush(dispatch);
+const setPreviousRequests = (idsKeyed) => async (dispatch) => {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
+    type: `SET_PREVIOUS_REQUESTS`,
+    payload: idsKeyed,
+  });
   return Promise.resolve();
 };
 
@@ -90,6 +96,7 @@ const addCardToMyBank = (con, roomCode, cardId) => async (dispatch) => {
     defaultProps(roomCode, { cardId })
   );
 };
+
 
 const addCardEmptySetFromHand = (con, roomCode, cardId) => async (dispatch) => {
   await con.emitSingleRequest(
@@ -200,12 +207,21 @@ const changeWildPropertySetKey = (
   chosenSetKey,
   collectionId
 ) => async (dispatch) => {
-  let result = await con.emitSingleRequest(
+  let fetchedData = await con.emitSingleRequest(
     "MY_TURN",
     "CHANGE_CARD_ACTIVE_SET",
     defaultProps(roomCode, { cardId, chosenSetKey, collectionId })
   );
-  return result;
+
+  if (isDef(fetchedData)) {
+    let response = fetchedData.find(
+      (r) => r.action === "CHANGE_CARD_ACTIVE_SET"
+    );
+    if (isDef(response)) {
+      return response.status === "success";
+    }
+  }
+  return false;
 };
 
 const chargeRentForCollection = (
@@ -399,12 +415,15 @@ const collectCollection = (con, roomCode, { requestId }) => async (
 };
 
 const updateActionData = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, { type: `UPDATE_ACTION_DATA`, payload: value });
+  reduxState.directDispatch("game", dispatch, gameReducers, {
+    type: `UPDATE_ACTION_DATA`,
+    payload: value,
+  });
   return Promise.resolve();
 };
 
 const updateDisplayMode = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `UPDATE_DISPLAY_MODE`,
     payload: value,
   });
@@ -412,12 +431,15 @@ const updateDisplayMode = (value) => (dispatch) => {
 };
 
 const resetDisplayData = () => (dispatch) => {
-  gameBuffer.dispatch(dispatch, { type: `RESET_DISPLAY_DATA`, payload: null });
+  reduxState.directDispatch("game", dispatch, gameReducers, {
+    type: `RESET_DISPLAY_DATA`,
+    payload: null,
+  });
   return Promise.resolve();
 };
 
 const updateDisplayData = ({ path, value }) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `UPDATE_DISPLAY_DATA`,
     payload: { path, value },
   });
@@ -425,12 +447,15 @@ const updateDisplayData = ({ path, value }) => (dispatch) => {
 };
 
 const resetCustomUi = () => (dispatch) => {
-  gameBuffer.dispatch(dispatch, { type: `RESET_CUSTOM_UI`, payload: null });
+  reduxState.directDispatch("game", dispatch, gameReducers, {
+    type: `RESET_CUSTOM_UI`,
+    payload: null,
+  });
   return Promise.resolve();
 };
 
 const setCustomUi = (path = [], value = {}) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `UPDATE_CUSTOM_UI`,
     payload: { path, value },
   });
@@ -440,7 +465,7 @@ const setCustomUi = (path = [], value = {}) => (dispatch) => {
 // CARD
 
 const cardSelection_setMeta = (path, value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_SELECTION_META`,
     payload: { path, value },
   });
@@ -448,81 +473,84 @@ const cardSelection_setMeta = (path, value) => (dispatch) => {
 };
 
 const cardSelection_reset = () => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_SELECTION_RESET`,
     payload: null,
   });
   return Promise.resolve();
 };
 const cardSelection_setEnable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_SET_SELECTION_ENABLE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_setType = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_SET_SELECTION_TYPE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_setLimit = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_SET_SELECTION_LIMIT`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_setSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_SET_SELECTABLE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_addSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_ADD_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_removeSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_REMOVE_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_toggleSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_TOGGLE_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_setSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, { type: `CARD_SET_SELECTED`, payload: value });
+  reduxState.directDispatch("game", dispatch, gameReducers, {
+    type: `CARD_SET_SELECTED`,
+    payload: value,
+  });
   return Promise.resolve();
 };
 const cardSelection_addSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_ADD_SELECTED_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_removeSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_REMOVE_SELECTED_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const cardSelection_toggleSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `CARD_TOGGLE_SELECTED_VALUE`,
     payload: value,
   });
@@ -531,84 +559,84 @@ const cardSelection_toggleSelected = (value) => (dispatch) => {
 
 // COLLECTION
 const collectionSelection_reset = () => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_SELECTION_RESET`,
     payload: null,
   });
   return Promise.resolve();
 };
 const collectionSelection_setEnable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_SET_SELECTION_ENABLE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_setType = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_SET_SELECTION_TYPE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_setLimit = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_SET_SELECTION_LIMIT`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_setSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_SET_SELECTABLE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_addSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_ADD_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_removeSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_REMOVE_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_toggleSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_TOGGLE_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_setSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_SET_SELECTED`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_addSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_ADD_SELECTED_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_removeSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_REMOVE_SELECTED_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const collectionSelection_toggleSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `COLLECTION_TOGGLE_SELECTED_VALUE`,
     payload: value,
   });
@@ -617,84 +645,84 @@ const collectionSelection_toggleSelected = (value) => (dispatch) => {
 
 // PERSON
 const personSelection_reset = () => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_SELECTION_RESET`,
     payload: null,
   });
   return Promise.resolve();
 };
 const personSelection_setEnable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_SET_SELECTION_ENABLE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_setType = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_SET_SELECTION_TYPE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_setLimit = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_SET_SELECTION_LIMIT`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_setSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_SET_SELECTABLE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_addSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_ADD_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_removeSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_REMOVE_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_toggleSelectable = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_TOGGLE_SELECTABLE_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_setSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_SET_SELECTED`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_addSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_ADD_SELECTED_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_removeSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_REMOVE_SELECTED_VALUE`,
     payload: value,
   });
   return Promise.resolve();
 };
 const personSelection_toggleSelected = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `PERSON_TOGGLE_SELECTED_VALUE`,
     payload: value,
   });
@@ -702,9 +730,33 @@ const personSelection_toggleSelected = (value) => (dispatch) => {
 };
 
 const setCards = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, { type: `GET_GAME_CARDS`, payload: value });
+  reduxState.directDispatch("game", dispatch, gameReducers, {
+    type: `GET_GAME_CARDS`,
+    payload: value,
+  });
   return Promise.resolve();
 };
+
+
+const sendSound = (con, roomCode, soundKey) => async (dispatch) => {
+  await con.emitSingleRequest(
+    "CHAT",
+    "SEND_MESSAGE",
+    defaultProps(roomCode, {
+      type: "sound",
+      value: soundKey,
+    })
+  );
+};
+
+const emit = (con, roomCode, subject, action, payload) => async (dispatch) => {
+  await con.emitSingleRequest(
+    subject,
+    action,
+    defaultProps(roomCode, payload)
+  );
+};
+
 
 const attachGameListeners = (con) => (dispatch) => {
   let listnerTree = con.listnerTree;
@@ -736,7 +788,7 @@ const attachGameListeners = (con) => (dispatch) => {
     listnerTree.on(eventBranch, (data) => {
       let [subject, action] = eventBranch;
       let { payload } = data;
-      gameBuffer.dispatch(dispatch, {
+      reduxState.directDispatch("game", dispatch, gameReducers, {
         type: eventType,
         payload: payload,
       });
@@ -748,17 +800,16 @@ const attachGameListeners = (con) => (dispatch) => {
 };
 
 const resetGameData = (value) => (dispatch) => {
-  gameBuffer.dispatch(dispatch, {
+  reduxState.directDispatch("game", dispatch, gameReducers, {
     type: `RESET`,
     payload: value,
   });
-  gameBuffer.flush();
   return Promise.resolve();
 };
 
 export default {
-  flush,
   resetGameData,
+  setPreviousRequests,
 
   //Game life cycle
   resetGame,
@@ -768,6 +819,10 @@ export default {
 
   // Start turn
   drawTurnStartingCards,
+
+  // Chat
+  sendSound,
+  emit,
 
   // Property actions
   changeWildPropertySetKey,

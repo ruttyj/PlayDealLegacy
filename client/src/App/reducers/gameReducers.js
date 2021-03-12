@@ -78,23 +78,23 @@ function addSelectionControlInitialState(state, name) {
 const addToArray = (value, arr) => Array.from(new Set([...arr, value]));
 const removeFromArray = (value, arr) => arr.filter((v) => v !== value);
 function setValue(path) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     return setImmutableValue(state, path, payload);
   };
 }
 function setSelectionProp(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     return setImmutableValue(state, [name, field], payload);
   };
 }
 function setSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     if (isArr(payload)) return setImmutableValue(state, [name, field], payload);
     return state;
   };
 }
 function addSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let updatedState = state;
     let priorValue = getNestedValue(updatedState, [name, field], []);
     let newValue = addToArray(payload, priorValue);
@@ -103,7 +103,7 @@ function addSelectionValue(name, field) {
   };
 }
 function removeSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let updatedState = state;
     let priorValue = getNestedValue(updatedState, [name, field], []);
     let newValue = removeFromArray(payload, priorValue);
@@ -112,7 +112,7 @@ function removeSelectionValue(name, field) {
   };
 }
 function toggleSelectionValue(name, field) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let updatedState = state;
     let priorValue = getNestedValue(updatedState, [name, field], []);
     let newValue;
@@ -125,9 +125,8 @@ function toggleSelectionValue(name, field) {
     return updatedState;
   };
 }
-
 function updateStateData(basePath) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     let { path, value } = payload;
 
     let _path = isDef(path) ? (isArr(path) ? path : [path]) : [];
@@ -139,11 +138,11 @@ function updateStateData(basePath) {
   };
 }
 
-const initialState = {
+const gameInitialState = {
   uiCustomize: {
     autoPassTurn: true,
   },
-  gameStatus: null, // contains isGameStarted, isInProgress, isGameOver
+  gameStatus: null,
   winningPlayerId: null,
   propertySets: {
     items: {},
@@ -152,9 +151,9 @@ const initialState = {
     items: {},
     order: [],
   },
-  drawPile: null, //DRAW_PILE
-  activePile: null, //ACTIVE_PILE
-  discardPile: null, //DISCARD_PILE
+  drawPile: null,
+  activePile: null,
+  discardPile: null,
   playerTurnPrevious: null,
   playerTurn: null,
   players: {
@@ -182,65 +181,24 @@ const initialState = {
   displayMode: null,
   displayData: {},
 };
-addSelectionControlInitialState(initialState, "cardSelect");
-addSelectionControlInitialState(initialState, "collectionSelect");
-addSelectionControlInitialState(initialState, "personSelect");
+addSelectionControlInitialState(gameInitialState, "cardSelect");
+addSelectionControlInitialState(gameInitialState, "collectionSelect");
+addSelectionControlInitialState(gameInitialState, "personSelect");
 
 function resetSelectionControl(name) {
-  return function (state, { payload }) {
+  return function(state, { payload }) {
     return setImmutableValue(state, [name], makeSelectionControlInitialState());
   };
 }
-/*
-requirements:
-  swap properties:
-    select a card from their collection
-    select a card from my collection
-  
-  steal set:
-    select a collection
 
-  charge rent:
-    select a collection
-    select augment cards
-    select people*
-
-  its my birthday
-    nothing
-  
-    debt collector:
-      select people
-
-
-  let subject;
-
-  cardSelection_getEnable,
-  cardSelection_getType,
-  cardSelection_getLimit,
-  cardSelection_getSelectable,
-  cardSelection_getSelected,
-
-  collectionSelection_getEnable,
-  collectionSelection_getType,
-  collectionSelection_getLimit,
-  collectionSelection_getSelectable,
-  collectionSelection_getSelected,
-
-  personSelection_getEnable,
-  personSelection_getType,
-  personSelection_getLimit,
-  personSelection_getSelectable,
-  personSelection_getSelected,
-
-
-*/
-
-const reducer = function (state = initialState, action) {
-  let subjectName;
+const reducer = function(state = gameInitialState, action) {
   let updatedState;
+  let _path;
+  let path;
+  let value;
   switch (action.type) {
     case "RESET":
-      return JSON.parse(JSON.stringify(initialState));
+      return JSON.parse(JSON.stringify(gameInitialState));
     case "SET_STATE":
       return action.payload;
     case GET_GAME_PROPERTY_SETS:
@@ -262,7 +220,6 @@ const reducer = function (state = initialState, action) {
     case GET_PLAYER_REQUESTS:
       return makeGetItemized("playerRequests")(state, action);
     case REMOVE_ALL_PLAYER_REQUESTS:
-      console.log("REMOVE_ALL_PLAYER_REQUESTS");
       return setImmutableValue(state, ["playerRequests"], {
         items: {},
       });
@@ -280,9 +237,16 @@ const reducer = function (state = initialState, action) {
       );
       updatedState = makeGetItemized("requests")(updatedState, action);
       return updatedState;
+    case "SET_PREVIOUS_REQUESTS":
+      updatedState = state;
+      updatedState = setImmutableValue(
+        updatedState,
+        ["previousRequests"],
+        action.payload
+      );
+      return updatedState;
+      return;
     case REMOVE_ALL_REQUESTS:
-      console.log("REMOVE_ALL_REQUESTS");
-
       updatedState = setImmutableValue(state, ["requests"], {
         items: {},
       });
@@ -411,10 +375,18 @@ const reducer = function (state = initialState, action) {
     case PERSON_TOGGLE_SELECTED_VALUE:
       return toggleSelectionValue("personSelect", "selected")(state, action);
 
+    case "SET":
+      _path = getNestedValue(action, ["payload", "path"], []);
+      path = isArr(_path) ? _path : [_path];
+      value = getNestedValue(action, ["payload", "value"], {});
+
+      updatedState = state;
+      updatedState = setImmutableValue(updatedState, path, value);
+      return updatedState;
     default:
       return state;
   }
 };
 
 export default reducer;
-export { initialState };
+export { gameInitialState };

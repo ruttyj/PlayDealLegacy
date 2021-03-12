@@ -13,7 +13,7 @@ import {
   UPDATE_MY_NAME,
 } from "../actions/types";
 
-const initialState = {
+const peopleInitialState = {
   myId: null,
   host: null,
   items: {},
@@ -72,21 +72,31 @@ function getMyId(state, { payload }) {
   return newState;
 }
 
-const reducer = function (state = initialState, action) {
+const reducer = function(state = peopleInitialState, action) {
+  let updatedState = state;
   switch (action.type) {
     case "RESET":
-      return JSON.parse(JSON.stringify(initialState));
+      return JSON.parse(JSON.stringify(peopleInitialState));
+
     case GET_PEOPLE:
-      return getPeople(state, action);
+      updatedState = getPeople(state, action);
+      return updatedState;
+
     case REMOVE_PEOPLE:
-      return removePeople(state, action);
+      updatedState = removePeople(state, action);
+      return updatedState;
     case GET_HOST:
-      return getHost(state, action);
+      updatedState = getHost(state, action);
+      return updatedState;
+
     case GET_MY_ID:
-      return getMyId(state, action);
+      updatedState = getMyId(state, action);
+      return updatedState;
+
     default:
       return state;
   }
 };
 
+export { peopleInitialState };
 export default reducer;

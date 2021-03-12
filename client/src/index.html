@@ -15,7 +15,6 @@
       rel="stylesheet"
     />
 
-
     <style>
       *:focus {
           outline: none !important;
@@ -36,8 +35,6 @@
       #app, #app > div{
         height: 100%;
         width: 100%;
-        display: flex;
-        flex-grow: 1;
       }
       
     </style>
@@ -83,6 +80,13 @@
         box-shadow: 0 0 0 0 rgba(255, 255, 255, 1);
 	      animation: pulse-white 2s infinite;
       }
+
+      .people_list {
+      }
+
+      .layout-pane {
+      }
+
       @keyframes pulse-white {
         0% {
           transform: scale(0.95);
@@ -159,7 +163,6 @@
 
     <style>
       .splitter-layout.people_list .layout-splitter:hover {
-        mix-blend-mode: overlay;
         background-color: black;
       }
 
@@ -171,9 +174,7 @@
         flex: 0 0 auto;
         height: 100%;
         cursor: col-resize;
-        backdrop-filter: blur(15px);
-        background-color: #565656;
-        mix-blend-mode: overlay;
+        background-color: #252525;
         border-right: 2px solid black;
         width: 25px;
         transition: all 300ms linear;
@@ -381,6 +382,15 @@
     </style>
   </head>
   <body>
+    <script>
+      responsiveVoice = {
+        speak(...args){
+          console.log("speak", ...args);
+        }
+      }
+    </script>
+    <!-- script src="https://code.responsivevoice.org/responsivevoice.js?key=d9SWtfYd"></script -->
+
     <div id="app"></div>
     <script>
       window.renderedApp = false;

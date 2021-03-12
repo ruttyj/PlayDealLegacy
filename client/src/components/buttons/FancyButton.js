@@ -26,7 +26,13 @@ const useStyles = makeStyles({
 let emptyFunc = () => {};
 
 export default function FancyButton(props) {
-  const { children, disabled = false, style = {}, variant = "primary" } = props;
+  const {
+    children,
+    disabled = false,
+    style = {},
+    variant = "primary",
+    isLoading = false,
+  } = props;
   const classes = useStyles();
   const [isHovered, _setIsHovered] = useState(false);
 
@@ -85,6 +91,13 @@ export default function FancyButton(props) {
     });
   }
 
+  let buttonContents;
+  if (isLoading) {
+    buttonContents = "loading...";
+  } else {
+    buttonContents = children;
+  }
+
   return (
     <motion.div
       style={combinedStyle}
@@ -96,7 +109,7 @@ export default function FancyButton(props) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {children}
+      {buttonContents}
     </motion.div>
   );
 }

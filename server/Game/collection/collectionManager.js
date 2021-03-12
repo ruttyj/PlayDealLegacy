@@ -2,18 +2,26 @@ const {
   isDef,
   makeVar,
   makeMap,
-  stateSerialize,
   getKeyFromProp,
 } = require("../utils.js");
 const Collection = require("./collection.js");
 
 function CollectionManager(gameRef) {
-  const mState = {};
-  let mGameRef = gameRef;
-  const mTopId = makeVar(mState, "topId", 0);
-  const mCollections = makeMap(mState, "collections", [], {
-    keyMutator: (v) => parseInt(v, 10),
-  });
+  let mState;
+  let mGameRef;
+  let mTopId;
+  let mCollections;
+
+  reset();
+
+  function reset() {
+    mState = {};
+    mGameRef = gameRef;
+    mTopId = makeVar(mState, "topId", 0);
+    mCollections = makeMap(mState, "collections", [], {
+      keyMutator: (v) => parseInt(v, 10),
+    });
+  }
 
   // Create Collection
   function createCollection() {
@@ -71,7 +79,26 @@ function CollectionManager(gameRef) {
     return null;
   }
 
+
+  function serialize(){
+    return {
+      order: getAllCollectionIds(),
+      items: mCollections.serialize(),
+    }
+  }
+
+  function unserialize(data){
+    reset();
+    data.order.forEach(collectionId => {
+      let collectionData = data.items[collectionId];
+  
+      let collection = createCollection();
+      collection.unserialize(collectionData);
+    })
+  }
+
   const publicScope = {
+    reset, 
     createCollection,
     getCollection,
     getCollections,
@@ -81,6 +108,8 @@ function CollectionManager(gameRef) {
     hasCollection: mCollections.has,
     removeCollection: mCollections.remove,
     filterUnassignedCollections,
+    serialize,
+    unserialize,
   };
 
   function getPublic() {

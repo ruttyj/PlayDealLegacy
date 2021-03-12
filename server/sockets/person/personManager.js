@@ -133,7 +133,7 @@ function PersonManager() {
   function generateNameVariant(baseName, variantName = null, i = 1) {
     variantName = els(variantName, baseName);
     if (hasName(variantName)) {
-      return generateNameVariant(baseName, `${baseName}_${i}`, i + 1);
+      return generateNameVariant(baseName, `${baseName}-${i}`, i + 1);
     }
     return variantName;
   }

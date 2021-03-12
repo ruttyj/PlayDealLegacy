@@ -8,7 +8,7 @@ var cookie = require("cookie");
 var app = require("../server.dev.js");
 var debug = require("debug")("server:server");
 var http = require("http");
-const { isDef, getNestedValue } = require("../utils/helperMethods");
+const { isDef } = require("../utils/helperMethods");
 const CookieTokenManager = require("../CookieTokenManager");
 const cookieTokenManager = CookieTokenManager.getInstance();
 
@@ -25,12 +25,14 @@ app.set("port", port);
 
 var server = http.createServer(app);
 
-const attachSocketHandlers = require("../sockets/serverSocketHandlers");
+const PlayDealServer = require("../sockets/PlayDealServer");
+const playDealServer = new PlayDealServer();
 
 const io = require("socket.io")(server);
 io.on("connection", (thisClient) => {
   // Attach socket handlers
-  attachSocketHandlers(thisClient);
+  playDealServer.onConnected(thisClient);
+
 
   // Associate socket to cookie
   let cookies = cookie.parse(thisClient.request.headers.cookie);

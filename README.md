@@ -1,8 +1,7 @@
+
 # PlayDeal
 
 PlayDeal is an Online multiplayer card game where players attempt to collect X many of a sets inorder to win.
-
-Updates comming soon!
 
 ![Available cards](https://i.ibb.co/sW0V0m7/PlayDeal.png)
 
@@ -17,24 +16,20 @@ Install packages
 
     npm install
 
-Run in development mode:
+Run in development mode: Note the project will run on port 3001 by default
 
     npm run dev
 
-# Get running in production
-
-Install basic packages
-
-    npm install
-
-Build client source code
-
-    npm run build
-
-Run server
-
-    npm run start
+# Setup Digital Ocean Server:
+Here is the video which was followed:
+https://www.youtube.com/watch?v=fJ4x00SR7vo
 
 [
 ![Gameplay screen shot](https://i.ibb.co/W03H335/screenshot.png)
 ](https://i.ibb.co/W03H335/screenshot.png)
+
+
+
+
+
+

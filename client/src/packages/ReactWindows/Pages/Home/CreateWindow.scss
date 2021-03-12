@@ -1,0 +1,48 @@
+.grid-nav {
+  padding: 10px;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.grid-nav {
+  background-color: transparent;
+  transition: all 150ms linear;
+}
+
+.grid-nav {
+  font-size: 55px;
+  font-weight: bold;
+  font-stretch: ultra-condensed;
+  font-family: cursive;
+  cursor: pointer;
+}
+
+.grid-nav:hover,
+.grid-nav.hover {
+  background-color: #09f;
+}
+
+.center-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-item {
+  transition: all 50ms linear;
+}
+.border {
+  border: 5px solid white;
+  border-width: 5px !important;
+}
+
+.username-field {
+  background-color: white;
+  padding: 10px;
+}
+
+.username-field-input {
+  color: red;
+}

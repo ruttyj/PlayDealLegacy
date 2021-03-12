@@ -1,0 +1,87 @@
+.disable-pointer-events {
+  pointer-events: none;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+}
+
+.relative {
+  position: relative;
+}
+
+.window-inner {
+  padding: 0px;
+  margin: 0px;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.window {
+  opacity: 1;
+  transition: background-color 300ms linear;
+  .semi-solid {
+    background-color: #292929e3;
+    border: 1px solid #ffffff40;
+  }
+  .solid {
+    background-color: #000000ff;
+    border: 1px solid #ffffff40;
+  }
+}
+
+.window-shell.semi-solid {
+  background-color: #00000033;
+}
+
+.window-shell.solid {
+  background-color: #000000ff;
+}
+
+.window-shell {
+  padding: 4px;
+}
+
+.window-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  z-index: 3;
+}
+
+.window.blurred-bkgd,
+.window.blurred-bkgd:before,
+.window.blurred-bkgd:after,
+.fade-background {
+  transition: background-color 100ms linear, background-image 100ms linear;
+}
+
+.window.hiding {
+  transition: translateY(-100px);
+  opacity: 0;
+}
+
+.window.hidden {
+  transition: transform 150ms linear, opacity 150ms;
+  max-width: 0px;
+  max-height: 0px;
+  border-width: 0px;
+  transition: translateY(-100px);
+  opacity: 0;
+}
+
+.window-pad {
+  margin: 3px;
+}
+
+/*
+.blurred-bkgd-before,
+.blurred-bkgd-after
+*/

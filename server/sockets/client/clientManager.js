@@ -1,10 +1,5 @@
 const {
-  isUndef,
   isDef,
-  isFunc,
-  isTrue,
-  isFalse,
-  emptyFunction,
   makeVar,
   makeMap,
   makeListener,
@@ -15,6 +10,7 @@ const {
 //                 CLIENT MANAGER
 
 //##################################################
+
 function ClientManager() {
   let mState = {};
 
@@ -33,13 +29,7 @@ function ClientManager() {
   } = makeMap(mState, "clients");
 
   const mClientCount = makeVar(mState, "clientCount", 0);
-
-  const { set: onClientDisconnect, get: getOnClientDisconnect } = makeVar(
-    mState,
-    "onClientDisconnect",
-    emptyFunction
-  );
-  const emitOnClientDisconnect = (...args) => getOnClientDisconnect()(...args);
+  
   //==================================================
 
   //              External references
@@ -108,7 +98,6 @@ function ClientManager() {
       mDisconnectEvent.emit(makeEventPayload(client));
 
       if (hasClientInMap(clientId)) {
-        emitOnClientDisconnect(client);
         removeClientInMap(clientId);
         mClientCount.dec();
       }
@@ -149,18 +138,13 @@ function ClientManager() {
     addClient,
     getClient,
     removeClient,
-    onClientDisconnect,
     serialize,
     count: mClientCount.get,
 
     events: {
-      connect: mConnectEvent,
+      connect:    mConnectEvent,
       disconnect: mDisconnectEvent,
     },
-
-    // deprecated
-    connectEvent: mConnectEvent,
-    disconnectEvent: mDisconnectEvent,
   };
 
   function getPublic() {

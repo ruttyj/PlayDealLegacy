@@ -22,7 +22,6 @@ export default ({ children, hasTooManyCards = false, style = {} }) => {
         <div
           style={{
             backdropFilter: "blur(15px)",
-            height: "100%",
             width: "100%",
             alignItems: "center",
             justifyContent: "center",

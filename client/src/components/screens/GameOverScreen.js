@@ -10,6 +10,7 @@ import {
   makeTree,
 } from "../../utils/";
 
+import BlurredWrapper from "../../packages/ReactWindows/Components/Containers/BlurredWrapper/";
 import BlurredPanel from "../panels/BlurredPanel";
 import Button from "@material-ui/core/Button";
 import AbsLayer from "../layers/AbsLayer";
@@ -127,48 +128,52 @@ const GameOverScreen = (props) => {
             overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              backgroundColor: "#000000a1",
-              width: "100%",
-              height: "100%",
-              overflow: "auto",
-            }}
-          >
-            <RelLayer>
-              <FillContainer>
-                <FillContent>
-                  <FlexRow
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      padding: "40px 25px 20px 25px",
-                    }}
-                  >
-                    <BlurredPanel style={{ width: "100%" }}>
-                      <FillContainer>
-                        <FillContent>
-                          <FlexColumn style={{ width: "100%" }}>
-                            <FlexColumn style={{ width: "100%", flexGrow: 1 }}>
-                              {mainContent}
+          <BlurredWrapper>
+            <div
+              style={{
+                backgroundColor: "#000000a1",
+                width: "100%",
+                height: "100%",
+                overflow: "auto",
+              }}
+            >
+              <RelLayer>
+                <FillContainer>
+                  <FillContent>
+                    <FlexRow
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        padding: "40px 25px 20px 25px",
+                      }}
+                    >
+                      <BlurredPanel style={{ width: "100%" }}>
+                        <FillContainer>
+                          <FillContent>
+                            <FlexColumn style={{ width: "100%" }}>
+                              <FlexColumn
+                                style={{ width: "100%", flexGrow: 1 }}
+                              >
+                                {mainContent}
+                              </FlexColumn>
                             </FlexColumn>
-                          </FlexColumn>
-                        </FillContent>
-                      </FillContainer>
-                    </BlurredPanel>
-                  </FlexRow>
-                </FillContent>
-                {isDef(buttonContent) ? (
-                  <FillFooter height={50} style={{ textAlign: "right" }}>
-                    {buttonContent}
-                  </FillFooter>
-                ) : (
-                  ""
-                )}
-              </FillContainer>
-              <ActionBar />
-            </RelLayer>
-          </div>
+                          </FillContent>
+                        </FillContainer>
+                      </BlurredPanel>
+                    </FlexRow>
+                  </FillContent>
+                  {isDef(buttonContent) ? (
+                    <FillFooter height={50} style={{ textAlign: "right" }}>
+                      {buttonContent}
+                    </FillFooter>
+                  ) : (
+                    ""
+                  )}
+                </FillContainer>
+                <ActionBar />
+              </RelLayer>
+            </div>
+          </BlurredWrapper>
         </div>
       </DndProvider>
     </AbsLayer>

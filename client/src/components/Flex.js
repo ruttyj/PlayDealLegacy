@@ -1,20 +1,21 @@
 import React from "react";
-
-const Flex = ({ children, style = {} }) => {
+import { classes } from "../utils/";
+const Flex = ({ children, style = {}, ...attrs }) => {
   return <div style={{ display: "flex", ...style }}>{children}</div>;
 };
 
-const FlexRow = ({ children, style = {} }) => {
+const FlexRow = ({ children, style = {}, ...attrs }) => {
   return (
-    <div style={{ display: "flex", flexDirection: "row", ...style }}>
+    <div {...attrs} style={{ display: "flex", flexDirection: "row", ...style }}>
       {children}
     </div>
   );
 };
 
-const FlexRowCenter = ({ children, style = {} }) => {
+const FlexRowCenter = ({ children, style = {}, ...attrs }) => {
   return (
     <div
+      {...attrs}
       style={{
         display: "flex",
         flexDirection: "row",
@@ -28,17 +29,21 @@ const FlexRowCenter = ({ children, style = {} }) => {
   );
 };
 
-const FlexColumn = ({ children, style = {} }) => {
+const FlexColumn = ({ children, style = {}, ...attrs }) => {
   return (
-    <div style={{ display: "flex", flexDirection: "column", ...style }}>
+    <div
+      {...attrs}
+      style={{ display: "flex", flexDirection: "column", ...style }}
+    >
       {children}
     </div>
   );
 };
 
-const FlexColumnCenter = ({ children, style = {} }) => {
+const FlexColumnCenter = ({ children, style = {}, ...attrs }) => {
   return (
     <div
+      {...attrs}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -52,9 +57,10 @@ const FlexColumnCenter = ({ children, style = {} }) => {
   );
 };
 
-const FlexCenter = ({ children, style = {} }) => {
+const FlexCenter = ({ children, style = {}, ...attrs }) => {
   return (
     <div
+      {...attrs}
       style={{
         display: "flex",
         alignItems: "center",
@@ -67,9 +73,10 @@ const FlexCenter = ({ children, style = {} }) => {
   );
 };
 
-const FullFlexCenter = ({ children, style = {} }) => {
+const FullFlexCenter = ({ children, style = {}, ...attrs }) => {
   return (
     <Flex
+      {...attrs}
       style={{
         width: "100%",
         display: "flex",
@@ -83,15 +90,18 @@ const FullFlexCenter = ({ children, style = {} }) => {
   );
 };
 
-const FullFlexColumn = ({ children, style = {} }) => {
+const FullFlexColumn = ({ children, style = {}, ...attrs }) => {
   return (
-    <FlexColumn style={{ width: "100%", ...style }}>{children}</FlexColumn>
+    <FlexColumn {...attrs} style={{ width: "100%", ...style }}>
+      {children}
+    </FlexColumn>
   );
 };
 
-const FullFlexColumnCenter = ({ children, style = {} }) => {
+const FullFlexColumnCenter = ({ children, style = {}, ...attrs }) => {
   return (
     <FlexColumn
+      {...attrs}
       style={{
         width: "100%",
         height: "100%",
@@ -106,13 +116,22 @@ const FullFlexColumnCenter = ({ children, style = {} }) => {
   );
 };
 
-const FullFlexRow = ({ children, style = {} }) => {
-  return <FlexRow style={{ width: "100%", ...style }}>{children}</FlexRow>;
-};
-
-const FullFlexRowCenter = ({ children, style = {} }) => {
+const FullFlexRow = ({ children, classNames = "", style = {}, ...attrs }) => {
   return (
     <FlexRow
+      {...attrs}
+      {...classes(classNames)}
+      style={{ width: "100%", ...style }}
+    >
+      {children}
+    </FlexRow>
+  );
+};
+
+const FullFlexRowCenter = ({ children, style = {}, ...attrs }) => {
+  return (
+    <FlexRow
+      {...attrs}
       style={{
         width: "100%",
         alignItems: "center",
@@ -125,9 +144,10 @@ const FullFlexRowCenter = ({ children, style = {} }) => {
   );
 };
 
-const FullFlexGrow = ({ children, style = {} }) => {
+const FullFlexGrow = ({ children, style = {}, ...attrs }) => {
   return (
     <Flex
+      {...attrs}
       style={{
         height: "100%",
         width: "100%",

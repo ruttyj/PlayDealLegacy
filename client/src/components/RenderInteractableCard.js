@@ -40,7 +40,7 @@ const RenderInteractableCard = ({
     <HandCardWrapper
       style={style}
       overlap={overlap}
-      onClick={() => onClick({ cardId, card, ...clickProps })}
+      onClick={(e) => onClick({ e, cardId, card, ...clickProps })}
     >
       <ScaleCard percent={scaledPercent} hoverPercent={hoverPercent}>
         <DragItem item={{ type: cardMode, ...dragProps }}>

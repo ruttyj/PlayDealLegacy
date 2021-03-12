@@ -1,4 +1,4 @@
-import { debounce } from "lodash";
+import debounce from "lodash.debounce";
 
 import {
   isDef,
@@ -16,12 +16,11 @@ import {
 //#######################################################
 export default function StateBuffer(_initialState = {}) {
   const initialState = _initialState;
-  let mIsNotValid = true;
   let mCurrentState = initialState;
 
   let mSetter = null;
   let mMutator = (v) => v;
-  const _flush = debounce(async function () {
+  const _flush = debounce(async function() {
     flush(mSetter);
   }, 50);
 
@@ -32,8 +31,9 @@ export default function StateBuffer(_initialState = {}) {
     mMutator = m;
   }
 
-  function toggle(path = [], value) {
-    mCurrentState = setImmutableValue(mCurrentState, path, !get(path, false));
+  function toggle(path = [], fallback = false) {
+    let currentValue = get(path, fallback);
+    mCurrentState = setImmutableValue(mCurrentState, path, !currentValue);
     _flush();
   }
 

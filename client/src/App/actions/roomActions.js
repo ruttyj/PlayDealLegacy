@@ -1,6 +1,9 @@
-import { isDef } from "../../utils/";
+import { isDef, getNestedValue } from "../../utils/";
 import { SET_CURRENT_ROOM } from "./types";
-import roomBuffer from "../buffers/roomBuffer";
+import roomReducers from "../reducers/roomReducers";
+
+import ReduxState from "../controllers/reduxState";
+const reduxState = ReduxState.getInstance();
 
 function findResponse(responses, subject, action) {
   return responses.find(
@@ -13,7 +16,7 @@ const attachRoomListeners = (con) => (dispatch) => {
   let eventBranch = ["ROOM", "GET_CURRENT"];
   listnerTree.on(eventBranch, (data) => {
     let { payload } = data;
-    dispatch({
+    reduxState.directDispatch("rooms", dispatch, roomReducers, {
       type: SET_CURRENT_ROOM,
       payload: payload,
     });
@@ -45,6 +48,20 @@ const listAllRooms = (con) => async (dispatch) => {
       resolve(resposnse);
     });
     con.emitSingleRequest("ROOM", "GET_All_KEYED", {
+      props: {},
+    });
+  });
+
+  return myPromise;
+};
+
+const getRandomRoomCode = (con) => async (dispatch) => {
+  let myPromise = new Promise((resolve, reject) => {
+    con.listnerTree.on(["ROOM", "GET_RANDOM_CODE"], (responses) => {
+      let code = getNestedValue(responses, ["payload", "code"], null);
+      resolve(code);
+    });
+    con.emitSingleRequest("ROOM", "GET_RANDOM_CODE", {
       props: {},
     });
   });
@@ -89,7 +106,7 @@ const getOnlineStats = (con, roomCode) => async (dispatch) => {
 };
 
 const resetRoomData = (value) => (dispatch) => {
-  dispatch({
+  reduxState.directDispatch("rooms", dispatch, roomReducers, {
     type: `RESET`,
     payload: value,
   });
@@ -105,4 +122,5 @@ export default {
   existsRoom,
   getOnlineStats,
   attachRoomListeners,
+  getRandomRoomCode,
 };

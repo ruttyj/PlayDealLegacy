@@ -107,6 +107,30 @@ const identityMutator = functionMutator;
 
 const arrSum = (arr) => arr.reduce((a, b) => a + b, 0);
 
+function nDeep(item, maxDepth=2, current=0) {
+  
+  if (isArr(item)){
+    if(current < maxDepth) {
+      return item.map(child => nDeep(child, maxDepth, current+1));
+    } else {
+      return '...';
+    }
+  } else if(isObj(item)) {
+    if(current < maxDepth) {
+      let result = {};
+      Object.keys(item).forEach(key => {
+        result[key] = nDeep(item[key], maxDepth, current+1);
+      })
+      return result
+    } else {
+      return '...';
+    }
+  } else {
+    return item;
+  }
+  
+}
+
 // produces a keyed object of the value counts
 function reduceToKeyed(arr) {
   return arr.reduce((result, item) => {
@@ -389,6 +413,10 @@ const makeVar = function (
     set(original - value);
   }
 
+  function serialize() {
+    return get()
+  }
+
   set(defaultVal);
 
   return {
@@ -400,6 +428,7 @@ const makeVar = function (
     decrement: dec,
     inc,
     dec,
+    serialize,
   };
 };
 
@@ -617,6 +646,7 @@ const makeMap = function (
     getItems,
     remove,
     toObject,
+    getKeyed: toObject,
     getCount,
     count: getCount,
     isEmpty,
@@ -672,9 +702,13 @@ const makeList = function (
     return mList.findIndex((item) => item === mutator(value)) > -1;
   }
 
-  function get(index, defaultVal = null) {
-    if (has(index)) return mList[index];
-    return defaultVal;
+  function get(index=null, defaultVal = null) {
+    if(isDef(index)){
+      if (isDef(mList[index])) 
+        return mList[index];
+      return defaultVal;
+    }
+    return toArray();
   }
 
   function set(index, value) {
@@ -1220,6 +1254,7 @@ module.exports = {
   emptyFunction,
 
   // Object / Array helpers
+  nDeep,
   arrSum,
   reduceArrayToMap,
   reduceToKeyed,

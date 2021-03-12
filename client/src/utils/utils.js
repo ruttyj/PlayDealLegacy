@@ -1,3 +1,5 @@
+const classNames = require("classname");
+
 const {
   isPlainObject: _isPlainObject,
   forEach: _forEach,
@@ -45,6 +47,24 @@ const functionMutator = (fn) =>
   isDef(fn) && typeof fn === "function" ? fn : identity;
 const identityMutator = functionMutator;
 const makeSeq = (num, fn = identity) => Array.from(Array(num).keys()).map(fn);
+
+// Flatten the mess of classes given as props into a usable attribute
+// @usage <div {...classes(["a1", "b1", ["c1", ["d1"]]], "e1", ["f1"], "g1 h1")} /> produces <div className={classNames("a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1")}/>
+function classes(...args) {
+  let _args = [];
+  if (isDef(args)) {
+    args.forEach((arg) => {
+      if (isDef(arg)) {
+        if (isArr(arg)) {
+          _args = [..._args, ...arg.flat(0)];
+        } else if (isStr(arg)) {
+          _args = [..._args, ...arg.split(" ")];
+        }
+      }
+    });
+  }
+  return { className: classNames(..._args) };
+}
 
 //==================================================
 
@@ -102,7 +122,7 @@ const JSON_PRETTY = (v) => JSON.stringify(v, null, 2);
 //==================================================
 
 // Used to accept either the id or object in get or has methods
-const getKeyFromProp = function (prop, getterName) {
+const getKeyFromProp = function(prop, getterName) {
   let key = null;
   if (isObj(prop)) {
     // if is function execute function
@@ -117,7 +137,7 @@ const getKeyFromProp = function (prop, getterName) {
 };
 
 // GET NESTED VALUE (ref, [nested, path], fallbackValue)
-const getNestedValue = function (reference, path, fallback = undefined) {
+const getNestedValue = function(reference, path, fallback = undefined) {
   path = isArr(path) ? path : [path];
 
   var pointer = reference;
@@ -140,12 +160,12 @@ const getNestedValue = function (reference, path, fallback = undefined) {
   return pointer;
 };
 
-const isDefNested = function (reference, path) {
+const isDefNested = function(reference, path) {
   return isDef(getNestedValue(reference, path, undefined));
 };
 // SET NESTED VALUE
 // Makes up for vues missing functionality to reactivly set a value many layers deep
-const setNestedValue = function (a, b, c, d) {
+const setNestedValue = function(a, b, c, d) {
   var setter, startingRef, tempPath, value;
   if (typeof a === "function") {
     // Use a custom setter
@@ -189,7 +209,7 @@ const setNestedValue = function (a, b, c, d) {
  * Allows a path to be provided to delete a nested value
  * Intended for use on objects, arrays not fully supported yet.
  */
-const deleteNestedValue = function (a, b, c) {
+const deleteNestedValue = function(a, b, c) {
   var deleter;
   var startingRef;
   var tempPath;
@@ -234,15 +254,15 @@ function setImmutableValue(ref, _path, value) {
 }
 
 // RECURSIVE FOR EACH
-const recursiveForEach = function (
+const recursiveForEach = function(
   obj,
   callbackFunction,
   filterFunc = (v) => true
 ) {
-  var recursive = function (value, path = []) {
+  var recursive = function(value, path = []) {
     // Loop over all objects
     if (_isPlainObject(value)) {
-      _forEach(value, function (val, key) {
+      _forEach(value, function(val, key) {
         recursive(val, [...path, key]);
       });
     } else if (_isArray(value)) {
@@ -288,7 +308,7 @@ function serializeState(mState, excludeKeys = []) {
 //                    Make Variable
 
 //==================================================
-const makeVar = function (
+const makeVar = function(
   ref = {},
   field = "value",
   defaultVal = null,
@@ -340,7 +360,7 @@ const makeVar = function (
 //                    Make Map
 
 //==================================================
-const makeMap = function (
+const makeMap = function(
   ref,
   field = "value",
   kvPairs = [],
@@ -360,7 +380,7 @@ const makeMap = function (
     }
   );
 
-  const incTopId = function (key) {
+  const incTopId = function(key) {
     _incTopId();
     if (!Number.isNaN(key)) _setTopId(key);
   };
@@ -552,7 +572,7 @@ const makeMap = function (
   return getPublic();
 };
 
-const makeTree = function (
+const makeTree = function(
   ref,
   field = "value",
   kvPairs = [],
@@ -639,7 +659,7 @@ const makeTree = function (
 //                    Make List
 
 //==================================================
-const makeList = function (ref, field = "value", defaultValue = []) {
+const makeList = function(ref, field = "value", defaultValue = []) {
   let mList =
     isDef(defaultValue) && Array.isArray(defaultValue) ? [...defaultValue] : [];
 
@@ -794,7 +814,7 @@ const makeList = function (ref, field = "value", defaultValue = []) {
 //                  Make Listener
 
 //==================================================
-const makeListener = function () {
+const makeListener = function() {
   let mOnObserverArr = [];
   let mOnceObserverArr = [];
 
@@ -856,7 +876,7 @@ const makeListener = function () {
   return getPublic();
 };
 
-const makeListenerMap = function () {
+const makeListenerMap = function() {
   let mRef = {};
 
   const {
@@ -943,7 +963,7 @@ const makeListenerMap = function () {
 };
 
 // basic 2d tree
-let makeListnerTree = function () {
+let makeListnerTree = function() {
   let mState = {};
   let tree = makeMap(mState, "tree");
 
@@ -985,6 +1005,49 @@ let makeListnerTree = function () {
   };
 };
 
+function deleteImmutableValue(ref, _path) {
+  let path = Array.isArray(_path) ? _path : [_path];
+  if (path.length > 0) {
+    let key = path[0];
+
+    // Clone branch
+    let sClone;
+    if (isArr(ref)) {
+      key = parseInt(key, 10);
+      sClone = [...ref];
+    } else if (isObj(ref)) {
+      sClone = { ...ref };
+    }
+
+    if (isDef(sClone)) {
+      if (path.length === 1) {
+        if (isArr(sClone)) {
+          let deleteIndex = parseInt(path[0]);
+          if (
+            !Number.isNaN(deleteIndex) &&
+            -1 < deleteIndex &&
+            deleteIndex < sClone.length
+          ) {
+            sClone.splice(deleteIndex, 1);
+          }
+        } else if (isObj(sClone)) {
+          let deleteKey = path[0];
+          if (sClone[deleteKey] !== undefined) {
+            delete sClone[deleteKey];
+          }
+        }
+      } else {
+        let nextPath = path.slice(1);
+        sClone[key] = deleteImmutableValue(sClone[key], nextPath);
+      }
+      return sClone;
+    }
+    return ref;
+  } else {
+    return ref;
+  }
+}
+
 module.exports = {
   els,
   elsFn,
@@ -1006,11 +1069,14 @@ module.exports = {
   emptyFun,
   makeSeq,
 
+  classes,
+
   // Object / Array helpers
   removeByFn,
   getNestedValue,
   setNestedValue,
   setImmutableValue,
+  deleteImmutableValue,
   deleteNestedValue,
   recursiveForEach,
 

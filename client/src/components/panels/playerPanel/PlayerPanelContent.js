@@ -7,7 +7,8 @@ export default ({ children }) => {
         padding: "10px",
         width: "100%",
         display: "flex",
-        flexDirection: "row"
+        flexDirection: "row",
+        backgroundColor: "#0000003b",
       }}
     >
       {children}

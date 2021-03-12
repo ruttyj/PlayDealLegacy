@@ -65,9 +65,9 @@ const PropertyWildCard = ({
     return (
       <div
         key={propertySetKey}
-        onClick={() => {
+        onClick={(e) => {
           if (isFunc(onActiveSetChange))
-            onActiveSetChange({ cardId: card.id, propertySetKey });
+            onActiveSetChange({ e, cardId: card.id, propertySetKey });
         }}
         className={classes.color_block}
         style={{

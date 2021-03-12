@@ -1,7 +1,4 @@
-
-
-
-
+## Setup
 
 # Edit Nginx config
 sudo nano /etc/nginx/sites-available/default
