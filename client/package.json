@@ -40,7 +40,7 @@
     "rxjs": "6.5.5",
     "socket.io": "2.0.4",
     "styled-components": "3.1.6",
-    "three": "0.117.1",
+    "three": "0.125.0",
     "use-constant": "1.0.0",
     "use-debounce": "5.0.1"
   },
