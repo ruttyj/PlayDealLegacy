@@ -9,6 +9,7 @@ PlayDeal is an Online multiplayer card game where players attempt to collect X m
 
 Built with React, RxJs, NodeJs & SocketIO
 This was a passion project created during the COVID-19 quarantine.
+Disclaimer** This was my first React, NodeJs, SocketIO project.
 
 # Get running in development
 
