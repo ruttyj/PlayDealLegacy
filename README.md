@@ -20,8 +20,16 @@ Before you begin, ensure you have the following installed on your system:
 -   [npm](https://www.npmjs.com/get-npm) (comes with Node.js)
 -   [nvm (Node Version Manager)](https://github.com/nvm-sh/nvm) (optional but recommended for managing Node.js versions)
 
-    nvm install 14
-    nvm use 14
+### Command to add nvm to bash profile
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+-   Reboot terminal
+-   Run the following commands
+    `nvm install 14`
+    `nvm use 14`
+
 
 # Get running in development
 
