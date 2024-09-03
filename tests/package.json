@@ -7,7 +7,7 @@
     "test": "mocha || true"
   },
   "devDependencies": {
-    "chai": "latest",
+    "chai": "4.2.0",
     "mocha": "latest"
   },
   "author": "",
